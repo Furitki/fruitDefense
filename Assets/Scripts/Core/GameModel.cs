@@ -144,36 +144,6 @@ namespace FruitDefense.Core
     }
 
     [Serializable]
-    public sealed class CombatEffect
-    {
-        public CombatEffectKind Kind;
-        public Vector2 Position;
-        public float Ttl;
-        public float Duration;
-        public string VisualId = string.Empty;
-        public string CueId = string.Empty;
-    }
-
-    [Serializable]
-    public sealed class BattleCueEvent
-    {
-        public string CueId = string.Empty;
-        public int SourceEntityId;
-        public int TargetEntityId;
-        public Vector2 Position;
-        public int LogicTick;
-    }
-
-    [Serializable]
-    public sealed class FloatingText
-    {
-        public string Text;
-        public Vector2 Point;
-        public Color Color;
-        public float Ttl;
-    }
-
-    [Serializable]
     public sealed class Inventory
     {
         public int Gatling;
@@ -226,9 +196,6 @@ namespace FruitDefense.Core
         public readonly List<Pot> Pots = new List<Pot>();
         public readonly List<Zombie> Zombies = new List<Zombie>();
         public readonly List<ProjectileFlash> Projectiles = new List<ProjectileFlash>();
-        public readonly List<CombatEffect> CombatEffects = new List<CombatEffect>();
-        public readonly List<FloatingText> Feedback = new List<FloatingText>();
-        public readonly List<BattleCueEvent> Cues = new List<BattleCueEvent>();
         public readonly Inventory Inventory = new Inventory();
     }
 }

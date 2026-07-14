@@ -56,33 +56,27 @@ namespace FruitDefense.Editor
 
         private static void ValidatePresentationExclusionAndDeepCopy(CompiledBattleContentCatalog catalog)
         {
-            var simulation = CreateScenario(catalog, BattleContentIds.Plants.Pea);
-            simulation.State.Feedback.Add(new FloatingText
-            {
-                Text = "SNAPSHOT_MUST_EXCLUDE_ME",
-                Point = Vector2.one,
-                Color = Color.magenta,
-                Ttl = 9f,
-            });
-            simulation.State.CombatEffects.Add(new CombatEffect
-            {
-                Kind = CombatEffectKind.HitSpark,
-                Position = Vector2.one,
-                Duration = 2f,
-                Ttl = 1f,
-                VisualId = "visual.transient",
-            });
-            simulation.State.Cues.Add(new BattleCueEvent { CueId = "cue.transient" });
+            var simulation = CreateScenario(catalog, BattleContentIds.Plants.Durian);
+            simulation.Step();
+            Assert(simulation.PendingPresentationEventCount > 0,
+                "fixture contains pending presentation events");
             simulation.State.Plants[0].Facing = Vector2.up;
             simulation.State.Plants[0].ActionStartedAt = 1f;
             simulation.State.Plants[0].ActionUntil = 2f;
             var snapshot = simulation.ExportSnapshot();
             var json = JsonUtility.ToJson(snapshot);
-            Assert(!json.Contains("SNAPSHOT_MUST_EXCLUDE_ME") && !json.Contains("visual.transient")
-                && !json.Contains("cue.transient") && !json.Contains("combatEffects")
-                && !json.Contains("feedback") && !json.Contains("facing")
+            Assert(!json.Contains(BattleContentIds.Cues.DurianDrop)
+                && !json.Contains(BattleContentIds.Visuals.Durian)
+                && !json.Contains("presentationEvents") && !json.Contains("combatEffects")
+                && !json.Contains("feedback") && !json.Contains("delivery") && !json.Contains("facing")
                 && !json.Contains("actionStartedAt") && !json.Contains("actionUntil"),
                 "presentation, selection-adjacent action view, cue, and VFX state are excluded");
+
+            var restoreTarget = new GameSimulation(catalog, 1);
+            Assert(restoreTarget.PendingPresentationEventCount > 0, "new simulation starts with feedback pending");
+            var presentationFreeRestore = restoreTarget.RestoreSnapshot(snapshot, catalog);
+            Assert(presentationFreeRestore.Succeeded && restoreTarget.PendingPresentationEventCount == 0,
+                "successful restore starts without pending transient presentation");
 
             var originalSun = simulation.State.Sun;
             var originalPotId = simulation.State.Plants[0].PotId;
@@ -275,9 +269,7 @@ namespace FruitDefense.Editor
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();
             simulation.State.Projectiles.Clear();
-            simulation.State.CombatEffects.Clear();
-            simulation.State.Feedback.Clear();
-            simulation.State.Cues.Clear();
+            simulation.DiscardPendingPresentationEvents();
             simulation.State.Phase = GamePhase.Playing;
             simulation.State.WaveIndex = 1;
             simulation.State.WaveTotal = 1;
