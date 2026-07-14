@@ -266,15 +266,6 @@ namespace FruitDefense.Editor
                 Add(ref hash, projectile.FlightTicks);
                 foreach (var id in projectile.HitIds) Add(ref hash, id);
             }
-            foreach (var cue in state.Cues)
-            {
-                Add(ref hash, cue.CueId);
-                Add(ref hash, cue.SourceEntityId);
-                Add(ref hash, cue.TargetEntityId);
-                Add(ref hash, cue.Position.x);
-                Add(ref hash, cue.Position.y);
-                Add(ref hash, cue.LogicTick);
-            }
             return hash;
         }
 

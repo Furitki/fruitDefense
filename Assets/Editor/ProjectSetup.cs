@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FruitDefense.App;
 using FruitDefense.Core;
 using FruitDefense.Shell;
@@ -300,7 +301,7 @@ namespace FruitDefense.Editor
             var traversal = new GameSimulation(1357);
             traversal.State.Plants.Clear();
             traversal.State.Zombies.Clear();
-            traversal.State.Feedback.Clear();
+            traversal.DiscardPendingPresentationEvents();
             traversal.State.Phase = GamePhase.Playing;
             traversal.State.WaveIndex = 1;
             traversal.State.WaveTotal = 0;
@@ -327,7 +328,7 @@ namespace FruitDefense.Editor
         {
             var simulation = new GameSimulation(4242);
             simulation.State.Plants.Clear();
-            simulation.State.Feedback.Clear();
+            simulation.DiscardPendingPresentationEvents();
             var firstPot = simulation.State.Pots[0];
             var secondPot = simulation.State.Pots[1];
             var source = new Plant
@@ -410,7 +411,7 @@ namespace FruitDefense.Editor
             Assert(pea.State.Projectiles.Count == 1 && Mathf.Approximately(pea.State.Zombies[0].Hp, 1000f),
                 "pea creates a delayed tracking projectile");
             TickUntilProjectilesFinish(pea, 40);
-            Assert(pea.State.Zombies[0].Hp < 1000f && pea.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.PeaImpact),
+            Assert(pea.State.Zombies[0].Hp < 1000f && HasCombatEffect(pea, CombatEffectKind.PeaImpact),
                 "pea projectile tracks and creates an impact action");
 
             var watermelon = CreateCombatScenario(PlantKind.Watermelon);
@@ -418,7 +419,7 @@ namespace FruitDefense.Editor
             Assert(watermelon.State.Projectiles.Count == 1 && watermelon.State.Projectiles[0].Progress > 0f,
                 "watermelon starts a timed arc projectile");
             for (var step = 0; step < 12; step++) watermelon.Tick(.05f);
-            Assert(watermelon.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.WatermelonBlast)
+            Assert(HasCombatEffect(watermelon, CombatEffectKind.WatermelonBlast)
                 && watermelon.State.Zombies[0].Hp < 1000f, "watermelon lands and creates an area blast");
 
             var banana = CreateCombatScenario(PlantKind.Banana);
@@ -430,7 +431,7 @@ namespace FruitDefense.Editor
 
             var durian = CreateCombatScenario(PlantKind.Durian);
             durian.Step();
-            Assert(durian.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.DurianDrop)
+            Assert(HasCombatEffect(durian, CombatEffectKind.DurianDrop)
                 && durian.State.Zombies[0].Hp < 1000f, "durian uses a melee drop and shockwave action");
 
             var sunflower = CreateCombatScenario(PlantKind.Sunflower);
@@ -438,7 +439,7 @@ namespace FruitDefense.Editor
             sunflower.State.Sun = 0;
             sunflower.Step();
             Assert(sunflower.State.Sun == 1
-                && sunflower.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.SunBurst),
+                && HasCombatEffect(sunflower, CombatEffectKind.SunBurst),
                 "sunflower production creates a visible sun burst");
 
             var iceSunflower = CreateCombatScenario(PlantKind.Sunflower, WeaponKind.Ice);
@@ -456,21 +457,21 @@ namespace FruitDefense.Editor
             Assert(gatling.State.Plants[0].BurstShotsRemaining == 3, "gatling starts a four-shot burst");
             for (var step = 0; step < 5; step++) gatling.Tick(.05f);
             Assert(gatling.State.Plants[0].BurstShotsRemaining == 2
-                && gatling.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.GatlingMuzzle),
+                && HasCombatEffect(gatling, CombatEffectKind.GatlingMuzzle),
                 "gatling spaces burst shots by 0.2 seconds");
 
             var ice = CreateCombatScenario(PlantKind.Pea, WeaponKind.Ice);
             ice.Step();
             TickUntilProjectilesFinish(ice, 40);
             Assert(ice.State.Zombies[0].SlowUntil > ice.State.Elapsed
-                && ice.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.IceImpact),
+                && HasCombatEffect(ice, CombatEffectKind.IceImpact),
                 "ice weapon adds slow and a crystal impact");
 
             var chili = CreateCombatScenario(PlantKind.Pea, WeaponKind.Chili);
             chili.Step();
             TickUntilProjectilesFinish(chili, 40);
             Assert(chili.State.Zombies[0].Burns.Count == 1
-                && chili.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.ChiliImpact),
+                && HasCombatEffect(chili, CombatEffectKind.ChiliImpact),
                 "chili weapon adds a burn stack and flame impact");
         }
 
@@ -480,8 +481,7 @@ namespace FruitDefense.Editor
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();
             simulation.State.Projectiles.Clear();
-            simulation.State.CombatEffects.Clear();
-            simulation.State.Feedback.Clear();
+            simulation.DiscardPendingPresentationEvents();
             simulation.State.Phase = GamePhase.Playing;
             simulation.State.WaveIndex = 1;
             simulation.State.WaveTotal = 1;
@@ -509,6 +509,17 @@ namespace FruitDefense.Editor
                 Threat = 1,
             });
             return simulation;
+        }
+
+        private static bool HasCombatEffect(GameSimulation simulation, CombatEffectKind kind)
+        {
+            var events = new List<BattlePresentationEvent>();
+            simulation.DrainPresentationEvents(events);
+            foreach (var value in events)
+                if (value.Kind == BattlePresentationEventKind.Cue
+                    && value.HasCombatEffect && value.CombatEffectKind == kind)
+                    return true;
+            return false;
         }
 
         private static float NearestPathProgress(GameSimulation simulation, Vector2 point)

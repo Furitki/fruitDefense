@@ -5,6 +5,7 @@ using FruitDefense.App;
 using FruitDefense.Battle;
 using FruitDefense.Core;
 using FruitDefense.Platform;
+using FruitDefense.Presentation;
 using UnityEngine;
 
 namespace FruitDefense
@@ -91,6 +92,7 @@ namespace FruitDefense
         private static readonly Rect ModalRect = new Rect(36f, 300f, 330f, 244f);
 
         private GameSimulation _game;
+        private readonly BattlePresentationBuffer _presentation = new BattlePresentationBuffer();
         private BattleLaunchRequest _currentRequest;
         private IAppNavigator _navigator;
         private IBattleResultSink _resultSink;
@@ -342,7 +344,7 @@ namespace FruitDefense
             restartSimulation.State.Lives = 3;
             restartSimulation.State.Zombies.Add(new Zombie { Id = 991, Hp = 1f, MaxHp = 1f });
             restartSimulation.State.Projectiles.Add(new ProjectileFlash { Id = 992 });
-            restartSimulation.State.CombatEffects.Add(new CombatEffect { Ttl = 1f, Duration = 1f });
+            restartSimulation.RefreshNursery(out _);
             var presentation = new RestartPresentationState
             {
                 InspectedPlantId = 88,
@@ -361,7 +363,8 @@ namespace FruitDefense
                 || restartSimulation.State.Phase != GamePhase.Ready || restartSimulation.State.Paused
                 || restartSimulation.State.WaveIndex != 0 || restartSimulation.State.Sun != 10
                 || restartSimulation.State.Lives != 10 || restartSimulation.State.Zombies.Count != 0
-                || restartSimulation.State.Projectiles.Count != 0 || restartSimulation.State.CombatEffects.Count != 0)
+                || restartSimulation.State.Projectiles.Count != 0
+                || restartSimulation.PendingPresentationEventCount != 1)
             {
                 reason = "centralized restart did not clear simulation and presentation state";
                 return false;
@@ -482,6 +485,7 @@ namespace FruitDefense
             _navigator = navigator;
             _resultSink = resultSink;
             _game = simulation;
+            _presentation.Clear();
             _projection = new BattlefieldProjection(_game.Map, BoardRect);
             _hasEnteredBattleRoute = navigator.CurrentRoute == AppRoute.Battle;
             _navigator.RouteChanged += OnAppRouteChanged;
@@ -522,9 +526,24 @@ namespace FruitDefense
 
             var presentation = CaptureRestartPresentation();
             ResetFullRun(_game, presentation, _currentRequest.Seed);
+            _presentation.Clear();
             ApplyRestartPresentation(presentation);
             errorCode = string.Empty;
             return true;
+        }
+
+        public BattleSnapshotRestoreResult RestoreCurrentSessionSnapshot(BattleSnapshotV1 snapshot)
+        {
+            if (!_isInitialized || _game == null)
+                return new BattleSnapshotRestoreResult(BattleSnapshotRestoreCode.InvalidPayload,
+                    "session", SessionNotInitialized);
+
+            var result = _game.RestoreSnapshot(snapshot);
+            if (!result.Succeeded) return result;
+
+            _presentation.Clear();
+            CancelTransientInteraction();
+            return result;
         }
 
         public bool TrySubmitTerminalResult()
@@ -613,6 +632,7 @@ namespace FruitDefense
             _currentRequest = null;
             _game = null;
             _projection = null;
+            _presentation.Clear();
             CancelTransientInteraction();
             ResetInteractionState();
         }
@@ -669,7 +689,9 @@ namespace FruitDefense
             if (Input.GetKeyDown(KeyCode.Space)) _game.TogglePause();
             if (Input.GetKeyDown(KeyCode.Alpha1)) _game.SetSpeed(1);
             if (Input.GetKeyDown(KeyCode.Alpha2)) _game.SetSpeed(2);
+            _presentation.Advance(Time.unscaledDeltaTime);
             _game.Tick(Time.unscaledDeltaTime);
+            _presentation.Consume(_game);
             TrySubmitTerminalResult();
             if (_inspectedPlantId >= 0 && _game.PlantById(_inspectedPlantId) == null) _inspectedPlantId = -1;
         }
@@ -679,13 +701,13 @@ namespace FruitDefense
             if (!_isInitialized || _game == null) return;
             if (!Application.absoluteURL.Contains("acceptance=1")) return;
             _game = new GameSimulation(20260714);
+            _game.DiscardPendingPresentationEvents();
+            _presentation.Clear();
             _projection = new BattlefieldProjection(_game.Map, BoardRect);
             _game.State.Pots.Clear();
             _game.State.Plants.Clear();
             _game.State.Zombies.Clear();
             _game.State.Projectiles.Clear();
-            _game.State.CombatEffects.Clear();
-            _game.State.Feedback.Clear();
             ResetInteractionState();
 
             switch (stateName)
@@ -1296,7 +1318,7 @@ namespace FruitDefense
 
         private void DrawCombatEffects()
         {
-            foreach (var effect in _game.State.CombatEffects)
+            foreach (var effect in _presentation.CombatEffects)
             {
                 var point = ToBoard(effect.Position);
                 var progress = effect.Duration <= 0f ? 1f : 1f - Mathf.Clamp01(effect.Ttl / effect.Duration);
@@ -1340,7 +1362,7 @@ namespace FruitDefense
 
         private void DrawFeedback()
         {
-            foreach (var feedback in _game.State.Feedback)
+            foreach (var feedback in _presentation.Feedback)
             {
                 var point = ToBoard(feedback.Point);
                 var style = Style(11, FontStyle.Bold, TextAnchor.MiddleCenter, feedback.Color);

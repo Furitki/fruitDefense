@@ -106,6 +106,7 @@ namespace FruitDefense.Core
             State = candidate;
             _lastNurseryPotSlots.Clear();
             ResetFrameAccumulator();
+            _presentationEvents.Reset();
             return BattleSnapshotRestoreResult.Ok();
         }
 

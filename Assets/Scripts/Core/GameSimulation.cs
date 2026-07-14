@@ -16,6 +16,7 @@ namespace FruitDefense.Core
         private readonly DeterministicRandom _random;
         private readonly CompiledBattleContentCatalog _content;
         private readonly List<int> _lastNurseryPotSlots = new List<int>();
+        private readonly BattlePresentationEventStream _presentationEvents = new BattlePresentationEventStream();
         private double _frameAccumulator;
         public GameState State { get; private set; }
         public BattlefieldMapDefinition Map { get; private set; }
@@ -23,6 +24,8 @@ namespace FruitDefense.Core
         public double FrameAccumulatorSeconds { get { return _frameAccumulator; } }
         public uint RandomState { get { return _random.State; } }
         public CompiledBattleContentCatalog Content { get { return _content; } }
+        public int PendingPresentationEventCount { get { return _presentationEvents.PendingCount; } }
+        public long DroppedPresentationEventCount { get { return _presentationEvents.DroppedCount; } }
 
         public GameSimulation(int seed = 0, BattlefieldMapDefinition map = null)
             : this(CreateBundledContent(), seed, map)
@@ -53,6 +56,7 @@ namespace FruitDefense.Core
         {
             _random.Reset(seed);
             ResetFrameAccumulator();
+            _presentationEvents.Reset();
             State = new GameState
             {
                 Phase = GamePhase.Ready,
@@ -354,9 +358,7 @@ namespace FruitDefense.Core
             if (State.Paused || State.Phase == GamePhase.Victory || State.Phase == GamePhase.Defeat) return false;
             const float delta = FixedStepSeconds;
             State.LogicTick++;
-            State.Cues.Clear();
             State.Elapsed += delta;
-            FadeVisuals(delta);
             foreach (var plant in State.Plants) plant.MoveCooldown = Mathf.Max(0f, plant.MoveCooldown - delta);
             if (State.Phase == GamePhase.BetweenWaves)
             {
@@ -381,6 +383,16 @@ namespace FruitDefense.Core
         public void RestoreRandomState(uint state)
         {
             _random.RestoreState(state);
+        }
+
+        public int DrainPresentationEvents(ICollection<BattlePresentationEvent> destination)
+        {
+            return _presentationEvents.DrainTo(destination);
+        }
+
+        public void DiscardPendingPresentationEvents()
+        {
+            _presentationEvents.DiscardPending();
         }
 
         private void Spawn(float delta)
@@ -965,18 +977,11 @@ namespace FruitDefense.Core
         private void EmitCue(string cueId, int sourceEntityId, int targetEntityId, Vector2 position)
         {
             if (string.IsNullOrEmpty(cueId)) return;
-            State.Cues.Add(new BattleCueEvent
-            {
-                CueId = cueId,
-                SourceEntityId = sourceEntityId,
-                TargetEntityId = targetEntityId,
-                Position = position,
-                LogicTick = State.LogicTick,
-            });
             CombatEffectKind kind;
             float duration;
-            if (!TryLegacyCombatEffect(cueId, out kind, out duration)) return;
-            AddCombatEffect(kind, position, duration, cueId);
+            var hasCombatEffect = TryLegacyCombatEffect(cueId, out kind, out duration);
+            _presentationEvents.EmitCue(State.LogicTick, cueId, VisualIdForCue(cueId),
+                sourceEntityId, targetEntityId, position, hasCombatEffect, kind, duration);
         }
 
         private static bool TryLegacyCombatEffect(string cueId, out CombatEffectKind kind, out float duration)
@@ -994,33 +999,7 @@ namespace FruitDefense.Core
             return true;
         }
 
-        private void FadeVisuals(float delta)
-        {
-            for (var index = State.CombatEffects.Count - 1; index >= 0; index--)
-            {
-                State.CombatEffects[index].Ttl -= delta;
-                if (State.CombatEffects[index].Ttl <= 0f) State.CombatEffects.RemoveAt(index);
-            }
-            for (var index = State.Feedback.Count - 1; index >= 0; index--)
-            {
-                State.Feedback[index].Ttl -= delta;
-                if (State.Feedback[index].Ttl <= 0f) State.Feedback.RemoveAt(index);
-            }
-        }
-
         private void AddGlobalFeedback(string text, Color color) { AddFeedback(text, Map.Core, color); }
-        private void AddCombatEffect(CombatEffectKind kind, Vector2 point, float duration)
-        {
-            AddCombatEffect(kind, point, duration, string.Empty);
-        }
-        private void AddCombatEffect(CombatEffectKind kind, Vector2 point, float duration, string cueId)
-        {
-            State.CombatEffects.Add(new CombatEffect
-            {
-                Kind = kind, Position = point, Ttl = duration, Duration = duration,
-                CueId = cueId, VisualId = VisualIdForCue(cueId),
-            });
-        }
         private static string VisualIdForCue(string cueId)
         {
             if (cueId == BattleContentIds.Cues.PeaImpact) return BattleContentIds.Visuals.Pea;
@@ -1028,11 +1007,14 @@ namespace FruitDefense.Core
             if (cueId == BattleContentIds.Cues.BananaHit) return BattleContentIds.Visuals.Banana;
             if (cueId == BattleContentIds.Cues.DurianDrop) return BattleContentIds.Visuals.Durian;
             if (cueId == BattleContentIds.Cues.SunBurst) return BattleContentIds.Visuals.Sunflower;
-            return string.IsNullOrEmpty(cueId) ? string.Empty : "visual." + cueId.Substring("cue.".Length);
+            if (string.IsNullOrEmpty(cueId)) return string.Empty;
+            return cueId.StartsWith("cue.", StringComparison.Ordinal)
+                ? "visual." + cueId.Substring("cue.".Length)
+                : "visual." + cueId;
         }
         private void AddFeedback(string text, Vector2 point, Color color)
         {
-            State.Feedback.Add(new FloatingText { Text = text, Point = point, Color = color, Ttl = 1.8f });
+            _presentationEvents.EmitFeedback(State.LogicTick, text, point, color, 1.8f);
         }
     }
 }

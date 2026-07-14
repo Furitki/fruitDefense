@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FruitDefense.Content;
 using FruitDefense.Core;
@@ -95,7 +96,7 @@ namespace FruitDefense.Editor
             var durian = CreateScenario(catalog, BattleContentIds.Plants.Durian);
             durian.Step();
             Assert(durian.State.Zombies[0].Hp == 988f
-                && durian.State.Cues.Any(cue => cue.CueId == BattleContentIds.Cues.DurianDrop),
+                && CountCues(durian, BattleContentIds.Cues.DurianDrop) == 1,
                 "durian damage and cue resolve from effects");
         }
 
@@ -128,12 +129,9 @@ namespace FruitDefense.Editor
                 "burn retains three newest independent instances deterministically");
 
             var gatling = CreateScenario(catalog, BattleContentIds.Plants.Pea, BattleContentIds.Equipment.Gatling);
-            var muzzleCues = 0;
             for (var step = 0; step < 17; step++)
-            {
                 gatling.Step();
-                muzzleCues += gatling.State.Cues.Count(cue => cue.CueId == BattleContentIds.Cues.GatlingMuzzle);
-            }
+            var muzzleCues = CountCues(gatling, BattleContentIds.Cues.GatlingMuzzle);
             Assert(muzzleCues == 4 && gatling.State.Plants[0].BurstShotsRemaining == 0,
                 "gatling emits four shots at fixed intervals");
 
@@ -232,8 +230,7 @@ namespace FruitDefense.Editor
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();
             simulation.State.Projectiles.Clear();
-            simulation.State.CombatEffects.Clear();
-            simulation.State.Feedback.Clear();
+            simulation.DiscardPendingPresentationEvents();
             simulation.State.Phase = GamePhase.Playing;
             simulation.State.WaveIndex = 1;
             simulation.State.WaveTotal = 1;
@@ -267,6 +264,14 @@ namespace FruitDefense.Editor
                 Threat = 1,
             });
             return simulation;
+        }
+
+        private static int CountCues(GameSimulation simulation, string cueId)
+        {
+            var events = new List<BattlePresentationEvent>();
+            simulation.DrainPresentationEvents(events);
+            return events.Count(value => value.Kind == BattlePresentationEventKind.Cue
+                && value.CueId == cueId);
         }
 
         private static float NearestPathProgress(GameSimulation simulation, Vector2 point)
