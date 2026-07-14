@@ -1,12 +1,12 @@
 ﻿{
     "schemaVersion":  1,
     "platform":  "douyin-minigame",
-    "generatedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+    "generatedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
     "overallStatus":  "Yellow",
     "project":  {
                     "unityVersion":  "6000.3.19f1",
-                    "gitRevision":  "4034f7e",
-                    "webglBuildBytes":  7700095
+                    "gitRevision":  "fb9b02a",
+                    "webglBuildBytes":  0
                 },
     "pinnedVersions":  {
                            "ttsdk":  null,
@@ -25,11 +25,27 @@
                        },
     "checks":  [
                    {
+                       "id":  "toolchain-pin",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No fully validated toolchain pin exists; the repository template intentionally contains null external versions.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Copy the template only after installing reviewed tools, then fill versions from direct observation and attach hashes."
+                   },
+                   {
+                       "id":  "evidence-manifest",
+                       "status":  "Yellow",
+                       "blocking":  false,
+                       "evidence":  "No simulator/device evidence manifest exists; only the non-passing template is present.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Copy the template to docs/platform/douyin-evidence/manifest.json and attach verifiable relative artifacts."
+                   },
+                   {
                        "id":  "unity-editor",
                        "status":  "Green",
                        "blocking":  true,
                        "evidence":  "Unity 6000.3.19f1 is installed through Unity Hub.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Retain this exact editor until the platform spike approves a different version."
                    },
                    {
@@ -37,7 +53,7 @@
                        "status":  "Green",
                        "blocking":  true,
                        "evidence":  "The WebGL playback-engine module is installed for the project editor.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Keep the module installed on developer and build machines."
                    },
                    {
@@ -45,7 +61,7 @@
                        "status":  "Green",
                        "blocking":  false,
                        "evidence":  "Node v24.14.0 is available for platform and release tooling.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Pin a project tool version when the Douyin converter requires one."
                    },
                    {
@@ -53,7 +69,7 @@
                        "status":  "Yellow",
                        "blocking":  true,
                        "evidence":  "No TTSDK or StarkSDK dependency is installed.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Select and review an official SDK version in an isolated branch."
                    },
                    {
@@ -61,7 +77,7 @@
                        "status":  "Yellow",
                        "blocking":  true,
                        "evidence":  "Addressables is not installed.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Pin Addressables only after the platform provider compatibility check."
                    },
                    {
@@ -69,88 +85,96 @@
                        "status":  "Yellow",
                        "blocking":  true,
                        "evidence":  "Douyin developer tools were not found in configured or standard locations.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Install a reviewed stable release and set DOUYIN_DEVELOPER_TOOLS if needed."
+                   },
+                   {
+                       "id":  "douyin-cli-tooling",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "The tmg and tt-wasmsplit-ci command pair is not available on PATH.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Install the reviewed platform CLI set after selecting the SDK/IDE candidate."
                    },
                    {
                        "id":  "douyin-account",
                        "status":  "Yellow",
                        "blocking":  true,
                        "evidence":  "Required AppID or developer-session presence flags are missing.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Provide authorized platform access without committing credentials."
                    },
                    {
                        "id":  "baseline-webgl-build",
-                       "status":  "Green",
+                       "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "A WebGL build exists and contains 7700095 bytes before Douyin conversion.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
-                       "nextAction":  "Regenerate after merging each P0 wave and before conversion."
+                       "evidence":  "No generated WebGL entry page was found.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Run FruitDefense.Editor.WebBuild.Build before conversion."
                    },
                    {
                        "id":  "douyin-conversion",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No converted Douyin mini-game artifact has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Convert the pinned Unity build in the reviewed TTSDK/toolchain."
                    },
                    {
                        "id":  "douyin-simulator",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No simulator evidence has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Verify launch, input, audio, lifecycle, HTTPS/cache, update, and content behavior."
                    },
                    {
                        "id":  "android-device",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No Android physical-device matrix has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Run cold/warm launch, battle, lifecycle, update, and 30-minute stability."
                    },
                    {
                        "id":  "ios-device",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No iOS physical-device matrix has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Run cold/warm launch, battle, lifecycle, update, and 30-minute stability."
                    },
                    {
                        "id":  "code-package-update",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No UpdateManager check/download/ready/failure/restart evidence has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
                        "nextAction":  "Exercise code-package update callbacks and restart outside battle."
                    },
                    {
                        "id":  "remote-content",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No TTAssetBundle/Addressables cache and fallback evidence has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
-                       "nextAction":  "Exercise target, last-known-good, and bundled content paths."
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Exercise TTAssetBundle and UnityWebRequest provider, cache, unload, and fallback paths."
                    },
                    {
                        "id":  "wasm-splitting",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No Android+iOS function-collection evidence has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
-                       "nextAction":  "Collect Bootstrap, Lobby, first battle, lifecycle, and update UI functions."
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Collect Bootstrap, Lobby, first battle, lifecycle, and update UI functions on Android and iOS."
                    },
                    {
                        "id":  "stability",
                        "status":  "Yellow",
                        "blocking":  true,
-                       "evidence":  "No 30-minute Android and iOS stability evidence has been recorded.",
-                       "observedAtUtc":  "2026-07-14T17:30:04.1104326+00:00",
-                       "nextAction":  "Record crash, OOM, memory, and repeated-battle results on both systems."
+                       "evidence":  "Required checks and verifiable artifacts are incomplete or absent.",
+                       "observedAtUtc":  "2026-07-14T18:54:30.1500169+00:00",
+                       "nextAction":  "Record crash, OOM, memory, and repeated-battle results for 30 minutes on both systems."
                    }
                ]
 }
