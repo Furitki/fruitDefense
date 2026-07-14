@@ -7,6 +7,10 @@ namespace FruitDefense.Core
 {
     public sealed class GameSimulation
     {
+        public const float FixedStepSeconds = .05f;
+        public const float MaxFrameDeltaSeconds = .25f;
+        public const int MaxStepsPerFrame = 5;
+        private const double AccumulatorEpsilon = 0.0000001;
         private const float HitStunSeconds = .1f;
         private const double NurseryPotChance = .1;
         private static readonly float ProjectileSpeed = GameConfig.MapDistance(65f);
@@ -17,25 +21,28 @@ namespace FruitDefense.Core
         private static readonly float ZombieHitRadius = GameConfig.MapDistance(2.25f);
         private const int GatlingBurstShots = 4;
         private const float GatlingBurstInterval = .2f;
-        private readonly System.Random _random;
+        private readonly DeterministicRandom _random;
         private readonly List<int> _lastNurseryPotSlots = new List<int>();
+        private double _frameAccumulator;
         public GameState State { get; private set; }
         public BattlefieldMapDefinition Map { get; private set; }
         public IReadOnlyList<int> LastNurseryPotSlots { get { return _lastNurseryPotSlots; } }
+        public double FrameAccumulatorSeconds { get { return _frameAccumulator; } }
+        public uint RandomState { get { return _random.State; } }
 
         public GameSimulation(int seed = 0, BattlefieldMapDefinition map = null)
         {
-            if (seed == 0) seed = Environment.TickCount;
             Map = map ?? GameConfig.DefaultBattlefield;
             string mapReason;
             if (!Map.Validate(out mapReason)) throw new InvalidOperationException("Invalid battlefield map: " + mapReason);
-            _random = new System.Random(seed);
+            _random = new DeterministicRandom(seed);
             Reset(seed);
         }
 
         public void Reset(int seed = 0)
         {
-            if (seed == 0) seed = Environment.TickCount;
+            _random.Reset(seed);
+            ResetFrameAccumulator();
             State = new GameState { Phase = GamePhase.Ready, Sun = 10, Lives = 10, RandomSeed = seed };
             _lastNurseryPotSlots.Clear();
             AddInitialPots();
@@ -57,7 +64,7 @@ namespace FruitDefense.Core
         {
             for (var index = items.Count - 1; index > 0; index--)
             {
-                var target = _random.Next(index + 1);
+                var target = _random.NextInt(index + 1);
                 var value = items[index];
                 items[index] = items[target];
                 items[target] = value;
@@ -88,12 +95,12 @@ namespace FruitDefense.Core
             for (var index = 0; index < 5; index++)
             {
                 var forceAttacker = firstBatch && index < 2;
-                if (!forceAttacker && _random.NextDouble() < NurseryPotChance)
+                if (!forceAttacker && _random.NextUnitDouble() < NurseryPotChance)
                 {
                     results.Add(-1);
                     continue;
                 }
-                var kind = forceAttacker || sunflowerCount >= 2 ? _random.Next(0, 4) : _random.Next(0, 5);
+                var kind = forceAttacker || sunflowerCount >= 2 ? _random.NextInt(0, 4) : _random.NextInt(0, 5);
                 if ((PlantKind)kind == PlantKind.Sunflower) sunflowerCount++;
                 results.Add(kind);
             }
@@ -287,8 +294,43 @@ namespace FruitDefense.Core
 
         public void Tick(float unscaledDelta)
         {
-            if (State.Paused || State.Phase == GamePhase.Victory || State.Phase == GamePhase.Defeat) return;
-            var delta = Mathf.Min(unscaledDelta, .05f) * State.Speed;
+            AdvanceFrame(unscaledDelta);
+        }
+
+        public int AdvanceFrame(float unscaledDelta)
+        {
+            if (State.Paused || State.Phase == GamePhase.Victory || State.Phase == GamePhase.Defeat)
+            {
+                ResetFrameAccumulator();
+                return 0;
+            }
+
+            var safeDelta = float.IsNaN(unscaledDelta) || float.IsInfinity(unscaledDelta)
+                ? 0f
+                : Mathf.Clamp(unscaledDelta, 0f, MaxFrameDeltaSeconds);
+            var scaledDelta = safeDelta * Mathf.Clamp(State.Speed, 1, 2);
+            _frameAccumulator = Math.Min(MaxFrameDeltaSeconds, _frameAccumulator + scaledDelta);
+
+            var steps = 0;
+            while (steps < MaxStepsPerFrame && _frameAccumulator + AccumulatorEpsilon >= FixedStepSeconds)
+            {
+                if (!Step())
+                {
+                    ResetFrameAccumulator();
+                    break;
+                }
+
+                _frameAccumulator -= FixedStepSeconds;
+                if (_frameAccumulator < AccumulatorEpsilon) _frameAccumulator = 0d;
+                steps++;
+            }
+            return steps;
+        }
+
+        public bool Step()
+        {
+            if (State.Paused || State.Phase == GamePhase.Victory || State.Phase == GamePhase.Defeat) return false;
+            const float delta = FixedStepSeconds;
             State.Elapsed += delta;
             FadeVisuals(delta);
             foreach (var plant in State.Plants) plant.MoveCooldown = Mathf.Max(0f, plant.MoveCooldown - delta);
@@ -296,14 +338,25 @@ namespace FruitDefense.Core
             {
                 State.BetweenTimer = Mathf.Max(0f, State.BetweenTimer - delta);
                 if (State.BetweenTimer <= 0f) StartWave(out _);
-                return;
+                return true;
             }
-            if (State.Phase != GamePhase.Playing) return;
+            if (State.Phase != GamePhase.Playing) return true;
             Spawn(delta);
             AdvanceZombies(delta);
             RunPlants(delta);
             AdvanceProjectiles(delta);
             SettleWave();
+            return true;
+        }
+
+        public void ResetFrameAccumulator()
+        {
+            _frameAccumulator = 0d;
+        }
+
+        public void RestoreRandomState(uint state)
+        {
+            _random.RestoreState(state);
         }
 
         private void Spawn(float delta)
