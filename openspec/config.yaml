@@ -1,20 +1,21 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: Unity 6000.3.19f1, C#, immediate-mode GUI, WebGL, PowerShell deployment tooling.
+  Runtime presentation is primarily Assets/Scripts/FruitDefenseGame.cs.
+  Gameplay rules live under Assets/Scripts/Core and should remain separate from presentation-only changes.
+  Required editor validation: FruitDefense.Editor.ProjectSetup.SmokeValidate.
+  Required WebGL build entry: FruitDefense.Editor.WebBuild.Build.
+  Published output is Builds/WebGL and deploy.ps1 manages the existing remote service.
+  Portrait work targets the iPhone 17 aspect and must be accepted from a real WebGL canvas capture.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - State gameplay or persistence non-goals explicitly when the change is presentation-only.
+    - Identify the player-visible flow and the required runtime validation surface.
+  design:
+    - Keep draw geometry and hit-test geometry derived from the same layout helpers.
+    - Include WebGL and safe-area behavior for visible UI changes.
+  tasks:
+    - Include Unity smoke validation and a WebGL build for runtime presentation changes.
+    - Include live visual evidence before any visible UI change is marked complete.
