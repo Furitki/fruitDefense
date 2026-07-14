@@ -51,6 +51,7 @@ namespace FruitDefense.Content
             {
                 if (plant == null) continue;
                 plant.skillIds = SortedStrings(plant.skillIds);
+                plant.tags = SortedStrings(plant.tags);
                 plant.allowedEquipmentIds = SortedStrings(plant.allowedEquipmentIds);
             }
 
@@ -60,6 +61,17 @@ namespace FruitDefense.Content
                 equipment.skillIds = SortedStrings(equipment.skillIds);
                 equipment.statusIds = SortedStrings(equipment.statusIds);
                 equipment.compatiblePlantIds = SortedStrings(equipment.compatiblePlantIds);
+                equipment.grants = equipment.grants ?? Array.Empty<EquipmentSkillGrantDto>();
+                Array.Sort(equipment.grants, (left, right) => CompareIds(left == null ? null : left.skillId, right == null ? null : right.skillId));
+                equipment.modifiers = equipment.modifiers ?? Array.Empty<SkillModifierDefinitionDto>();
+                Array.Sort(equipment.modifiers, (left, right) => CompareIds(left == null ? null : left.id, right == null ? null : right.id));
+            }
+
+            foreach (var skill in catalog.skills)
+            {
+                if (skill == null) continue;
+                skill.tags = SortedStrings(skill.tags);
+                skill.effects = skill.effects ?? Array.Empty<SkillEffectDefinitionDto>();
             }
 
             foreach (var wave in catalog.waves)
@@ -90,6 +102,23 @@ namespace FruitDefense.Content
             if (catalog.battleRules == null) catalog.battleRules = new BattleRulesDto();
             if (catalog.battleRules.milestoneRewards == null)
                 catalog.battleRules.milestoneRewards = Array.Empty<MilestoneRewardDefinitionDto>();
+            foreach (var plant in catalog.plants)
+            {
+                if (plant == null) continue;
+                if (plant.tags == null) plant.tags = Array.Empty<string>();
+            }
+            foreach (var equipment in catalog.equipment)
+            {
+                if (equipment == null) continue;
+                if (equipment.grants == null) equipment.grants = Array.Empty<EquipmentSkillGrantDto>();
+                if (equipment.modifiers == null) equipment.modifiers = Array.Empty<SkillModifierDefinitionDto>();
+            }
+            foreach (var skill in catalog.skills)
+            {
+                if (skill == null) continue;
+                if (skill.tags == null) skill.tags = Array.Empty<string>();
+                if (skill.effects == null) skill.effects = Array.Empty<SkillEffectDefinitionDto>();
+            }
         }
 
         private static string[] SortedStrings(string[] source)

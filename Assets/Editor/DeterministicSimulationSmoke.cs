@@ -162,6 +162,8 @@ namespace FruitDefense.Editor
             Add(ref hash, state.BetweenTimer);
             Add(ref hash, state.NextId);
             Add(ref hash, state.RandomSeed);
+            Add(ref hash, state.LogicTick);
+            Add(ref hash, state.NextStatusSequence);
             Add(ref hash, simulation.RandomState);
             Add(ref hash, simulation.FrameAccumulatorSeconds);
             Add(ref hash, state.Inventory.Gatling);
@@ -194,6 +196,16 @@ namespace FruitDefense.Editor
                 Add(ref hash, plant.Facing.y);
                 Add(ref hash, plant.ActionStartedAt);
                 Add(ref hash, plant.ActionUntil);
+                Add(ref hash, plant.ContentId);
+                Add(ref hash, plant.EquipmentId);
+                foreach (var runtime in plant.SkillRuntimes)
+                {
+                    Add(ref hash, runtime.SkillId);
+                    Add(ref hash, runtime.CooldownTicks);
+                    Add(ref hash, runtime.PeriodicProgressTicks);
+                    Add(ref hash, runtime.BurstShotsRemaining);
+                    Add(ref hash, runtime.BurstIntervalTicks);
+                }
             }
             foreach (var zombie in state.Zombies)
             {
@@ -209,6 +221,17 @@ namespace FruitDefense.Editor
                 Add(ref hash, zombie.FreezeUntil);
                 Add(ref hash, zombie.HitStunUntil);
                 Add(ref hash, zombie.IceHits);
+                Add(ref hash, zombie.ContentId);
+                foreach (var status in zombie.Statuses)
+                {
+                    Add(ref hash, status.DefinitionId);
+                    Add(ref hash, status.SourceEntityId);
+                    Add(ref hash, status.RemainingTicks);
+                    Add(ref hash, status.StackCount);
+                    Add(ref hash, status.Magnitude);
+                    Add(ref hash, status.Sequence);
+                    Add(ref hash, status.TickProgress);
+                }
                 foreach (var burn in zombie.Burns)
                 {
                     Add(ref hash, burn.Remaining);
@@ -235,7 +258,22 @@ namespace FruitDefense.Editor
                 Add(ref hash, projectile.Returning);
                 Add(ref hash, projectile.Damage);
                 Add(ref hash, projectile.Ttl);
+                Add(ref hash, projectile.ProjectileId);
+                Add(ref hash, projectile.VisualId);
+                Add(ref hash, projectile.ImpactCueId);
+                Add(ref hash, (int)projectile.Mode);
+                Add(ref hash, projectile.TicksRemaining);
+                Add(ref hash, projectile.FlightTicks);
                 foreach (var id in projectile.HitIds) Add(ref hash, id);
+            }
+            foreach (var cue in state.Cues)
+            {
+                Add(ref hash, cue.CueId);
+                Add(ref hash, cue.SourceEntityId);
+                Add(ref hash, cue.TargetEntityId);
+                Add(ref hash, cue.Position.x);
+                Add(ref hash, cue.Position.y);
+                Add(ref hash, cue.LogicTick);
             }
             return hash;
         }
@@ -245,6 +283,12 @@ namespace FruitDefense.Editor
         private static void Add(ref ulong hash, uint value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, float value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, double value) { Add(ref hash, BitConverter.GetBytes(value)); }
+        private static void Add(ref ulong hash, string value)
+        {
+            value = value ?? string.Empty;
+            Add(ref hash, value.Length);
+            foreach (var character in value) Add(ref hash, (int)character);
+        }
 
         private static void Add(ref ulong hash, byte[] bytes)
         {

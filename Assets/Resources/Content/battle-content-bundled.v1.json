@@ -16,6 +16,11 @@
             "skillIds": [
                 "skill.plant.banana.attack"
             ],
+            "tags": [
+                "plant.damage",
+                "plant.projectile",
+                "plant.ranged"
+            ],
             "projectileId": "projectile.banana",
             "allowedEquipmentIds": [
                 "equipment.chili",
@@ -33,6 +38,11 @@
             "skillIds": [
                 "skill.plant.durian.attack"
             ],
+            "tags": [
+                "plant.area",
+                "plant.damage",
+                "plant.melee"
+            ],
             "projectileId": "",
             "allowedEquipmentIds": [
                 "equipment.chili",
@@ -48,6 +58,11 @@
             "rangeLegacyUnits": 44.0,
             "skillIds": [
                 "skill.plant.pea.attack"
+            ],
+            "tags": [
+                "plant.damage",
+                "plant.projectile",
+                "plant.ranged"
             ],
             "projectileId": "projectile.pea",
             "allowedEquipmentIds": [
@@ -66,6 +81,9 @@
             "skillIds": [
                 "skill.plant.sunflower.produce"
             ],
+            "tags": [
+                "plant.producer"
+            ],
             "projectileId": "",
             "allowedEquipmentIds": [
                 "equipment.chili",
@@ -81,6 +99,11 @@
             "rangeLegacyUnits": 44.0,
             "skillIds": [
                 "skill.plant.watermelon.attack"
+            ],
+            "tags": [
+                "plant.damage",
+                "plant.projectile",
+                "plant.ranged"
             ],
             "projectileId": "projectile.watermelon",
             "allowedEquipmentIds": [
@@ -140,29 +163,58 @@
                 "plant.pea",
                 "plant.sunflower",
                 "plant.watermelon"
+            ],
+            "grants": [
+                {
+                    "skillId": "skill.equipment.chili.on-hit",
+                    "requiredPlantTag": "plant.damage"
+                }
+            ],
+            "modifiers": [
+                {
+                    "id": "modifier.chili.producer-resource",
+                    "requiredPlantTag": "plant.producer",
+                    "targetSkillTag": "skill.producer",
+                    "allowMultipleMatches": false,
+                    "burstCountOverride": 0,
+                    "burstIntervalSeconds": 0.0,
+                    "resourceAmountDelta": 1
+                }
             ]
         },
         {
             "id": "equipment.gatling",
             "displayName": "机枪",
-            "skillIds": [
-                "skill.equipment.gatling.burst"
-            ],
+            "skillIds": [],
             "statusIds": [],
             "compatiblePlantIds": [
                 "plant.banana",
                 "plant.pea",
                 "plant.watermelon"
+            ],
+            "grants": [],
+            "modifiers": [
+                {
+                    "id": "modifier.gatling.burst",
+                    "requiredPlantTag": "plant.ranged",
+                    "targetSkillTag": "skill.ranged.projectile",
+                    "allowMultipleMatches": false,
+                    "burstCountOverride": 4,
+                    "burstIntervalSeconds": 0.20000000298023225,
+                    "resourceAmountDelta": 0
+                }
             ]
         },
         {
             "id": "equipment.ice",
             "displayName": "冰块",
             "skillIds": [
-                "skill.equipment.ice.on-hit"
+                "skill.equipment.ice.on-hit",
+                "skill.equipment.ice.producer-opening"
             ],
             "statusIds": [
                 "status.ice.freeze",
+                "status.ice.hit-count",
                 "status.ice.slow"
             ],
             "compatiblePlantIds": [
@@ -171,45 +223,146 @@
                 "plant.pea",
                 "plant.sunflower",
                 "plant.watermelon"
-            ]
+            ],
+            "grants": [
+                {
+                    "skillId": "skill.equipment.ice.on-hit",
+                    "requiredPlantTag": "plant.damage"
+                },
+                {
+                    "skillId": "skill.equipment.ice.producer-opening",
+                    "requiredPlantTag": "plant.producer"
+                }
+            ],
+            "modifiers": []
         }
     ],
     "skills": [
         {
             "id": "skill.equipment.chili.on-hit",
-            "triggerId": "trigger.on-hit",
-            "targetId": "target.event",
-            "projectileId": "",
-            "statusId": "status.chili.burn",
-            "cooldownSeconds": 0.0,
-            "damageMultiplier": 0.20000000298023225,
-            "resourceAmount": 0,
-            "burstCount": 1,
-            "burstIntervalSeconds": 0.0
-        },
-        {
-            "id": "skill.equipment.gatling.burst",
-            "triggerId": "trigger.attack",
+            "triggerId": "trigger.after-damage",
             "targetId": "target.event",
             "projectileId": "",
             "statusId": "",
             "cooldownSeconds": 0.0,
-            "damageMultiplier": 1.0,
+            "damageMultiplier": 0.0,
             "resourceAmount": 0,
-            "burstCount": 4,
-            "burstIntervalSeconds": 0.20000000298023225
+            "burstCount": 1,
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.equipment",
+                "skill.on-hit"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.apply-status",
+                    "projectileId": "",
+                    "statusId": "status.chili.burn",
+                    "magnitude": 0.20000000298023225,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.emit-cue",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": "cue.status.chili"
+                }
+            ],
+            "visualId": "",
+            "cueId": "cue.status.chili",
+            "actionSeconds": 0.0
         },
         {
             "id": "skill.equipment.ice.on-hit",
-            "triggerId": "trigger.on-hit",
+            "triggerId": "trigger.after-damage",
             "targetId": "target.event",
             "projectileId": "",
-            "statusId": "status.ice.slow",
+            "statusId": "",
             "cooldownSeconds": 0.0,
             "damageMultiplier": 0.0,
             "resourceAmount": 0,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.equipment",
+                "skill.on-hit"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.apply-status",
+                    "projectileId": "",
+                    "statusId": "status.ice.slow",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.apply-status",
+                    "projectileId": "",
+                    "statusId": "status.ice.hit-count",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.emit-cue",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": "cue.status.ice"
+                }
+            ],
+            "visualId": "",
+            "cueId": "cue.status.ice",
+            "actionSeconds": 0.0
+        },
+        {
+            "id": "skill.equipment.ice.producer-opening",
+            "triggerId": "trigger.wave-first-spawned",
+            "targetId": "target.all-enemies",
+            "projectileId": "",
+            "statusId": "",
+            "cooldownSeconds": 0.0,
+            "damageMultiplier": 0.0,
+            "resourceAmount": 0,
+            "burstCount": 1,
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.equipment",
+                "skill.producer"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.apply-status",
+                    "projectileId": "",
+                    "statusId": "status.ice.slow",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.emit-cue",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": "cue.status.ice"
+                }
+            ],
+            "visualId": "",
+            "cueId": "cue.status.ice",
+            "actionSeconds": 0.550000011920929
         },
         {
             "id": "skill.plant.banana.attack",
@@ -221,7 +374,25 @@
             "damageMultiplier": 1.0,
             "resourceAmount": 0,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.damage",
+                "skill.ranged.projectile"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.launch-projectile",
+                    "projectileId": "projectile.banana",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                }
+            ],
+            "visualId": "visual.projectile.banana",
+            "cueId": "",
+            "actionSeconds": 0.2199999988079071
         },
         {
             "id": "skill.plant.durian.attack",
@@ -233,7 +404,35 @@
             "damageMultiplier": 1.0,
             "resourceAmount": 0,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.area",
+                "skill.damage",
+                "skill.melee"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.damage",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 18.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.emit-cue",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": "cue.skill.durian-drop"
+                }
+            ],
+            "visualId": "visual.skill.durian-drop",
+            "cueId": "cue.skill.durian-drop",
+            "actionSeconds": 0.699999988079071
         },
         {
             "id": "skill.plant.pea.attack",
@@ -245,7 +444,25 @@
             "damageMultiplier": 1.0,
             "resourceAmount": 0,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.damage",
+                "skill.ranged.projectile"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.launch-projectile",
+                    "projectileId": "projectile.pea",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                }
+            ],
+            "visualId": "visual.projectile.pea",
+            "cueId": "",
+            "actionSeconds": 0.2199999988079071
         },
         {
             "id": "skill.plant.sunflower.produce",
@@ -257,7 +474,33 @@
             "damageMultiplier": 0.0,
             "resourceAmount": 1,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.producer"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.grant-resource",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 1,
+                    "cueId": ""
+                },
+                {
+                    "kindId": "effect.emit-cue",
+                    "projectileId": "",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": "cue.skill.sun-burst"
+                }
+            ],
+            "visualId": "visual.skill.sun-burst",
+            "cueId": "cue.skill.sun-burst",
+            "actionSeconds": 0.550000011920929
         },
         {
             "id": "skill.plant.watermelon.attack",
@@ -269,39 +512,63 @@
             "damageMultiplier": 1.0,
             "resourceAmount": 0,
             "burstCount": 1,
-            "burstIntervalSeconds": 0.0
+            "burstIntervalSeconds": 0.0,
+            "tags": [
+                "skill.damage",
+                "skill.ranged.projectile"
+            ],
+            "effects": [
+                {
+                    "kindId": "effect.launch-projectile",
+                    "projectileId": "projectile.watermelon",
+                    "statusId": "",
+                    "magnitude": 1.0,
+                    "radiusLegacyUnits": 0.0,
+                    "resourceAmount": 0,
+                    "cueId": ""
+                }
+            ],
+            "visualId": "visual.projectile.watermelon",
+            "cueId": "",
+            "actionSeconds": 0.3199999928474426
         }
     ],
     "projectiles": [
         {
             "id": "projectile.banana",
-            "travelMode": "travel.returning-line",
+            "travelMode": "travel.linear-return",
             "speedLegacyUnits": 48.0,
             "flightSeconds": 0.0,
             "blastRadiusLegacyUnits": 0.0,
             "rangeMultiplier": 1.5,
             "hitRadiusLegacyUnits": 2.25,
-            "maxHitsPerTarget": 2
+            "maxHitsPerTarget": 2,
+            "visualId": "visual.projectile.banana",
+            "impactCueId": "cue.impact.banana"
         },
         {
             "id": "projectile.pea",
-            "travelMode": "travel.homing",
+            "travelMode": "travel.tracking",
             "speedLegacyUnits": 65.0,
             "flightSeconds": 0.0,
             "blastRadiusLegacyUnits": 0.0,
             "rangeMultiplier": 1.0,
             "hitRadiusLegacyUnits": 2.25,
-            "maxHitsPerTarget": 1
+            "maxHitsPerTarget": 1,
+            "visualId": "visual.projectile.pea",
+            "impactCueId": "cue.impact.pea"
         },
         {
             "id": "projectile.watermelon",
-            "travelMode": "travel.arc",
+            "travelMode": "travel.timed-arc",
             "speedLegacyUnits": 0.0,
             "flightSeconds": 0.4000000059604645,
             "blastRadiusLegacyUnits": 7.0,
             "rangeMultiplier": 1.0,
             "hitRadiusLegacyUnits": 2.25,
-            "maxHitsPerTarget": 1
+            "maxHitsPerTarget": 1,
+            "visualId": "visual.projectile.watermelon",
+            "impactCueId": "cue.impact.watermelon"
         }
     ],
     "statuses": [
@@ -309,19 +576,49 @@
             "id": "status.chili.burn",
             "stackingMode": "stacking.independent",
             "durationSeconds": 3.0,
-            "tickIntervalSeconds": 0.0,
+            "tickIntervalSeconds": 0.05000000074505806,
             "magnitude": 0.20000000298023225,
             "maxStacks": 3,
-            "hitsToProc": 0
+            "hitsToProc": 0,
+            "kindId": "status-kind.burn",
+            "procStatusId": "",
+            "cueId": "cue.status.chili"
+        },
+        {
+            "id": "status.combat.hit-stun",
+            "stackingMode": "stacking.refresh",
+            "durationSeconds": 0.10000000149011612,
+            "tickIntervalSeconds": 0.0,
+            "magnitude": 1.0,
+            "maxStacks": 1,
+            "hitsToProc": 0,
+            "kindId": "status-kind.stun",
+            "procStatusId": "",
+            "cueId": ""
         },
         {
             "id": "status.ice.freeze",
-            "stackingMode": "stacking.proc-after-hits",
+            "stackingMode": "stacking.refresh",
             "durationSeconds": 1.0,
             "tickIntervalSeconds": 0.0,
             "magnitude": 1.0,
             "maxStacks": 1,
-            "hitsToProc": 5
+            "hitsToProc": 0,
+            "kindId": "status-kind.freeze",
+            "procStatusId": "",
+            "cueId": "cue.status.ice"
+        },
+        {
+            "id": "status.ice.hit-count",
+            "stackingMode": "stacking.proc-after-hits",
+            "durationSeconds": 99999.0,
+            "tickIntervalSeconds": 0.0,
+            "magnitude": 1.0,
+            "maxStacks": 5,
+            "hitsToProc": 5,
+            "kindId": "status-kind.hit-count",
+            "procStatusId": "status.ice.freeze",
+            "cueId": "cue.status.ice"
         },
         {
             "id": "status.ice.slow",
@@ -330,7 +627,10 @@
             "tickIntervalSeconds": 0.0,
             "magnitude": 0.550000011920929,
             "maxStacks": 1,
-            "hitsToProc": 0
+            "hitsToProc": 0,
+            "kindId": "status-kind.slow",
+            "procStatusId": "",
+            "cueId": "cue.status.ice"
         }
     ],
     "waves": [

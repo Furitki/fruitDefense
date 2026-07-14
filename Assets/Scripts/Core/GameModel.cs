@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using FruitDefense.Content;
 
 namespace FruitDefense.Core
 {
@@ -54,6 +55,19 @@ namespace FruitDefense.Core
         public Vector2 Facing = Vector2.right;
         public float ActionStartedAt;
         public float ActionUntil;
+        public string ContentId = string.Empty;
+        public string EquipmentId = string.Empty;
+        public readonly List<SkillRuntimeState> SkillRuntimes = new List<SkillRuntimeState>();
+    }
+
+    [Serializable]
+    public sealed class SkillRuntimeState
+    {
+        public string SkillId = string.Empty;
+        public int CooldownTicks;
+        public int PeriodicProgressTicks;
+        public int BurstShotsRemaining;
+        public int BurstIntervalTicks;
     }
 
     [Serializable]
@@ -72,6 +86,18 @@ namespace FruitDefense.Core
     }
 
     [Serializable]
+    public sealed class StatusInstance
+    {
+        public string DefinitionId = string.Empty;
+        public int SourceEntityId;
+        public int RemainingTicks;
+        public int StackCount = 1;
+        public float Magnitude;
+        public int Sequence;
+        public int TickProgress;
+    }
+
+    [Serializable]
     public sealed class Zombie
     {
         public int Id;
@@ -87,6 +113,8 @@ namespace FruitDefense.Core
         public float HitStunUntil;
         public int IceHits;
         public readonly List<BurnStack> Burns = new List<BurnStack>();
+        public string ContentId = string.Empty;
+        public readonly List<StatusInstance> Statuses = new List<StatusInstance>();
     }
 
     [Serializable]
@@ -107,6 +135,12 @@ namespace FruitDefense.Core
         public float Damage;
         public float Ttl;
         public readonly List<int> HitIds = new List<int>();
+        public string ProjectileId = string.Empty;
+        public string VisualId = string.Empty;
+        public string ImpactCueId = string.Empty;
+        public BattleProjectileMode Mode;
+        public int TicksRemaining;
+        public int FlightTicks;
     }
 
     [Serializable]
@@ -116,6 +150,18 @@ namespace FruitDefense.Core
         public Vector2 Position;
         public float Ttl;
         public float Duration;
+        public string VisualId = string.Empty;
+        public string CueId = string.Empty;
+    }
+
+    [Serializable]
+    public sealed class BattleCueEvent
+    {
+        public string CueId = string.Empty;
+        public int SourceEntityId;
+        public int TargetEntityId;
+        public Vector2 Position;
+        public int LogicTick;
     }
 
     [Serializable]
@@ -174,12 +220,15 @@ namespace FruitDefense.Core
         public float BetweenTimer;
         public int NextId = 1;
         public int RandomSeed;
+        public int LogicTick;
+        public int NextStatusSequence = 1;
         public readonly List<Plant> Plants = new List<Plant>();
         public readonly List<Pot> Pots = new List<Pot>();
         public readonly List<Zombie> Zombies = new List<Zombie>();
         public readonly List<ProjectileFlash> Projectiles = new List<ProjectileFlash>();
         public readonly List<CombatEffect> CombatEffects = new List<CombatEffect>();
         public readonly List<FloatingText> Feedback = new List<FloatingText>();
+        public readonly List<BattleCueEvent> Cues = new List<BattleCueEvent>();
         public readonly Inventory Inventory = new Inventory();
     }
 }

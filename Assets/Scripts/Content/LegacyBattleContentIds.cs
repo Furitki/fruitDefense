@@ -18,6 +18,24 @@ namespace FruitDefense.Content
             }
         }
 
+        public static PlantKind PlantKindFromId(string id)
+        {
+            PlantKind kind;
+            if (TryPlantKindFromId(id, out kind)) return kind;
+            throw new ArgumentOutOfRangeException(nameof(id), id, "No legacy plant enum adapter exists.");
+        }
+
+        public static bool TryPlantKindFromId(string id, out PlantKind kind)
+        {
+            if (id == BattleContentIds.Plants.Pea) { kind = PlantKind.Pea; return true; }
+            if (id == BattleContentIds.Plants.Watermelon) { kind = PlantKind.Watermelon; return true; }
+            if (id == BattleContentIds.Plants.Banana) { kind = PlantKind.Banana; return true; }
+            if (id == BattleContentIds.Plants.Durian) { kind = PlantKind.Durian; return true; }
+            if (id == BattleContentIds.Plants.Sunflower) { kind = PlantKind.Sunflower; return true; }
+            kind = default(PlantKind);
+            return false;
+        }
+
         public static string Enemy(ZombieKind kind)
         {
             switch (kind)
@@ -28,6 +46,15 @@ namespace FruitDefense.Content
                 case ZombieKind.Boss: return BattleContentIds.Enemies.Boss;
                 default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported legacy enemy kind.");
             }
+        }
+
+        public static ZombieKind EnemyKindFromId(string id)
+        {
+            if (id == BattleContentIds.Enemies.Normal) return ZombieKind.Normal;
+            if (id == BattleContentIds.Enemies.Runner) return ZombieKind.Runner;
+            if (id == BattleContentIds.Enemies.Armored) return ZombieKind.Armored;
+            if (id == BattleContentIds.Enemies.Boss) return ZombieKind.Boss;
+            throw new ArgumentOutOfRangeException(nameof(id), id, "No legacy enemy enum adapter exists.");
         }
 
         public static bool TryEquipment(WeaponKind kind, out string id)
@@ -46,6 +73,16 @@ namespace FruitDefense.Content
             string id;
             if (TryEquipment(kind, out id)) return id;
             throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported legacy equipment kind.");
+        }
+
+
+        public static WeaponKind WeaponKindFromId(string id)
+        {
+            if (id == BattleContentIds.Equipment.Gatling) return WeaponKind.Gatling;
+            if (id == BattleContentIds.Equipment.Ice) return WeaponKind.Ice;
+            if (id == BattleContentIds.Equipment.Chili) return WeaponKind.Chili;
+            if (string.IsNullOrEmpty(id)) return WeaponKind.None;
+            throw new ArgumentOutOfRangeException(nameof(id), id, "No legacy equipment enum adapter exists.");
         }
     }
 }

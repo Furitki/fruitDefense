@@ -70,6 +70,11 @@ namespace FruitDefense.Content
                 attackIntervalSeconds = interval,
                 rangeLegacyUnits = range,
                 skillIds = new[] { skillId },
+                tags = id == BattleContentIds.Plants.Sunflower
+                    ? new[] { "plant.producer" }
+                    : id == BattleContentIds.Plants.Durian
+                        ? new[] { "plant.damage", "plant.melee", "plant.area" }
+                        : new[] { "plant.damage", "plant.ranged", "plant.projectile" },
                 projectileId = projectileId,
                 allowedEquipmentIds = (string[])allowedEquipmentIds.Clone(),
             };
@@ -103,7 +108,17 @@ namespace FruitDefense.Content
                 {
                     id = BattleContentIds.Equipment.Gatling,
                     displayName = "\u673a\u67aa",
-                    skillIds = new[] { BattleContentIds.Skills.GatlingBurst },
+                    modifiers = new[]
+                    {
+                        new SkillModifierDefinitionDto
+                        {
+                            id = "modifier.gatling.burst",
+                            requiredPlantTag = "plant.ranged",
+                            targetSkillTag = "skill.ranged.projectile",
+                            burstCountOverride = 4,
+                            burstIntervalSeconds = .2f,
+                        },
+                    },
                     compatiblePlantIds = new[]
                     {
                         BattleContentIds.Plants.Pea, BattleContentIds.Plants.Watermelon, BattleContentIds.Plants.Banana,
@@ -113,8 +128,17 @@ namespace FruitDefense.Content
                 {
                     id = BattleContentIds.Equipment.Ice,
                     displayName = "\u51b0\u5757",
-                    skillIds = new[] { BattleContentIds.Skills.IceOnHit },
-                    statusIds = new[] { BattleContentIds.Statuses.IceSlow, BattleContentIds.Statuses.IceFreeze },
+                    skillIds = new[] { BattleContentIds.Skills.IceOnHit, BattleContentIds.Skills.IceProducerOpening },
+                    statusIds = new[]
+                    {
+                        BattleContentIds.Statuses.IceSlow, BattleContentIds.Statuses.IceCount,
+                        BattleContentIds.Statuses.IceFreeze,
+                    },
+                    grants = new[]
+                    {
+                        new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.IceOnHit, requiredPlantTag = "plant.damage" },
+                        new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.IceProducerOpening, requiredPlantTag = "plant.producer" },
+                    },
                     compatiblePlantIds = (string[])AllPlants.Clone(),
                 },
                 new EquipmentDefinitionDto
@@ -123,6 +147,20 @@ namespace FruitDefense.Content
                     displayName = "\u8fa3\u6912",
                     skillIds = new[] { BattleContentIds.Skills.ChiliOnHit },
                     statusIds = new[] { BattleContentIds.Statuses.ChiliBurn },
+                    grants = new[]
+                    {
+                        new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.ChiliOnHit, requiredPlantTag = "plant.damage" },
+                    },
+                    modifiers = new[]
+                    {
+                        new SkillModifierDefinitionDto
+                        {
+                            id = "modifier.chili.producer-resource",
+                            requiredPlantTag = "plant.producer",
+                            targetSkillTag = "skill.producer",
+                            resourceAmountDelta = 1,
+                        },
+                    },
                     compatiblePlantIds = (string[])AllPlants.Clone(),
                 },
             };
@@ -132,10 +170,29 @@ namespace FruitDefense.Content
         {
             return new[]
             {
-                Skill(BattleContentIds.Skills.PeaAttack, "trigger.cooldown", "target.front", BattleContentIds.Projectiles.Pea, string.Empty, 1f, 1f),
-                Skill(BattleContentIds.Skills.WatermelonAttack, "trigger.cooldown", "target.front", BattleContentIds.Projectiles.Watermelon, string.Empty, 2.2f, 1f),
-                Skill(BattleContentIds.Skills.BananaAttack, "trigger.cooldown", "target.line", BattleContentIds.Projectiles.Banana, string.Empty, 1.6f, 1f),
-                Skill(BattleContentIds.Skills.DurianAttack, "trigger.cooldown", "target.area", string.Empty, string.Empty, 1.8f, 1f),
+                ProjectileSkill(BattleContentIds.Skills.PeaAttack, BattleContentIds.Projectiles.Pea, 1f, .22f,
+                    BattleContentIds.Visuals.Pea, "skill.ranged.projectile"),
+                ProjectileSkill(BattleContentIds.Skills.WatermelonAttack, BattleContentIds.Projectiles.Watermelon, 2.2f, .32f,
+                    BattleContentIds.Visuals.Watermelon, "skill.ranged.projectile"),
+                ProjectileSkill(BattleContentIds.Skills.BananaAttack, BattleContentIds.Projectiles.Banana, 1.6f, .22f,
+                    BattleContentIds.Visuals.Banana, "skill.ranged.projectile"),
+                new SkillDefinitionDto
+                {
+                    id = BattleContentIds.Skills.DurianAttack,
+                    triggerId = "trigger.cooldown",
+                    targetId = "target.area",
+                    cooldownSeconds = 1.8f,
+                    damageMultiplier = 1f,
+                    actionSeconds = .7f,
+                    visualId = BattleContentIds.Visuals.Durian,
+                    cueId = BattleContentIds.Cues.DurianDrop,
+                    tags = new[] { "skill.damage", "skill.area", "skill.melee" },
+                    effects = new[]
+                    {
+                        Effect("effect.damage", magnitude: 1f, radius: 18f),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.DurianDrop),
+                    },
+                },
                 new SkillDefinitionDto
                 {
                     id = BattleContentIds.Skills.SunflowerProduce,
@@ -144,36 +201,96 @@ namespace FruitDefense.Content
                     cooldownSeconds = 10f,
                     damageMultiplier = 0f,
                     resourceAmount = 1,
+                    actionSeconds = .55f,
+                    visualId = BattleContentIds.Visuals.Sunflower,
+                    cueId = BattleContentIds.Cues.SunBurst,
+                    tags = new[] { "skill.producer" },
+                    effects = new[]
+                    {
+                        Effect("effect.grant-resource", resource: 1),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.SunBurst),
+                    },
                 },
                 new SkillDefinitionDto
                 {
-                    id = BattleContentIds.Skills.GatlingBurst,
-                    triggerId = "trigger.attack",
+                    id = BattleContentIds.Skills.IceOnHit,
+                    triggerId = "trigger.after-damage",
                     targetId = "target.event",
                     cooldownSeconds = 0f,
-                    damageMultiplier = 1f,
-                    burstCount = 4,
-                    burstIntervalSeconds = .2f,
+                    damageMultiplier = 0f,
+                    tags = new[] { "skill.equipment", "skill.on-hit" },
+                    cueId = BattleContentIds.Cues.IceImpact,
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceSlow),
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceCount),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.IceImpact),
+                    },
                 },
-                Skill(BattleContentIds.Skills.IceOnHit, "trigger.on-hit", "target.event", string.Empty,
-                    BattleContentIds.Statuses.IceSlow, 0f, 0f),
-                Skill(BattleContentIds.Skills.ChiliOnHit, "trigger.on-hit", "target.event", string.Empty,
-                    BattleContentIds.Statuses.ChiliBurn, 0f, .2f),
+                new SkillDefinitionDto
+                {
+                    id = BattleContentIds.Skills.IceProducerOpening,
+                    triggerId = "trigger.wave-first-spawned",
+                    targetId = "target.all-enemies",
+                    cooldownSeconds = 0f,
+                    damageMultiplier = 0f,
+                    actionSeconds = .55f,
+                    tags = new[] { "skill.equipment", "skill.producer" },
+                    cueId = BattleContentIds.Cues.IceImpact,
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceSlow),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.IceImpact),
+                    },
+                },
+                new SkillDefinitionDto
+                {
+                    id = BattleContentIds.Skills.ChiliOnHit,
+                    triggerId = "trigger.after-damage",
+                    targetId = "target.event",
+                    cooldownSeconds = 0f,
+                    damageMultiplier = 0f,
+                    tags = new[] { "skill.equipment", "skill.on-hit" },
+                    cueId = BattleContentIds.Cues.ChiliImpact,
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.ChiliBurn, magnitude: .2f),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.ChiliImpact),
+                    },
+                },
             };
         }
 
-        private static SkillDefinitionDto Skill(string id, string triggerId, string targetId, string projectileId,
-            string statusId, float cooldown, float damageMultiplier)
+        private static SkillDefinitionDto ProjectileSkill(string id, string projectileId, float cooldown,
+            float actionSeconds, string visualId, string tag)
         {
             return new SkillDefinitionDto
             {
                 id = id,
-                triggerId = triggerId,
-                targetId = targetId,
+                triggerId = "trigger.cooldown",
+                targetId = projectileId == BattleContentIds.Projectiles.Banana ? "target.line" : "target.front",
+                projectileId = projectileId,
+                cooldownSeconds = cooldown,
+                damageMultiplier = 1f,
+                actionSeconds = actionSeconds,
+                visualId = visualId,
+                tags = new[] { tag, "skill.damage" },
+                effects = new[] { Effect("effect.launch-projectile", projectileId: projectileId) },
+            };
+        }
+
+        private static SkillEffectDefinitionDto Effect(string kindId, string projectileId = "", string statusId = "",
+            float magnitude = 1f, float radius = 0f, int resource = 0, string cueId = "")
+        {
+            return new SkillEffectDefinitionDto
+            {
+                kindId = kindId,
                 projectileId = projectileId,
                 statusId = statusId,
-                cooldownSeconds = cooldown,
-                damageMultiplier = damageMultiplier,
+                magnitude = magnitude,
+                radiusLegacyUnits = radius,
+                resourceAmount = resource,
+                cueId = cueId,
             };
         }
 
@@ -184,26 +301,32 @@ namespace FruitDefense.Content
                 new ProjectileDefinitionDto
                 {
                     id = BattleContentIds.Projectiles.Pea,
-                    travelMode = "travel.homing",
+                    travelMode = "travel.tracking",
                     speedLegacyUnits = 65f,
                     hitRadiusLegacyUnits = 2.25f,
+                    visualId = BattleContentIds.Visuals.Pea,
+                    impactCueId = BattleContentIds.Cues.PeaImpact,
                 },
                 new ProjectileDefinitionDto
                 {
                     id = BattleContentIds.Projectiles.Watermelon,
-                    travelMode = "travel.arc",
+                    travelMode = "travel.timed-arc",
                     flightSeconds = .4f,
                     blastRadiusLegacyUnits = 7f,
                     hitRadiusLegacyUnits = 2.25f,
+                    visualId = BattleContentIds.Visuals.Watermelon,
+                    impactCueId = BattleContentIds.Cues.WatermelonBlast,
                 },
                 new ProjectileDefinitionDto
                 {
                     id = BattleContentIds.Projectiles.Banana,
-                    travelMode = "travel.returning-line",
+                    travelMode = "travel.linear-return",
                     speedLegacyUnits = 48f,
                     rangeMultiplier = 1.5f,
                     hitRadiusLegacyUnits = 2.25f,
                     maxHitsPerTarget = 2,
+                    visualId = BattleContentIds.Visuals.Banana,
+                    impactCueId = BattleContentIds.Cues.BananaHit,
                 },
             };
         }
@@ -215,25 +338,51 @@ namespace FruitDefense.Content
                 new StatusDefinitionDto
                 {
                     id = BattleContentIds.Statuses.IceSlow,
+                    kindId = "status-kind.slow",
                     stackingMode = "stacking.refresh",
                     durationSeconds = 2f,
                     magnitude = .55f,
+                    cueId = BattleContentIds.Cues.IceImpact,
                 },
                 new StatusDefinitionDto
                 {
                     id = BattleContentIds.Statuses.IceFreeze,
-                    stackingMode = "stacking.proc-after-hits",
+                    kindId = "status-kind.freeze",
+                    stackingMode = "stacking.refresh",
                     durationSeconds = 1f,
                     magnitude = 1f,
+                    cueId = BattleContentIds.Cues.IceImpact,
+                },
+                new StatusDefinitionDto
+                {
+                    id = BattleContentIds.Statuses.IceCount,
+                    kindId = "status-kind.hit-count",
+                    stackingMode = "stacking.proc-after-hits",
+                    durationSeconds = 99999f,
+                    magnitude = 1f,
+                    maxStacks = 5,
                     hitsToProc = 5,
+                    procStatusId = BattleContentIds.Statuses.IceFreeze,
+                    cueId = BattleContentIds.Cues.IceImpact,
                 },
                 new StatusDefinitionDto
                 {
                     id = BattleContentIds.Statuses.ChiliBurn,
+                    kindId = "status-kind.burn",
                     stackingMode = "stacking.independent",
                     durationSeconds = 3f,
+                    tickIntervalSeconds = .05f,
                     magnitude = .2f,
                     maxStacks = 3,
+                    cueId = BattleContentIds.Cues.ChiliImpact,
+                },
+                new StatusDefinitionDto
+                {
+                    id = BattleContentIds.Statuses.HitStun,
+                    kindId = "status-kind.stun",
+                    stackingMode = "stacking.refresh",
+                    durationSeconds = .1f,
+                    magnitude = 1f,
                 },
             };
         }
