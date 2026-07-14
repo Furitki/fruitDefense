@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FruitDefense.Core
 {
-    public sealed class GameSimulation
+    public sealed partial class GameSimulation
     {
         public const float FixedStepSeconds = .05f;
         public const float MaxFrameDeltaSeconds = .25f;
@@ -33,6 +33,7 @@ namespace FruitDefense.Core
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
             Map = map ?? GameConfig.DefaultBattlefield;
+            MapId = ResolveMapIdentity(Map, map == null || ReferenceEquals(Map, GameConfig.DefaultBattlefield));
             string mapReason;
             if (!Map.Validate(out mapReason)) throw new InvalidOperationException("Invalid battlefield map: " + mapReason);
             _random = new DeterministicRandom(seed);
