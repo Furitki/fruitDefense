@@ -134,6 +134,8 @@ namespace FruitDefense.Editor
                 && uiFont.HasCharacter('防'), "bundled WebGL UI font covers representative Chinese copy");
             foreach (var glyph in "立即开始下一波继续游戏重新")
                 Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers session-control glyph: " + glyph);
+            foreach (var glyph in "关卡选择成长设置默认返回大厅战斗结算胜利失败剩余生命")
+                Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers shell glyph: " + glyph);
             Assert(FruitDefenseGame.ValidatePortraitLayout(out var portraitLayoutReason),
                 "portrait layout geometry: " + portraitLayoutReason);
             Assert(FruitDefenseGame.ValidateInspectionOnlyInteraction(out var inspectionReason),
