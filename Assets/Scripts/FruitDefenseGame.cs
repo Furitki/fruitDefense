@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FruitDefense.App;
+using FruitDefense.Battle;
 using FruitDefense.Core;
+using FruitDefense.Platform;
 using UnityEngine;
 
 namespace FruitDefense
 {
-    public sealed class FruitDefenseGame : MonoBehaviour
+    public sealed class FruitDefenseGame : MonoBehaviour, IBattleSessionHost
     {
+        public const string SessionNotInitialized = "battle-session-not-initialized";
+        public const string ResultAlreadySubmitted = "battle-result-already-submitted";
+
         private enum DragPayloadType { Plant, Weapon, Pot }
         private enum DropTargetType { None, Pot, Nursery, Plant, Expansion }
         private enum TempSprite
@@ -85,6 +91,15 @@ namespace FruitDefense
         private static readonly Rect ModalRect = new Rect(36f, 300f, 330f, 244f);
 
         private GameSimulation _game;
+        private BattleLaunchRequest _currentRequest;
+        private IAppNavigator _navigator;
+        private IBattleResultSink _resultSink;
+        private AppBootstrap _appBootstrap;
+        private bool _hasInitialized;
+        private bool _isInitialized;
+        private bool _hasEnteredBattleRoute;
+        private bool _resultSubmitted;
+        private bool _sessionDisposed;
         private Font _font;
         private Texture2D _tempArtAtlas;
         private Texture2D _combatVfxAtlas;
@@ -110,6 +125,11 @@ namespace FruitDefense
         private float _nurseryRollDisplayUntil;
 
         public GameSimulation Simulation { get { return _game; } }
+        public BattleLaunchRequest CurrentRequest { get { return _currentRequest; } }
+        public bool IsInitialized { get { return _isInitialized; } }
+        public bool HasSubmittedResult { get { return _resultSubmitted; } }
+        public string LastResultSubmissionError { get; private set; } = string.Empty;
+        public static int ActiveSessionHostCount { get; private set; }
 
         public static bool ValidateInspectionOnlyInteraction(out string reason)
         {
@@ -336,7 +356,7 @@ namespace FruitDefense
                 ReturnPulseUntil = 5f,
                 NurseryRollDisplayUntil = 5f,
             };
-            ResetFullRun(restartSimulation, presentation);
+            ResetFullRun(restartSimulation, presentation, 9103);
             if (!presentation.IsClean()
                 || restartSimulation.State.Phase != GamePhase.Ready || restartSimulation.State.Paused
                 || restartSimulation.State.WaveIndex != 0 || restartSimulation.State.Sun != 10
@@ -364,16 +384,33 @@ namespace FruitDefense
                 : string.Empty;
         }
 
+        // Temporary compatibility path for the current single Main scene. Once the final Bootstrap
+        // scene is active it owns construction and this installer exits without creating a host.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureBootstrap()
+        private static void InstallStandaloneCompatibilityHost()
         {
-            if (FindObjectOfType<FruitDefenseGame>() != null) return;
-            new GameObject("FruitDefenseGame").AddComponent<FruitDefenseGame>();
+            if (AppBootstrap.Instance != null) return;
+
+            var host = FindAnyObjectByType<FruitDefenseGame>();
+            if (host == null)
+                host = new GameObject("FruitDefenseGame-StandaloneCompatibility").AddComponent<FruitDefenseGame>();
+            if (host.IsInitialized) return;
+
+            var navigator = new AppNavigator();
+            if (navigator.TryBeginTransition(AppRoute.Battle, out _))
+                navigator.TryCompleteTransition(out _);
+            var request = new BattleLaunchRequest(
+                "standalone-" + Guid.NewGuid().ToString("N"),
+                "orchard-01",
+                0,
+                "builtin");
+            var result = host.Initialize(request, navigator, new StandaloneCompatibilityResultSink());
+            if (!result.Success)
+                Debug.LogError("Standalone battle compatibility initialization failed: " + result.ErrorCode);
         }
 
         private void Awake()
         {
-            DontDestroyOnLoad(gameObject);
             Screen.orientation = ScreenOrientation.Portrait;
             _font = Resources.Load<Font>("Fonts/NotoSansSC-UI");
             if (_font == null)
@@ -395,15 +432,208 @@ namespace FruitDefense
                 _combatVfxAtlas.filterMode = FilterMode.Bilinear;
                 _combatVfxAtlas.wrapMode = TextureWrapMode.Clamp;
             }
-            _game = new GameSimulation();
-            _projection = new BattlefieldProjection(_game.Map, BoardRect);
             BuildStyles();
             Application.targetFrameRate = 60;
         }
 
         private void OnDestroy()
         {
+            DisposeSession();
             if (_attackRangeTexture != null) Destroy(_attackRangeTexture);
+            _attackRangeTexture = null;
+            _font = null;
+            _tempArtAtlas = null;
+            _combatVfxAtlas = null;
+        }
+
+        public BattleSessionInitializationResult Initialize(
+            BattleLaunchRequest request,
+            IAppNavigator navigator,
+            IBattleResultSink resultSink,
+            BattlefieldMapDefinition map = null)
+        {
+            if (_hasInitialized)
+                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.AlreadyInitialized);
+            if (request == null)
+                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.InvalidRequest);
+            if (!request.TryValidate(out var requestError))
+                return BattleSessionInitializationResult.Failed(requestError);
+            if (navigator == null)
+                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.NavigatorRequired);
+            if (resultSink == null)
+                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.ResultSinkRequired);
+
+            GameSimulation simulation;
+            try
+            {
+                simulation = new GameSimulation(request.Seed, map);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.SimulationConstructionFailed);
+            }
+
+            _hasInitialized = true;
+            _isInitialized = true;
+            _sessionDisposed = false;
+            _currentRequest = request;
+            _navigator = navigator;
+            _resultSink = resultSink;
+            _game = simulation;
+            _projection = new BattlefieldProjection(_game.Map, BoardRect);
+            _hasEnteredBattleRoute = navigator.CurrentRoute == AppRoute.Battle;
+            _navigator.RouteChanged += OnAppRouteChanged;
+
+            _appBootstrap = AppBootstrap.Instance;
+            if (_appBootstrap != null)
+            {
+                _appBootstrap.VisibilityChanged += HandlePlatformVisibility;
+                HandlePlatformVisibility(_appBootstrap.CurrentVisibility);
+            }
+
+            ActiveSessionHostCount++;
+            return BattleSessionInitializationResult.Succeeded();
+        }
+
+        public void HandlePlatformVisibility(PlatformVisibility visibility)
+        {
+            if (!_isInitialized || _game == null) return;
+            if (visibility != PlatformVisibility.Background) return;
+
+            _game.State.Paused = true;
+            _game.ResetFrameAccumulator();
+            CancelTransientInteraction();
+        }
+
+        public bool RestartCurrentSession(out string errorCode)
+        {
+            if (!_isInitialized || _game == null || _currentRequest == null)
+            {
+                errorCode = SessionNotInitialized;
+                return false;
+            }
+            if (_resultSubmitted)
+            {
+                errorCode = ResultAlreadySubmitted;
+                return false;
+            }
+
+            var presentation = CaptureRestartPresentation();
+            ResetFullRun(_game, presentation, _currentRequest.Seed);
+            ApplyRestartPresentation(presentation);
+            errorCode = string.Empty;
+            return true;
+        }
+
+        public bool TrySubmitTerminalResult()
+        {
+            if (!_isInitialized || _game == null || _currentRequest == null || _resultSubmitted)
+                return false;
+
+            var phase = _game.State.Phase;
+            if (phase != GamePhase.Victory && phase != GamePhase.Defeat) return false;
+
+            _resultSubmitted = true;
+            var result = new BattleResult(
+                _currentRequest.SessionId,
+                _currentRequest.LevelId,
+                _currentRequest.Seed,
+                phase == GamePhase.Victory ? BattleOutcome.Victory : BattleOutcome.Defeat,
+                _game.State.WaveIndex,
+                _game.State.Lives);
+            bool accepted;
+            string errorCode;
+            try
+            {
+                accepted = _resultSink.TrySubmitResult(result, out errorCode);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                accepted = false;
+                errorCode = "battle-result-sink-threw";
+            }
+
+            if (!accepted)
+            {
+                LastResultSubmissionError = string.IsNullOrWhiteSpace(errorCode)
+                    ? "battle-result-submission-failed"
+                    : errorCode;
+                Debug.LogWarning("Battle result submission failed: " + LastResultSubmissionError);
+            }
+            else
+            {
+                LastResultSubmissionError = string.Empty;
+            }
+            return true;
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (_appBootstrap == null)
+                HandlePlatformVisibility(paused ? PlatformVisibility.Background : PlatformVisibility.Foreground);
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (_appBootstrap == null)
+                HandlePlatformVisibility(hasFocus ? PlatformVisibility.Foreground : PlatformVisibility.Background);
+        }
+
+        private void OnAppRouteChanged(AppRoute route)
+        {
+            if (route == AppRoute.Battle)
+            {
+                _hasEnteredBattleRoute = true;
+                return;
+            }
+
+            if (_hasEnteredBattleRoute)
+                Destroy(gameObject);
+        }
+
+        public void DisposeSession()
+        {
+            if (_sessionDisposed) return;
+            _sessionDisposed = true;
+
+            if (_navigator != null)
+                _navigator.RouteChanged -= OnAppRouteChanged;
+            if (_appBootstrap != null)
+                _appBootstrap.VisibilityChanged -= HandlePlatformVisibility;
+            if (_isInitialized && ActiveSessionHostCount > 0)
+                ActiveSessionHostCount--;
+
+            _isInitialized = false;
+            _navigator = null;
+            _resultSink = null;
+            _appBootstrap = null;
+            _currentRequest = null;
+            _game = null;
+            _projection = null;
+            CancelTransientInteraction();
+            ResetInteractionState();
+        }
+
+        private void CancelTransientInteraction()
+        {
+            if (GUIUtility.hotControl == _dragControlId) GUIUtility.hotControl = 0;
+            _drag = null;
+            _dragControlId = 0;
+            _selectedWeapon = WeaponKind.None;
+            _potToolSelected = false;
+        }
+
+        private sealed class StandaloneCompatibilityResultSink : IBattleResultSink
+        {
+            public bool TrySubmitResult(BattleResult result, out string errorCode)
+            {
+                Debug.Log("Standalone battle completed: " + result.Outcome);
+                errorCode = string.Empty;
+                return true;
+            }
         }
 
         private void BuildStyles()
@@ -435,15 +665,18 @@ namespace FruitDefense
 
         private void Update()
         {
+            if (!_isInitialized || _game == null) return;
             if (Input.GetKeyDown(KeyCode.Space)) _game.TogglePause();
             if (Input.GetKeyDown(KeyCode.Alpha1)) _game.SetSpeed(1);
             if (Input.GetKeyDown(KeyCode.Alpha2)) _game.SetSpeed(2);
             _game.Tick(Time.unscaledDeltaTime);
+            TrySubmitTerminalResult();
             if (_inspectedPlantId >= 0 && _game.PlantById(_inspectedPlantId) == null) _inspectedPlantId = -1;
         }
 
         public void ConfigureAcceptanceState(string stateName)
         {
+            if (!_isInitialized || _game == null) return;
             if (!Application.absoluteURL.Contains("acceptance=1")) return;
             _game = new GameSimulation(20260714);
             _projection = new BattlefieldProjection(_game.Map, BoardRect);
@@ -526,6 +759,7 @@ namespace FruitDefense
 
         private void OnGUI()
         {
+            if (!_isInitialized || _game == null) return;
             var safeArea = Screen.safeArea;
             if (safeArea.width <= 0f || safeArea.height <= 0f)
                 safeArea = new Rect(0f, 0f, Screen.width, Screen.height);
@@ -1387,9 +1621,8 @@ namespace FruitDefense
 
         private void RestartRun()
         {
-            var presentation = CaptureRestartPresentation();
-            ResetFullRun(_game, presentation);
-            ApplyRestartPresentation(presentation);
+            if (!RestartCurrentSession(out var errorCode))
+                SetStatus(false, errorCode);
         }
 
         private void ResetInteractionState()
@@ -1428,9 +1661,12 @@ namespace FruitDefense
             _nurseryRollDisplayUntil = presentation.NurseryRollDisplayUntil;
         }
 
-        private static void ResetFullRun(GameSimulation simulation, RestartPresentationState presentation)
+        private static void ResetFullRun(
+            GameSimulation simulation,
+            RestartPresentationState presentation,
+            int seed)
         {
-            simulation.Reset();
+            simulation.Reset(seed);
             presentation.InspectedPlantId = -1;
             presentation.SelectedWeapon = WeaponKind.None;
             presentation.PotToolSelected = false;
