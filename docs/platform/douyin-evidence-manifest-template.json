@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "platform": "douyin-minigame",
+  "toolchainPinFile": "douyin-toolchain-pin.json",
+  "gitRevision": null,
+  "rows": {
+    "toolchain": {
+      "status": "Yellow",
+      "checks": {
+        "unityCompile": false,
+        "webglBuild": false,
+        "douyinConversion": false,
+        "cleanRetry": false
+      },
+      "artifacts": []
+    },
+    "simulator": {
+      "status": "Yellow",
+      "checks": {
+        "launch": false,
+        "touch": false,
+        "audio": false,
+        "hideShow": false,
+        "httpsDomain": false,
+        "cache": false,
+        "updateManager": false,
+        "remoteContent": false
+      },
+      "artifacts": []
+    },
+    "android": {
+      "status": "Yellow",
+      "deviceClass": null,
+      "osVersion": null,
+      "hostAppVersion": null,
+      "checks": {
+        "coldStart": false,
+        "warmStart": false,
+        "touch": false,
+        "audio": false,
+        "hideShow": false,
+        "httpsAndCache": false,
+        "updateManager": false,
+        "completeBattle": false,
+        "thirtyMinuteStability": false
+      },
+      "artifacts": []
+    },
+    "ios": {
+      "status": "Yellow",
+      "deviceClass": null,
+      "osVersion": null,
+      "hostAppVersion": null,
+      "checks": {
+        "coldStart": false,
+        "warmStart": false,
+        "touch": false,
+        "audio": false,
+        "hideShow": false,
+        "httpsAndCache": false,
+        "updateManager": false,
+        "completeBattle": false,
+        "thirtyMinuteStability": false
+      },
+      "artifacts": []
+    },
+    "remoteContent": {
+      "status": "Yellow",
+      "checks": {
+        "addressablesProvider": false,
+        "ttAssetBundleSupportedHost": false,
+        "unityWebRequestFallback": false,
+        "cacheDomainConfigured": false,
+        "unloadAndMemoryObserved": false
+      },
+      "artifacts": []
+    },
+    "wasmSplitting": {
+      "status": "Yellow",
+      "checks": {
+        "bootstrap": false,
+        "lobby": false,
+        "firstBattle": false,
+        "hideShow": false,
+        "updateUi": false,
+        "androidCollection": false,
+        "iosCollection": false
+      },
+      "artifacts": []
+    }
+  },
+  "completedAtUtc": null
+}

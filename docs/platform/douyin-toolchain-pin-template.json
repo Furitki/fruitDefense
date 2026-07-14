@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "validationStatus": "unvalidated",
+  "unityEditor": "6000.3.19f1",
+  "ttsdk": null,
+  "starkUnityTools": null,
+  "douyinDeveloperTools": null,
+  "douyinBaseLibrary": null,
+  "addressables": null,
+  "node": null,
+  "webglConverter": null,
+  "wasmSplitCli": null,
+  "androidHostApp": null,
+  "iosHostApp": null,
+  "evidence": {
+    "unityCompileLogSha256": null,
+    "webglBuildLogSha256": null,
+    "conversionLogSha256": null,
+    "convertedProjectManifestSha256": null,
+    "validatedAtUtc": null
+  }
+}
