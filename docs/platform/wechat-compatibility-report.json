@@ -1,0 +1,179 @@
+﻿{
+    "schemaVersion":  1,
+    "platform":  "wechat-minigame",
+    "generatedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+    "overallStatus":  "Yellow",
+    "project":  {
+                    "unityVersion":  "6000.3.19f1",
+                    "gitRevision":  "fb9b02a"
+                },
+    "officialAdapterCandidate":  {
+                                     "repository":  "https://github.com/wechat-miniprogram/minigame-tuanjie-transform-sdk.git",
+                                     "observedCommit":  "ed4ad28f433c6b52b5fd3f22a6fa155a0c98c228",
+                                     "changelogVersion":  "0.1.33",
+                                     "packageManifestVersion":  "0.1.1",
+                                     "retrievedAtUtc":  "2026-07-15T00:00:00Z"
+                                 },
+    "pinnedVersions":  {
+                           "wxsdkReference":  null,
+                           "wxsdkCommit":  null,
+                           "developerTools":  null,
+                           "wechatClient":  null,
+                           "baseLibrary":  null,
+                           "hostBaseline":  null
+                       },
+    "credentialPresence":  {
+                               "appId":  false,
+                               "developerSession":  false,
+                               "uploadPrivateKey":  false
+                           },
+    "artifactSizes":  {
+                          "webglBuildBytes":  8066271,
+                          "convertedMiniGameBytes":  0
+                      },
+    "officialLimits":  {
+                           "mainCodePackageMb":  null,
+                           "totalCodePackageMb":  null,
+                           "singleSubpackageMb":  null,
+                           "firstResourcePackageMb":  30,
+                           "evidence":  "Official SDK changelog notes a 30 MB first-resource-package total for the subpackage mode on 2024-12-18; current code-package limits remain unverified."
+                       },
+    "checks":  [
+                   {
+                       "id":  "unity-editor",
+                       "status":  "Green",
+                       "blocking":  true,
+                       "evidence":  "Unity 6000.3.19f1 is installed through Unity Hub.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Retain this exact editor until an evidenced platform matrix approves a change."
+                   },
+                   {
+                       "id":  "unity-webgl-module",
+                       "status":  "Green",
+                       "blocking":  true,
+                       "evidence":  "The WebGL playback-engine module is installed for the project editor.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Keep the module installed on developer and build machines."
+                   },
+                   {
+                       "id":  "node-runtime",
+                       "status":  "Green",
+                       "blocking":  false,
+                       "evidence":  "Node v24.14.0 is available for release tooling.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Pin a project tool version only if the selected converter or CI workflow requires it."
+                   },
+                   {
+                       "id":  "wxsdk-converter",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No WXSDK or WeChat Unity conversion dependency is installed.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Review and pin an official adapter commit in an isolated branch."
+                   },
+                   {
+                       "id":  "remote-content-provider",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "Addressables is not installed and no WXAssetBundle delivery evidence exists.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Select the content provider only after the official converter compatibility check."
+                   },
+                   {
+                       "id":  "wechat-developer-tools",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "WeChat Developer Tools were not found in the configured or standard installation categories.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Install a reviewed Stable release and set WECHAT_DEVELOPER_TOOLS if needed."
+                   },
+                   {
+                       "id":  "wechat-account",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "Required AppID or developer-session presence flags are missing.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Provide authorized platform access without committing credentials."
+                   },
+                   {
+                       "id":  "baseline-webgl-build",
+                       "status":  "Green",
+                       "blocking":  true,
+                       "evidence":  "A WebGL build exists and contains 8066271 bytes before WeChat conversion.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Regenerate after relevant P0 integration changes and before conversion."
+                   },
+                   {
+                       "id":  "wechat-conversion",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No converted WeChat Mini Game artifact has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Convert the pinned Unity export with the reviewed official SDK/toolchain."
+                   },
+                   {
+                       "id":  "wechat-simulator",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No Stable Developer Tools simulator evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Verify launch, input, audio, lifecycle, HTTPS/cache, UpdateManager, remote content, subpackages, and Wasm splitting."
+                   },
+                   {
+                       "id":  "android-device",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No Android physical-device matrix has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Run cold/warm launch, battle, lifecycle, update, cache, and 30-minute stability."
+                   },
+                   {
+                       "id":  "ios-device",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No iOS physical-device matrix has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Run cold/warm launch, battle, lifecycle, update, cache, and 30-minute stability."
+                   },
+                   {
+                       "id":  "code-package-update",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No wx.getUpdateManager callback and applyUpdate restart evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Exercise update check, download, ready, failure, and lobby/settlement restart behavior."
+                   },
+                   {
+                       "id":  "remote-content-cache",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No WXAssetBundle/Addressables/UnityWebRequest cold-cache, warm-cache, and version-fallback evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Exercise target, last-known-good, and bundled content paths on both device families."
+                   },
+                   {
+                       "id":  "ordinary-subpackages",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No wx.loadSubpackage package-layout and loading evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Verify subpackage configuration and loading separately from content hot update."
+                   },
+                   {
+                       "id":  "wasm-splitting",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No Wasm-splitting startup and completeness evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Exercise Bootstrap, Lobby, first battle, lifecycle, and update UI coverage on Android and iOS."
+                   },
+                   {
+                       "id":  "stability",
+                       "status":  "Yellow",
+                       "blocking":  true,
+                       "evidence":  "No 30-minute Android and iOS stability evidence has been recorded.",
+                       "observedAtUtc":  "2026-07-14T18:55:54.6247143+00:00",
+                       "nextAction":  "Record crashes, OOM, memory behavior, and repeated-battle results on both systems."
+                   }
+               ]
+}
