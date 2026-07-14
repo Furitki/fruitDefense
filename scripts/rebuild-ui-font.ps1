@@ -1,5 +1,5 @@
 param(
-  [string]$SourceUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf',
+  [string]$SourceUrl = 'https://raw.githubusercontent.com/google/fonts/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf',
   [string]$OutputPath = 'Assets/Resources/Fonts/NotoSansSC-UI.ttf',
   [string]$FontToolsVersion = '4.63.0'
 )
