@@ -21,6 +21,7 @@ namespace FruitDefense.Content
         public float attackIntervalSeconds;
         public float rangeLegacyUnits;
         public string[] skillIds = Array.Empty<string>();
+        public string[] tags = Array.Empty<string>();
         public string projectileId = string.Empty;
         public string[] allowedEquipmentIds = Array.Empty<string>();
     }
@@ -44,6 +45,27 @@ namespace FruitDefense.Content
         public string[] skillIds = Array.Empty<string>();
         public string[] statusIds = Array.Empty<string>();
         public string[] compatiblePlantIds = Array.Empty<string>();
+        public EquipmentSkillGrantDto[] grants = Array.Empty<EquipmentSkillGrantDto>();
+        public SkillModifierDefinitionDto[] modifiers = Array.Empty<SkillModifierDefinitionDto>();
+    }
+
+    [Serializable]
+    public sealed class EquipmentSkillGrantDto
+    {
+        public string skillId = string.Empty;
+        public string requiredPlantTag = string.Empty;
+    }
+
+    [Serializable]
+    public sealed class SkillModifierDefinitionDto
+    {
+        public string id = string.Empty;
+        public string requiredPlantTag = string.Empty;
+        public string targetSkillTag = string.Empty;
+        public bool allowMultipleMatches;
+        public int burstCountOverride;
+        public float burstIntervalSeconds;
+        public int resourceAmountDelta;
     }
 
     [Serializable]
@@ -59,6 +81,23 @@ namespace FruitDefense.Content
         public int resourceAmount;
         public int burstCount = 1;
         public float burstIntervalSeconds;
+        public string[] tags = Array.Empty<string>();
+        public SkillEffectDefinitionDto[] effects = Array.Empty<SkillEffectDefinitionDto>();
+        public string visualId = string.Empty;
+        public string cueId = string.Empty;
+        public float actionSeconds;
+    }
+
+    [Serializable]
+    public sealed class SkillEffectDefinitionDto
+    {
+        public string kindId = string.Empty;
+        public string projectileId = string.Empty;
+        public string statusId = string.Empty;
+        public float magnitude = 1f;
+        public float radiusLegacyUnits;
+        public int resourceAmount;
+        public string cueId = string.Empty;
     }
 
     [Serializable]
@@ -72,6 +111,8 @@ namespace FruitDefense.Content
         public float rangeMultiplier = 1f;
         public float hitRadiusLegacyUnits;
         public int maxHitsPerTarget = 1;
+        public string visualId = string.Empty;
+        public string impactCueId = string.Empty;
     }
 
     [Serializable]
@@ -84,6 +125,9 @@ namespace FruitDefense.Content
         public float magnitude;
         public int maxStacks = 1;
         public int hitsToProc;
+        public string kindId = string.Empty;
+        public string procStatusId = string.Empty;
+        public string cueId = string.Empty;
     }
 
     [Serializable]

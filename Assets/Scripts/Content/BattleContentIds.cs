@@ -43,6 +43,7 @@ namespace FruitDefense.Content
             public const string SunflowerProduce = "skill.plant.sunflower.produce";
             public const string GatlingBurst = "skill.equipment.gatling.burst";
             public const string IceOnHit = "skill.equipment.ice.on-hit";
+            public const string IceProducerOpening = "skill.equipment.ice.producer-opening";
             public const string ChiliOnHit = "skill.equipment.chili.on-hit";
         }
 
@@ -57,7 +58,31 @@ namespace FruitDefense.Content
         {
             public const string IceSlow = "status.ice.slow";
             public const string IceFreeze = "status.ice.freeze";
+            public const string IceCount = "status.ice.hit-count";
             public const string ChiliBurn = "status.chili.burn";
+            public const string HitStun = "status.combat.hit-stun";
+        }
+
+        public static class Visuals
+        {
+            public const string Pea = "visual.projectile.pea";
+            public const string Watermelon = "visual.projectile.watermelon";
+            public const string Banana = "visual.projectile.banana";
+            public const string Durian = "visual.skill.durian-drop";
+            public const string Sunflower = "visual.skill.sun-burst";
+        }
+
+        public static class Cues
+        {
+            public const string PeaImpact = "cue.impact.pea";
+            public const string WatermelonBlast = "cue.impact.watermelon";
+            public const string BananaHit = "cue.impact.banana";
+            public const string DurianDrop = "cue.skill.durian-drop";
+            public const string SunBurst = "cue.skill.sun-burst";
+            public const string GatlingMuzzle = "cue.equipment.gatling-muzzle";
+            public const string IceImpact = "cue.status.ice";
+            public const string ChiliImpact = "cue.status.chili";
+            public const string Milestone = "cue.reward.milestone";
         }
 
         public static class BattleRules

@@ -27,6 +27,10 @@ MonoBehaviour:
       rangeLegacyUnits: 44
       skillIds:
       - skill.plant.pea.attack
+      tags:
+      - plant.damage
+      - plant.ranged
+      - plant.projectile
       projectileId: projectile.pea
       allowedEquipmentIds:
       - equipment.gatling
@@ -40,6 +44,10 @@ MonoBehaviour:
       rangeLegacyUnits: 44
       skillIds:
       - skill.plant.watermelon.attack
+      tags:
+      - plant.damage
+      - plant.ranged
+      - plant.projectile
       projectileId: projectile.watermelon
       allowedEquipmentIds:
       - equipment.gatling
@@ -53,6 +61,10 @@ MonoBehaviour:
       rangeLegacyUnits: 38
       skillIds:
       - skill.plant.banana.attack
+      tags:
+      - plant.damage
+      - plant.ranged
+      - plant.projectile
       projectileId: projectile.banana
       allowedEquipmentIds:
       - equipment.gatling
@@ -66,6 +78,10 @@ MonoBehaviour:
       rangeLegacyUnits: 18
       skillIds:
       - skill.plant.durian.attack
+      tags:
+      - plant.damage
+      - plant.melee
+      - plant.area
       projectileId:
       allowedEquipmentIds:
       - equipment.ice
@@ -78,6 +94,8 @@ MonoBehaviour:
       rangeLegacyUnits: 0
       skillIds:
       - skill.plant.sunflower.produce
+      tags:
+      - plant.producer
       projectileId:
       allowedEquipmentIds:
       - equipment.ice
@@ -110,19 +128,29 @@ MonoBehaviour:
     equipment:
     - id: equipment.gatling
       displayName: "\u673A\u67AA"
-      skillIds:
-      - skill.equipment.gatling.burst
+      skillIds: []
       statusIds: []
       compatiblePlantIds:
       - plant.pea
       - plant.watermelon
       - plant.banana
+      grants: []
+      modifiers:
+      - id: modifier.gatling.burst
+        requiredPlantTag: plant.ranged
+        targetSkillTag: skill.ranged.projectile
+        allowMultipleMatches: 0
+        burstCountOverride: 4
+        burstIntervalSeconds: 0.2
+        resourceAmountDelta: 0
     - id: equipment.ice
       displayName: "\u51B0\u5757"
       skillIds:
       - skill.equipment.ice.on-hit
+      - skill.equipment.ice.producer-opening
       statusIds:
       - status.ice.slow
+      - status.ice.hit-count
       - status.ice.freeze
       compatiblePlantIds:
       - plant.pea
@@ -130,6 +158,12 @@ MonoBehaviour:
       - plant.banana
       - plant.durian
       - plant.sunflower
+      grants:
+      - skillId: skill.equipment.ice.on-hit
+        requiredPlantTag: plant.damage
+      - skillId: skill.equipment.ice.producer-opening
+        requiredPlantTag: plant.producer
+      modifiers: []
     - id: equipment.chili
       displayName: "\u8FA3\u6912"
       skillIds:
@@ -142,6 +176,17 @@ MonoBehaviour:
       - plant.banana
       - plant.durian
       - plant.sunflower
+      grants:
+      - skillId: skill.equipment.chili.on-hit
+        requiredPlantTag: plant.damage
+      modifiers:
+      - id: modifier.chili.producer-resource
+        requiredPlantTag: plant.producer
+        targetSkillTag: skill.producer
+        allowMultipleMatches: 0
+        burstCountOverride: 0
+        burstIntervalSeconds: 0
+        resourceAmountDelta: 1
     skills:
     - id: skill.plant.pea.attack
       triggerId: trigger.cooldown
@@ -153,6 +198,20 @@ MonoBehaviour:
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
+      tags:
+      - skill.ranged.projectile
+      - skill.damage
+      effects:
+      - kindId: effect.launch-projectile
+        projectileId: projectile.pea
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      visualId: visual.projectile.pea
+      cueId:
+      actionSeconds: 0.22
     - id: skill.plant.watermelon.attack
       triggerId: trigger.cooldown
       targetId: target.front
@@ -163,6 +222,20 @@ MonoBehaviour:
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
+      tags:
+      - skill.ranged.projectile
+      - skill.damage
+      effects:
+      - kindId: effect.launch-projectile
+        projectileId: projectile.watermelon
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      visualId: visual.projectile.watermelon
+      cueId:
+      actionSeconds: 0.32
     - id: skill.plant.banana.attack
       triggerId: trigger.cooldown
       targetId: target.line
@@ -173,6 +246,20 @@ MonoBehaviour:
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
+      tags:
+      - skill.ranged.projectile
+      - skill.damage
+      effects:
+      - kindId: effect.launch-projectile
+        projectileId: projectile.banana
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      visualId: visual.projectile.banana
+      cueId:
+      actionSeconds: 0.22
     - id: skill.plant.durian.attack
       triggerId: trigger.cooldown
       targetId: target.area
@@ -183,6 +270,28 @@ MonoBehaviour:
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
+      tags:
+      - skill.damage
+      - skill.area
+      - skill.melee
+      effects:
+      - kindId: effect.damage
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 18
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.skill.durian-drop
+      visualId: visual.skill.durian-drop
+      cueId: cue.skill.durian-drop
+      actionSeconds: 0.7
     - id: skill.plant.sunflower.produce
       triggerId: trigger.periodic
       targetId: target.self
@@ -193,61 +302,157 @@ MonoBehaviour:
       resourceAmount: 1
       burstCount: 1
       burstIntervalSeconds: 0
-    - id: skill.equipment.gatling.burst
-      triggerId: trigger.attack
+      tags:
+      - skill.producer
+      effects:
+      - kindId: effect.grant-resource
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 1
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.skill.sun-burst
+      visualId: visual.skill.sun-burst
+      cueId: cue.skill.sun-burst
+      actionSeconds: 0.55
+    - id: skill.equipment.ice.on-hit
+      triggerId: trigger.after-damage
       targetId: target.event
       projectileId:
       statusId:
-      cooldownSeconds: 0
-      damageMultiplier: 1
-      resourceAmount: 0
-      burstCount: 4
-      burstIntervalSeconds: 0.2
-    - id: skill.equipment.ice.on-hit
-      triggerId: trigger.on-hit
-      targetId: target.event
-      projectileId:
-      statusId: status.ice.slow
       cooldownSeconds: 0
       damageMultiplier: 0
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
-    - id: skill.equipment.chili.on-hit
-      triggerId: trigger.on-hit
-      targetId: target.event
+      tags:
+      - skill.equipment
+      - skill.on-hit
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.slow
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.hit-count
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.ice
+      visualId:
+      cueId: cue.status.ice
+      actionSeconds: 0
+    - id: skill.equipment.ice.producer-opening
+      triggerId: trigger.wave-first-spawned
+      targetId: target.all-enemies
       projectileId:
-      statusId: status.chili.burn
+      statusId:
       cooldownSeconds: 0
-      damageMultiplier: 0.2
+      damageMultiplier: 0
       resourceAmount: 0
       burstCount: 1
       burstIntervalSeconds: 0
+      tags:
+      - skill.equipment
+      - skill.producer
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.slow
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.ice
+      visualId:
+      cueId: cue.status.ice
+      actionSeconds: 0.55
+    - id: skill.equipment.chili.on-hit
+      triggerId: trigger.after-damage
+      targetId: target.event
+      projectileId:
+      statusId:
+      cooldownSeconds: 0
+      damageMultiplier: 0
+      resourceAmount: 0
+      burstCount: 1
+      burstIntervalSeconds: 0
+      tags:
+      - skill.equipment
+      - skill.on-hit
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.chili.burn
+        magnitude: 0.2
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.chili
+      visualId:
+      cueId: cue.status.chili
+      actionSeconds: 0
     projectiles:
     - id: projectile.pea
-      travelMode: travel.homing
+      travelMode: travel.tracking
       speedLegacyUnits: 65
       flightSeconds: 0
       blastRadiusLegacyUnits: 0
       rangeMultiplier: 1
       hitRadiusLegacyUnits: 2.25
       maxHitsPerTarget: 1
+      visualId: visual.projectile.pea
+      impactCueId: cue.impact.pea
     - id: projectile.watermelon
-      travelMode: travel.arc
+      travelMode: travel.timed-arc
       speedLegacyUnits: 0
       flightSeconds: 0.4
       blastRadiusLegacyUnits: 7
       rangeMultiplier: 1
       hitRadiusLegacyUnits: 2.25
       maxHitsPerTarget: 1
+      visualId: visual.projectile.watermelon
+      impactCueId: cue.impact.watermelon
     - id: projectile.banana
-      travelMode: travel.returning-line
+      travelMode: travel.linear-return
       speedLegacyUnits: 48
       flightSeconds: 0
       blastRadiusLegacyUnits: 0
       rangeMultiplier: 1.5
       hitRadiusLegacyUnits: 2.25
       maxHitsPerTarget: 2
+      visualId: visual.projectile.banana
+      impactCueId: cue.impact.banana
     statuses:
     - id: status.ice.slow
       stackingMode: stacking.refresh
@@ -256,20 +461,49 @@ MonoBehaviour:
       magnitude: 0.55
       maxStacks: 1
       hitsToProc: 0
+      kindId: status-kind.slow
+      procStatusId:
+      cueId: cue.status.ice
     - id: status.ice.freeze
-      stackingMode: stacking.proc-after-hits
+      stackingMode: stacking.refresh
       durationSeconds: 1
       tickIntervalSeconds: 0
       magnitude: 1
       maxStacks: 1
+      hitsToProc: 0
+      kindId: status-kind.freeze
+      procStatusId:
+      cueId: cue.status.ice
+    - id: status.ice.hit-count
+      stackingMode: stacking.proc-after-hits
+      durationSeconds: 99999
+      tickIntervalSeconds: 0
+      magnitude: 1
+      maxStacks: 5
       hitsToProc: 5
+      kindId: status-kind.hit-count
+      procStatusId: status.ice.freeze
+      cueId: cue.status.ice
     - id: status.chili.burn
       stackingMode: stacking.independent
       durationSeconds: 3
-      tickIntervalSeconds: 0
+      tickIntervalSeconds: 0.05
       magnitude: 0.2
       maxStacks: 3
       hitsToProc: 0
+      kindId: status-kind.burn
+      procStatusId:
+      cueId: cue.status.chili
+    - id: status.combat.hit-stun
+      stackingMode: stacking.refresh
+      durationSeconds: 0.1
+      tickIntervalSeconds: 0
+      magnitude: 1
+      maxStacks: 1
+      hitsToProc: 0
+      kindId: status-kind.stun
+      procStatusId:
+      cueId:
     waves:
     - id: wave.01
       index: 1

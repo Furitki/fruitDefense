@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace FruitDefense.Content
@@ -93,7 +94,8 @@ namespace FruitDefense.Content
             ValidateEquipment(catalog.equipment, skillIds, statusIds, plantIds, result);
             ValidateSkills(catalog.skills, projectileIds, statusIds, result);
             ValidateProjectiles(catalog.projectiles, result);
-            ValidateStatuses(catalog.statuses, result);
+            ValidateStatuses(catalog.statuses, statusIds, result);
+            ValidateEquipmentSkillBindings(catalog, result);
             ValidateWaves(catalog.waves, enemyIds, catalog.battleRules, result);
             ValidateStarTiers(catalog.starTiers, result);
             ValidateBattleRules(catalog.battleRules, equipmentIds, result);
@@ -161,6 +163,7 @@ namespace FruitDefense.Content
                 RequireReferences(value.skillIds, skillIds, "plants", value.id, "skillIds", true, result);
                 RequireOptionalReference(value.projectileId, projectileIds, "plants", value.id, "projectileId", result);
                 RequireReferences(value.allowedEquipmentIds, equipmentIds, "plants", value.id, "allowedEquipmentIds", false, result);
+                RequireStableNames(value.tags, "plants", value.id, "tags", true, result);
             }
         }
 
@@ -186,9 +189,40 @@ namespace FruitDefense.Content
             {
                 if (value == null) continue;
                 RequireText(value.displayName, "equipment", value.id, "displayName", result);
-                RequireReferences(value.skillIds, skillIds, "equipment", value.id, "skillIds", true, result);
+                RequireReferences(value.skillIds, skillIds, "equipment", value.id, "skillIds", false, result);
                 RequireReferences(value.statusIds, statusIds, "equipment", value.id, "statusIds", false, result);
                 RequireReferences(value.compatiblePlantIds, plantIds, "equipment", value.id, "compatiblePlantIds", true, result);
+                if (value.grants == null)
+                    result.Add("collection.required", "equipment", value.id, "grants", "Grant collection cannot be null.");
+                else
+                    foreach (var grant in value.grants)
+                    {
+                        if (grant == null)
+                        {
+                            result.Add("definition.null", "equipment", value.id, "grants", "Grant entry is null.");
+                            continue;
+                        }
+                        RequireOptionalReference(grant.skillId, skillIds, "equipment", value.id, "grants.skillId", result);
+                        if (string.IsNullOrEmpty(grant.skillId))
+                            result.Add("reference.required", "equipment", value.id, "grants.skillId", "Granted skill is required.");
+                        RequireOptionalStableName(grant.requiredPlantTag, "equipment", value.id, "grants.requiredPlantTag", result);
+                    }
+                if (value.modifiers == null)
+                    result.Add("collection.required", "equipment", value.id, "modifiers", "Modifier collection cannot be null.");
+                else
+                    foreach (var modifier in value.modifiers)
+                    {
+                        if (modifier == null)
+                        {
+                            result.Add("definition.null", "equipment", value.id, "modifiers", "Modifier entry is null.");
+                            continue;
+                        }
+                        RequireStableReferenceName(modifier.id, "equipment", value.id, "modifiers.id", result);
+                        RequireOptionalStableName(modifier.requiredPlantTag, "equipment", value.id, "modifiers.requiredPlantTag", result);
+                        RequireStableReferenceName(modifier.targetSkillTag, "equipment", value.id, "modifiers.targetSkillTag", result);
+                        RequireIntAtLeast(modifier.burstCountOverride, 0, "equipment", value.id, "modifiers.burstCountOverride", result);
+                        RequireFiniteAtLeast(modifier.burstIntervalSeconds, 0f, "equipment", value.id, "modifiers.burstIntervalSeconds", result);
+                    }
             }
         }
 
@@ -208,6 +242,40 @@ namespace FruitDefense.Content
                 RequireIntAtLeast(value.resourceAmount, 0, "skills", value.id, "resourceAmount", result);
                 RequireIntAtLeast(value.burstCount, 1, "skills", value.id, "burstCount", result);
                 RequireFiniteAtLeast(value.burstIntervalSeconds, 0f, "skills", value.id, "burstIntervalSeconds", result);
+                RequireStableNames(value.tags, "skills", value.id, "tags", true, result);
+                RequireOptionalStableName(value.visualId, "skills", value.id, "visualId", result);
+                RequireOptionalStableName(value.cueId, "skills", value.id, "cueId", result);
+                RequireFiniteAtLeast(value.actionSeconds, 0f, "skills", value.id, "actionSeconds", result);
+                if (!BattleSkillCompiler.SupportsTrigger(value.triggerId))
+                    result.Add("mechanism.unknown", "skills", value.id, "triggerId", "Unsupported trigger '" + value.triggerId + "'.");
+                if (!BattleSkillCompiler.SupportsTarget(value.targetId))
+                    result.Add("mechanism.unknown", "skills", value.id, "targetId", "Unsupported target '" + value.targetId + "'.");
+                if (value.effects == null || value.effects.Length == 0)
+                {
+                    result.Add("collection.required", "skills", value.id, "effects", "At least one effect is required.");
+                    continue;
+                }
+                foreach (var effect in value.effects)
+                {
+                    if (effect == null)
+                    {
+                        result.Add("definition.null", "skills", value.id, "effects", "Effect entry is null.");
+                        continue;
+                    }
+                    RequireStableReferenceName(effect.kindId, "skills", value.id, "effects.kindId", result);
+                    if (!BattleSkillCompiler.SupportsEffect(effect.kindId))
+                        result.Add("mechanism.unknown", "skills", value.id, "effects.kindId", "Unsupported effect '" + effect.kindId + "'.");
+                    RequireOptionalReference(effect.projectileId, projectileIds, "skills", value.id, "effects.projectileId", result);
+                    RequireOptionalReference(effect.statusId, statusIds, "skills", value.id, "effects.statusId", result);
+                    RequireFiniteAtLeast(effect.magnitude, 0f, "skills", value.id, "effects.magnitude", result);
+                    RequireFiniteAtLeast(effect.radiusLegacyUnits, 0f, "skills", value.id, "effects.radiusLegacyUnits", result);
+                    RequireIntAtLeast(effect.resourceAmount, 0, "skills", value.id, "effects.resourceAmount", result);
+                    RequireOptionalStableName(effect.cueId, "skills", value.id, "effects.cueId", result);
+                    if (effect.kindId == "effect.launch-projectile" && string.IsNullOrEmpty(effect.projectileId))
+                        result.Add("reference.required", "skills", value.id, "effects.projectileId", "Projectile effect requires a projectile.");
+                    if (effect.kindId == "effect.apply-status" && string.IsNullOrEmpty(effect.statusId))
+                        result.Add("reference.required", "skills", value.id, "effects.statusId", "Status effect requires a status.");
+                }
             }
         }
 
@@ -218,6 +286,8 @@ namespace FruitDefense.Content
             {
                 if (value == null) continue;
                 RequireStableReferenceName(value.travelMode, "projectiles", value.id, "travelMode", result);
+                if (!BattleSkillCompiler.SupportsProjectileMode(value.travelMode))
+                    result.Add("mechanism.unknown", "projectiles", value.id, "travelMode", "Unsupported projectile mode '" + value.travelMode + "'.");
                 RequireFiniteAtLeast(value.speedLegacyUnits, 0f, "projectiles", value.id, "speedLegacyUnits", result);
                 RequireFiniteAtLeast(value.flightSeconds, 0f, "projectiles", value.id, "flightSeconds", result);
                 if (value.speedLegacyUnits <= 0f && value.flightSeconds <= 0f)
@@ -226,21 +296,74 @@ namespace FruitDefense.Content
                 RequireFiniteGreater(value.rangeMultiplier, 0f, "projectiles", value.id, "rangeMultiplier", result);
                 RequireFiniteGreater(value.hitRadiusLegacyUnits, 0f, "projectiles", value.id, "hitRadiusLegacyUnits", result);
                 RequireIntAtLeast(value.maxHitsPerTarget, 1, "projectiles", value.id, "maxHitsPerTarget", result);
+                RequireStableReferenceName(value.visualId, "projectiles", value.id, "visualId", result);
+                RequireOptionalStableName(value.impactCueId, "projectiles", value.id, "impactCueId", result);
             }
         }
 
-        private static void ValidateStatuses(StatusDefinitionDto[] values, ContentValidationResult result)
+        private static void ValidateStatuses(StatusDefinitionDto[] values, HashSet<string> statusIds, ContentValidationResult result)
         {
             if (values == null) return;
             foreach (var value in values)
             {
                 if (value == null) continue;
                 RequireStableReferenceName(value.stackingMode, "statuses", value.id, "stackingMode", result);
+                RequireStableReferenceName(value.kindId, "statuses", value.id, "kindId", result);
+                if (!BattleSkillCompiler.SupportsStackMode(value.stackingMode))
+                    result.Add("mechanism.unknown", "statuses", value.id, "stackingMode", "Unsupported stacking mode '" + value.stackingMode + "'.");
+                if (!BattleSkillCompiler.SupportsStatusKind(value.kindId))
+                    result.Add("mechanism.unknown", "statuses", value.id, "kindId", "Unsupported status kind '" + value.kindId + "'.");
                 RequireFiniteGreater(value.durationSeconds, 0f, "statuses", value.id, "durationSeconds", result);
                 RequireFiniteAtLeast(value.tickIntervalSeconds, 0f, "statuses", value.id, "tickIntervalSeconds", result);
                 RequireFiniteAtLeast(value.magnitude, 0f, "statuses", value.id, "magnitude", result);
                 RequireIntAtLeast(value.maxStacks, 1, "statuses", value.id, "maxStacks", result);
                 RequireIntAtLeast(value.hitsToProc, 0, "statuses", value.id, "hitsToProc", result);
+                RequireOptionalReference(value.procStatusId, statusIds, "statuses", value.id, "procStatusId", result);
+                RequireOptionalStableName(value.cueId, "statuses", value.id, "cueId", result);
+                if (value.stackingMode == "stacking.proc-after-hits" && (value.hitsToProc <= 0 || string.IsNullOrEmpty(value.procStatusId)))
+                    result.Add("status.proc.invalid", "statuses", value.id, "procStatusId", "Hit-count status requires hitsToProc and procStatusId.");
+            }
+        }
+
+        private static void ValidateEquipmentSkillBindings(BattleContentCatalogDto catalog, ContentValidationResult result)
+        {
+            if (catalog.plants == null || catalog.skills == null || catalog.equipment == null) return;
+            var plants = catalog.plants.Where(value => value != null)
+                .GroupBy(value => value.id, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+            var skills = catalog.skills.Where(value => value != null)
+                .GroupBy(value => value.id, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+            foreach (var equipment in catalog.equipment.Where(value => value != null))
+            {
+                var grants = equipment.grants ?? Array.Empty<EquipmentSkillGrantDto>();
+                var modifiers = equipment.modifiers ?? Array.Empty<SkillModifierDefinitionDto>();
+                foreach (var plantId in equipment.compatiblePlantIds ?? Array.Empty<string>())
+                {
+                    PlantDefinitionDto plant;
+                    if (!plants.TryGetValue(plantId, out plant)) continue;
+                    var plantTags = new HashSet<string>(plant.tags ?? Array.Empty<string>(), StringComparer.Ordinal);
+                    var resolvedIds = new List<string>(plant.skillIds ?? Array.Empty<string>());
+                    foreach (var grant in grants)
+                    {
+                        if (grant == null || !skills.ContainsKey(grant.skillId)) continue;
+                        if (!string.IsNullOrEmpty(grant.requiredPlantTag) && !plantTags.Contains(grant.requiredPlantTag)) continue;
+                        if (!resolvedIds.Contains(grant.skillId)) resolvedIds.Add(grant.skillId);
+                    }
+                    foreach (var modifier in modifiers)
+                    {
+                        if (modifier == null) continue;
+                        if (!string.IsNullOrEmpty(modifier.requiredPlantTag) && !plantTags.Contains(modifier.requiredPlantTag)) continue;
+                        var matches = resolvedIds.Where(id => skills.ContainsKey(id)
+                            && (skills[id].tags ?? Array.Empty<string>()).Contains(modifier.targetSkillTag)).ToArray();
+                        if (matches.Length == 0)
+                            result.Add("modifier.match.zero", "equipment", equipment.id, modifier.id,
+                                "Modifier matches no skill on compatible plant '" + plant.id + "'.");
+                        else if (matches.Length > 1 && !modifier.allowMultipleMatches)
+                            result.Add("modifier.match.ambiguous", "equipment", equipment.id, modifier.id,
+                                "Modifier matches multiple skills on compatible plant '" + plant.id + "'.");
+                    }
+                }
             }
         }
 
@@ -351,6 +474,28 @@ namespace FruitDefense.Content
         {
             if (string.IsNullOrEmpty(value) || !StableIdPattern.IsMatch(value))
                 result.Add("reference.id.invalid", category, id, field, "Reference name must use the stable ID format.");
+        }
+
+        private static void RequireOptionalStableName(string value, string category, string id, string field,
+            ContentValidationResult result)
+        {
+            if (!string.IsNullOrEmpty(value)) RequireStableReferenceName(value, category, id, field, result);
+        }
+
+        private static void RequireStableNames(string[] values, string category, string id, string field,
+            bool requireAtLeastOne, ContentValidationResult result)
+        {
+            if (values == null || values.Length == 0)
+            {
+                if (requireAtLeastOne) result.Add("reference.required", category, id, field, "At least one stable tag is required.");
+                return;
+            }
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var value in values)
+            {
+                RequireStableReferenceName(value, category, id, field, result);
+                if (!seen.Add(value)) result.Add("reference.duplicate", category, id, field, "Tag '" + value + "' is duplicated.");
+            }
         }
 
         private static void RequireReferences(string[] values, HashSet<string> targets, string category,
