@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fruit-defense.local/schemas/douyin-compatibility-report-v1.json",
+  "title": "Fruit Defense Douyin compatibility report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "platform",
+    "generatedAtUtc",
+    "overallStatus",
+    "project",
+    "pinnedVersions",
+    "credentialPresence",
+    "officialLimits",
+    "checks"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "platform": { "const": "douyin-minigame" },
+    "generatedAtUtc": { "type": "string", "format": "date-time" },
+    "overallStatus": { "$ref": "#/$defs/status" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unityVersion", "gitRevision", "webglBuildBytes"],
+      "properties": {
+        "unityVersion": { "type": "string" },
+        "gitRevision": { "type": "string" },
+        "webglBuildBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "pinnedVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ttsdk", "developerTools", "hostBaseline"],
+      "properties": {
+        "ttsdk": { "type": ["string", "null"] },
+        "developerTools": { "type": ["string", "null"] },
+        "hostBaseline": { "type": ["string", "null"] }
+      }
+    },
+    "credentialPresence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appId", "developerSession", "uploadCredential"],
+      "properties": {
+        "appId": { "type": "boolean" },
+        "developerSession": { "type": "boolean" },
+        "uploadCredential": { "type": "boolean" }
+      }
+    },
+    "officialLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mainPackageMb", "totalCodePackageMb", "singleSubpackageMb"],
+      "properties": {
+        "mainPackageMb": { "type": "integer", "minimum": 1 },
+        "totalCodePackageMb": { "type": "integer", "minimum": 1 },
+        "singleSubpackageMb": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "status": { "enum": ["Green", "Yellow", "Red"] },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "blocking", "evidence", "observedAtUtc", "nextAction"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/status" },
+        "blocking": { "type": "boolean" },
+        "evidence": { "type": "string" },
+        "observedAtUtc": { "type": "string", "format": "date-time" },
+        "nextAction": { "type": "string" }
+      }
+    }
+  }
+}
