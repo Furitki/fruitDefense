@@ -334,7 +334,7 @@ namespace FruitDefense.Editor
         private static void ValidateCombatActions()
         {
             var pea = CreateCombatScenario(PlantKind.Pea);
-            pea.Tick(.01f);
+            pea.Step();
             Assert(pea.State.Projectiles.Count == 1 && Mathf.Approximately(pea.State.Zombies[0].Hp, 1000f),
                 "pea creates a delayed tracking projectile");
             TickUntilProjectilesFinish(pea, 40);
@@ -342,7 +342,7 @@ namespace FruitDefense.Editor
                 "pea projectile tracks and creates an impact action");
 
             var watermelon = CreateCombatScenario(PlantKind.Watermelon);
-            watermelon.Tick(.01f);
+            watermelon.Step();
             Assert(watermelon.State.Projectiles.Count == 1 && watermelon.State.Projectiles[0].Progress > 0f,
                 "watermelon starts a timed arc projectile");
             for (var step = 0; step < 12; step++) watermelon.Tick(.05f);
@@ -350,21 +350,21 @@ namespace FruitDefense.Editor
                 && watermelon.State.Zombies[0].Hp < 1000f, "watermelon lands and creates an area blast");
 
             var banana = CreateCombatScenario(PlantKind.Banana);
-            banana.Tick(.01f);
+            banana.Step();
             banana.State.Plants[0].AttackCooldown = 999f;
             TickUntilProjectilesFinish(banana, 90);
             Assert(Mathf.Approximately(banana.State.Zombies[0].Hp, 988f),
                 "banana hits once outbound and once while returning");
 
             var durian = CreateCombatScenario(PlantKind.Durian);
-            durian.Tick(.01f);
+            durian.Step();
             Assert(durian.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.DurianDrop)
                 && durian.State.Zombies[0].Hp < 1000f, "durian uses a melee drop and shockwave action");
 
             var sunflower = CreateCombatScenario(PlantKind.Sunflower);
             sunflower.State.Plants[0].ProductionProgress = 9.99f;
             sunflower.State.Sun = 0;
-            sunflower.Tick(.02f);
+            sunflower.Step();
             Assert(sunflower.State.Sun == 1
                 && sunflower.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.SunBurst),
                 "sunflower production creates a visible sun burst");
@@ -374,13 +374,13 @@ namespace FruitDefense.Editor
             iceSunflower.State.WaveSpawned = 0;
             iceSunflower.State.WaveTotal = GameConfig.GetWave(1).Sequence.Count;
             iceSunflower.State.SpawnCooldown = 0f;
-            iceSunflower.Tick(.01f);
+            iceSunflower.Step();
             Assert(iceSunflower.State.Zombies.Count > 0
                 && iceSunflower.State.Zombies[0].SlowUntil > iceSunflower.State.Elapsed,
                 "ice sunflower slows the battlefield on the first wave spawn");
 
             var gatling = CreateCombatScenario(PlantKind.Pea, WeaponKind.Gatling);
-            gatling.Tick(.01f);
+            gatling.Step();
             Assert(gatling.State.Plants[0].BurstShotsRemaining == 3, "gatling starts a four-shot burst");
             for (var step = 0; step < 5; step++) gatling.Tick(.05f);
             Assert(gatling.State.Plants[0].BurstShotsRemaining == 2
@@ -388,14 +388,14 @@ namespace FruitDefense.Editor
                 "gatling spaces burst shots by 0.2 seconds");
 
             var ice = CreateCombatScenario(PlantKind.Pea, WeaponKind.Ice);
-            ice.Tick(.01f);
+            ice.Step();
             TickUntilProjectilesFinish(ice, 40);
             Assert(ice.State.Zombies[0].SlowUntil > ice.State.Elapsed
                 && ice.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.IceImpact),
                 "ice weapon adds slow and a crystal impact");
 
             var chili = CreateCombatScenario(PlantKind.Pea, WeaponKind.Chili);
-            chili.Tick(.01f);
+            chili.Step();
             TickUntilProjectilesFinish(chili, 40);
             Assert(chili.State.Zombies[0].Burns.Count == 1
                 && chili.State.CombatEffects.Exists(effect => effect.Kind == CombatEffectKind.ChiliImpact),
