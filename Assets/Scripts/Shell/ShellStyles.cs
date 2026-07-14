@@ -14,10 +14,10 @@ namespace FruitDefense.Shell
         public GUIStyle Status { get; private set; }
         public GUIStyle Panel { get; private set; }
 
-        public static ShellStyleSet Create(GUISkin skin, float scale)
+        public static ShellStyleSet Create(GUISkin skin, float scale, Font font = null)
         {
             scale = Mathf.Max(.5f, scale);
-            return new ShellStyleSet
+            var styles = new ShellStyleSet
             {
                 Title = Label(skin, Mathf.RoundToInt(31f * scale), FontStyle.Bold, TextAnchor.MiddleCenter),
                 PrimaryButton = Button(skin, Mathf.RoundToInt(22f * scale), FontStyle.Bold),
@@ -38,6 +38,25 @@ namespace FruitDefense.Shell
                         Mathf.RoundToInt(10f * scale)),
                 },
             };
+            ApplyFont(styles, font);
+            return styles;
+        }
+
+        private static void ApplyFont(ShellStyleSet styles, Font font)
+        {
+            var all = new[]
+            {
+                styles.Title, styles.PrimaryButton, styles.SecondaryButton, styles.CardTitle,
+                styles.CardBody, styles.ResultOutcome, styles.ResultMetric, styles.Status, styles.Panel,
+            };
+            foreach (var style in all)
+            {
+                if (font != null) style.font = font;
+                style.normal.textColor = Color.white;
+                style.hover.textColor = Color.white;
+                style.active.textColor = Color.white;
+                style.focused.textColor = Color.white;
+            }
         }
 
         private static GUIStyle Label(GUISkin skin, int fontSize, FontStyle fontStyle, TextAnchor alignment)
@@ -68,7 +87,9 @@ namespace FruitDefense.Shell
         public static void DrawPanel(Rect rect, GUIStyle style)
         {
             var previous = GUI.color;
-            GUI.color = new Color(.18f, .25f, .20f, .96f);
+            GUI.color = new Color(.18f, .25f, .20f, 1f);
+            GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill, true);
+            GUI.color = new Color(1f, 1f, 1f, .32f);
             GUI.Box(rect, GUIContent.none, style);
             GUI.color = previous;
         }

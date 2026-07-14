@@ -13,6 +13,7 @@ namespace FruitDefense.Shell
 
         private IShellFlowContext _context;
         private ShellStyleSet _styles;
+        private Font _font;
         private float _styleScale = -1f;
         private bool _recoveryAttempted;
 
@@ -143,7 +144,8 @@ namespace FruitDefense.Shell
         private void EnsureStyles(float scale)
         {
             if (_styles != null && Mathf.Approximately(_styleScale, scale)) return;
-            _styles = ShellStyleSet.Create(GUI.skin, scale);
+            if (_font == null) _font = Resources.Load<Font>("Fonts/NotoSansSC-UI");
+            _styles = ShellStyleSet.Create(GUI.skin, scale, _font);
             _styleScale = scale;
         }
 
