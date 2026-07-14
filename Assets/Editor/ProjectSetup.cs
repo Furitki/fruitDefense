@@ -1,4 +1,6 @@
+using FruitDefense.App;
 using FruitDefense.Core;
+using FruitDefense.Shell;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -12,11 +14,17 @@ namespace FruitDefense.Editor
         public static void Configure()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Scenes")) AssetDatabase.CreateFolder("Assets", "Scenes");
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var root = new GameObject("FruitDefenseGame");
-            root.AddComponent<FruitDefenseGame>();
-            EditorSceneManager.SaveScene(scene, "Assets/Scenes/Main.unity");
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene("Assets/Scenes/Main.unity", true) };
+            CreateBootstrapScene();
+            CreateComponentScene<LobbyPresenter>("Lobby", "LobbyPresenter");
+            CreateComponentScene<FruitDefenseGame>("Battle", "FruitDefenseGame");
+            CreateComponentScene<SettlementPresenter>("Settlement", "SettlementPresenter");
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene("Assets/Scenes/Bootstrap.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/Lobby.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/Battle.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/Settlement.unity", true),
+            };
 
             PlayerSettings.companyName = "Fruit Defense";
             PlayerSettings.productName = "水果塔防";
@@ -29,7 +37,24 @@ namespace FruitDefense.Editor
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Standalone, "com.fruitdefense.game");
             QualitySettings.vSyncCount = 1;
             AssetDatabase.SaveAssets();
-            Debug.Log("Fruit Defense project configured: Assets/Scenes/Main.unity");
+            Debug.Log("Fruit Defense project configured: Bootstrap, Lobby, Battle, Settlement");
+        }
+
+        private static void CreateBootstrapScene()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var root = new GameObject("AppBootstrap");
+            root.AddComponent<AppBootstrap>();
+            root.AddComponent<AppFlowCoordinator>();
+            EditorSceneManager.SaveScene(scene, "Assets/Scenes/Bootstrap.unity");
+        }
+
+        private static void CreateComponentScene<T>(string sceneName, string objectName) where T : Component
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var root = new GameObject(objectName);
+            root.AddComponent<T>();
+            EditorSceneManager.SaveScene(scene, "Assets/Scenes/" + sceneName + ".unity");
         }
 
         public static void SmokeValidate()
@@ -115,8 +140,53 @@ namespace FruitDefense.Editor
                 "inspection-only interaction contract: " + inspectionReason);
             Assert(FruitDefenseGame.ValidateSessionControlContract(out var sessionControlReason),
                 "session control contract: " + sessionControlReason);
-            Assert(EditorBuildSettings.scenes.Length == 1 && EditorBuildSettings.scenes[0].enabled, "build scene configured");
+            ValidateP0SceneConfiguration();
             Debug.Log("FRUIT_DEFENSE_SMOKE_OK");
+        }
+
+        private static void ValidateP0SceneConfiguration()
+        {
+            var expected = new[]
+            {
+                "Assets/Scenes/Bootstrap.unity",
+                "Assets/Scenes/Lobby.unity",
+                "Assets/Scenes/Battle.unity",
+                "Assets/Scenes/Settlement.unity",
+            };
+            Assert(EditorBuildSettings.scenes.Length == expected.Length, "four release scenes configured");
+            for (var index = 0; index < expected.Length; index++)
+            {
+                Assert(EditorBuildSettings.scenes[index].enabled, "release scene enabled: " + expected[index]);
+                Assert(EditorBuildSettings.scenes[index].path == expected[index], "release scene order: " + expected[index]);
+                Assert(AssetDatabase.LoadAssetAtPath<SceneAsset>(expected[index]) != null,
+                    "release scene exists: " + expected[index]);
+            }
+
+            var previousSetup = EditorSceneManager.GetSceneManagerSetup();
+            var canRestoreSetup = System.Array.Exists(previousSetup, setup => setup.isLoaded && setup.isActive);
+            var bootstrap = default(Scene);
+            try
+            {
+                bootstrap = SceneManager.GetSceneByPath(expected[0]);
+                if (!bootstrap.IsValid() || !bootstrap.isLoaded)
+                    bootstrap = EditorSceneManager.OpenScene(expected[0], OpenSceneMode.Additive);
+                var bootstrapCount = 0;
+                var coordinatorCount = 0;
+                foreach (var root in bootstrap.GetRootGameObjects())
+                {
+                    bootstrapCount += root.GetComponentsInChildren<AppBootstrap>(true).Length;
+                    coordinatorCount += root.GetComponentsInChildren<AppFlowCoordinator>(true).Length;
+                }
+                Assert(bootstrapCount == 1, "exactly one AppBootstrap in release Bootstrap scene");
+                Assert(coordinatorCount == 1, "exactly one AppFlowCoordinator in release Bootstrap scene");
+            }
+            finally
+            {
+                if (canRestoreSetup)
+                    EditorSceneManager.RestoreSceneManagerSetup(previousSetup);
+                else if (bootstrap.IsValid() && bootstrap.isLoaded)
+                    EditorSceneManager.CloseScene(bootstrap, true);
+            }
         }
 
         private static void ValidateLegacyMigrationBaseline()

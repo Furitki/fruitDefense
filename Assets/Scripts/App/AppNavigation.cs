@@ -32,7 +32,13 @@ namespace FruitDefense.App
         bool TryFailTransition(string transitionErrorCode, out string errorCode);
     }
 
-    public sealed class AppNavigator : IAppNavigator
+    public interface IAppRecoveryNavigator
+    {
+        bool TryRecoverToLobby(string recoveryErrorCode, out string errorCode);
+        bool TryRestoreCurrentRoute(string recoveryErrorCode, out string errorCode);
+    }
+
+    public sealed class AppNavigator : IAppNavigator, IAppRecoveryNavigator
     {
         public const string RouteNotAllowed = "route-not-allowed";
         public const string TransitionInProgress = "transition-in-progress";
@@ -112,6 +118,32 @@ namespace FruitDefense.App
                 ? TransitionFailed
                 : transitionErrorCode;
             SetTransitionState(AppTransitionState.Failed);
+            errorCode = string.Empty;
+            return true;
+        }
+
+        public bool TryRecoverToLobby(string recoveryErrorCode, out string errorCode)
+        {
+            CurrentRoute = AppRoute.Lobby;
+            PendingRoute = AppRoute.Lobby;
+            HasPendingRoute = false;
+            LastError = string.IsNullOrWhiteSpace(recoveryErrorCode)
+                ? TransitionFailed
+                : recoveryErrorCode;
+            SetTransitionState(AppTransitionState.Idle);
+            RouteChanged?.Invoke(AppRoute.Lobby);
+            errorCode = string.Empty;
+            return true;
+        }
+
+        public bool TryRestoreCurrentRoute(string recoveryErrorCode, out string errorCode)
+        {
+            PendingRoute = CurrentRoute;
+            HasPendingRoute = false;
+            LastError = string.IsNullOrWhiteSpace(recoveryErrorCode)
+                ? TransitionFailed
+                : recoveryErrorCode;
+            SetTransitionState(AppTransitionState.Idle);
             errorCode = string.Empty;
             return true;
         }

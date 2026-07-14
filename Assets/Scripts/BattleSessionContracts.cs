@@ -1,3 +1,4 @@
+using System;
 using FruitDefense.App;
 using FruitDefense.Core;
 using FruitDefense.Platform;
@@ -52,6 +53,14 @@ namespace FruitDefense.Battle
 
     public sealed class BattleResult
     {
+        public const string MissingRequest = "battle-result-request-missing";
+        public const string SessionMismatch = "battle-result-session-mismatch";
+        public const string LevelMismatch = "battle-result-level-mismatch";
+        public const string SeedMismatch = "battle-result-seed-mismatch";
+        public const string InvalidOutcome = "battle-result-outcome-invalid";
+        public const string InvalidReachedWave = "battle-result-wave-invalid";
+        public const string InvalidRemainingLives = "battle-result-lives-invalid";
+
         public BattleResult(
             string sessionId,
             string levelId,
@@ -74,6 +83,47 @@ namespace FruitDefense.Battle
         public BattleOutcome Outcome { get; }
         public int ReachedWave { get; }
         public int RemainingLives { get; }
+
+        public bool TryValidate(BattleLaunchRequest request, out string errorCode)
+        {
+            if (request == null)
+            {
+                errorCode = MissingRequest;
+                return false;
+            }
+            if (!string.Equals(SessionId, request.SessionId, StringComparison.Ordinal))
+            {
+                errorCode = SessionMismatch;
+                return false;
+            }
+            if (!string.Equals(LevelId, request.LevelId, StringComparison.Ordinal))
+            {
+                errorCode = LevelMismatch;
+                return false;
+            }
+            if (Seed != request.Seed)
+            {
+                errorCode = SeedMismatch;
+                return false;
+            }
+            if (!Enum.IsDefined(typeof(BattleOutcome), Outcome))
+            {
+                errorCode = InvalidOutcome;
+                return false;
+            }
+            if (ReachedWave < 0)
+            {
+                errorCode = InvalidReachedWave;
+                return false;
+            }
+            if (RemainingLives < 0)
+            {
+                errorCode = InvalidRemainingLives;
+                return false;
+            }
+            errorCode = string.Empty;
+            return true;
+        }
     }
 
     public readonly struct BattleSessionInitializationResult

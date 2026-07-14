@@ -82,8 +82,9 @@ namespace FruitDefense.Editor
             indexHtml = indexHtml.Replace(
                 unityReadyMarker,
                 unityReadyMarker
-                + "\n          if (new URLSearchParams(window.location.search).has('acceptance')) "
-                + "window.fruitDefenseUnityInstance = unityInstance;");
+                + "\n          if (new URLSearchParams(window.location.search).has('acceptance')) {"
+                + " window.fruitDefensePendingUnityInstance = unityInstance;"
+                + " if (window.fruitDefenseAcceptanceRouteReady) window.fruitDefenseUnityInstance = unityInstance; }");
             File.WriteAllText(indexPath, indexHtml);
 
             var outputSize = Directory.GetFiles(outputPath, "*", SearchOption.AllDirectories)

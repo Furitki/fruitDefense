@@ -6,7 +6,8 @@ param(
   [string]$ChromePath = 'C:\Program Files\Google\Chrome\Application\chrome.exe',
   [int]$Width = 402,
   [int]$Height = 874,
-  [int]$TimeoutSeconds = 45
+  [int]$TimeoutSeconds = 45,
+  [switch]$Flow
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,6 +19,7 @@ $serverProcess = $null
 $chromeProcess = $null
 $socket = $null
 $script:CdpId = 0
+$acceptanceQuery = if ($Flow) { 'acceptance=1' } else { 'acceptance=1&route=battle' }
 
 function Get-FreeTcpPort {
   $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
@@ -226,6 +228,31 @@ function Set-AcceptanceState {
   Start-Sleep -Milliseconds 500
 }
 
+function Invoke-AcceptanceFlowCommand {
+  param([string]$Command)
+  $escapedCommand = $Command.Replace("'", "\'")
+  $sent = Invoke-JavaScript -Expression @"
+(() => {
+  const instance = window.fruitDefenseUnityInstance;
+  if (!instance) return false;
+  instance.SendMessage('AppBootstrap', 'ConfigureAcceptanceFlow', '$escapedCommand');
+  return true;
+})()
+"@
+  if (-not $sent) { throw "Unity flow acceptance bridge is unavailable for command: $Command" }
+}
+
+function Wait-AppRoute {
+  param([int]$Route)
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  do {
+    $current = Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1'
+    if ([int]$current -eq $Route) { return }
+    Start-Sleep -Milliseconds 250
+  } while ((Get-Date) -lt $deadline)
+  throw "Timed out waiting for app route $Route; current=$current"
+}
+
 function Save-Screenshot {
   param([string]$Name)
   $capture = Invoke-Cdp -Method 'Page.captureScreenshot' -Params @{
@@ -346,13 +373,16 @@ try {
       $env:STATIC_ROOT = $oldStaticRoot
       $env:PORT = $oldPort
     }
-    $Url = "http://127.0.0.1:$serverPort/?acceptance=1"
+    $Url = "http://127.0.0.1:$serverPort/?$acceptanceQuery"
   }
   elseif ([string]::IsNullOrWhiteSpace($Url)) {
     throw 'Provide -Url or use -ServeLocal.'
   }
   elseif ($Url -notmatch '(?:\?|&)acceptance=1(?:&|$)') {
-    $Url += $(if ($Url.Contains('?')) { '&acceptance=1' } else { '?acceptance=1' })
+    $Url += $(if ($Url.Contains('?')) { "&$acceptanceQuery" } else { "?$acceptanceQuery" })
+  }
+  elseif (-not $Flow -and $Url -notmatch '(?:\?|&)route=battle(?:&|$)') {
+    $Url += '&route=battle'
   }
 
   $pageResponse = Wait-Http -TargetUrl $Url -Seconds $TimeoutSeconds
@@ -419,6 +449,7 @@ try {
     loading: loading ? getComputedStyle(loading).display : 'missing',
     warning: warning ? warning.textContent.trim() : '',
     acceptanceReady: !!window.fruitDefenseUnityInstance,
+    appRoute: window.fruitDefenseAppRoute ?? -1,
     body: document.body ? document.body.innerText.slice(0, 240) : ''
   });
 })()
@@ -437,6 +468,9 @@ try {
   $screenshots = [ordered]@{}
   # Named centers are derived from the shared 402 x 874 layout rectangles.
   $controls = [ordered]@{
+    lobbyStart = [ordered]@{ x = 201; y = 152 }
+    settlementRetry = [ordered]@{ x = 201; y = 449 }
+    settlementReturn = [ordered]@{ x = 201; y = 528 }
     headerPause = [ordered]@{ x = 300; y = 38 }
     waveAction = [ordered]@{ x = 298; y = 450 }
     pauseContinue = [ordered]@{ x = 125; y = 492 }
@@ -444,6 +478,65 @@ try {
     nurserySlot0 = [ordered]@{ x = 51; y = 619 }
     cell32 = [ordered]@{ x = 178; y = 223 }
     cell42 = [ordered]@{ x = 224; y = 223 }
+  }
+
+  if ($Flow) {
+    Wait-AppRoute -Route 0
+    $flowScreenshots = [ordered]@{}
+    $flowMetrics = [ordered]@{}
+    $flowScreenshots.lobby = (Save-StableScreenshot -Name '01-lobby' -RequireHud $false).Path
+
+    Invoke-CanvasClick -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+    Wait-AppRoute -Route 1
+    $flowScreenshots.battle = (Save-StableScreenshot -Name '02-battle' -RequireHud $true).Path
+
+    Invoke-AcceptanceFlowCommand -Command 'victory'
+    Wait-AppRoute -Route 2
+    $flowScreenshots.settlement = (Save-StableScreenshot -Name '03-settlement' -RequireHud $false).Path
+
+    Invoke-CanvasClick -X $controls.settlementReturn.x -Y $controls.settlementReturn.y
+    Wait-AppRoute -Route 0
+    $flowScreenshots.returnedLobby = (Save-StableScreenshot -Name '04-returned-lobby' -RequireHud $false).Path
+
+    Invoke-CanvasClick -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+    Wait-AppRoute -Route 1
+    Invoke-AcceptanceFlowCommand -Command 'victory'
+    Wait-AppRoute -Route 2
+    Invoke-CanvasClick -X $controls.settlementRetry.x -Y $controls.settlementRetry.y
+    Wait-AppRoute -Route 1
+    $flowScreenshots.retryBattle = (Save-StableScreenshot -Name '05-retry-battle' -RequireHud $true).Path
+
+    foreach ($state in $flowScreenshots.Keys) {
+      $flowMetrics[$state] = Get-ImageMetrics -Path $flowScreenshots[$state]
+      if ($flowMetrics[$state].width -ne $Width -or $flowMetrics[$state].height -ne $Height) {
+        throw "Unexpected flow screenshot dimensions for ${state}: $($flowMetrics[$state].width)x$($flowMetrics[$state].height)"
+      }
+      if ($flowMetrics[$state].blackFraction -ge .05 -or $flowMetrics[$state].invalidFraction -ge .05) {
+        throw "Invalid flow frame for ${state}: black=$($flowMetrics[$state].blackFraction) invalid=$($flowMetrics[$state].invalidFraction)"
+      }
+    }
+
+    $flowManifest = [ordered]@{
+      accepted = $true
+      capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+      url = $Url
+      viewport = [ordered]@{ width = $Width; height = $Height }
+      checks = [ordered]@{
+        lobbyToBattle = 'pass'
+        battleToSettlement = 'pass'
+        settlementReturn = 'pass'
+        settlementRetry = 'pass'
+        noBlackOrTransparentFrames = 'pass'
+      }
+      delivery = $delivery
+      screenshots = $flowScreenshots
+      imageMetrics = $flowMetrics
+      controls = $controls
+    }
+    $flowManifestPath = Join-Path $outputDir 'flow-acceptance.json'
+    $flowManifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $flowManifestPath -Encoding UTF8
+    Write-Host "FRUIT_DEFENSE_FLOW_ACCEPTANCE_OK manifest=$flowManifestPath"
+    return
   }
 
   Set-AcceptanceState -State 'initial'

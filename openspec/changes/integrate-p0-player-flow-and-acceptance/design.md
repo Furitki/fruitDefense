@@ -26,6 +26,7 @@ The baseline has one `Main` scene and `FruitDefenseGame` creates itself after sc
 5. **Acceptance is forwarded by Bootstrap:** `?acceptance=1&route=battle` waits for the Battle scene, then forwards named states to the active battle presenter. Existing state names and canvas controls remain stable.
 6. **Failure states are player-visible:** Platform initialization failure remains on Bootstrap with Retry; missing scenes or launch/result data return to a safe route with a structured error rather than producing a blank canvas.
 7. **Shared-file ownership remains centralized:** Only this change modifies project setup, build scene lists, WebGL acceptance injection, or the main acceptance script.
+8. **Recovery is an explicit optional navigator capability:** `IAppRecoveryNavigator` resets any failed/loading route to an idle Lobby while retaining a structured error. It is separate from `IAppNavigator` so battle and shell test doubles, and future navigation implementations, do not need a breaking interface change.
 
 ## Risks / Trade-offs
 

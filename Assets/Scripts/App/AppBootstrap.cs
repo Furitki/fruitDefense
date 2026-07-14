@@ -17,6 +17,7 @@ namespace FruitDefense.App
         public IPlatformAdapter PlatformAdapter { get; private set; }
         public PlatformInitResult InitializationResult { get; private set; }
         public PlatformVisibility CurrentVisibility { get; private set; } = PlatformVisibility.Foreground;
+        public bool IsInitializing { get; private set; }
         public bool IsInitialized { get; private set; }
         public bool IsReady => IsInitialized && InitializationResult.Success;
 
@@ -35,6 +36,30 @@ namespace FruitDefense.App
             Instance = this;
             DontDestroyOnLoad(gameObject);
             Navigator = new AppNavigator();
+
+            BeginPlatformInitialization();
+        }
+
+        public bool TryRetryInitialization()
+        {
+            if (IsInitializing || !IsInitialized || InitializationResult.Success) return false;
+            BeginPlatformInitialization();
+            return true;
+        }
+
+        private void BeginPlatformInitialization()
+        {
+            if (PlatformAdapter != null)
+            {
+                PlatformAdapter.VisibilityChanged -= OnPlatformVisibilityChanged;
+                PlatformAdapter.Dispose();
+                PlatformAdapter = null;
+            }
+
+            IsInitializing = true;
+            IsInitialized = false;
+            InitializationResult = default;
+            CurrentVisibility = PlatformVisibility.Foreground;
 
             try
             {
@@ -135,6 +160,7 @@ namespace FruitDefense.App
         {
             if (IsInitialized) return;
             InitializationResult = result;
+            IsInitializing = false;
             IsInitialized = true;
             InitializationCompleted?.Invoke(result);
         }
@@ -149,6 +175,7 @@ namespace FruitDefense.App
             }
 
             if (Instance == this) Instance = null;
+            IsInitializing = false;
         }
 
         internal static bool ShouldRejectDuplicate(AppBootstrap existing, AppBootstrap candidate)

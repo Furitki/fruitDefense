@@ -13,9 +13,30 @@ namespace FruitDefense.Editor
         [MenuItem("Fruit Defense/Validate Battle Session Host")]
         public static void Run()
         {
+            ValidateResultContract();
             ValidateInitializationAndLifecycle();
             ValidateDefeatResult();
             Debug.Log("Fruit Defense battle session host validation passed.");
+        }
+
+        private static void ValidateResultContract()
+        {
+            var request = new BattleLaunchRequest("result-contract", "orchard-01", 31415, "1.0.0");
+            var valid = new BattleResult("result-contract", "orchard-01", 31415, BattleOutcome.Victory, 15, 3);
+            Assert(valid.TryValidate(request, out var error) && string.IsNullOrEmpty(error),
+                "matching result contract is accepted");
+            Assert(!new BattleResult("result-contract", "orchard-01", 99, BattleOutcome.Victory, 15, 3)
+                    .TryValidate(request, out error)
+                && error == BattleResult.SeedMismatch,
+                "result seed mismatch is rejected");
+            Assert(!new BattleResult("result-contract", "orchard-01", 31415, BattleOutcome.Victory, -1, 3)
+                    .TryValidate(request, out error)
+                && error == BattleResult.InvalidReachedWave,
+                "negative reached wave is rejected");
+            Assert(!new BattleResult("result-contract", "orchard-01", 31415, BattleOutcome.Defeat, 2, -1)
+                    .TryValidate(request, out error)
+                && error == BattleResult.InvalidRemainingLives,
+                "negative remaining lives are rejected");
         }
 
         private static void ValidateInitializationAndLifecycle()

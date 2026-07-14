@@ -166,6 +166,22 @@ namespace FruitDefense.App
                 && routeEvents == 3
                 && stateEvents == 8,
                 "navigator completes the full route cycle");
+
+            Assert(navigator.TryBeginTransition(AppRoute.Battle, out error)
+                && navigator.TryRecoverToLobby("missing-battle-scene", out error)
+                && navigator.CurrentRoute == AppRoute.Lobby
+                && navigator.TransitionState == AppTransitionState.Idle
+                && !navigator.HasPendingRoute
+                && navigator.LastError == "missing-battle-scene",
+                "navigator can recover any failed or loading route to a usable Lobby state");
+
+            Assert(navigator.TryBeginTransition(AppRoute.Battle, out error)
+                && navigator.TryRestoreCurrentRoute("lobby-load-failed", out error)
+                && navigator.CurrentRoute == AppRoute.Lobby
+                && navigator.TransitionState == AppTransitionState.Idle
+                && !navigator.HasPendingRoute
+                && navigator.LastError == "lobby-load-failed",
+                "navigator can restore the current route after a destination load failure");
         }
 
         private static void ValidateDuplicatePolicy()
