@@ -65,3 +65,14 @@ The spike MUST exercise cold and warm launch, touch, audio, hide/show, HTTPS, ca
 #### Scenario: Completed device coverage
 - **WHEN** both operating systems complete the matrix without crash or out-of-memory termination
 - **THEN** the device and stability rows may be marked Green with logs and exact environment metadata
+
+### Requirement: Long-lived readiness tracking
+The change MUST remain active as the canonical WeChat readiness tracker while any release-blocking row is Yellow or Red or the Douyin-first release dependency is unmet, and MUST refresh its evidence when a relevant Unity, WXSDK, Developer Tools, platform-policy, Douyin-release, account-access, or device prerequisite changes.
+
+#### Scenario: External or sequencing prerequisite remains unavailable
+- **WHEN** AppID access, an authorized developer session, either required physical-device run, or the stable Douyin-first release path is unavailable
+- **THEN** the affected gate remains incomplete, the change stays open without a promised completion date, and no Web fallback is used as substitute evidence
+
+#### Scenario: Tracker is ready to close
+- **WHEN** every blocking row is Green against the current baseline, the clean-checkout confirmation succeeds, and the Douyin-first release path is stable
+- **THEN** the result is handed to `add-wechat-runtime-adapter` before this tracker is archived

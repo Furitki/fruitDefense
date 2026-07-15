@@ -26,6 +26,7 @@ The project builds successfully with Unity 6000.3.19f1 and has a passing WebGL p
 4. **No silent adapter fallback.** Until all release-blocking rows are Green, `DouyinMiniGame` is unavailable. Editor and Web remain explicit platform choices.
 5. **Secrets never enter reports.** The preflight records only presence, version, path category, hashes, and non-secret AppID availability flags.
 6. **The first device matrix covers both Android and iOS.** Each device run covers cold/warm start, touch, audio, hide/show, HTTPS, cache, UpdateManager callbacks, one battle, and 30 minutes of repeated play.
+7. **This change is the long-lived Douyin readiness record.** It remains active while a release-blocking row is Yellow or Red. It is refreshed when the Unity baseline, candidate TTSDK/tooling, official platform requirements, account access, or device availability changes; it is not archived merely because the desktop/WebGL baseline passes or the item has aged.
 
 ## Risks / Trade-offs
 
@@ -41,7 +42,8 @@ The project builds successfully with Unity 6000.3.19f1 and has a passing WebGL p
 2. Pin a reviewed TTSDK and Douyin developer-tool version in an isolated branch.
 3. Convert and run the project in the simulator, then perform Android and iOS matrix runs.
 4. Mark the gate Green only when every release-blocking row has evidence.
-5. Start `add-douyin-runtime-adapter`; rollback is removal of the isolated SDK branch with the core runtime untouched.
+5. Re-run the current readiness script and clean-checkout conversion against the latest recorded baseline before closure.
+6. Start `add-douyin-runtime-adapter`, then archive this tracker only after the Green evidence and handoff are recorded; rollback is removal of the isolated SDK branch with the core runtime untouched.
 
 ## Open Questions
 

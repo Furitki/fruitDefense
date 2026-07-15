@@ -8,6 +8,7 @@ The project reserves a WeChat Mini Game target after the Douyin-first release, b
 - Add a repeatable desktop preflight that reports installed Unity, WebGL support, Node, WXSDK/conversion plugin, WeChat Developer Tools, AppID presence, generated artifacts, and package budgets without exposing secrets.
 - Produce a Green/Yellow/Red compatibility matrix for Unity export/conversion, simulator, Android/iOS device, touch, audio, lifecycle, HTTPS/cache, code update, remote content, package splitting, and 30-minute stability.
 - Keep the WeChat runtime adapter unavailable until every release-blocking row is Green; never silently fall back to the Web adapter.
+- Keep this change open as the long-lived WeChat readiness tracker while any blocking row is Yellow or Red, and retain the separate Douyin-first release dependency.
 - Do not install a large SDK, log in, upload, change gameplay, or add production platform APIs in this spike.
 
 ## Capabilities
@@ -25,3 +26,4 @@ None.
 - Adds OpenSpec evidence, a non-secret compatibility report, and local preflight tooling under the project scripts.
 - Reads Unity/package/project configuration and generated builds but does not modify gameplay, presentation, ProjectSettings, Build Settings, or platform SDK dependencies.
 - Establishes the entry gate for `add-wechat-runtime-adapter`, `add-wechat-code-package-update-flow`, and later WeChat packaging optimization.
+- Remains an event-driven backlog item across toolchain, Unity, platform-policy, Douyin-release, account-access, and device-availability changes, with no promised delivery date while external prerequisites are absent.

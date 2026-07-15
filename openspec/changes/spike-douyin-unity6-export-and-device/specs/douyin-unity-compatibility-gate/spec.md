@@ -54,3 +54,14 @@ The spike MUST exercise cold and warm launch, touch, audio, hide/show, HTTPS, ca
 #### Scenario: Completed device coverage
 - **WHEN** both operating systems complete the matrix without crash or out-of-memory termination
 - **THEN** the device and stability rows may be marked Green with attached logs and version metadata
+
+### Requirement: Long-lived readiness tracking
+The change MUST remain active as the canonical Douyin readiness tracker while any release-blocking row is Yellow or Red, and MUST refresh its evidence when a relevant Unity, TTSDK, developer-tool, platform-policy, account-access, or device prerequisite changes.
+
+#### Scenario: External prerequisite remains unavailable
+- **WHEN** AppID access, an authorized developer session, or either required physical-device run is unavailable
+- **THEN** the affected rows remain Yellow, the change stays open without a promised completion date, and no Web fallback is used as substitute evidence
+
+#### Scenario: Tracker is ready to close
+- **WHEN** every blocking row is Green against the current baseline and the clean-checkout confirmation succeeds
+- **THEN** the result is handed to `add-douyin-runtime-adapter` before this tracker is archived

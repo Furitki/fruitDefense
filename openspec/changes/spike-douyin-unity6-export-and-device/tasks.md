@@ -23,3 +23,10 @@
 - [x] 4.1 Run the existing Unity smoke and WebGL acceptance after spike tooling changes
 - [x] 4.2 Mark the final gate Green only if all release-blocking simulator and device rows have evidence
 - [x] 4.3 Publish the next action: authorize `add-douyin-runtime-adapter`, retain Yellow prerequisites, or create a Red engine/toolchain proposal
+
+## 5. Long-Term Tracking Lifecycle
+
+- [x] 5.1 Designate this change as the canonical long-lived Douyin readiness tracker and keep it unarchived while blocking rows remain
+- [ ] 5.2 Before closure, refresh official references, tool versions, and the readiness report against the current Unity and P0/P1 baseline
+- [ ] 5.3 Before closure, attach non-secret conversion, simulator, Android, iOS, content, update, Wasm, and stability evidence with hashes
+- [ ] 5.4 After all blocking rows are Green, repeat the clean-checkout gate and record the handoff to `add-douyin-runtime-adapter`

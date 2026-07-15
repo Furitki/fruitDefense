@@ -28,6 +28,7 @@ The project builds with Unity 6000.3.19f1 and targets WebGL, but this worktree h
 6. **No silent adapter fallback.** Until all release-blocking rows are Green, `WeChatMiniGame` remains unavailable. Editor and Web are explicit separate platform choices.
 7. **Secrets never enter reports.** The preflight records only boolean presence flags for AppID, developer session, and upload key. Paths are reduced to installation categories and no environment value is serialized.
 8. **Both Android and iOS are required for the release gate.** Each run covers cold/warm start, touch, audio, hide/show, HTTPS, cache, update callbacks, one battle, and 30 minutes of repeated play.
+9. **This change is the long-lived WeChat readiness record.** It remains active while a release-blocking row is Yellow or Red or the Douyin-first release dependency is unmet. It is refreshed when the Unity baseline, candidate WXSDK/tooling, official platform requirements, Douyin release state, account access, or device availability changes; age and ordinary WebGL success do not close it.
 
 ## Risks / Trade-offs
 
@@ -44,8 +45,9 @@ The project builds with Unity 6000.3.19f1 and targets WebGL, but this worktree h
 2. In an isolated SDK branch, review and pin one official adapter commit and one Stable Developer Tools version.
 3. Export/convert Unity 6000.3.19f1, then run simulator checks with an authorized AppID.
 4. Complete Android and iOS matrices and attach tool/client/base-library/device metadata.
-5. Mark Green only when all release-blocking rows are evidenced; then authorize `add-wechat-runtime-adapter` after the Douyin-first release path is stable.
-6. Rollback any failed experiment by deleting the isolated SDK branch/worktree; the core runtime remains untouched.
+5. Mark Green only when all release-blocking rows are evidenced, then re-run the current readiness script and clean-checkout conversion against the latest recorded baseline.
+6. Authorize `add-wechat-runtime-adapter` only after the Douyin-first release path is stable, then archive this tracker after the handoff is recorded.
+7. Rollback any failed experiment by deleting the isolated SDK branch/worktree; the core runtime remains untouched.
 
 ## Open Questions
 
