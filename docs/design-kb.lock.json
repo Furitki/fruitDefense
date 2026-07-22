@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "kitVersion": "0.2.1",
+  "managedFiles": {
+    "tools/design-kb/build.mjs": "aecb908194330dc97e1a90a30bcde395f2ad54b0b5a7f2abb02e8ace98bf3580",
+    "tools/design-kb/validate.mjs": "9355677c3e221941c9c92a17fa8af91e5f06b33b2c66acd54f0ec8c968ed4687",
+    "tools/design-kb/viewer.template.html": "c905f746f09fa43697c2a1031f7a39f104dc5bd6b9cf2fd33e8c4372ba15ddbe"
+  }
+}

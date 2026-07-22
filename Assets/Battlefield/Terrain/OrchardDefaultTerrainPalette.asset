@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea79c4856d194bd41a4bc31a4bc82d90, type: 3}
+  m_Name: OrchardDefaultTerrainPalette
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.BattlefieldTerrainPalette
+  paletteId: palette.orchard.default
+  soilBaseTexture: {fileID: 2800000, guid: d47929c54f0764a4d89c377bdd1c8d2b, type: 3}
+  surfaceBindings:
+  - surfaceId: surface.grass
+    tileSet: {fileID: 11400000, guid: c85fd6cb1fa2a4140b4204feb4c5c4d6, type: 2}
+  - surfaceId: surface.stone-road
+    tileSet: {fileID: 11400000, guid: 4c995549933a8ed48897e6b4e5760de1, type: 2}

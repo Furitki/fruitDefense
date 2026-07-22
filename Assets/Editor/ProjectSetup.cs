@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using FruitDefense.App;
+using FruitDefense.Content;
 using FruitDefense.Core;
 using FruitDefense.Shell;
+using FruitDefense.Tilemaps;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,13 +13,30 @@ namespace FruitDefense.Editor
 {
     public static class ProjectSetup
     {
+        internal const string BattlefieldGrassTileSetPath =
+            "Assets/DualGridDemo/PixelGrass/Generated/PixelGrassDualGridTileSet.asset";
+        internal const string BattlefieldRouteTileSetPath =
+            "Assets/DualGridTerrain/StoneFloor/Generated/StoneFloorDualGridTileSet.asset";
+        internal const string BattlefieldTerrainBaseTexturePath =
+            "Assets/DualGridDemo/PixelGrass/Sources/PixelSoilSource.png";
+        internal const string BattlefieldTerrainPalettePath =
+            "Assets/Battlefield/Terrain/OrchardDefaultTerrainPalette.asset";
+        private const float P0DesignWidth = 402f;
+        private const float P0DesignHeight = 874f;
+        private static readonly Rect ReferenceBattleSurfaceRect = new Rect(0f, 72f, 402f, 798f);
+        private static readonly Rect ReferenceBattlefieldBoardRect = new Rect(0f, 72f, 402f, 500f);
+        private static readonly Rect ReferenceToolTrayRect = new Rect(8f, 580f, 386f, 68f);
+        private static readonly Rect ReferenceNurseryTrayRect = new Rect(8f, 656f, 386f, 80f);
+        private static readonly Rect ReferenceRefreshRect = new Rect(8f, 744f, 386f, 44f);
+        private static readonly Rect ReferenceDetailRect = new Rect(8f, 796f, 386f, 70f);
+
         [MenuItem("Fruit Defense/Configure Project")]
         public static void Configure()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Scenes")) AssetDatabase.CreateFolder("Assets", "Scenes");
             CreateBootstrapScene();
             CreateComponentScene<LobbyPresenter>("Lobby", "LobbyPresenter");
-            CreateComponentScene<FruitDefenseGame>("Battle", "FruitDefenseGame");
+            CreateBattleScene();
             CreateComponentScene<SettlementPresenter>("Settlement", "SettlementPresenter");
             EditorBuildSettings.scenes = new[]
             {
@@ -58,11 +77,68 @@ namespace FruitDefense.Editor
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/" + sceneName + ".unity");
         }
 
+        private static void CreateBattleScene()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var root = new GameObject("FruitDefenseGame");
+            var game = root.AddComponent<FruitDefenseGame>();
+            ConfigureBattlefieldTerrain(game);
+            EditorSceneManager.SaveScene(scene, "Assets/Scenes/Battle.unity");
+        }
+
+        internal static void ConfigureBattlefieldTerrain(FruitDefenseGame game)
+        {
+            if (game == null) throw new System.ArgumentNullException(nameof(game));
+            var grassTileSet = AssetDatabase.LoadAssetAtPath<DualGridTileSet>(BattlefieldGrassTileSetPath);
+            var routeTileSet = AssetDatabase.LoadAssetAtPath<DualGridTileSet>(BattlefieldRouteTileSetPath);
+            var baseTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(BattlefieldTerrainBaseTexturePath);
+            if (grassTileSet == null || routeTileSet == null || baseTexture == null)
+                throw new System.InvalidOperationException(
+                    "Battlefield terrain assets are missing. Grass=" + BattlefieldGrassTileSetPath
+                    + ", route=" + BattlefieldRouteTileSetPath
+                    + ", base=" + BattlefieldTerrainBaseTexturePath);
+            EnsureFolder("Assets/Battlefield");
+            EnsureFolder("Assets/Battlefield/Terrain");
+            var palette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
+                BattlefieldTerrainPalettePath);
+            if (palette == null)
+            {
+                palette = ScriptableObject.CreateInstance<BattlefieldTerrainPalette>();
+                AssetDatabase.CreateAsset(palette, BattlefieldTerrainPalettePath);
+            }
+            palette.Configure(BundledLevelCatalogIds.TerrainPalettes.OrchardDefault, baseTexture,
+                new[]
+                {
+                    new BattlefieldTerrainSurfaceBinding(BattlefieldLayerIds.Surfaces.Grass, grassTileSet),
+                    new BattlefieldTerrainSurfaceBinding(BattlefieldLayerIds.Surfaces.StoneRoad, routeTileSet),
+                });
+            EditorUtility.SetDirty(palette);
+            game.ConfigureBattlefieldTerrain(new[] { palette });
+            EditorUtility.SetDirty(game);
+        }
+
+        private static void EnsureFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path)) return;
+            var separator = path.LastIndexOf('/');
+            if (separator <= 0) throw new System.ArgumentException("Invalid asset folder path: " + path);
+            var parent = path.Substring(0, separator);
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, path.Substring(separator + 1));
+        }
+
+        [MenuItem("Fruit Defense/Run Project Smoke Validation")]
         public static void SmokeValidate()
         {
             ValidateLegacyMigrationBaseline();
             ValidateBattlefieldDefinition();
+            ValidateBattlefieldDeterminism();
+            ValidateBattlefieldProjectionGeometry();
+            ValidateBattlefieldViewportMatrix();
             ValidateDragRegressionCoverage();
+            BattlefieldLayeredMapSmoke.Validate();
+            DualGridTilemapSmoke.Validate();
+            BattlefieldDualGridTerrainSmoke.Validate();
             var simulation = new GameSimulation(12345);
             Assert(simulation.State.Pots.Count == 8, "initial pot count");
             foreach (var group in simulation.Map.InitialPotGroups.Values)
@@ -72,8 +148,8 @@ namespace FruitDefense.Editor
             Assert(GameConfig.GetWave(1).Sequence.Count == 5, "wave 1 count");
             Assert(GameConfig.GetWave(6).Sequence.Count == (9 + 5 + 2) * 3, "wave 6 count scaling");
             Assert(Mathf.Approximately(GameConfig.WaveHpMultiplier(3), 2f), "wave health scaling");
-            Assert(GameConfig.PlantingCells.Count == 48 && simulation.State.Pots.Count < GameConfig.PlantingCells.Count,
-                "full planting grid contains visible empty cells");
+            Assert(GameConfig.PlantingCells.Count == 35 && simulation.State.Pots.Count < GameConfig.PlantingCells.Count,
+                "orchard-01 exposes 35 plantable cells with visible empty cells");
             Assert(simulation.RefreshNursery(out _), "first nursery refresh");
             Assert(simulation.State.Plants.Count + simulation.LastNurseryPotSlots.Count == 5, "nursery result count includes pots");
             var plant = simulation.State.Plants[0];
@@ -114,6 +190,7 @@ namespace FruitDefense.Editor
             Assert(foundPotReward, "nursery refresh can roll and auto-store flowerpots");
             ValidateMigrationBehavior();
             ValidateCombatActions();
+            CombatFrameworkSmoke.Run();
             var collisionTarget = new Rect(100f, 100f, 40f, 40f);
             var cursorOutsideTarget = new Vector2(160f, 160f);
             var preview = DragGeometry.PreviewRect(cursorOutsideTarget);
@@ -137,14 +214,26 @@ namespace FruitDefense.Editor
                 Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers session-control glyph: " + glyph);
             foreach (var glyph in "关卡选择成长设置默认返回大厅战斗结算胜利失败剩余生命")
                 Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers shell glyph: " + glyph);
+            foreach (var glyph in "第一二三形教学路线宽松熟悉种植合成覆盖连续转弯兼顾快速护甲敌人核心走廊短线压迫守住首领冲击")
+                Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers level-card glyph: " + glyph);
             Assert(FruitDefenseGame.ValidatePortraitLayout(out var portraitLayoutReason),
                 "portrait layout geometry: " + portraitLayoutReason);
             Assert(FruitDefenseGame.ValidateInspectionOnlyInteraction(out var inspectionReason),
                 "inspection-only interaction contract: " + inspectionReason);
             Assert(FruitDefenseGame.ValidateSessionControlContract(out var sessionControlReason),
                 "session control contract: " + sessionControlReason);
+            ValidateP1LevelCatalogPath();
             ValidateP0SceneConfiguration();
             Debug.Log("FRUIT_DEFENSE_SMOKE_OK");
+        }
+
+        private static void ValidateP1LevelCatalogPath()
+        {
+            LevelMapCatalogSmoke.Run();
+            MultiLevelSimulationSmoke.Run();
+            BattleSnapshotV2Smoke.Run();
+            BattleSessionHostSmoke.Run();
+            ShellFlowValidation.SmokeValidate();
         }
 
         private static void ValidateP0SceneConfiguration()
@@ -230,54 +319,188 @@ namespace FruitDefense.Editor
         {
             var map = GameConfig.DefaultBattlefield;
             Assert(map.Validate(out var reason), "default battlefield topology: " + reason);
-            Assert(map.GridWidth == 8 && map.GridHeight == 6 && map.PlantableCells.Count == 48,
-                "default battlefield is an 8-by-6 grid with 48 cells");
+            Assert(map.MapId == BattlefieldMapDefinition.DefaultMapId
+                && map.GridWidth == 8 && map.GridHeight == 7
+                && map.RouteCells.Count == 20 && map.PlantableCells.Count == 35,
+                "orchard-01 is an 8-by-7 grid with 20 route cells and 35 plantable cells");
+            Assert(map.UsesLayeredMap
+                && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
+                    surface => surface == BattlefieldLayerIds.Surfaces.Grass) == 35
+                && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
+                    surface => surface == BattlefieldLayerIds.Surfaces.StoneRoad) == 20
+                && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
+                    surface => surface == BattlefieldLayerIds.Surfaces.Soil) == 1
+                && System.Linq.Enumerable.Count(map.GameplayCells,
+                    cell => cell.Has(BattlefieldCellCapabilities.Plantable)) == 35
+                && System.Linq.Enumerable.Count(map.GameplayCells,
+                    cell => cell.Has(BattlefieldCellCapabilities.EnemyTraversable)) == 20,
+                "orchard-01 has independent visual-surface and gameplay-capability coverage");
             Assert(map.PlantableCells.Count == System.Linq.Enumerable.Count(System.Linq.Enumerable.Distinct(map.PlantableCells)),
                 "default battlefield cells are unique");
+
+            var expectedRoute = new List<Vector2Int>(20);
+            for (var column = 0; column < 8; column++) expectedRoute.Add(new Vector2Int(column, 0));
+            for (var row = 1; row < 7; row++) expectedRoute.Add(new Vector2Int(7, row));
+            for (var column = 6; column >= 1; column--) expectedRoute.Add(new Vector2Int(column, 6));
+            Assert(map.RouteTileDescriptors.Count == expectedRoute.Count,
+                "orchard-01 derives one descriptor for every ordered route cell");
+            for (var index = 0; index < expectedRoute.Count; index++)
+            {
+                Assert(map.RouteCells[index] == expectedRoute[index],
+                    "orchard-01 ordered route cell at index " + index);
+                Assert(map.RouteTileDescriptors[index].Cell == expectedRoute[index]
+                    && map.TryGetRouteTile(expectedRoute[index], out var descriptor)
+                    && descriptor.Cell == expectedRoute[index],
+                    "orchard-01 route descriptor lookup at index " + index);
+            }
+            Assert(map.EntryCell == new Vector2Int(0, 0) && map.ExitCell == new Vector2Int(1, 6)
+                && map.CoreCell == new Vector2Int(0, 6)
+                && map.EnemySpawnCell == map.EntryCell && map.RouteGoalCell == map.ExitCell
+                && System.Linq.Enumerable.Count(map.Markers,
+                    marker => marker.Kind == BattlefieldMarkerKind.EnemySpawn) == 1
+                && System.Linq.Enumerable.Count(map.Markers,
+                    marker => marker.Kind == BattlefieldMarkerKind.RouteGoal) == 1
+                && System.Linq.Enumerable.Count(map.Markers,
+                    marker => marker.Kind == BattlefieldMarkerKind.Core) == 1,
+                "orchard-01 spawn, route goal, and core resolve from typed markers");
+
+            AssertRouteDescriptor(map, 0, BattlefieldRouteTileKind.Entry,
+                BattlefieldDirection.None, BattlefieldDirection.East);
+            AssertRouteDescriptor(map, 1, BattlefieldRouteTileKind.Horizontal,
+                BattlefieldDirection.West, BattlefieldDirection.East);
+            AssertRouteDescriptor(map, 7, BattlefieldRouteTileKind.CornerSouthWest,
+                BattlefieldDirection.West, BattlefieldDirection.South);
+            AssertRouteDescriptor(map, 8, BattlefieldRouteTileKind.Vertical,
+                BattlefieldDirection.North, BattlefieldDirection.South);
+            AssertRouteDescriptor(map, 13, BattlefieldRouteTileKind.CornerNorthWest,
+                BattlefieldDirection.North, BattlefieldDirection.West);
+            AssertRouteDescriptor(map, 19, BattlefieldRouteTileKind.Exit,
+                BattlefieldDirection.East, BattlefieldDirection.None);
+            ValidateRouteDescriptorOrientations();
+
             Assert(map.InitialPotGroups.Count == 3
                 && System.Linq.Enumerable.Sum(map.InitialPotGroups.Values, group => group.InitialCount) == GameConfig.InitialPotCount,
                 "semantic groups place eight initial flowerpots");
-            Assert(map.Entry == map.Route.Sample(0f) && map.Exit == map.Route.Sample(map.Route.TotalLength),
-                "route endpoint sampling matches entry and exit");
-            Assert(Mathf.Approximately(map.Route.TotalLength, 23f), "route length derives from unequal segments");
-            var beforeCorner = map.Route.Sample(7.999f);
-            var atCorner = map.Route.Sample(8f);
-            var afterCorner = map.Route.Sample(8.001f);
-            Assert(Vector2.Distance(beforeCorner, atCorner) < .002f && Vector2.Distance(atCorner, afterCorner) < .002f,
-                "route sampling is continuous across an arbitrary segment boundary");
+            var initialCells = new HashSet<Vector2Int>();
+            foreach (var groupName in map.InitialPotGroupOrder)
+            {
+                Assert(map.InitialPotGroups.TryGetValue(groupName, out var group),
+                    "initial flowerpot group is addressable: " + groupName);
+                foreach (var cell in group.Cells)
+                    Assert(map.IsPlantable(cell) && initialCells.Add(cell),
+                        "initial flowerpot cell is unique and plantable: " + groupName + " " + cell);
+            }
+            Assert(initialCells.Count == P0GameplayParityBaseline.InitialPotCount,
+                "orchard-01 exposes exactly eight unique plantable initial flowerpot cells");
+
             var center = new Vector2Int(3, 3);
             Assert(System.Linq.Enumerable.Count(map.Topology.CardinalNeighbors(center)) == 4
                 && map.Topology.AreCardinalNeighbors(center, center + Vector2Int.right)
                 && !map.Topology.AreCardinalNeighbors(center, center + Vector2Int.one),
                 "topology exposes cardinal neighbors and rejects diagonals");
-
-            var duplicateCellMap = CreateInvalidMap(new[] { Vector2Int.zero, Vector2Int.zero },
-                new[] { Vector2.zero, Vector2.right }, new[] { Vector2Int.zero });
-            Assert(!duplicateCellMap.Validate(out reason) && reason.Contains("unique"), "duplicate cell topology is rejected");
-            var zeroSegmentMap = CreateInvalidMap(new[] { Vector2Int.zero },
-                new[] { Vector2.zero, Vector2.zero }, new[] { Vector2Int.zero });
-            Assert(!zeroSegmentMap.Validate(out reason) && reason.Contains("zero-length"), "zero-length route segment is rejected");
-            var invalidGroupMap = CreateInvalidMap(new[] { Vector2Int.zero },
-                new[] { Vector2.zero, Vector2.right }, new[] { Vector2Int.right });
-            Assert(!invalidGroupMap.Validate(out reason) && reason.Contains("non-plantable"), "invalid semantic group is rejected");
-            var outOfBoundsMap = CreateInvalidMap(new[] { new Vector2Int(2, 0) },
-                new[] { Vector2.zero, Vector2.right }, new[] { new Vector2Int(2, 0) });
-            Assert(!outOfBoundsMap.Validate(out reason) && reason.Contains("outside grid bounds"), "out-of-bounds cell is rejected");
         }
 
-        private static BattlefieldMapDefinition CreateInvalidMap(
-            Vector2Int[] cells,
-            Vector2[] route,
-            Vector2Int[] initialCells)
+        private static void AssertRouteDescriptor(BattlefieldMapDefinition map, int routeIndex,
+            BattlefieldRouteTileKind kind, BattlefieldDirection previous, BattlefieldDirection next)
         {
-            return new BattlefieldMapDefinition(
-                2,
-                2,
-                1f,
-                cells,
-                route,
-                Vector2.one * .5f,
-                new[] { new InitialPotGroup("test", 1, initialCells) });
+            Assert(map.Topology.TryDescribeRouteCell(routeIndex, out var descriptor, out var reason),
+                "route descriptor can be derived at index " + routeIndex + ": " + reason);
+            Assert(descriptor.Kind == kind && descriptor.PreviousConnection == previous
+                && descriptor.NextConnection == next,
+                "route descriptor kind and directions at index " + routeIndex);
+            if (kind == BattlefieldRouteTileKind.Entry || kind == BattlefieldRouteTileKind.Exit)
+                Assert(descriptor.Orientation != BattlefieldDirection.None,
+                    "route endpoint has a cardinal orientation at index " + routeIndex);
+        }
+
+        private static void ValidateRouteDescriptorOrientations()
+        {
+            AssertEndpointDescriptors(
+                new[] { new Vector2Int(0, 1), new Vector2Int(1, 1) }, new Vector2Int(2, 1),
+                BattlefieldDirection.East, BattlefieldDirection.West);
+            AssertEndpointDescriptors(
+                new[] { new Vector2Int(2, 1), new Vector2Int(1, 1) }, new Vector2Int(0, 1),
+                BattlefieldDirection.West, BattlefieldDirection.East);
+            AssertEndpointDescriptors(
+                new[] { new Vector2Int(1, 0), new Vector2Int(1, 1) }, new Vector2Int(1, 2),
+                BattlefieldDirection.South, BattlefieldDirection.North);
+            AssertEndpointDescriptors(
+                new[] { new Vector2Int(1, 2), new Vector2Int(1, 1) }, new Vector2Int(1, 0),
+                BattlefieldDirection.North, BattlefieldDirection.South);
+
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1) },
+                new Vector2Int(3, 1), BattlefieldRouteTileKind.Horizontal,
+                BattlefieldDirection.West, BattlefieldDirection.East);
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(1, 2) },
+                new Vector2Int(1, 3), BattlefieldRouteTileKind.Vertical,
+                BattlefieldDirection.North, BattlefieldDirection.South);
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(2, 1) },
+                new Vector2Int(3, 1), BattlefieldRouteTileKind.CornerNorthEast,
+                BattlefieldDirection.North, BattlefieldDirection.East);
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(0, 1) },
+                new Vector2Int(0, 2), BattlefieldRouteTileKind.CornerNorthWest,
+                BattlefieldDirection.North, BattlefieldDirection.West);
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(1, 2), new Vector2Int(1, 1), new Vector2Int(2, 1) },
+                new Vector2Int(3, 1), BattlefieldRouteTileKind.CornerSouthEast,
+                BattlefieldDirection.South, BattlefieldDirection.East);
+            AssertInternalDescriptor(
+                new[] { new Vector2Int(1, 2), new Vector2Int(1, 1), new Vector2Int(0, 1) },
+                new Vector2Int(0, 0), BattlefieldRouteTileKind.CornerSouthWest,
+                BattlefieldDirection.South, BattlefieldDirection.West);
+        }
+
+        private static void AssertEndpointDescriptors(Vector2Int[] route, Vector2Int core,
+            BattlefieldDirection entryOrientation, BattlefieldDirection exitOrientation)
+        {
+            var map = CreateCanonicalTestMap(route, route[0], route[route.Length - 1], core, null);
+            Assert(map.Validate(out var reason), "endpoint descriptor test map: " + reason);
+            AssertRouteDescriptor(map, 0, BattlefieldRouteTileKind.Entry,
+                BattlefieldDirection.None, entryOrientation);
+            AssertRouteDescriptor(map, route.Length - 1, BattlefieldRouteTileKind.Exit,
+                exitOrientation, BattlefieldDirection.None);
+        }
+
+        private static void AssertInternalDescriptor(Vector2Int[] route, Vector2Int core,
+            BattlefieldRouteTileKind kind, BattlefieldDirection previous, BattlefieldDirection next)
+        {
+            var map = CreateCanonicalTestMap(route, route[0], route[route.Length - 1], core, null);
+            Assert(map.Validate(out var reason), "internal descriptor test map: " + reason);
+            AssertRouteDescriptor(map, 1, kind, previous, next);
+        }
+
+        private static BattlefieldMapDefinition CreateCanonicalTestMap(
+            Vector2Int[] route, Vector2Int entry, Vector2Int exit, Vector2Int core,
+            Vector2Int? initialCell)
+        {
+            const int width = 4;
+            const int height = 4;
+            Assert(entry == route[0] && exit == route[route.Length - 1],
+                "descriptor test markers match route endpoints");
+            var routeLookup = new HashSet<Vector2Int>(route);
+            var resolvedInitialCell = initialCell ?? Vector2Int.zero;
+            if (!initialCell.HasValue)
+            {
+                for (var index = 0; index < width * height; index++)
+                {
+                    var candidate = new Vector2Int(index % width, index / width);
+                    if (candidate == core || routeLookup.Contains(candidate)) continue;
+                    resolvedInitialCell = candidate;
+                    break;
+                }
+            }
+            return new BattlefieldMapDefinition(BattlefieldLayeredMapFactory.CreateSingleRouteMap(
+                "canonical-test", width, height, 1f, route, core,
+                CreateInitialGroup(resolvedInitialCell)));
+        }
+
+        private static InitialPotGroup[] CreateInitialGroup(Vector2Int cell)
+        {
+            return new[] { new InitialPotGroup("test", 1, new[] { cell }) };
         }
 
         private static float DistanceToRoute(BattlefieldMapDefinition map, Vector2 point)
@@ -287,6 +510,374 @@ namespace FruitDefense.Editor
             for (var progress = 0f; progress <= map.Route.TotalLength; progress += step)
                 best = Mathf.Min(best, Vector2.Distance(point, map.Route.Sample(progress)));
             return best;
+        }
+
+        private static void ValidateBattlefieldDeterminism()
+        {
+            var map = GameConfig.DefaultBattlefield;
+            Assert(map.Route.SegmentCount == BattlefieldMapDefinition.DefaultRouteSegmentCount
+                && map.Route.CumulativeLengths.Count == map.RouteCells.Count
+                && Mathf.Approximately(map.MapUnitsPerCell,
+                    BattlefieldMapDefinition.DefaultRouteLength / BattlefieldMapDefinition.DefaultRouteSegmentCount),
+                "orchard-01 uses 19 uniform center-to-center route segments");
+            for (var index = 0; index < map.RouteCells.Count; index++)
+            {
+                var expectedCenter = map.CellToMap(map.RouteCells[index]);
+                var boundarySample = map.Route.Sample(map.Route.CumulativeLengths[index]);
+                Assert(Vector2.Distance(boundarySample, expectedCenter) <= .000001f,
+                    "route cumulative boundary samples the exact cell center at index " + index);
+            }
+            Assert(Mathf.Approximately(map.Route.TotalLength, P0GameplayParityBaseline.RouteLength),
+                "orchard-01 route remains exactly 23 map units");
+            Assert(map.Entry == map.Route.Sample(0f) && map.Exit == map.Route.Sample(map.Route.TotalLength),
+                "route endpoint sampling matches entry and exit centers");
+            AssertCornerContinuity(map, 7);
+            AssertCornerContinuity(map, 13);
+
+            var normalTraversalSeconds = map.Route.TotalLength / GameConfig.Zombie(ZombieKind.Normal).Speed;
+            Assert(Mathf.Abs(normalTraversalSeconds - P0GameplayParityBaseline.NormalEnemyTraversalSeconds) <= .0001f,
+                "normal enemy traversal duration matches the P0 parity baseline");
+            var nearDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(6, 1)));
+            var representativeDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(3, 3)));
+            Assert(nearDistance <= GameConfig.Plant(PlantKind.Durian).Range
+                && representativeDistance <= GameConfig.Plant(PlantKind.Pea).Range
+                && representativeDistance > GameConfig.Plant(PlantKind.Durian).Range,
+                "representative near and mid-range target coverage matches the P0 baseline");
+
+            Assert(GameConfig.MaxWaves == P0GameplayParityBaseline.WaveCount
+                && BuildWaveContentSignature() == P0GameplayParityBaseline.WaveContentSignature,
+                "all fifteen ordered waves match the P0 content signature");
+            Assert(BuildCombatNumericSignature() == P0GameplayParityBaseline.CombatNumericSignature,
+                "plant, enemy, star, wave, and initial-pot values match the P0 numeric signature");
+
+            var simulation = new GameSimulation(20260715);
+            var snapshot = simulation.ExportSnapshot();
+            Assert(simulation.Map.MapId == P0GameplayParityBaseline.MapId
+                && simulation.MapId == P0GameplayParityBaseline.MapId
+                && snapshot.mapId == P0GameplayParityBaseline.MapId,
+                "active definition and exported snapshot use the orchard-01 map identity");
+            Assert(simulation.State.Pots.Count == P0GameplayParityBaseline.InitialPotCount,
+                "P0 parity baseline retains eight initial flowerpots");
+        }
+
+        private static void ValidateBattlefieldProjectionGeometry()
+        {
+            var map = GameConfig.DefaultBattlefield;
+            var projection = new BattlefieldProjection(map, ReferenceBattlefieldBoardRect);
+            var legacyProjection = new BattlefieldProjection(map, new Rect(4f, 76f, 394f, 398f));
+            Assert(Mathf.Approximately(BattlefieldProjection.PotVisualRatio, .88f)
+                && projection.TileSize > 0f
+                && projection.TileSize > legacyProjection.TileSize
+                && Mathf.Abs(projection.GridRect.center.x - projection.ContentRect.center.x) <= .001f
+                && Mathf.Abs(projection.GridRect.center.y - projection.ContentRect.center.y) <= .001f
+                && Mathf.Abs(projection.GridRect.width - projection.TileSize * map.GridWidth) <= .001f
+                && Mathf.Abs(projection.GridRect.height - projection.TileSize * map.GridHeight) <= .001f
+                && ContainsRect(projection.ContentRect, projection.GridRect),
+                "square orchard grid is centered and contained in battlefield content");
+
+            for (var row = 0; row < map.GridHeight; row++)
+            {
+                for (var column = 0; column < map.GridWidth; column++)
+                {
+                    var cell = new Vector2Int(column, row);
+                    var tile = projection.TileRect(cell);
+                    Assert(Mathf.Abs(tile.width - tile.height) <= .001f
+                        && Mathf.Abs(tile.width - projection.TileSize) <= .001f
+                        && ContainsRect(projection.GridRect, tile)
+                        && Vector2.Distance(tile.center, projection.MapToScreen(map.CellToMap(cell))) <= .001f,
+                        "tile is square, contained, and center-aligned at " + cell);
+                    Assert(RectApproximately(tile, projection.CellRect(cell)),
+                        "cell compatibility rectangle remains the full tile at " + cell);
+                }
+            }
+
+            for (var routeIndex = 0; routeIndex < map.RouteCells.Count; routeIndex++)
+            {
+                var cell = map.RouteCells[routeIndex];
+                var tile = projection.TileRect(cell);
+                var routeTile = projection.RouteTileRect(cell);
+                var sampledCenter = projection.MapToScreen(
+                    map.Route.Sample(map.Route.CumulativeLengths[routeIndex]));
+                Assert(RectApproximately(routeTile, tile) && ContainsRect(tile, routeTile)
+                    && Vector2.Distance(sampledCenter, routeTile.center) <= .001f,
+                    "route tile and cumulative route sample share the tile center at index " + routeIndex);
+            }
+
+            var coreTile = projection.TileRect(map.CoreCell);
+            Assert(ContainsRect(coreTile, projection.CoreRect)
+                && Vector2.Distance(coreTile.center, projection.CoreRect.center) <= .001f
+                && Mathf.Abs(projection.CoreRect.width / coreTile.width
+                    - BattlefieldProjection.CoreVisualRatio) <= .001f,
+                "core visual remains centered and contained inside its semantic tile");
+
+            var hitRects = new List<Rect>(map.PlantableCells.Count);
+            var denseNeighborCount = 0;
+            foreach (var cell in map.PlantableCells)
+            {
+                var tile = projection.TileRect(cell);
+                var hit = projection.PotHitRect(cell);
+                var visual = projection.PotVisualRect(cell);
+                Assert(RectApproximately(hit, tile) && RectApproximately(projection.PotRect(cell), hit),
+                    "flowerpot selection, drag, and drop target uses the full tile at " + cell);
+                Assert(ContainsRect(hit, visual)
+                    && Vector2.Distance(hit.center, visual.center) <= .001f
+                    && Mathf.Abs(visual.width / hit.width - .88f) <= .001f
+                    && Mathf.Abs(visual.height / hit.height - .88f) <= .001f
+                    && !RectApproximately(visual, hit),
+                    "frameless flowerpot visual is centered and contained at the 0.88 ratio at " + cell);
+                foreach (var previousHit in hitRects)
+                    Assert(!RectInteriorOverlaps(previousHit, hit),
+                        "full-tile flowerpot targets remain independently addressable at " + cell);
+                hitRects.Add(hit);
+
+                var right = cell + Vector2Int.right;
+                var down = cell + Vector2Int.up;
+                if (map.IsPlantable(right))
+                {
+                    denseNeighborCount++;
+                    Assert(!RectInteriorOverlaps(visual, projection.PotVisualRect(right)),
+                        "horizontal adjacent flowerpot visuals remain disjoint at " + cell);
+                }
+                if (map.IsPlantable(down))
+                {
+                    denseNeighborCount++;
+                    Assert(!RectInteriorOverlaps(visual, projection.PotVisualRect(down)),
+                        "vertical adjacent flowerpot visuals remain disjoint at " + cell);
+                }
+            }
+            Assert(denseNeighborCount > 0 && hitRects.Count == 35,
+                "dense adjacent flowerpot coverage exercises all 35 independent targets");
+            Assert(projection.ValidatePlantingGeometry(out var plantingReason),
+                "projection planting geometry contract: " + plantingReason);
+        }
+
+        private static bool RectApproximately(Rect first, Rect second, float tolerance = .001f)
+        {
+            return Mathf.Abs(first.x - second.x) <= tolerance
+                && Mathf.Abs(first.y - second.y) <= tolerance
+                && Mathf.Abs(first.width - second.width) <= tolerance
+                && Mathf.Abs(first.height - second.height) <= tolerance;
+        }
+
+        private static bool ContainsRect(Rect outer, Rect inner, float tolerance = .001f)
+        {
+            return inner.xMin >= outer.xMin - tolerance && inner.yMin >= outer.yMin - tolerance
+                && inner.xMax <= outer.xMax + tolerance && inner.yMax <= outer.yMax + tolerance;
+        }
+
+        private static bool RectInteriorOverlaps(Rect first, Rect second, float tolerance = .001f)
+        {
+            return Mathf.Min(first.xMax, second.xMax) - Mathf.Max(first.xMin, second.xMin) > tolerance
+                && Mathf.Min(first.yMax, second.yMax) - Mathf.Max(first.yMin, second.yMin) > tolerance;
+        }
+
+        private static void ValidateBattlefieldViewportMatrix()
+        {
+            var expectedViewports = new[]
+            {
+                new Vector2Int(360, 800),
+                new Vector2Int(375, 812),
+                new Vector2Int(402, 874),
+                new Vector2Int(430, 932),
+            };
+            Assert(BattlefieldProjection.RequiredPortraitViewports.Count == expectedViewports.Length,
+                "required portrait viewport matrix has four cases");
+            for (var index = 0; index < expectedViewports.Length; index++)
+            {
+                var viewport = expectedViewports[index];
+                Assert(BattlefieldProjection.RequiredPortraitViewports[index] == viewport,
+                    "required portrait viewport is exact at index " + index);
+                ValidateViewportLayoutCase(viewport,
+                    new Rect(0f, 0f, viewport.x, viewport.y), "full-safe-area");
+                ValidateViewportLayoutCase(viewport,
+                    new Rect(0f, 34f, viewport.x, viewport.y - 34f - 24f),
+                    "top-24-bottom-34");
+            }
+
+            ValidateViewportLayoutCase(new Vector2Int(402, 874),
+                new Rect(0f, 0f, 402f, 827f), "top-47");
+            ValidateViewportLayoutCase(new Vector2Int(402, 874),
+                new Rect(0f, 34f, 402f, 840f), "bottom-34");
+        }
+
+        private static void ValidateViewportLayoutCase(
+            Vector2Int viewport, Rect safeArea, string caseName)
+        {
+            var layout = BattlefieldProjection.CalculateViewportLayout(
+                viewport.x, viewport.y, safeArea, P0DesignWidth, P0DesignHeight);
+            var viewportRect = new Rect(0f, 0f, viewport.x, viewport.y);
+            Assert(layout.Scale > 0f
+                && ContainsRect(viewportRect, layout.SafeAreaInGuiSpace)
+                && ContainsRect(layout.SafeAreaInGuiSpace, layout.DesignViewportRect)
+                && Mathf.Abs(layout.DesignViewportRect.center.x - layout.SafeAreaInGuiSpace.center.x) <= .001f
+                && Mathf.Abs(layout.DesignViewportRect.center.y - layout.SafeAreaInGuiSpace.center.y) <= .001f,
+                "design viewport is centered and contained for " + viewport + " " + caseName);
+
+            var designRegions = new[]
+            {
+                new Rect(8f, 8f, 386f, 60f),
+                ReferenceBattleSurfaceRect,
+                ReferenceBattlefieldBoardRect,
+                ReferenceToolTrayRect,
+                ReferenceNurseryTrayRect,
+                ReferenceRefreshRect,
+                ReferenceDetailRect,
+            };
+            foreach (var region in designRegions)
+            {
+                var projectedRegion = layout.ProjectDesignRect(region);
+                Assert(ContainsRect(layout.SafeAreaInGuiSpace, projectedRegion)
+                    && ContainsRect(viewportRect, projectedRegion),
+                    "design control region remains inside the safe viewport for " + viewport + " " + caseName);
+            }
+
+            var map = GameConfig.DefaultBattlefield;
+            var projection = new BattlefieldProjection(map, ReferenceBattlefieldBoardRect);
+            Assert(projection.ValidateControlInset(out var controlReason),
+                "battlefield control inset contract for " + viewport + " " + caseName + ": " + controlReason);
+            var projectedBoard = layout.ProjectDesignRect(projection.BoardRect);
+            var projectedGrid = layout.ProjectDesignRect(projection.GridRect);
+            var projectedControlStrip = layout.ProjectDesignRect(projection.ControlStripRect);
+            var projectedWaveAction = layout.ProjectDesignRect(projection.WaveActionRect);
+            var projectedCore = layout.ProjectDesignRect(projection.CoreRect);
+            Assert(ContainsRect(projectedBoard, projectedGrid)
+                && ContainsRect(projectedBoard, projectedControlStrip)
+                && ContainsRect(projectedControlStrip, projectedWaveAction)
+                && ContainsRect(layout.SafeAreaInGuiSpace, projectedBoard)
+                && !RectInteriorOverlaps(projectedGrid, projectedControlStrip)
+                && !RectInteriorOverlaps(projectedGrid, projectedWaveAction),
+                "grid and battlefield controls are contained and disjoint for " + viewport + " " + caseName);
+
+            var projectedRouteTiles = new List<Rect>(map.RouteCells.Count);
+            foreach (var routeCell in map.RouteCells)
+            {
+                var routeTile = layout.ProjectDesignRect(projection.RouteTileRect(routeCell));
+                Assert(Mathf.Abs(routeTile.width - routeTile.height) <= .001f
+                    && ContainsRect(projectedGrid, routeTile)
+                    && !RectInteriorOverlaps(routeTile, projectedControlStrip)
+                    && !RectInteriorOverlaps(routeTile, projectedWaveAction)
+                    && !RectInteriorOverlaps(routeTile, projectedCore),
+                    "route tile is square and clear of core and controls at " + routeCell
+                        + " for " + viewport + " " + caseName);
+                projectedRouteTiles.Add(routeTile);
+            }
+
+            Assert(ContainsRect(projectedGrid, projectedCore)
+                && !RectInteriorOverlaps(projectedCore, projectedControlStrip)
+                && !RectInteriorOverlaps(projectedCore, projectedWaveAction),
+                "core is grid-local and clear of controls for " + viewport + " " + caseName);
+
+            var projectedPotTargets = new List<Rect>(map.PlantableCells.Count);
+            foreach (var plantableCell in map.PlantableCells)
+            {
+                var hit = layout.ProjectDesignRect(projection.PotHitRect(plantableCell));
+                var visual = layout.ProjectDesignRect(projection.PotVisualRect(plantableCell));
+                Assert(Mathf.Abs(hit.width - hit.height) <= .001f
+                    && ContainsRect(projectedGrid, hit) && ContainsRect(hit, visual)
+                    && Mathf.Abs(visual.width / hit.width - .88f) <= .001f
+                    && !RectInteriorOverlaps(hit, projectedCore)
+                    && !RectInteriorOverlaps(hit, projectedControlStrip)
+                    && !RectInteriorOverlaps(hit, projectedWaveAction),
+                    "flowerpot target and visual are contained and clear of core and controls at "
+                        + plantableCell + " for " + viewport + " " + caseName);
+                foreach (var routeTile in projectedRouteTiles)
+                    Assert(!RectInteriorOverlaps(hit, routeTile),
+                        "flowerpot target remains disjoint from route at " + plantableCell
+                            + " for " + viewport + " " + caseName);
+                foreach (var previousTarget in projectedPotTargets)
+                    Assert(!RectInteriorOverlaps(hit, previousTarget),
+                        "flowerpot targets remain independently addressable at " + plantableCell
+                            + " for " + viewport + " " + caseName);
+                projectedPotTargets.Add(hit);
+            }
+        }
+
+        private static void AssertCornerContinuity(BattlefieldMapDefinition map, int routeIndex)
+        {
+            var boundary = map.Route.CumulativeLengths[routeIndex];
+            var epsilon = map.MapUnitsPerCell * .001f;
+            var center = map.CellToMap(map.RouteCells[routeIndex]);
+            var before = map.Route.Sample(boundary - epsilon);
+            var at = map.Route.Sample(boundary);
+            var after = map.Route.Sample(boundary + epsilon);
+            Assert(Vector2.Distance(at, center) <= .000001f
+                && Mathf.Abs(Vector2.Distance(before, at) - epsilon) <= .000001f
+                && Mathf.Abs(Vector2.Distance(at, after) - epsilon) <= .000001f,
+                "enemy route reaches and leaves the exact corner center continuously at index " + routeIndex);
+            var incoming = (at - before).normalized;
+            var outgoing = (after - at).normalized;
+            Assert(Mathf.Abs(Vector2.Dot(incoming, outgoing)) <= .0001f,
+                "route changes cardinal direction at corner index " + routeIndex);
+        }
+
+        private static string BuildWaveContentSignature()
+        {
+            var rows = new List<string>(GameConfig.MaxWaves);
+            for (var waveIndex = 1; waveIndex <= GameConfig.MaxWaves; waveIndex++)
+            {
+                var counts = new int[4];
+                foreach (var kind in GameConfig.GetWave(waveIndex).Sequence) counts[(int)kind]++;
+                var multiplier = GameConfig.WaveCountMultiplier(waveIndex);
+                for (var kindIndex = 0; kindIndex < counts.Length; kindIndex++)
+                {
+                    Assert(counts[kindIndex] % multiplier == 0,
+                        "wave " + waveIndex + " count is divisible by its scaling multiplier");
+                    counts[kindIndex] /= multiplier;
+                }
+                rows.Add(string.Join(",", counts));
+            }
+            return string.Join("|", rows);
+        }
+
+        private static string BuildCombatNumericSignature()
+        {
+            var pea = GameConfig.Plant(PlantKind.Pea);
+            var watermelon = GameConfig.Plant(PlantKind.Watermelon);
+            var banana = GameConfig.Plant(PlantKind.Banana);
+            var durian = GameConfig.Plant(PlantKind.Durian);
+            var sunflower = GameConfig.Plant(PlantKind.Sunflower);
+            var normal = GameConfig.Zombie(ZombieKind.Normal);
+            var runner = GameConfig.Zombie(ZombieKind.Runner);
+            var armored = GameConfig.Zombie(ZombieKind.Armored);
+            var boss = GameConfig.Zombie(ZombieKind.Boss);
+            return "plants:pea=" + PlantNumericSignature(pea)
+                + ",watermelon=" + PlantNumericSignature(watermelon)
+                + ",banana=" + PlantNumericSignature(banana)
+                + ",durian=" + PlantNumericSignature(durian)
+                + ",sunflower=" + PlantNumericSignature(sunflower)
+                + ";enemies:normal=" + EnemyNumericSignature(normal)
+                + ",runner=" + EnemyNumericSignature(runner)
+                + ",armored=" + EnemyNumericSignature(armored)
+                + ",boss=" + EnemyNumericSignature(boss)
+                + ";stars:damage=" + StarNumericSignature(GameConfig.StarDamage)
+                + ",speed=" + StarNumericSignature(GameConfig.StarSpeed)
+                + ",range=" + StarNumericSignature(GameConfig.StarRange)
+                + ";waves=" + GameConfig.MaxWaves
+                + ",between=" + Number(GameConfig.BetweenWaveSeconds)
+                + ",initial-pots=" + GameConfig.InitialPotCount;
+        }
+
+        private static string PlantNumericSignature(PlantStats stats)
+        {
+            return Number(stats.Damage) + "/" + Number(stats.Interval) + "/"
+                + Number(GameConfig.LegacyDistance(stats.Range));
+        }
+
+        private static string EnemyNumericSignature(ZombieStats stats)
+        {
+            return Number(stats.Hp) + "/" + Number(GameConfig.LegacyDistance(stats.Speed))
+                + "/" + stats.Reward + "/" + stats.Threat;
+        }
+
+        private static string StarNumericSignature(System.Func<int, float> valueAtStar)
+        {
+            return Number(valueAtStar(1)) + "/" + Number(valueAtStar(2)) + "/"
+                + Number(valueAtStar(3)) + "/" + Number(valueAtStar(4));
+        }
+
+        private static string Number(float value)
+        {
+            return value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private static void ValidateMigrationBehavior()
@@ -318,7 +909,7 @@ namespace FruitDefense.Editor
             });
             var lives = traversal.State.Lives;
             for (var step = 0; step < 2000 && traversal.State.Lives == lives; step++) traversal.Tick(.05f);
-            var expectedSeconds = BattlefieldMapDefinition.LegacyRouteLength / 4.4f;
+            var expectedSeconds = P0GameplayParityBaseline.NormalEnemyTraversalSeconds;
             Assert(traversal.State.Lives == lives - 1
                 && Mathf.Abs(traversal.State.Elapsed - expectedSeconds) <= .1f,
                 "normal zombie traversal timing remains within migration tolerance");

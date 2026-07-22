@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using FruitDefense.App.Services;
 using FruitDefense.Battle;
@@ -12,7 +13,8 @@ namespace FruitDefense.App
 {
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(-900)]
-    public sealed class AppFlowCoordinator : MonoBehaviour, IShellFlowContext, IBattleResultSink
+    public sealed class AppFlowCoordinator : MonoBehaviour, IShellFlowContext,
+        ILevelSelectionFlowContext, IBattleResultSink
     {
         public const string BootstrapScene = "Bootstrap";
         public const string LobbyScene = "Lobby";
@@ -30,19 +32,28 @@ namespace FruitDefense.App
         public const string RuntimeConfigInvalid = "runtime-config-invalid";
         public const string BundledContentInvalid = "bundled-content-invalid";
         public const string BundledContentMismatch = "bundled-content-version-mismatch";
+        public const string BundledLevelCatalogInvalid = "bundled-level-catalog-invalid";
+        public const string LevelResolutionFailed = "battle-level-resolution-failed";
+        public const string StoredLevelUnavailable = "stored-level-unavailable";
+        public const string ProfileSelectionSaveFailed = "profile-selection-save-failed";
 
         private AppBootstrap _bootstrap;
         private IPlayerProfileStore _profileStore;
         private IRemoteConfigService _remoteConfigService;
         private PlayerProfileEnvelopeV1 _profile;
         private RuntimeConfigV1 _runtimeConfig;
+        private CompiledLevelCatalog _levelCatalog;
         private BattleLaunchRequest _currentRequest;
+        private ResolvedLevelDefinition _currentResolvedLevel;
         private BattleResult _currentResult;
         private IBattleSessionHost _activeBattleHost;
         private bool _compositionReady;
         private bool _startupRoutineActive;
         private string _blockingError = string.Empty;
         private ShellFlowError _lastRecoverableError;
+        private string _selectedLevelId = string.Empty;
+        private bool _profileSaveRoutineActive;
+        private bool _profileSavePending;
 
         public IAppNavigator Navigator => _bootstrap == null ? null : _bootstrap.Navigator;
         public string BundledContentVersion { get; private set; } = string.Empty;
@@ -53,10 +64,24 @@ namespace FruitDefense.App
         public BattleResult CurrentResult => _currentResult;
         public PlayerProfileEnvelopeV1 CurrentProfile => _profile;
         public RuntimeConfigV1 CurrentRuntimeConfig => _runtimeConfig;
+        public CompiledLevelCatalog CurrentLevelCatalog => _levelCatalog;
+        public ResolvedLevelDefinition CurrentResolvedLevel => _currentResolvedLevel;
+        public IReadOnlyList<LevelDefinition> PlayableLevels => _levelCatalog == null
+            ? Array.Empty<LevelDefinition>()
+            : _levelCatalog.PlayableLevels;
+        public string SelectedLevelId => _selectedLevelId;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")]
-        private static extern void FruitDefenseAcceptanceReady(int route);
+        private static extern void FruitDefenseAcceptanceReady(
+            int route,
+            string sessionId,
+            int seed,
+            string levelId,
+            string mapId,
+            string waveSetId,
+            string ruleSetId,
+            string themeId);
 #endif
 
         private void Start()
@@ -110,14 +135,25 @@ namespace FruitDefense.App
             else if (profileResult.Status == ProfileLoadStatus.StorageError)
                 _lastRecoverableError = new ShellFlowError("local-profile-storage-degraded", profileResult.Error);
 
-            var bundledCatalog = BundledBattleContentFactory.Create();
-            if (!BattleContentCompiler.TryCompile(bundledCatalog, out var compiled, out var validation))
+            if (!BundledLevelCatalogFactory.TryCompile(out _levelCatalog,
+                    out var levelValidation, out var contentValidation))
             {
-                _blockingError = BundledContentInvalid + ":" + validation.Issues[0].code;
+                if (contentValidation != null && !contentValidation.IsValid
+                    && contentValidation.Issues.Count > 0)
+                {
+                    _blockingError = BundledContentInvalid + ":" + contentValidation.Issues[0].code;
+                }
+                else
+                {
+                    var issue = levelValidation != null && levelValidation.Issues.Count > 0
+                        ? levelValidation.Issues[0].Code
+                        : "unknown";
+                    _blockingError = BundledLevelCatalogInvalid + ":" + issue;
+                }
                 _startupRoutineActive = false;
                 yield break;
             }
-            BundledContentVersion = compiled.Header.contentVersion;
+            BundledContentVersion = _levelCatalog.ContentVersion;
             if (!string.Equals(
                     BundledContentVersion,
                     _runtimeConfig.bundledContentVersion,
@@ -128,17 +164,49 @@ namespace FruitDefense.App
                 yield break;
             }
 
+            if (_levelCatalog.TryResolve(_profile.lastSelectedLevelId,
+                    out var storedLevel, out var storedLevelError))
+            {
+                _selectedLevelId = storedLevel.Identity.LevelId;
+            }
+            else
+            {
+                var invalidStoredLevel = _profile.lastSelectedLevelId ?? string.Empty;
+                _selectedLevelId = _levelCatalog.DefaultLevelId;
+                _profile.lastSelectedLevelId = _selectedLevelId;
+                _lastRecoverableError = new ShellFlowError(StoredLevelUnavailable,
+                    invalidStoredLevel + ":" + (storedLevelError == null
+                        ? "unknown"
+                        : storedLevelError.ToString()));
+
+                ProfileSaveResult recoverySave = null;
+                yield return _profileStore.Save(_profile, value => recoverySave = value);
+                if (recoverySave != null && recoverySave.Status == ProfileSaveStatus.Success)
+                {
+                    _profile = recoverySave.Profile;
+                }
+                else
+                {
+                    ReportRecoverableError(new ShellFlowError(ProfileSelectionSaveFailed,
+                        recoverySave?.Error));
+                }
+            }
+
             _compositionReady = true;
             _startupRoutineActive = false;
 
             if (ShouldEnterAcceptanceBattle())
             {
-                TryStartDefaultBattle(
-                    LobbyPresenter.DefaultLevelId,
+                var acceptanceLevelId = AcceptanceLevelId();
+                if (!TryStartDefaultBattle(
+                    acceptanceLevelId,
                     "acceptance-" + Guid.NewGuid().ToString("N"),
                     20260714,
                     BundledContentVersion,
-                    out _);
+                    out var acceptanceError))
+                {
+                    _blockingError = acceptanceError.Code + ":" + acceptanceError.Detail;
+                }
                 yield break;
             }
 
@@ -160,13 +228,44 @@ namespace FruitDefense.App
             var request = new BattleLaunchRequest(sessionId, levelId, seed, contentVersion);
             if (!request.TryValidate(out var requestError))
                 return Fail(requestError, out error);
+            if (!string.Equals(contentVersion, BundledContentVersion, StringComparison.Ordinal))
+                return Fail(BundledContentMismatch, out error);
+            if (!TryResolveLevel(levelId, out var resolvedLevel, out error))
+                return false;
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 return Fail(navigationError, out error);
 
             _currentRequest = request;
+            _currentResolvedLevel = resolvedLevel;
             _currentResult = null;
-            StartCoroutine(LoadBattle(request));
+            StartCoroutine(LoadBattle(request, resolvedLevel));
             error = ShellFlowError.None;
+            return true;
+        }
+
+        public bool TrySelectLevel(string levelId, out ShellFlowError error)
+        {
+            if (!_compositionReady || _levelCatalog == null)
+                return Fail(FlowNotReady, out error);
+            if (!TryResolveLevel(levelId, out var resolvedLevel, out error))
+                return false;
+
+            _selectedLevelId = resolvedLevel.Identity.LevelId;
+            if (_profile != null
+                && !string.Equals(_profile.lastSelectedLevelId, _selectedLevelId,
+                    StringComparison.Ordinal))
+            {
+                _profile.lastSelectedLevelId = _selectedLevelId;
+                QueueProfileSelectionSave();
+            }
+
+            error = ShellFlowError.None;
+            if (Navigator != null
+                && Navigator.CurrentRoute == AppRoute.Lobby
+                && Navigator.TransitionState == AppTransitionState.Idle)
+            {
+                SignalAcceptanceRouteReady(AppRoute.Lobby);
+            }
             return true;
         }
 
@@ -219,6 +318,7 @@ namespace FruitDefense.App
             }
 
             viewData = new SettlementViewData(
+                _currentResult.LevelId,
                 _currentResult.Outcome == BattleOutcome.Victory,
                 _currentResult.ReachedWave,
                 _currentResult.RemainingLives);
@@ -230,6 +330,11 @@ namespace FruitDefense.App
         {
             if (!_compositionReady || Navigator == null)
                 return Fail(FlowNotReady, out error);
+            if (_currentResult != null
+                && !TrySelectLevel(_currentResult.LevelId, out error))
+            {
+                return false;
+            }
             if (!Navigator.TryBeginTransition(AppRoute.Lobby, out var navigationError))
                 return Fail(navigationError, out error);
 
@@ -244,19 +349,27 @@ namespace FruitDefense.App
                 return Fail(FlowNotReady, out error);
             if (_currentRequest == null || _currentResult == null)
                 return Fail(BattleResultMissing, out error);
+            if (!_currentResult.TryValidate(_currentRequest, out var resultError))
+                return Fail(resultError, out error);
+            if (!TryResolveLevel(_currentResult.LevelId, out var retryLevel, out error))
+                return false;
+
+            var retrySeed = CreateNonzeroSeed();
+            while (retrySeed == _currentRequest.Seed) retrySeed = CreateNonzeroSeed();
 
             var retry = new BattleLaunchRequest(
                 Guid.NewGuid().ToString("N"),
-                _currentRequest.LevelId,
-                CreateNonzeroSeed(),
+                _currentResult.LevelId,
+                retrySeed,
                 _currentRequest.ContentVersion);
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 return Fail(navigationError, out error);
 
             _currentRequest = retry;
+            _currentResolvedLevel = retryLevel;
             _currentResult = null;
             _activeBattleHost = null;
-            StartCoroutine(LoadBattle(retry));
+            StartCoroutine(LoadBattle(retry, retryLevel));
             error = ShellFlowError.None;
             return true;
         }
@@ -302,7 +415,8 @@ namespace FruitDefense.App
             });
         }
 
-        private IEnumerator LoadBattle(BattleLaunchRequest request)
+        private IEnumerator LoadBattle(BattleLaunchRequest request,
+            ResolvedLevelDefinition resolvedLevel)
         {
             yield return LoadScene(BattleScene, result =>
             {
@@ -319,7 +433,13 @@ namespace FruitDefense.App
                     return;
                 }
 
-                var initialization = host.Initialize(request, Navigator, this);
+                if (!ReferenceEquals(_currentResolvedLevel, resolvedLevel))
+                {
+                    RecoverAfterRouteFailure(BattleSessionInitializationResult.ResolvedLevelMismatch);
+                    return;
+                }
+
+                var initialization = host.Initialize(request, Navigator, this, resolvedLevel);
                 if (!initialization.Success)
                 {
                     RecoverAfterRouteFailure(initialization.ErrorCode);
@@ -444,6 +564,7 @@ namespace FruitDefense.App
             _activeBattleHost?.DisposeSession();
             _activeBattleHost = null;
             _currentRequest = null;
+            _currentResolvedLevel = null;
             _currentResult = null;
         }
 
@@ -456,6 +577,17 @@ namespace FruitDefense.App
                 && string.Equals(route, "battle", StringComparison.OrdinalIgnoreCase);
         }
 
+        private string AcceptanceLevelId()
+        {
+            var launch = _bootstrap.PlatformAdapter?.LaunchContext;
+            if (launch != null)
+            {
+                if (launch.TryGetQuery("level", out var levelId)) return levelId;
+                if (launch.TryGetQuery("levelId", out levelId)) return levelId;
+            }
+            return _levelCatalog.DefaultLevelId;
+        }
+
         public void ConfigureAcceptanceFlow(string command)
         {
             if (!IsAcceptanceLaunch() || string.IsNullOrWhiteSpace(command)) return;
@@ -464,7 +596,8 @@ namespace FruitDefense.App
                 case "victory":
                     if (_activeBattleHost?.Simulation == null) return;
                     _activeBattleHost.Simulation.State.Phase = global::FruitDefense.Core.GamePhase.Victory;
-                    _activeBattleHost.Simulation.State.WaveIndex = 15;
+                    _activeBattleHost.Simulation.State.WaveIndex =
+                        _activeBattleHost.Simulation.MaxWaves;
                     _activeBattleHost.Simulation.State.Lives = 3;
                     _activeBattleHost.TrySubmitTerminalResult();
                     break;
@@ -486,7 +619,26 @@ namespace FruitDefense.App
         private void SignalAcceptanceRouteReady(AppRoute route)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            if (IsAcceptanceLaunch()) FruitDefenseAcceptanceReady((int)route);
+            if (!IsAcceptanceLaunch()) return;
+
+            var resolvedLevel = _currentResolvedLevel;
+            if (resolvedLevel == null && _levelCatalog != null
+                && _levelCatalog.TryResolve(_selectedLevelId,
+                    out var selectedLevel, out _))
+            {
+                resolvedLevel = selectedLevel;
+            }
+
+            var identity = resolvedLevel?.Identity;
+            FruitDefenseAcceptanceReady(
+                (int)route,
+                _currentRequest?.SessionId ?? string.Empty,
+                _currentRequest?.Seed ?? 0,
+                identity?.LevelId ?? string.Empty,
+                identity?.MapId ?? string.Empty,
+                identity?.WaveSetId ?? string.Empty,
+                identity?.RuleSetId ?? string.Empty,
+                identity?.ThemeId ?? string.Empty);
 #endif
         }
 
@@ -494,6 +646,61 @@ namespace FruitDefense.App
         {
             var seed = BitConverter.ToInt32(Guid.NewGuid().ToByteArray(), 0) & int.MaxValue;
             return seed == 0 ? 1 : seed;
+        }
+
+        private bool TryResolveLevel(string levelId, out ResolvedLevelDefinition resolvedLevel,
+            out ShellFlowError error)
+        {
+            resolvedLevel = null;
+            if (_levelCatalog == null) return Fail(FlowNotReady, out error);
+            var resolution = _levelCatalog.Resolve(levelId);
+            if (!resolution.Succeeded)
+            {
+                error = new ShellFlowError(LevelResolutionFailed,
+                    resolution.Error == null ? "unknown" : resolution.Error.ToString());
+                ReportRecoverableError(error);
+                return false;
+            }
+
+            resolvedLevel = resolution.Value;
+            error = ShellFlowError.None;
+            return true;
+        }
+
+        private void QueueProfileSelectionSave()
+        {
+            _profileSavePending = true;
+            if (!_profileSaveRoutineActive) StartCoroutine(SaveProfileSelectionLoop());
+        }
+
+        private IEnumerator SaveProfileSelectionLoop()
+        {
+            _profileSaveRoutineActive = true;
+            while (_profileSavePending)
+            {
+                _profileSavePending = false;
+                var selectedAtSave = _selectedLevelId;
+                var profileToSave = PlayerProfileCodec.Clone(_profile);
+                profileToSave.lastSelectedLevelId = selectedAtSave;
+
+                ProfileSaveResult saveResult = null;
+                yield return _profileStore.Save(profileToSave, value => saveResult = value);
+                if (saveResult != null && saveResult.Status == ProfileSaveStatus.Success)
+                {
+                    _profile = saveResult.Profile;
+                    if (!string.Equals(_selectedLevelId, selectedAtSave, StringComparison.Ordinal))
+                    {
+                        _profile.lastSelectedLevelId = _selectedLevelId;
+                        _profileSavePending = true;
+                    }
+                }
+                else
+                {
+                    ReportRecoverableError(new ShellFlowError(ProfileSelectionSaveFailed,
+                        saveResult?.Error));
+                }
+            }
+            _profileSaveRoutineActive = false;
         }
 
         private bool Fail(string code, out ShellFlowError error)

@@ -110,7 +110,8 @@ namespace FruitDefense.Shell
 
         private void OnGUI()
         {
-            var layout = PortraitShellLayout.CreateSettlement(Screen.width, Screen.height, Screen.safeArea);
+            var layout = PortraitShellLayout.CreateSettlement(
+                Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent());
             EnsureStyles(layout.Frame.Scale);
 
             ShellGui.DrawPanel(layout.Frame.SafeArea, _styles.Panel);
@@ -120,6 +121,7 @@ namespace FruitDefense.Shell
             if (HasViewData)
             {
                 GUI.Label(layout.Outcome, ViewData.Victory ? "胜利" : "失败", _styles.ResultOutcome);
+                GUI.Label(layout.CompletedLevel, "完成关卡  " + ViewData.LevelId, _styles.ResultMetric);
                 GUI.Label(layout.ReachedWave, "到达波次  " + ViewData.ReachedWave, _styles.ResultMetric);
                 GUI.Label(layout.RemainingLives, "剩余生命  " + ViewData.RemainingLives, _styles.ResultMetric);
             }
@@ -137,7 +139,7 @@ namespace FruitDefense.Shell
             if (GUI.Button(layout.ReturnButton, "返回大厅", _styles.SecondaryButton)) TryReturn();
             GUI.enabled = previousEnabled;
 
-            var status = LastError.IsEmpty ? "" : "已安全处理：" + LastError.Code;
+            var status = LastError.IsEmpty ? string.Empty : "已安全处理：" + LastError.Code;
             GUI.Label(layout.Status, status, _styles.Status);
         }
 

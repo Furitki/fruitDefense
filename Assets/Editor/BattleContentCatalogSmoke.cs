@@ -43,6 +43,7 @@ namespace FruitDefense.Editor
             Expect(compiled.Skills.Count == 8, "Compiled skill count mismatch.");
             Expect(compiled.Projectiles.Count == 3, "Compiled projectile count mismatch.");
             Expect(compiled.Statuses.Count == 5, "Compiled status count mismatch.");
+            Expect(compiled.Passives.Count == 3, "Compiled passive count mismatch.");
             Expect(compiled.Waves.Count == 15, "Compiled wave count mismatch.");
             Expect(compiled.StarTiers.Count == 4, "Compiled star-tier count mismatch.");
         }

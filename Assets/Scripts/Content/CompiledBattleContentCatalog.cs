@@ -13,11 +13,13 @@ namespace FruitDefense.Content
         public IReadOnlyDictionary<string, EnemyDefinitionDto> Enemies { get; private set; }
         public IReadOnlyDictionary<string, EquipmentDefinitionDto> Equipment { get; private set; }
         public IReadOnlyDictionary<string, SkillDefinitionDto> Skills { get; private set; }
+        public IReadOnlyDictionary<string, PassiveDefinitionDto> Passives { get; private set; }
         public IReadOnlyDictionary<string, ProjectileDefinitionDto> Projectiles { get; private set; }
         public IReadOnlyDictionary<string, StatusDefinitionDto> Statuses { get; private set; }
         public IReadOnlyDictionary<string, WaveDefinitionDto> Waves { get; private set; }
         public IReadOnlyDictionary<string, StarTierDefinitionDto> StarTiers { get; private set; }
         public IReadOnlyDictionary<string, CompiledBattleSkill> RuntimeSkills { get; private set; }
+        public IReadOnlyDictionary<string, CompiledBattlePassive> RuntimePassives { get; private set; }
         public IReadOnlyDictionary<string, CompiledProjectileDefinition> RuntimeProjectiles { get; private set; }
         public IReadOnlyDictionary<string, CompiledStatusDefinition> RuntimeStatuses { get; private set; }
 
@@ -29,13 +31,50 @@ namespace FruitDefense.Content
             Enemies = Index(catalog.enemies, value => value.id);
             Equipment = Index(catalog.equipment, value => value.id);
             Skills = Index(catalog.skills, value => value.id);
+            Passives = Index(catalog.passives, value => value.id);
             Projectiles = Index(catalog.projectiles, value => value.id);
             Statuses = Index(catalog.statuses, value => value.id);
             Waves = Index(catalog.waves, value => value.id);
             StarTiers = Index(catalog.starTiers, value => value.id);
             RuntimeSkills = Index(catalog.skills.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
+            RuntimePassives = Index(catalog.passives.Select(CombatFrameworkCompiler.Compile).ToArray(), value => value.Id);
             RuntimeProjectiles = Index(catalog.projectiles.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
             RuntimeStatuses = Index(catalog.statuses.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
+        }
+
+        public IReadOnlyList<CompiledBattlePassive> ResolvePlantPassives(string plantId, string equipmentId)
+        {
+            PlantDefinitionDto plant;
+            if (!Plants.TryGetValue(plantId, out plant)) throw new KeyNotFoundException("Unknown plant ID '" + plantId + "'.");
+            var resolved = plant.passiveIds.Select(id => RuntimePassives[id]).ToList();
+            if (!string.IsNullOrEmpty(equipmentId))
+            {
+                EquipmentDefinitionDto equipment;
+                if (!Equipment.TryGetValue(equipmentId, out equipment))
+                    throw new KeyNotFoundException("Unknown equipment ID '" + equipmentId + "'.");
+                if (!equipment.compatiblePlantIds.Contains(plantId))
+                    throw new InvalidOperationException("Equipment '" + equipmentId
+                        + "' is not compatible with plant '" + plantId + "'.");
+                var plantTags = new HashSet<string>(plant.tags, StringComparer.Ordinal);
+                foreach (var grant in equipment.passiveGrants)
+                {
+                    if (!string.IsNullOrEmpty(grant.requiredPlantTag)
+                        && !plantTags.Contains(grant.requiredPlantTag)) continue;
+                    if (resolved.All(passive => passive.Id != grant.passiveId))
+                        resolved.Add(RuntimePassives[grant.passiveId]);
+                }
+            }
+            return resolved.OrderBy(passive => passive.Priority)
+                .ThenBy(passive => passive.Id, StringComparer.Ordinal).ToArray();
+        }
+
+        public IReadOnlyList<CompiledBattlePassive> ResolveEnemyPassives(string enemyId)
+        {
+            EnemyDefinitionDto enemy;
+            if (!Enemies.TryGetValue(enemyId, out enemy)) throw new KeyNotFoundException("Unknown enemy ID '" + enemyId + "'.");
+            return enemy.passiveIds.Select(id => RuntimePassives[id])
+                .OrderBy(passive => passive.Priority)
+                .ThenBy(passive => passive.Id, StringComparer.Ordinal).ToArray();
         }
 
         public IReadOnlyList<CompiledBattleSkill> ResolvePlantSkills(string plantId, string equipmentId)

@@ -1,3 +1,10 @@
+---
+id: wechat-official-references
+parent: wechat-spike-status
+order: 10
+status: active
+---
+
 # WeChat Mini Game Unity 6 compatibility references
 
 Retrieved and checked on 2026-07-15. Only WeChat official documentation and repositories owned by `wechat-miniprogram` are used as platform evidence.

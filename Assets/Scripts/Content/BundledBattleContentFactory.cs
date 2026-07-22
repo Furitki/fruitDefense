@@ -31,6 +31,7 @@ namespace FruitDefense.Content
                 enemies = CreateEnemies(),
                 equipment = CreateEquipment(),
                 skills = CreateSkills(),
+                passives = CreatePassives(),
                 projectiles = CreateProjectiles(),
                 statuses = CreateStatuses(),
                 waves = CreateWaves(),
@@ -44,22 +45,23 @@ namespace FruitDefense.Content
             return new[]
             {
                 Plant(BattleContentIds.Plants.Pea, "\u8c4c\u8c46", "\u7a33\u5b9a\u7684\u5355\u4f53\u8fdc\u7a0b\u8f93\u51fa",
-                    12f, 1f, 44f, BattleContentIds.Skills.PeaAttack, BattleContentIds.Projectiles.Pea, AllEquipment),
+                    12f, 1f, 44f, 6f, BattleContentIds.Skills.PeaAttack, BattleContentIds.Projectiles.Pea, AllEquipment),
                 Plant(BattleContentIds.Plants.Watermelon, "\u897f\u74dc", "\u4f4e\u9891\u8303\u56f4\u7206\u70b8\u4f24\u5bb3",
-                    12f, 2.2f, 44f, BattleContentIds.Skills.WatermelonAttack, BattleContentIds.Projectiles.Watermelon, AllEquipment),
+                    12f, 2.2f, 44f, 6f, BattleContentIds.Skills.WatermelonAttack, BattleContentIds.Projectiles.Watermelon, AllEquipment),
                 Plant(BattleContentIds.Plants.Banana, "\u9999\u8549", "\u76f4\u7ebf\u5f80\u8fd4\u7a7f\u900f\u653b\u51fb",
-                    6f, 1.6f, 38f, BattleContentIds.Skills.BananaAttack, BattleContentIds.Projectiles.Banana, AllEquipment),
+                    6f, 1.6f, 38f, 7f, BattleContentIds.Skills.BananaAttack, BattleContentIds.Projectiles.Banana, AllEquipment),
                 Plant(BattleContentIds.Plants.Durian, "\u69b4\u83b2", "\u8fd1\u6218\u8303\u56f4\u7838\u51fb",
-                    12f, 1.8f, 18f, BattleContentIds.Skills.DurianAttack, string.Empty,
+                    12f, 1.8f, 18f, 5f, BattleContentIds.Skills.DurianAttack, string.Empty,
                     new[] { BattleContentIds.Equipment.Ice, BattleContentIds.Equipment.Chili }),
                 Plant(BattleContentIds.Plants.Sunflower, "\u5411\u65e5\u8475", "\u5468\u671f\u4ea7\u751f\u9633\u5149",
-                    0f, 10f, 0f, BattleContentIds.Skills.SunflowerProduce, string.Empty,
+                    0f, 10f, 0f, 5f, BattleContentIds.Skills.SunflowerProduce, string.Empty,
                     new[] { BattleContentIds.Equipment.Ice, BattleContentIds.Equipment.Chili }),
             };
         }
 
         private static PlantDefinitionDto Plant(string id, string displayName, string description, float damage,
-            float interval, float range, string skillId, string projectileId, string[] allowedEquipmentIds)
+            float interval, float range, float potVisualHeightOffset, string skillId, string projectileId,
+            string[] allowedEquipmentIds)
         {
             return new PlantDefinitionDto
             {
@@ -69,6 +71,7 @@ namespace FruitDefense.Content
                 damage = damage,
                 attackIntervalSeconds = interval,
                 rangeLegacyUnits = range,
+                potVisualHeightOffset = potVisualHeightOffset,
                 skillIds = new[] { skillId },
                 tags = id == BattleContentIds.Plants.Sunflower
                     ? new[] { "plant.producer" }
@@ -97,6 +100,13 @@ namespace FruitDefense.Content
             {
                 id = id, displayName = name, health = health, speedLegacyUnits = speed,
                 killReward = reward, threat = threat,
+                tags = id == BattleContentIds.Enemies.Runner
+                    ? new[] { "enemy", "enemy.fast" }
+                    : id == BattleContentIds.Enemies.Armored
+                        ? new[] { "enemy", "enemy.armored" }
+                        : id == BattleContentIds.Enemies.Boss
+                            ? new[] { "enemy", "enemy.boss" }
+                            : new[] { "enemy", "enemy.normal" },
             };
         }
 
@@ -139,6 +149,12 @@ namespace FruitDefense.Content
                         new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.IceOnHit, requiredPlantTag = "plant.damage" },
                         new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.IceProducerOpening, requiredPlantTag = "plant.producer" },
                     },
+                    passiveIds = new[] { BattleContentIds.Passives.IceOnHit, BattleContentIds.Passives.IceProducerOpening },
+                    passiveGrants = new[]
+                    {
+                        new EquipmentPassiveGrantDto { passiveId = BattleContentIds.Passives.IceOnHit, requiredPlantTag = "plant.damage" },
+                        new EquipmentPassiveGrantDto { passiveId = BattleContentIds.Passives.IceProducerOpening, requiredPlantTag = "plant.producer" },
+                    },
                     compatiblePlantIds = (string[])AllPlants.Clone(),
                 },
                 new EquipmentDefinitionDto
@@ -150,6 +166,11 @@ namespace FruitDefense.Content
                     grants = new[]
                     {
                         new EquipmentSkillGrantDto { skillId = BattleContentIds.Skills.ChiliOnHit, requiredPlantTag = "plant.damage" },
+                    },
+                    passiveIds = new[] { BattleContentIds.Passives.ChiliOnHit },
+                    passiveGrants = new[]
+                    {
+                        new EquipmentPassiveGrantDto { passiveId = BattleContentIds.Passives.ChiliOnHit, requiredPlantTag = "plant.damage" },
                     },
                     modifiers = new[]
                     {
@@ -279,6 +300,53 @@ namespace FruitDefense.Content
             };
         }
 
+        private static PassiveDefinitionDto[] CreatePassives()
+        {
+            return new[]
+            {
+                new PassiveDefinitionDto
+                {
+                    id = BattleContentIds.Passives.IceOnHit,
+                    triggerId = "passive-trigger.after-damage-dealt",
+                    ownerRoleId = "owner.event-source",
+                    targetId = "passive-target.event-target",
+                    tags = new[] { "passive.equipment", "passive.on-hit" },
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceSlow),
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceCount),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.IceImpact),
+                    },
+                },
+                new PassiveDefinitionDto
+                {
+                    id = BattleContentIds.Passives.IceProducerOpening,
+                    triggerId = "passive-trigger.wave-first-spawned",
+                    ownerRoleId = "owner.any",
+                    targetId = "passive-target.all-enemies",
+                    tags = new[] { "passive.equipment", "passive.producer" },
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.IceSlow),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.IceImpact),
+                    },
+                },
+                new PassiveDefinitionDto
+                {
+                    id = BattleContentIds.Passives.ChiliOnHit,
+                    triggerId = "passive-trigger.after-damage-dealt",
+                    ownerRoleId = "owner.event-source",
+                    targetId = "passive-target.event-target",
+                    tags = new[] { "passive.equipment", "passive.on-hit" },
+                    effects = new[]
+                    {
+                        Effect("effect.apply-status", statusId: BattleContentIds.Statuses.ChiliBurn, magnitude: .2f),
+                        Effect("effect.emit-cue", cueId: BattleContentIds.Cues.ChiliImpact),
+                    },
+                },
+            };
+        }
+
         private static SkillEffectDefinitionDto Effect(string kindId, string projectileId = "", string statusId = "",
             float magnitude = 1f, float radius = 0f, int resource = 0, string cueId = "")
         {
@@ -343,6 +411,17 @@ namespace FruitDefense.Content
                     durationSeconds = 2f,
                     magnitude = .55f,
                     cueId = BattleContentIds.Cues.IceImpact,
+                    polarityId = "polarity.debuff",
+                    tags = new[] { "status.control", "status.ice", "status.slow" },
+                    modifiers = new[]
+                    {
+                        new StatusModifierDefinitionDto
+                        {
+                            attributeId = "attribute.move-speed",
+                            operationId = "modifier.multiplicative",
+                            value = .55f,
+                        },
+                    },
                 },
                 new StatusDefinitionDto
                 {
@@ -352,6 +431,9 @@ namespace FruitDefense.Content
                     durationSeconds = 1f,
                     magnitude = 1f,
                     cueId = BattleContentIds.Cues.IceImpact,
+                    polarityId = "polarity.debuff",
+                    tags = new[] { "status.control", "status.freeze", "status.ice" },
+                    blocksMovement = true,
                 },
                 new StatusDefinitionDto
                 {
@@ -364,6 +446,8 @@ namespace FruitDefense.Content
                     hitsToProc = 5,
                     procStatusId = BattleContentIds.Statuses.IceFreeze,
                     cueId = BattleContentIds.Cues.IceImpact,
+                    polarityId = "polarity.neutral",
+                    tags = new[] { "status.counter", "status.ice" },
                 },
                 new StatusDefinitionDto
                 {
@@ -375,6 +459,9 @@ namespace FruitDefense.Content
                     magnitude = .2f,
                     maxStacks = 3,
                     cueId = BattleContentIds.Cues.ChiliImpact,
+                    polarityId = "polarity.debuff",
+                    tags = new[] { "status.burn", "status.damage-over-time" },
+                    periodicEffectId = "periodic.damage",
                 },
                 new StatusDefinitionDto
                 {
@@ -383,6 +470,9 @@ namespace FruitDefense.Content
                     stackingMode = "stacking.refresh",
                     durationSeconds = .1f,
                     magnitude = 1f,
+                    polarityId = "polarity.debuff",
+                    tags = new[] { "status.control", "status.hit-stun" },
+                    blocksMovement = true,
                 },
             };
         }

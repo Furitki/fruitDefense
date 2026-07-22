@@ -12,14 +12,35 @@ namespace FruitDefense.Core
         public const float MaxFrameDeltaSeconds = .25f;
         public const int MaxStepsPerFrame = 5;
         private const double AccumulatorEpsilon = 0.0000001;
-        private const double NurseryPotChance = .1;
+        private const int MaxPassiveActivationsPerRootEvent = 128;
         private readonly DeterministicRandom _random;
         private readonly CompiledBattleContentCatalog _content;
+        private readonly IReadOnlyList<WaveDefinitionDto> _orderedWaves;
+        private readonly LevelRuleSetDefinition _ruleSet;
         private readonly List<int> _lastNurseryPotSlots = new List<int>();
         private readonly BattlePresentationEventStream _presentationEvents = new BattlePresentationEventStream();
+        private readonly HashSet<string> _passiveActivationKeys = new HashSet<string>(StringComparer.Ordinal);
         private double _frameAccumulator;
+        private int _passiveDispatchDepth;
+        private int _passiveActivationCount;
+        private long _passiveRootEventSequence;
         public GameState State { get; private set; }
         public BattlefieldMapDefinition Map { get; private set; }
+        public ResolvedLevelDefinition ActiveLevel { get; private set; }
+        public LevelCompositeIdentity Identity { get; private set; }
+        public IReadOnlyList<WaveDefinitionDto> OrderedWaves { get { return _orderedWaves; } }
+        public LevelRuleSetDefinition RuleSet { get { return _ruleSet; } }
+        public LevelPresentationThemeDefinition Theme
+        {
+            get { return ActiveLevel == null ? null : ActiveLevel.Theme; }
+        }
+        public int InitialSun { get { return _ruleSet.InitialSun; } }
+        public int InitialLives { get { return _ruleSet.InitialLives; } }
+        public int InitialPotCount { get { return _ruleSet.InitialPotCount; } }
+        public int MaxWaves { get { return _ruleSet.MaxWaves; } }
+        public float BetweenWaveSeconds { get { return _ruleSet.BetweenWaveSeconds; } }
+        public int NurserySlotCount { get { return _ruleSet.NurserySlotCount; } }
+        public float NurseryPotChance { get { return _ruleSet.NurseryPotChance; } }
         public IReadOnlyList<int> LastNurseryPotSlots { get { return _lastNurseryPotSlots; } }
         public double FrameAccumulatorSeconds { get { return _frameAccumulator; } }
         public uint RandomState { get { return _random.State; } }
@@ -33,14 +54,85 @@ namespace FruitDefense.Core
         }
 
         public GameSimulation(CompiledBattleContentCatalog content, int seed = 0, BattlefieldMapDefinition map = null)
+            : this(content, seed, map, null, CreateLegacyWaveOrder(content),
+                CreateLegacyRuleSet(content))
+        {
+        }
+
+        public GameSimulation(ResolvedLevelDefinition resolvedLevel, int seed = 0)
+            : this(RequireResolvedLevel(resolvedLevel).BattleContent, seed, resolvedLevel.Map,
+                resolvedLevel, resolvedLevel.OrderedWaves, resolvedLevel.RuleSet)
+        {
+        }
+
+        private GameSimulation(CompiledBattleContentCatalog content, int seed,
+            BattlefieldMapDefinition map, ResolvedLevelDefinition resolvedLevel,
+            IEnumerable<WaveDefinitionDto> orderedWaves, LevelRuleSetDefinition ruleSet)
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
             Map = map ?? GameConfig.DefaultBattlefield;
-            MapId = ResolveMapIdentity(Map, map == null || ReferenceEquals(Map, GameConfig.DefaultBattlefield));
+            ActiveLevel = resolvedLevel;
+            Identity = resolvedLevel == null ? null : resolvedLevel.Identity;
+            _ruleSet = ruleSet ?? throw new ArgumentNullException(nameof(ruleSet));
+            _orderedWaves = Array.AsReadOnly((orderedWaves ?? throw new ArgumentNullException(nameof(orderedWaves)))
+                .Select(CloneWave).ToArray());
+            MapId = resolvedLevel == null
+                ? ResolveMapIdentity(Map, map == null || ReferenceEquals(Map, GameConfig.DefaultBattlefield))
+                : resolvedLevel.Identity.MapId;
             string mapReason;
             if (!Map.Validate(out mapReason)) throw new InvalidOperationException("Invalid battlefield map: " + mapReason);
+            if (_orderedWaves.Count != _ruleSet.MaxWaves)
+                throw new InvalidOperationException("Resolved wave count does not match the active rule set.");
+            if (resolvedLevel != null)
+            {
+                if (!string.Equals(Map.MapId, resolvedLevel.Identity.MapId, StringComparison.Ordinal)
+                    || !string.Equals(resolvedLevel.WaveSet.WaveSetId,
+                        resolvedLevel.Identity.WaveSetId, StringComparison.Ordinal)
+                    || !string.Equals(_ruleSet.RuleSetId,
+                        resolvedLevel.Identity.RuleSetId, StringComparison.Ordinal)
+                    || resolvedLevel.Theme == null
+                    || !string.Equals(resolvedLevel.Theme.ThemeId,
+                        resolvedLevel.Identity.ThemeId, StringComparison.Ordinal))
+                    throw new InvalidOperationException("Resolved level bundle identity is inconsistent.");
+            }
             _random = new DeterministicRandom(seed);
             Reset(seed);
+        }
+
+        private static ResolvedLevelDefinition RequireResolvedLevel(ResolvedLevelDefinition resolvedLevel)
+        {
+            if (resolvedLevel == null) throw new ArgumentNullException(nameof(resolvedLevel));
+            return resolvedLevel;
+        }
+
+        private static LevelRuleSetDefinition CreateLegacyRuleSet(CompiledBattleContentCatalog content)
+        {
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            return new LevelRuleSetDefinition(content.BattleRules);
+        }
+
+        private static IReadOnlyList<WaveDefinitionDto> CreateLegacyWaveOrder(
+            CompiledBattleContentCatalog content)
+        {
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            return Enumerable.Range(1, content.BattleRules.maxWaves)
+                .Select(index => content.Waves["wave." + index.ToString("00")])
+                .ToArray();
+        }
+
+        private static WaveDefinitionDto CloneWave(WaveDefinitionDto source)
+        {
+            if (source == null) throw new InvalidOperationException("Active wave set contains a null wave.");
+            return new WaveDefinitionDto
+            {
+                id = source.id,
+                index = source.index,
+                healthMultiplier = source.healthMultiplier,
+                speedMultiplier = source.speedMultiplier,
+                spawnIntervalSeconds = source.spawnIntervalSeconds,
+                completionReward = source.completionReward,
+                enemyIds = (source.enemyIds ?? Array.Empty<string>()).ToArray(),
+            };
         }
 
         private static CompiledBattleContentCatalog CreateBundledContent()
@@ -57,11 +149,15 @@ namespace FruitDefense.Core
             _random.Reset(seed);
             ResetFrameAccumulator();
             _presentationEvents.Reset();
+            _passiveActivationKeys.Clear();
+            _passiveDispatchDepth = 0;
+            _passiveActivationCount = 0;
+            _passiveRootEventSequence = 0;
             State = new GameState
             {
                 Phase = GamePhase.Ready,
-                Sun = _content.BattleRules.initialSun,
-                Lives = _content.BattleRules.initialLives,
+                Sun = _ruleSet.InitialSun,
+                Lives = _ruleSet.InitialLives,
                 RandomSeed = seed,
             };
             _lastNurseryPotSlots.Clear();
@@ -71,13 +167,20 @@ namespace FruitDefense.Core
 
         private void AddInitialPots()
         {
+            var remaining = ActiveLevel == null ? int.MaxValue : _ruleSet.InitialPotCount;
             foreach (var groupName in Map.InitialPotGroupOrder)
             {
                 var group = Map.InitialPotGroups[groupName];
                 var cells = group.Cells.ToList();
                 Shuffle(cells);
-                for (var index = 0; index < group.InitialCount; index++) AddPot(cells[index]);
+                var count = ActiveLevel == null
+                    ? group.InitialCount
+                    : Mathf.Min(group.InitialCount, remaining);
+                for (var index = 0; index < count; index++) AddPot(cells[index]);
+                if (ActiveLevel != null) remaining -= count;
             }
+            if (ActiveLevel != null && remaining != 0)
+                throw new InvalidOperationException("Map initial pot groups do not satisfy the active rule set.");
         }
 
         private void Shuffle<T>(IList<T> items)
@@ -101,7 +204,7 @@ namespace FruitDefense.Core
 
         public bool RefreshNursery(out string reason)
         {
-            var cost = _content.BattleRules.refreshBaseCost + _content.BattleRules.refreshCostStep * State.RefreshCount;
+            var cost = RefreshCost(State.RefreshCount);
             if (State.Sun < cost) { reason = "阳光不足"; return false; }
 
             var overwritten = State.Plants.Where(plant => plant.NurseryIndex >= 0).ToList();
@@ -112,10 +215,10 @@ namespace FruitDefense.Core
             var firstBatch = State.RefreshCount == 0;
             var results = new List<int>();
             var sunflowerCount = 0;
-            for (var index = 0; index < 5; index++)
+            for (var index = 0; index < _ruleSet.NurserySlotCount; index++)
             {
                 var forceAttacker = firstBatch && index < 2;
-                if (!forceAttacker && _random.NextUnitDouble() < NurseryPotChance)
+                if (!forceAttacker && _random.NextUnitDouble() < _ruleSet.NurseryPotChance)
                 {
                     results.Add(-1);
                     continue;
@@ -129,7 +232,7 @@ namespace FruitDefense.Core
             State.Sun -= cost;
             State.RefreshCount++;
             _lastNurseryPotSlots.Clear();
-            for (var slot = 0; slot < 5; slot++)
+            for (var slot = 0; slot < _ruleSet.NurserySlotCount; slot++)
             {
                 if (results[slot] < 0)
                 {
@@ -143,12 +246,17 @@ namespace FruitDefense.Core
                     Star = 1, NurseryIndex = slot,
                 });
             }
-            var plantCount = 5 - _lastNurseryPotSlots.Count;
+            var plantCount = _ruleSet.NurserySlotCount - _lastNurseryPotSlots.Count;
             reason = _lastNurseryPotSlots.Count > 0
                 ? "刷新完成：水果 " + plantCount + " 株，花盆×" + _lastNurseryPotSlots.Count + " 已入库"
-                : "获得五株水果";
+                : "获得 " + plantCount + " 株水果";
             AddGlobalFeedback(reason, new Color(.35f, .58f, .2f));
             return true;
+        }
+
+        public int RefreshCost(int refreshCount)
+        {
+            return _ruleSet.RefreshBaseCost + _ruleSet.RefreshCostStep * Mathf.Max(0, refreshCount);
         }
 
         public bool StartWave(out string reason)
@@ -156,7 +264,7 @@ namespace FruitDefense.Core
             if (State.Phase == GamePhase.Playing) { reason = "波次正在进行"; return false; }
             if (State.Phase == GamePhase.Victory || State.Phase == GamePhase.Defeat) { reason = "本局已经结束"; return false; }
             var next = State.WaveIndex + 1;
-            if (next > _content.BattleRules.maxWaves) { reason = "所有波次已经完成"; return false; }
+            if (next > _ruleSet.MaxWaves) { reason = "所有波次已经完成"; return false; }
             var wave = Wave(next);
             State.Phase = GamePhase.Playing;
             State.WaveIndex = next;
@@ -164,8 +272,9 @@ namespace FruitDefense.Core
             State.WaveTotal = wave.enemyIds.Length;
             State.SpawnCooldown = 0f;
             State.BetweenTimer = 0f;
+            if (next == 1) RaisePassiveEvent(BattlePassiveTriggerKind.BattleStarted, null, null, 0f);
             reason = "第 " + next + " 波来袭";
-            AddGlobalFeedback(reason, next == _content.BattleRules.maxWaves ? new Color(.8f, .2f, .15f) : new Color(.2f, .42f, .7f));
+            AddGlobalFeedback(reason, next == _ruleSet.MaxWaves ? new Color(.8f, .2f, .15f) : new Color(.2f, .42f, .7f));
             return true;
         }
 
@@ -176,6 +285,29 @@ namespace FruitDefense.Core
         public Plant PlantAtNursery(int slot) { return State.Plants.FirstOrDefault(plant => plant.NurseryIndex == slot); }
         public Pot PotById(int id) { return State.Pots.FirstOrDefault(pot => pot.Id == id); }
         public Plant PlantById(int id) { return State.Plants.FirstOrDefault(plant => plant.Id == id); }
+        public Zombie ZombieById(int id) { return State.Zombies.FirstOrDefault(zombie => zombie.Id == id); }
+        public CombatEntityState EntityById(int id)
+        {
+            return (CombatEntityState)PlantById(id) ?? ZombieById(id);
+        }
+
+        public IReadOnlyList<CombatEntityState> CombatEntities()
+        {
+            return State.Plants.Cast<CombatEntityState>().Concat(State.Zombies)
+                .OrderBy(entity => entity.Id).ToArray();
+        }
+
+        public float GetEffectiveAttribute(CombatEntityState entity, CombatAttributeKind attribute, float baseValue)
+        {
+            return CombatAttributeResolver.Resolve(baseValue, entity, attribute, _content);
+        }
+
+        public int RemoveStatuses(int entityId, string definitionId = "",
+            CombatStatusPolarity? polarity = null, string tag = "")
+        {
+            var entity = EntityById(entityId);
+            return entity == null ? 0 : CombatStatusRuntime.Remove(entity, _content, definitionId, polarity, tag);
+        }
         public Vector2 PotPoint(Pot pot) { return pot == null ? Map.Core : Map.CellToMap(pot.Cell); }
 
         public PlantDropStatus GetPlantDropStatus(int plantId, int potId)
@@ -205,7 +337,7 @@ namespace FruitDefense.Core
         {
             var plant = PlantById(plantId);
             if (plant == null) return new PlantDropStatus(false, PlantDropAction.Invalid, "植物不存在");
-            if (slot < 0 || slot >= 5) return new PlantDropStatus(false, PlantDropAction.Invalid, "这里不是苗圃槽位");
+            if (slot < 0 || slot >= _ruleSet.NurserySlotCount) return new PlantDropStatus(false, PlantDropAction.Invalid, "这里不是苗圃槽位");
             if (plant.NurseryIndex == slot) return new PlantDropStatus(false, PlantDropAction.Cancel, "植物已在这个苗圃槽位中");
             if (State.Phase == GamePhase.Playing && plant.MoveCooldown > 0f)
                 return new PlantDropStatus(false, PlantDropAction.Invalid, "移动冷却 " + plant.MoveCooldown.ToString("0.0") + " 秒");
@@ -280,6 +412,7 @@ namespace FruitDefense.Core
             plant.Weapon = weapon;
             plant.EquipmentId = LegacyBattleContentIds.Equipment(weapon);
             plant.SkillRuntimes.Clear();
+            plant.PassiveRuntimes.Clear();
             reason = GameConfig.WeaponName(weapon) + "安装成功";
             var point = plant.PotId >= 0 ? PotPoint(PotById(plant.PotId)) : Map.Core;
             AddFeedback(reason, point, new Color(.25f, .5f, .85f));
@@ -367,6 +500,7 @@ namespace FruitDefense.Core
                 return true;
             }
             if (State.Phase != GamePhase.Playing) return true;
+            AdvanceCombatRuntime();
             Spawn(delta);
             AdvanceZombies(delta);
             RunPlants(delta);
@@ -410,19 +544,15 @@ namespace FruitDefense.Core
                 State.Zombies.Add(new Zombie
                 {
                     Id = State.NextId++, ContentId = enemyId, Kind = kind, Hp = hp, MaxHp = hp,
-                    Speed = GameConfig.MapDistance(definition.speedLegacyUnits) * wave.speedMultiplier,
+                    Speed = Map.FromLegacyDistance(definition.speedLegacyUnits) * wave.speedMultiplier,
                     Reward = definition.killReward, Threat = definition.threat,
                 });
                 State.WaveSpawned++;
                 State.SpawnCooldown += wave.spawnIntervalSeconds;
             }
             if (!firstSpawnOfWave || State.WaveSpawned <= 0) return;
-            foreach (var plant in State.Plants.OrderBy(value => value.Id))
-            {
-                if (plant.PotId < 0) continue;
-                foreach (var skill in ResolveSkills(plant).Where(value => value.Trigger == BattleTriggerKind.WaveFirstSpawned))
-                    ExecuteSkill(plant, skill, null, PlantPoint(plant), PlantRange(plant));
-            }
+            RaisePassiveEvent(BattlePassiveTriggerKind.WaveFirstSpawned, null,
+                State.Zombies.OrderBy(value => value.Id).FirstOrDefault(), 0f);
         }
 
         private void AdvanceZombies(float delta)
@@ -430,23 +560,10 @@ namespace FruitDefense.Core
             for (var index = State.Zombies.Count - 1; index >= 0; index--)
             {
                 var zombie = State.Zombies[index];
-                var burnDamage = 0f;
-                for (var statusIndex = zombie.Statuses.Count - 1; statusIndex >= 0; statusIndex--)
-                {
-                    var status = zombie.Statuses[statusIndex];
-                    var definition = _content.RuntimeStatuses[status.DefinitionId];
-                    if (definition.Kind == BattleStatusKind.Burn) burnDamage += status.Magnitude * delta;
-                    if (definition.Kind != BattleStatusKind.HitCount) status.RemainingTicks--;
-                    if (definition.Kind != BattleStatusKind.HitCount && status.RemainingTicks <= 0)
-                        zombie.Statuses.RemoveAt(statusIndex);
-                }
-                zombie.Hp -= burnDamage;
                 if (zombie.Hp <= 0f) { KillZombie(index, zombie); continue; }
                 SyncLegacyStatusViews(zombie);
-                var frozen = HasStatus(zombie, BattleStatusKind.Freeze);
-                var stunned = HasStatus(zombie, BattleStatusKind.Stun);
-                var slow = StrongestStatusMagnitude(zombie, BattleStatusKind.Slow, 1f);
-                if (!frozen && !stunned) zombie.PathProgress += zombie.Speed * slow * delta;
+                var speed = GetEffectiveAttribute(zombie, CombatAttributeKind.MoveSpeed, zombie.Speed);
+                if (!CombatStatusRuntime.BlocksMovement(zombie, _content)) zombie.PathProgress += speed * delta;
                 if (zombie.PathProgress < Map.Route.TotalLength) continue;
                 State.Lives -= zombie.Threat;
                 State.Zombies.RemoveAt(index);
@@ -503,8 +620,10 @@ namespace FruitDefense.Core
                     var target = SelectTarget(potPoint, range);
                     if (target == null) { SyncLegacySkillViews(plant, runtime); continue; }
                     ExecuteSkill(plant, skill, target, potPoint, range);
-                    runtime.CooldownTicks = Math.Max(1,
-                        Mathf.CeilToInt((float)skill.CooldownTicks / StarTier(plant).attackSpeedMultiplier));
+                    var interval = BattleSkillTiming.TicksToSeconds(skill.CooldownTicks)
+                        / StarTier(plant).attackSpeedMultiplier;
+                    runtime.CooldownTicks = Math.Max(1, BattleSkillTiming.SecondsToTicks(
+                        GetEffectiveAttribute(plant, CombatAttributeKind.AttackInterval, interval)));
                     runtime.BurstShotsRemaining = Math.Max(0, skill.BurstCount - 1);
                     runtime.BurstIntervalTicks = runtime.BurstShotsRemaining > 0 ? skill.BurstIntervalTicks : 0;
                     SyncLegacySkillViews(plant, runtime);
@@ -528,6 +647,266 @@ namespace FruitDefense.Core
             plant.SkillRuntimes.Sort((left, right) => StringComparer.Ordinal.Compare(left.SkillId, right.SkillId));
         }
 
+        private IReadOnlyList<CompiledBattlePassive> ResolvePassives(CombatEntityState entity)
+        {
+            var plant = entity as Plant;
+            if (plant != null)
+                return _content.ResolvePlantPassives(ResolvePlantId(plant), ResolveEquipmentId(plant));
+            var zombie = entity as Zombie;
+            if (zombie != null) return _content.ResolveEnemyPassives(ResolveEnemyId(zombie));
+            throw new InvalidOperationException("Unsupported combat entity type '" + entity.GetType().Name + "'.");
+        }
+
+        private void EnsurePassiveRuntimes(CombatEntityState entity,
+            IReadOnlyList<CompiledBattlePassive> passives)
+        {
+            var ids = new HashSet<string>(passives.Select(value => value.Id), StringComparer.Ordinal);
+            entity.PassiveRuntimes.RemoveAll(value => !ids.Contains(value.PassiveId));
+            foreach (var passive in passives.OrderBy(value => value.Priority)
+                         .ThenBy(value => value.Id, StringComparer.Ordinal))
+                if (entity.PassiveRuntimes.All(value => value.PassiveId != passive.Id))
+                    entity.PassiveRuntimes.Add(new PassiveRuntimeState { PassiveId = passive.Id });
+            entity.PassiveRuntimes.Sort((left, right) =>
+                StringComparer.Ordinal.Compare(left.PassiveId, right.PassiveId));
+        }
+
+        private void AdvanceCombatRuntime()
+        {
+            foreach (var entity in CombatEntities())
+            {
+                var passives = ResolvePassives(entity);
+                EnsurePassiveRuntimes(entity, passives);
+                foreach (var runtime in entity.PassiveRuntimes)
+                    if (runtime.CooldownTicks > 0) runtime.CooldownTicks--;
+
+                foreach (var status in entity.Statuses.OrderBy(value => value.Sequence).ToArray())
+                {
+                    CompiledStatusDefinition definition;
+                    if (!_content.RuntimeStatuses.TryGetValue(status.DefinitionId, out definition))
+                    {
+                        entity.Statuses.Remove(status);
+                        continue;
+                    }
+                    if (definition.PeriodicEffect == CombatPeriodicEffectKind.Damage && entity is Zombie)
+                    {
+                        status.TickProgress++;
+                        var intervalTicks = Math.Max(1, definition.TickIntervalTicks);
+                        while (status.TickProgress >= intervalTicks && entity.IsAlive)
+                        {
+                            status.TickProgress -= intervalTicks;
+                            DealPeriodicDamage((Zombie)entity, status,
+                                status.Magnitude * BattleSkillTiming.TicksToSeconds(intervalTicks));
+                        }
+                    }
+                    if (definition.Stacking != BattleStatusStackingKind.ProcAfterHits)
+                        status.RemainingTicks--;
+                    if (definition.Stacking != BattleStatusStackingKind.ProcAfterHits
+                        && status.RemainingTicks <= 0) entity.Statuses.Remove(status);
+                    if (!entity.IsAlive) break;
+                }
+                var zombie = entity as Zombie;
+                if (zombie != null && zombie.IsAlive) SyncLegacyStatusViews(zombie);
+            }
+        }
+
+        private void DealPeriodicDamage(Zombie target, StatusInstance status, float rawDamage)
+        {
+            if (target == null || target.Hp <= 0f || rawDamage <= 0f) return;
+            var source = EntityById(status.SourceEntityId);
+            var damage = GetEffectiveAttribute(target, CombatAttributeKind.DamageTaken, rawDamage);
+            target.Hp = Mathf.Max(0f, target.Hp - damage);
+            AddFeedback("-" + Mathf.RoundToInt(damage), Map.Route.Sample(target.PathProgress),
+                new Color(.88f, .25f, .18f));
+            RaisePassiveEvent(BattlePassiveTriggerKind.AfterDamageTaken, source, target, damage);
+            if (target.Hp <= 0f)
+            {
+                var index = State.Zombies.IndexOf(target);
+                if (index >= 0) KillZombie(index, target, source);
+            }
+        }
+
+        private void RaisePassiveEvent(BattlePassiveTriggerKind trigger,
+            CombatEntityState eventSource, CombatEntityState eventTarget, float eventMagnitude)
+        {
+            RaisePassiveEvents(new[] { trigger }, eventSource, eventTarget, eventMagnitude);
+        }
+
+        private void RaisePassiveEvents(IReadOnlyCollection<BattlePassiveTriggerKind> triggers,
+            CombatEntityState eventSource, CombatEntityState eventTarget, float eventMagnitude)
+        {
+            var isRoot = _passiveDispatchDepth == 0;
+            if (isRoot)
+            {
+                _passiveRootEventSequence = State.NextCombatEventSequence++;
+                _passiveActivationCount = 0;
+                _passiveActivationKeys.Clear();
+            }
+            _passiveDispatchDepth++;
+            try
+            {
+                var owners = CombatEntities().Where(entity => IsPassiveOwnerActive(entity)
+                    || ReferenceEquals(entity, eventSource) || ReferenceEquals(entity, eventTarget))
+                    .OrderBy(entity => entity.Id).ToArray();
+                foreach (var owner in owners)
+                {
+                    var passives = ResolvePassives(owner);
+                    EnsurePassiveRuntimes(owner, passives);
+                    foreach (var passive in passives.Where(value => triggers.Contains(value.Trigger))
+                                 .OrderBy(value => value.Priority)
+                                 .ThenBy(value => value.Id, StringComparer.Ordinal))
+                    {
+                        if (!OwnerRoleMatches(passive.OwnerRole, owner, eventSource, eventTarget)) continue;
+                        var runtime = owner.PassiveRuntimes.First(value => value.PassiveId == passive.Id);
+                        if (runtime.CooldownTicks > 0) continue;
+                        var activationKey = _passiveRootEventSequence + "|" + owner.Id + "|" + passive.Id;
+                        if (!_passiveActivationKeys.Add(activationKey)) continue;
+                        _passiveActivationCount++;
+                        if (_passiveActivationCount > MaxPassiveActivationsPerRootEvent)
+                            throw new InvalidOperationException("Passive activation budget exceeded for root event "
+                                + _passiveRootEventSequence + ". Check authored passive feedback loops.");
+                        runtime.LastRootEventSequence = _passiveRootEventSequence;
+                        runtime.CooldownTicks = passive.CooldownTicks;
+                        var ownerPlant = owner as Plant;
+                        var context = new CombatEffectContext(_passiveRootEventSequence, owner,
+                            eventSource, eventTarget, EntityPoint(owner),
+                            ownerPlant == null ? 0f : PlantRange(ownerPlant), eventMagnitude);
+                        ExecutePassive(passive, context);
+                    }
+                }
+            }
+            finally
+            {
+                _passiveDispatchDepth--;
+                if (isRoot)
+                {
+                    _passiveRootEventSequence = 0;
+                    _passiveActivationCount = 0;
+                    _passiveActivationKeys.Clear();
+                }
+            }
+        }
+
+        private static bool OwnerRoleMatches(BattlePassiveOwnerRole role, CombatEntityState owner,
+            CombatEntityState eventSource, CombatEntityState eventTarget)
+        {
+            if (role == BattlePassiveOwnerRole.Any) return true;
+            if (role == BattlePassiveOwnerRole.EventSource) return ReferenceEquals(owner, eventSource);
+            return ReferenceEquals(owner, eventTarget);
+        }
+
+        private static bool IsPassiveOwnerActive(CombatEntityState entity)
+        {
+            var plant = entity as Plant;
+            return plant != null ? plant.PotId >= 0 : entity.IsAlive;
+        }
+
+        private void ExecutePassive(CompiledBattlePassive passive, CombatEffectContext context)
+        {
+            var targets = SelectPassiveTargets(passive.Target, context);
+            ExecuteEffects(passive.Effects, context, targets, null, passive.Id);
+        }
+
+        private void ExecuteEffects(IReadOnlyList<CompiledSkillEffect> effects,
+            CombatEffectContext context, IReadOnlyList<CombatEntityState> targets,
+            CompiledBattleSkill skill, string actionId)
+        {
+            foreach (var effect in effects)
+            {
+                switch (effect.Kind)
+                {
+                    case BattleEffectKind.Damage:
+                        foreach (var target in targets.OfType<Zombie>().ToArray())
+                        {
+                            if (skill != null)
+                            {
+                                var damagePlant = context.Owner as Plant;
+                                if (damagePlant != null)
+                                    Damage(damagePlant, target,
+                                        PlantDamage(damagePlant) * skill.DamageMultiplier * effect.Magnitude);
+                            }
+                            else
+                            {
+                                var basis = context.EventMagnitude > 0f ? context.EventMagnitude : 1f;
+                                DamageEntity(context.Owner, target, basis * effect.Magnitude, false);
+                            }
+                        }
+                        break;
+                    case BattleEffectKind.LaunchProjectile:
+                        var plant = context.Owner as Plant;
+                        var projectileTarget = targets.OfType<Zombie>().FirstOrDefault();
+                        if (plant != null && projectileTarget != null)
+                        {
+                            var bridgeSkill = new CompiledBattleSkill
+                            {
+                                Id = actionId,
+                                BurstCount = 1,
+                                DamageMultiplier = 1f,
+                            };
+                            var projectileSkill = skill ?? bridgeSkill;
+                            SpawnProjectile(plant, projectileSkill, effect, context.Origin, projectileTarget,
+                                PlantDamage(plant) * projectileSkill.DamageMultiplier * effect.Magnitude,
+                                context.Range);
+                        }
+                        break;
+                    case BattleEffectKind.GrantResource:
+                        var authoredAmount = skill != null && skill.ResourceAmount > 0
+                            ? skill.ResourceAmount : effect.ResourceAmount;
+                        var resource = Mathf.RoundToInt(GetEffectiveAttribute(context.Owner,
+                            CombatAttributeKind.ResourceGain, authoredAmount));
+                        State.Sun += resource;
+                        AddFeedback("+" + resource + " 阳光", context.Origin,
+                            new Color(.95f, .68f, .1f));
+                        break;
+                    case BattleEffectKind.ApplyStatus:
+                        foreach (var target in targets.ToArray())
+                        {
+                            var magnitude = effect.Magnitude;
+                            CompiledStatusDefinition statusDefinition;
+                            if (_content.RuntimeStatuses.TryGetValue(effect.StatusId, out statusDefinition)
+                                && statusDefinition.PeriodicEffect == CombatPeriodicEffectKind.Damage
+                                && context.EventMagnitude > 0f)
+                                magnitude *= context.EventMagnitude;
+                            ApplyStatus(target, effect.StatusId, context.Owner.Id, magnitude);
+                        }
+                        break;
+                    case BattleEffectKind.EmitCue:
+                        if (targets.Count == 0)
+                            EmitCue(effect.CueId, context.Owner.Id, 0, context.Origin);
+                        else foreach (var target in targets)
+                            EmitCue(effect.CueId, context.Owner.Id, target.Id, EntityPoint(target));
+                        break;
+                    default:
+                        throw new InvalidOperationException("No executor registered for effect "
+                            + effect.Kind + ".");
+                }
+            }
+        }
+
+        private List<CombatEntityState> SelectPassiveTargets(BattlePassiveTargetKind targetKind,
+            CombatEffectContext context)
+        {
+            if (targetKind == BattlePassiveTargetKind.Self)
+                return new List<CombatEntityState> { context.Owner };
+            if (targetKind == BattlePassiveTargetKind.EventSource)
+                return context.EventSource == null ? new List<CombatEntityState>()
+                    : new List<CombatEntityState> { context.EventSource };
+            if (targetKind == BattlePassiveTargetKind.EventTarget)
+                return context.EventTarget == null ? new List<CombatEntityState>()
+                    : new List<CombatEntityState> { context.EventTarget };
+            var allies = targetKind == BattlePassiveTargetKind.AllAllies;
+            return CombatEntities().Where(entity => IsPassiveOwnerActive(entity)
+                    && (entity.Faction == context.Owner.Faction) == allies)
+                .OrderBy(entity => entity.Id).ToList();
+        }
+
+        private Vector2 EntityPoint(CombatEntityState entity)
+        {
+            var plant = entity as Plant;
+            if (plant != null) return plant.PotId < 0 ? Map.Core : PlantPoint(plant);
+            var zombie = entity as Zombie;
+            return zombie == null ? Map.Core : Map.Route.Sample(zombie.PathProgress);
+        }
+
         private void SyncLegacySkillViews(Plant plant, SkillRuntimeState runtime)
         {
             plant.AttackCooldown = BattleSkillTiming.TicksToSeconds(runtime.CooldownTicks);
@@ -546,43 +925,10 @@ namespace FruitDefense.Core
                 var facing = Map.Route.Sample(targets[0].PathProgress) - origin;
                 if (facing.sqrMagnitude > .001f) plant.Facing = facing.normalized;
             }
-            foreach (var effect in skill.Effects)
-            {
-                switch (effect.Kind)
-                {
-                    case BattleEffectKind.Damage:
-                        foreach (var target in targets.ToArray())
-                            Damage(plant, target, PlantDamage(plant) * skill.DamageMultiplier * effect.Magnitude);
-                        break;
-                    case BattleEffectKind.LaunchProjectile:
-                        if (targets.Count > 0)
-                            SpawnProjectile(plant, skill, effect, origin, targets[0],
-                                PlantDamage(plant) * skill.DamageMultiplier * effect.Magnitude, range);
-                        break;
-                    case BattleEffectKind.GrantResource:
-                        var amount = skill.ResourceAmount > 0 ? skill.ResourceAmount : effect.ResourceAmount;
-                        State.Sun += amount;
-                        AddFeedback("+" + amount + " 阳光", origin, new Color(.95f, .68f, .1f));
-                        break;
-                    case BattleEffectKind.ApplyStatus:
-                        foreach (var target in targets.ToArray())
-                        {
-                            var magnitude = effect.Magnitude;
-                            if (eventDamage > 0f && _content.RuntimeStatuses[effect.StatusId].Kind == BattleStatusKind.Burn)
-                                magnitude *= eventDamage;
-                            ApplyStatus(target, effect.StatusId, plant == null ? 0 : plant.Id, magnitude);
-                        }
-                        break;
-                    case BattleEffectKind.EmitCue:
-                        if (targets.Count == 0) EmitCue(effect.CueId, plant == null ? 0 : plant.Id, 0, origin);
-                        else foreach (var target in targets)
-                            EmitCue(effect.CueId, plant == null ? 0 : plant.Id, target.Id,
-                                Map.Route.Sample(target.PathProgress));
-                        break;
-                    default:
-                        throw new InvalidOperationException("No executor registered for effect " + effect.Kind + ".");
-                }
-            }
+            var context = new CombatEffectContext(0, plant, plant, eventTarget,
+                origin, range, eventDamage);
+            ExecuteEffects(skill.Effects, context,
+                targets.Cast<CombatEntityState>().ToArray(), skill, skill.Id);
         }
 
         private List<Zombie> SelectSkillTargets(BattleTargetKind targetKind, Zombie eventTarget, Vector2 origin, float range)
@@ -635,12 +981,12 @@ namespace FruitDefense.Core
             plant.Facing = direction;
             if (skill.BurstCount > 1)
                 EmitCue(BattleContentIds.Cues.GatlingMuzzle, plant.Id, target.Id,
-                    origin + direction * GameConfig.MapDistance(2.4f));
+                    origin + direction * Map.FromLegacyDistance(2.4f));
             var totalTicks = definition.Mode == BattleProjectileMode.TimedArc
                 ? definition.FlightTicks
                 : definition.Mode == BattleProjectileMode.LinearReturn
                     ? BattleSkillTiming.SecondsToTicks(range * definition.RangeMultiplier * 2f
-                        / GameConfig.MapDistance(definition.Speed) + .3f)
+                        / Map.FromLegacyDistance(definition.Speed) + .3f)
                     : BattleSkillTiming.SecondsToTicks(3f);
             State.Projectiles.Add(new ProjectileFlash
             {
@@ -683,8 +1029,8 @@ namespace FruitDefense.Core
                             .FirstOrDefault();
                     var targetPoint = target == null ? projectile.TargetPoint : Map.Route.Sample(target.PathProgress);
                     var gap = Vector2.Distance(projectile.Position, targetPoint);
-                    var travel = GameConfig.MapDistance(definition.Speed) * delta;
-                    if (gap <= travel + GameConfig.MapDistance(definition.HitRadius))
+                    var travel = Map.FromLegacyDistance(definition.Speed) * delta;
+                    if (gap <= travel + Map.FromLegacyDistance(definition.HitRadius))
                     {
                         if (target != null)
                         {
@@ -708,7 +1054,7 @@ namespace FruitDefense.Core
                         EmitCue(projectile.ImpactCueId, projectile.PlantId, 0, projectile.TargetPoint);
                         foreach (var zombie in State.Zombies.ToArray())
                             if (zombie.Hp > 0f && Vector2.Distance(projectile.TargetPoint, Map.Route.Sample(zombie.PathProgress))
-                                <= GameConfig.MapDistance(definition.BlastRadius))
+                                <= Map.FromLegacyDistance(definition.BlastRadius))
                                 Damage(PlantById(projectile.PlantId), zombie, projectile.Damage);
                         State.Projectiles.RemoveAt(index);
                         continue;
@@ -717,7 +1063,7 @@ namespace FruitDefense.Core
                 else
                 {
                     var previous = projectile.Position;
-                    var speed = GameConfig.MapDistance(definition.Speed);
+                    var speed = Map.FromLegacyDistance(definition.Speed);
                     if (projectile.Returning)
                         projectile.Progress = Mathf.Max(0f, projectile.Progress - speed * delta);
                     else
@@ -732,7 +1078,7 @@ namespace FruitDefense.Core
                         var hitCount = projectile.HitIds.Count(id => id == zombie.Id);
                         var canHit = projectile.Returning ? hitCount < definition.MaxHitsPerTarget : hitCount == 0;
                         if (!canHit || PointToSegmentDistance(Map.Route.Sample(zombie.PathProgress), previous, projectile.Position)
-                            > GameConfig.MapDistance(definition.HitRadius)) continue;
+                            > Map.FromLegacyDistance(definition.HitRadius)) continue;
                         Damage(PlantById(projectile.PlantId), zombie, projectile.Damage);
                         EmitCue(projectile.ImpactCueId, projectile.PlantId, zombie.Id,
                             Map.Route.Sample(zombie.PathProgress));
@@ -751,11 +1097,11 @@ namespace FruitDefense.Core
             }
         }
 
-        private static Vector2 SampleWatermelonArc(Vector2 origin, Vector2 target, float progress)
+        private Vector2 SampleWatermelonArc(Vector2 origin, Vector2 target, float progress)
         {
             var ratio = Mathf.Clamp01(progress);
-            var arcHeight = Mathf.Min(GameConfig.MapDistance(18f),
-                Mathf.Max(GameConfig.MapDistance(8f), Vector2.Distance(origin, target) * .35f));
+            var arcHeight = Mathf.Min(Map.FromLegacyDistance(18f),
+                Mathf.Max(Map.FromLegacyDistance(8f), Vector2.Distance(origin, target) * .35f));
             return Vector2.Lerp(origin, target, ratio) + Vector2.up * (-arcHeight * 4f * ratio * (1f - ratio));
         }
 
@@ -775,36 +1121,47 @@ namespace FruitDefense.Core
 
         private void Damage(Plant plant, Zombie zombie, float damage)
         {
+            DamageEntity(plant, zombie, damage, true);
+        }
+
+        private void DamageEntity(CombatEntityState source, Zombie zombie, float rawDamage,
+            bool applyDirectHitStatus)
+        {
             if (zombie == null || zombie.Hp <= 0f) return;
+            var damage = GetEffectiveAttribute(zombie, CombatAttributeKind.DamageTaken, rawDamage);
             zombie.Hp = Mathf.Max(0f, zombie.Hp - damage);
             var impactPoint = Map.Route.Sample(zombie.PathProgress);
-            ApplyStatus(zombie, BattleContentIds.Statuses.HitStun, plant == null ? 0 : plant.Id, 1f);
-            if (plant != null)
+            if (applyDirectHitStatus)
+                ApplyStatus(zombie, BattleContentIds.Statuses.HitStun, source == null ? 0 : source.Id, 1f);
+            RaisePassiveEvents(new[]
             {
-                foreach (var skill in ResolveSkills(plant).Where(value => value.Trigger == BattleTriggerKind.AfterDamageDealt))
-                    ExecuteSkill(plant, skill, zombie, PlantPoint(plant), PlantRange(plant), false, damage);
-            }
+                BattlePassiveTriggerKind.AfterDamageDealt,
+                BattlePassiveTriggerKind.AfterDamageTaken,
+            }, source, zombie, damage);
             AddFeedback("-" + Mathf.RoundToInt(damage), impactPoint, new Color(.88f, .25f, .18f));
             SyncLegacyStatusViews(zombie);
             if (zombie.Hp <= 0f)
             {
                 var index = State.Zombies.IndexOf(zombie);
-                if (index >= 0) KillZombie(index, zombie);
+                if (index >= 0) KillZombie(index, zombie, source);
             }
         }
 
-        private void ApplyStatus(Zombie zombie, string statusId, int sourceEntityId, float magnitudeMultiplier)
+        public void ApplyStatus(CombatEntityState target, string statusId, int sourceEntityId,
+            float magnitudeMultiplier = 1f)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             var definition = _content.RuntimeStatuses[statusId];
-            var magnitude = definition.Kind == BattleStatusKind.Burn
+            var magnitude = definition.PeriodicEffect == CombatPeriodicEffectKind.Damage
                 ? magnitudeMultiplier
                 : definition.Magnitude * magnitudeMultiplier;
+            var procStatusId = string.Empty;
             if (definition.Stacking == BattleStatusStackingKind.Refresh)
             {
-                var existing = zombie.Statuses.FirstOrDefault(value => value.DefinitionId == statusId);
+                var existing = target.Statuses.FirstOrDefault(value => value.DefinitionId == statusId);
                 if (existing == null)
                 {
-                    zombie.Statuses.Add(CreateStatus(definition, sourceEntityId, magnitude));
+                    target.Statuses.Add(CreateStatus(definition, sourceEntityId, magnitude));
                 }
                 else
                 {
@@ -815,33 +1172,49 @@ namespace FruitDefense.Core
             }
             else if (definition.Stacking == BattleStatusStackingKind.Independent)
             {
-                zombie.Statuses.Add(CreateStatus(definition, sourceEntityId, magnitude));
-                var same = zombie.Statuses.Where(value => value.DefinitionId == statusId)
+                target.Statuses.Add(CreateStatus(definition, sourceEntityId, magnitude));
+                var same = target.Statuses.Where(value => value.DefinitionId == statusId)
                     .OrderBy(value => value.Sequence).ToList();
                 while (same.Count > definition.MaxStacks)
                 {
-                    zombie.Statuses.Remove(same[0]);
+                    target.Statuses.Remove(same[0]);
                     same.RemoveAt(0);
+                }
+            }
+            else if (definition.Stacking == BattleStatusStackingKind.Additive)
+            {
+                var existing = target.Statuses.FirstOrDefault(value => value.DefinitionId == statusId);
+                if (existing == null) target.Statuses.Add(CreateStatus(definition, sourceEntityId, magnitude));
+                else
+                {
+                    existing.StackCount = Math.Min(definition.MaxStacks, existing.StackCount + 1);
+                    existing.RemainingTicks = Math.Max(existing.RemainingTicks, definition.DurationTicks);
+                    existing.Magnitude = magnitude;
+                    existing.SourceEntityId = sourceEntityId;
                 }
             }
             else
             {
-                var counter = zombie.Statuses.FirstOrDefault(value => value.DefinitionId == statusId);
+                var counter = target.Statuses.FirstOrDefault(value => value.DefinitionId == statusId);
                 if (counter == null)
                 {
                     counter = CreateStatus(definition, sourceEntityId, magnitude);
                     counter.StackCount = 0;
-                    zombie.Statuses.Add(counter);
+                    target.Statuses.Add(counter);
                 }
                 counter.StackCount++;
                 counter.SourceEntityId = sourceEntityId;
                 if (counter.StackCount >= definition.HitsToProc)
                 {
-                    zombie.Statuses.Remove(counter);
-                    ApplyStatus(zombie, definition.ProcStatusId, sourceEntityId, 1f);
+                    target.Statuses.Remove(counter);
+                    procStatusId = definition.ProcStatusId;
                 }
             }
-            SyncLegacyStatusViews(zombie);
+            var zombie = target as Zombie;
+            if (zombie != null) SyncLegacyStatusViews(zombie);
+            RaisePassiveEvent(BattlePassiveTriggerKind.StatusApplied,
+                EntityById(sourceEntityId), target, magnitude);
+            if (!string.IsNullOrEmpty(procStatusId)) ApplyStatus(target, procStatusId, sourceEntityId, 1f);
         }
 
         private StatusInstance CreateStatus(CompiledStatusDefinition definition, int sourceEntityId, float magnitude)
@@ -855,21 +1228,6 @@ namespace FruitDefense.Core
                 Magnitude = magnitude,
                 Sequence = State.NextStatusSequence++,
             };
-        }
-
-        private bool HasStatus(Zombie zombie, BattleStatusKind kind)
-        {
-            return zombie.Statuses.Any(value => value.RemainingTicks > 0
-                && _content.RuntimeStatuses[value.DefinitionId].Kind == kind);
-        }
-
-        private float StrongestStatusMagnitude(Zombie zombie, BattleStatusKind kind, float fallback)
-        {
-            var value = fallback;
-            foreach (var status in zombie.Statuses)
-                if (status.RemainingTicks > 0 && _content.RuntimeStatuses[status.DefinitionId].Kind == kind)
-                    value = Mathf.Min(value, status.Magnitude);
-            return value;
         }
 
         private void SyncLegacyStatusViews(Zombie zombie)
@@ -896,8 +1254,9 @@ namespace FruitDefense.Core
             }
         }
 
-        private void KillZombie(int index, Zombie zombie)
+        private void KillZombie(int index, Zombie zombie, CombatEntityState killer = null)
         {
+            RaisePassiveEvent(BattlePassiveTriggerKind.EntityDefeated, killer, zombie, 0f);
             State.Sun += zombie.Reward;
             AddFeedback("击杀 +" + zombie.Reward, Map.Route.Sample(zombie.PathProgress), new Color(.95f, .68f, .1f));
             State.Zombies.RemoveAt(index);
@@ -911,24 +1270,26 @@ namespace FruitDefense.Core
             State.Sun += wave.completionReward;
             GrantMilestone(completed);
             AddGlobalFeedback("第 " + completed + " 波完成，奖励 +" + wave.completionReward, new Color(.95f, .65f, .1f));
-            if (completed >= _content.BattleRules.maxWaves) State.Phase = GamePhase.Victory;
-            else { State.Phase = GamePhase.BetweenWaves; State.BetweenTimer = _content.BattleRules.betweenWaveSeconds; }
+            if (completed >= _ruleSet.MaxWaves) State.Phase = GamePhase.Victory;
+            else { State.Phase = GamePhase.BetweenWaves; State.BetweenTimer = _ruleSet.BetweenWaveSeconds; }
         }
 
         private void GrantMilestone(int wave)
         {
-            var reward = _content.BattleRules.milestoneRewards.FirstOrDefault(value => value.wave == wave);
+            var reward = _ruleSet.MilestoneRewards.FirstOrDefault(value => value.Wave == wave);
             if (reward == null) return;
-            foreach (var equipmentId in reward.equipmentIds)
+            foreach (var equipmentId in reward.EquipmentIds)
                 State.Inventory.Add(LegacyBattleContentIds.WeaponKindFromId(equipmentId), 1);
-            State.Inventory.Pots += reward.potCount;
+            State.Inventory.Pots += reward.PotCount;
             EmitCue(BattleContentIds.Cues.Milestone, 0, 0, Map.Core);
             AddGlobalFeedback("里程碑奖励：武器与花盆", new Color(.2f, .5f, .78f));
         }
 
         private WaveDefinitionDto Wave(int index)
         {
-            return _content.Waves["wave." + index.ToString("00")];
+            if (index <= 0 || index > _orderedWaves.Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return _orderedWaves[index - 1];
         }
 
         private string ResolvePlantId(Plant plant)
@@ -953,6 +1314,18 @@ namespace FruitDefense.Core
             return plant.EquipmentId;
         }
 
+        private string ResolveEnemyId(Zombie zombie)
+        {
+            if (string.IsNullOrEmpty(zombie.ContentId)) zombie.ContentId = LegacyBattleContentIds.Enemy(zombie.Kind);
+            else
+            {
+                ZombieKind legacyKind;
+                if (LegacyBattleContentIds.TryEnemyKindFromId(zombie.ContentId, out legacyKind))
+                    zombie.Kind = legacyKind;
+            }
+            return zombie.ContentId;
+        }
+
         private StarTierDefinitionDto StarTier(Plant plant)
         {
             return _content.StarTiers["star." + Mathf.Clamp(plant.Star, 1, 4)];
@@ -960,13 +1333,15 @@ namespace FruitDefense.Core
 
         private float PlantDamage(Plant plant)
         {
-            return _content.Plants[ResolvePlantId(plant)].damage * StarTier(plant).damageMultiplier;
+            var baseValue = _content.Plants[ResolvePlantId(plant)].damage * StarTier(plant).damageMultiplier;
+            return GetEffectiveAttribute(plant, CombatAttributeKind.Damage, baseValue);
         }
 
         private float PlantRange(Plant plant)
         {
-            return GameConfig.MapDistance(_content.Plants[ResolvePlantId(plant)].rangeLegacyUnits)
+            var baseValue = Map.FromLegacyDistance(_content.Plants[ResolvePlantId(plant)].rangeLegacyUnits)
                 * StarTier(plant).rangeMultiplier;
+            return GetEffectiveAttribute(plant, CombatAttributeKind.Range, baseValue);
         }
 
         private Vector2 PlantPoint(Plant plant)

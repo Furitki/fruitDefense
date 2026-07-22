@@ -7,6 +7,9 @@ namespace FruitDefense.Shell
     {
         None,
         Start,
+        LevelOrchard01,
+        LevelOrchard02,
+        LevelOrchard03,
         Retry,
         Return,
     }
@@ -32,28 +35,45 @@ namespace FruitDefense.Shell
         public LobbyShellLayout(
             PortraitShellFrame frame,
             Rect title,
+            Rect orchard01Card,
+            Rect orchard02Card,
+            Rect orchard03Card,
             Rect startButton,
-            Rect levelCard,
-            Rect growthCard,
-            Rect settingsCard,
             Rect status)
         {
             Frame = frame;
             Title = title;
+            Orchard01Card = orchard01Card;
+            Orchard02Card = orchard02Card;
+            Orchard03Card = orchard03Card;
             StartButton = startButton;
-            LevelCard = levelCard;
-            GrowthCard = growthCard;
-            SettingsCard = settingsCard;
             Status = status;
         }
 
         public PortraitShellFrame Frame { get; }
         public Rect Title { get; }
+        public Rect Orchard01Card { get; }
+        public Rect Orchard02Card { get; }
+        public Rect Orchard03Card { get; }
         public Rect StartButton { get; }
-        public Rect LevelCard { get; }
-        public Rect GrowthCard { get; }
-        public Rect SettingsCard { get; }
         public Rect Status { get; }
+
+        // Compatibility aliases for the former reserved-card layout. They intentionally map
+        // to the same source rectangles used to draw and hit-test the three playable levels.
+        public Rect LevelCard => Orchard01Card;
+        public Rect GrowthCard => Orchard02Card;
+        public Rect SettingsCard => Orchard03Card;
+
+        public Rect LevelCardFor(string levelId)
+        {
+            switch (levelId)
+            {
+                case LobbyPresenter.Orchard01LevelId: return Orchard01Card;
+                case LobbyPresenter.Orchard02LevelId: return Orchard02Card;
+                case LobbyPresenter.Orchard03LevelId: return Orchard03Card;
+                default: return default;
+            }
+        }
     }
 
     public readonly struct SettlementShellLayout
@@ -63,6 +83,7 @@ namespace FruitDefense.Shell
             Rect title,
             Rect resultCard,
             Rect outcome,
+            Rect completedLevel,
             Rect reachedWave,
             Rect remainingLives,
             Rect retryButton,
@@ -73,6 +94,7 @@ namespace FruitDefense.Shell
             Title = title;
             ResultCard = resultCard;
             Outcome = outcome;
+            CompletedLevel = completedLevel;
             ReachedWave = reachedWave;
             RemainingLives = remainingLives;
             RetryButton = retryButton;
@@ -84,6 +106,7 @@ namespace FruitDefense.Shell
         public Rect Title { get; }
         public Rect ResultCard { get; }
         public Rect Outcome { get; }
+        public Rect CompletedLevel { get; }
         public Rect ReachedWave { get; }
         public Rect RemainingLives { get; }
         public Rect RetryButton { get; }
@@ -95,6 +118,7 @@ namespace FruitDefense.Shell
     {
         public const float ReferenceWidth = 402f;
         public const float ReferenceHeight = 874f;
+        public const float ReferenceLevelCardHeight = 82f;
 
         public static LobbyShellLayout CreateLobby(float viewportWidth, float viewportHeight, Rect safeArea)
         {
@@ -107,11 +131,11 @@ namespace FruitDefense.Shell
             return new LobbyShellLayout(
                 frame,
                 RectAt(x, y + 17f * scale, width, 48f * scale),
-                RectAt(x, y + 102f * scale, width, 64f * scale),
-                RectAt(x, y + 194f * scale, width, 82f * scale),
-                RectAt(x, y + 294f * scale, width, 82f * scale),
-                RectAt(x, y + 394f * scale, width, 82f * scale),
-                RectAt(x, y + 504f * scale, width, 58f * scale));
+                RectAt(x, y + 92f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 190f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 288f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 396f * scale, width, 64f * scale),
+                RectAt(x, y + 478f * scale, width, 58f * scale));
         }
 
         public static SettlementShellLayout CreateSettlement(float viewportWidth, float viewportHeight, Rect safeArea)
@@ -127,9 +151,10 @@ namespace FruitDefense.Shell
                 frame,
                 RectAt(x, y + 17f * scale, width, 48f * scale),
                 resultCard,
-                RectAt(x + 18f * scale, resultCard.y + 22f * scale, width - 36f * scale, 58f * scale),
-                RectAt(x + 18f * scale, resultCard.y + 105f * scale, width - 36f * scale, 42f * scale),
-                RectAt(x + 18f * scale, resultCard.y + 166f * scale, width - 36f * scale, 42f * scale),
+                RectAt(x + 18f * scale, resultCard.y + 18f * scale, width - 36f * scale, 54f * scale),
+                RectAt(x + 18f * scale, resultCard.y + 78f * scale, width - 36f * scale, 32f * scale),
+                RectAt(x + 18f * scale, resultCard.y + 122f * scale, width - 36f * scale, 42f * scale),
+                RectAt(x + 18f * scale, resultCard.y + 178f * scale, width - 36f * scale, 42f * scale),
                 RectAt(x, y + 399f * scale, width, 64f * scale),
                 RectAt(x, y + 481f * scale, width, 58f * scale),
                 RectAt(x, y + 557f * scale, width, 58f * scale));
@@ -137,7 +162,11 @@ namespace FruitDefense.Shell
 
         public static ShellHitTarget HitTest(LobbyShellLayout layout, Vector2 guiPoint, bool isTransitioning)
         {
-            if (!isTransitioning && layout.StartButton.Contains(guiPoint)) return ShellHitTarget.Start;
+            if (isTransitioning) return ShellHitTarget.None;
+            if (layout.Orchard01Card.Contains(guiPoint)) return ShellHitTarget.LevelOrchard01;
+            if (layout.Orchard02Card.Contains(guiPoint)) return ShellHitTarget.LevelOrchard02;
+            if (layout.Orchard03Card.Contains(guiPoint)) return ShellHitTarget.LevelOrchard03;
+            if (layout.StartButton.Contains(guiPoint)) return ShellHitTarget.Start;
             return ShellHitTarget.None;
         }
 

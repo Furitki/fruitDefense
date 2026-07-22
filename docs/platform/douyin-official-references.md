@@ -1,3 +1,10 @@
+---
+id: douyin-official-references
+parent: douyin-spike-status
+order: 10
+status: active
+---
+
 # Douyin Unity mini-game official references
 
 Retrieved on 2026-07-15. Recheck these sources before changing the pinned platform toolchain.

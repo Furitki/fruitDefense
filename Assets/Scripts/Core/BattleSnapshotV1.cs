@@ -5,7 +5,7 @@ namespace FruitDefense.Core
     public static class BattleSnapshotSchema
     {
         public const int Version = 1;
-        public const string DefaultMapId = "orchard-01";
+        public const string DefaultMapId = BattlefieldMapDefinition.DefaultMapId;
     }
 
     [Serializable]
@@ -14,7 +14,7 @@ namespace FruitDefense.Core
         public int schemaVersion = BattleSnapshotSchema.Version;
         public string catalogId = string.Empty;
         public string contentVersion = string.Empty;
-        public string mapId = BattleSnapshotSchema.DefaultMapId;
+        public string mapId = string.Empty;
         public int logicStep;
         public uint randomState;
         public int randomSeed;
@@ -147,6 +147,10 @@ namespace FruitDefense.Core
         InvalidReference,
         InvalidNumericValue,
         InvalidIdentity,
+        LevelCatalogUnavailable,
+        IncompatibleLevelCatalog,
+        UnknownLevel,
+        IncompatibleLevel,
     }
 
     public readonly struct BattleSnapshotRestoreResult

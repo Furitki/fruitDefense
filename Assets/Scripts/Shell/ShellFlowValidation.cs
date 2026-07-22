@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using FruitDefense.App;
+using FruitDefense.Content;
 using UnityEngine;
 
 namespace FruitDefense.Shell
@@ -15,90 +17,125 @@ namespace FruitDefense.Shell
         public static void Validate()
         {
             ShellLayoutValidation.ValidateReferenceGeometry();
-            ValidateHitTesting();
-            ValidateLobbyStartAndDuplicateGuard();
+            ValidateThreeCardSelectionAndSelectedStart();
+            ValidateUnavailableProfileRecoveryAndLegacyCompatibility();
             ValidateSettlementDisplay();
             ValidateReturnAndRetry();
             ValidateInvalidResultRecovery();
         }
 
-        private static void ValidateHitTesting()
+        private static void ValidateThreeCardSelectionAndSelectedStart()
         {
-            var safeArea = new Rect(0f, 0f, 402f, 874f);
-            var lobby = PortraitShellLayout.CreateLobby(402f, 874f, safeArea);
-            Assert(PortraitShellLayout.HitTest(lobby, lobby.StartButton.center, false) == ShellHitTarget.Start,
-                "Lobby hits Start through its drawing rectangle");
-            Assert(PortraitShellLayout.HitTest(lobby, lobby.StartButton.center, true) == ShellHitTarget.None,
-                "Lobby ignores Start while transitioning");
-            Assert(PortraitShellLayout.HitTest(lobby, lobby.LevelCard.center, false) == ShellHitTarget.None
-                && PortraitShellLayout.HitTest(lobby, lobby.GrowthCard.center, false) == ShellHitTarget.None
-                && PortraitShellLayout.HitTest(lobby, lobby.SettingsCard.center, false) == ShellHitTarget.None,
-                "reserved cards never produce actions");
+            var context = FakeShellFlowContext.AtLobby("builtin-test-v1",
+                LobbyPresenter.Orchard01LevelId);
+            var presenter = CreatePresenter<LobbyPresenter>("LobbyMultiLevelValidation");
+            try
+            {
+                presenter.Initialize(context);
+                Assert(presenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId,
+                    "Lobby visibly restores the context selection");
 
-            var settlement = PortraitShellLayout.CreateSettlement(402f, 874f, safeArea);
-            Assert(PortraitShellLayout.HitTest(settlement, settlement.RetryButton.center, false) == ShellHitTarget.Retry,
-                "Settlement hits Retry through its drawing rectangle");
-            Assert(PortraitShellLayout.HitTest(settlement, settlement.ReturnButton.center, false) == ShellHitTarget.Return,
-                "Settlement hits Return through its drawing rectangle");
-            Assert(PortraitShellLayout.HitTest(settlement, settlement.ResultCard.center, false) == ShellHitTarget.None,
-                "result display never produces an action");
+                var safeArea = new Rect(0f, 0f, 402f, 874f);
+                var layout = PortraitShellLayout.CreateLobby(402f, 874f, safeArea);
+                Assert(presenter.TryActivateAt(layout.Orchard02Card.center, 402f, 874f, safeArea),
+                    "orchard-02 drawn card accepts input");
+                Assert(context.SelectionCount == 1
+                    && context.SelectedLevelId == LobbyPresenter.Orchard02LevelId
+                    && presenter.SelectedLevelId == LobbyPresenter.Orchard02LevelId,
+                    "card selection updates both persisted context and visible selection");
+                Assert(context.StartCount == 0
+                    && context.Navigator.TransitionState == AppTransitionState.Idle,
+                    "selecting a card does not navigate");
+
+                Assert(presenter.TryActivateAt(layout.StartButton.center, 402f, 874f, safeArea),
+                    "Start drawn rectangle accepts input");
+                Assert(context.StartCount == 1
+                    && context.StartLevelId == LobbyPresenter.Orchard02LevelId,
+                    "Start submits only the visibly selected orchard-02 ID");
+                Assert(Guid.TryParse(context.StartSessionId, out _)
+                    && context.StartSeed != 0
+                    && context.StartContentVersion == "builtin-test-v1",
+                    "Start creates a valid session identity, seed, and content identity");
+                Assert(!presenter.TryStart() && context.StartCount == 1,
+                    "duplicate Start is ignored while navigation loads");
+                Assert(!presenter.TrySelectLevel(LobbyPresenter.Orchard03LevelId)
+                    && context.SelectionCount == 1,
+                    "selection is also guarded during transition");
+            }
+            finally
+            {
+                DestroyPresenter(presenter);
+            }
+
+            var strictContext = FakeShellFlowContext.AtLobby("builtin-test-v1",
+                LobbyPresenter.Orchard03LevelId);
+            var strictPresenter = CreatePresenter<LobbyPresenter>("LobbyStrictSelectionValidation");
+            try
+            {
+                strictPresenter.Initialize(strictContext);
+                Assert(!strictPresenter.TrySelectLevel("orchard-missing")
+                    && strictPresenter.SelectedLevelId == LobbyPresenter.Orchard03LevelId,
+                    "unknown selection is rejected without changing or defaulting the visible level");
+                Assert(strictPresenter.TryStart()
+                    && strictContext.StartLevelId == LobbyPresenter.Orchard03LevelId,
+                    "a rejected selection cannot silently launch orchard-01");
+            }
+            finally
+            {
+                DestroyPresenter(strictPresenter);
+            }
         }
 
-        private static void ValidateLobbyStartAndDuplicateGuard()
+        private static void ValidateUnavailableProfileRecoveryAndLegacyCompatibility()
         {
-            var firstContext = FakeShellFlowContext.AtLobby("builtin-test-v1");
-            var first = CreatePresenter<LobbyPresenter>("LobbyValidationFirst");
+            var recovered = FakeShellFlowContext.AtRecoveredLobby(
+                "builtin-test-v1", "orchard-removed", LobbyPresenter.Orchard01LevelId);
+            var presenter = CreatePresenter<LobbyPresenter>("LobbyProfileRecoveryValidation");
             try
             {
-                first.Initialize(firstContext);
-                Assert(first.TryStart(), "idle Lobby accepts Start");
-                Assert(firstContext.StartCount == 1, "Start issues exactly one flow command");
-                Assert(firstContext.StartLevelId == LobbyPresenter.DefaultLevelId,
-                    "Start uses orchard-01");
-                Assert(Guid.TryParse(firstContext.StartSessionId, out _), "Start uses a GUID session ID");
-                Assert(firstContext.StartSeed != 0, "Start uses a nonzero seed");
-                Assert(firstContext.StartContentVersion == "builtin-test-v1",
-                    "Start uses the current bundled content version");
-                Assert(!first.TryStart() && firstContext.StartCount == 1,
-                    "duplicate Start is ignored while navigation loads");
-
-                var layout = PortraitShellLayout.CreateLobby(402f, 874f, new Rect(0f, 0f, 402f, 874f));
-                Assert(!first.TryActivateAt(layout.LevelCard.center, 402f, 874f, new Rect(0f, 0f, 402f, 874f))
-                    && firstContext.StartCount == 1,
-                    "reserved-card pointer input does not start battle");
+                presenter.Initialize(recovered);
+                Assert(recovered.RecoveredUnavailableLevelId == "orchard-removed"
+                    && presenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId,
+                    "unavailable stored identity remains observable while safe UI default is selected");
+                Assert(presenter.TryStart()
+                    && recovered.StartLevelId == LobbyPresenter.Orchard01LevelId,
+                    "profile recovery starts only the declared visible default");
             }
             finally
             {
-                DestroyPresenter(first);
+                DestroyPresenter(presenter);
             }
 
-            var secondContext = FakeShellFlowContext.AtLobby("builtin-test-v1");
-            var second = CreatePresenter<LobbyPresenter>("LobbyValidationSecond");
+            var legacy = new LegacyLobbyContext("builtin-test-v1");
+            var legacyPresenter = CreatePresenter<LobbyPresenter>("LobbyLegacyContextValidation");
             try
             {
-                second.Initialize(secondContext);
-                Assert(second.TryStart(), "a later clean Lobby can start");
-                Assert(secondContext.StartSessionId != firstContext.StartSessionId,
-                    "separate starts create new session identities");
+                legacyPresenter.Initialize(legacy);
+                Assert(legacyPresenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId
+                    && legacyPresenter.TryStart()
+                    && legacy.StartLevelId == LobbyPresenter.Orchard01LevelId,
+                    "base shell contexts retain orchard-01 compatibility");
             }
             finally
             {
-                DestroyPresenter(second);
+                DestroyPresenter(legacyPresenter);
             }
         }
 
         private static void ValidateSettlementDisplay()
         {
-            var context = FakeShellFlowContext.AtSettlement(new SettlementViewData(true, 12, 3));
+            var context = FakeShellFlowContext.AtSettlement(
+                new SettlementViewData(LobbyPresenter.Orchard03LevelId, true, 12, 3));
             var presenter = CreatePresenter<SettlementPresenter>("SettlementDisplayValidation");
             try
             {
                 presenter.Initialize(context);
                 Assert(presenter.HasViewData, "valid Settlement binds view data");
-                Assert(presenter.ViewData.Victory
+                Assert(presenter.ViewData.LevelId == LobbyPresenter.Orchard03LevelId
+                    && presenter.ViewData.Victory
                     && presenter.ViewData.ReachedWave == 12
                     && presenter.ViewData.RemainingLives == 3,
-                    "Settlement displays outcome, reached wave, and remaining lives exactly");
+                    "Settlement displays completed level, outcome, wave, and lives exactly");
             }
             finally
             {
@@ -108,7 +145,8 @@ namespace FruitDefense.Shell
 
         private static void ValidateReturnAndRetry()
         {
-            var returnContext = FakeShellFlowContext.AtSettlement(new SettlementViewData(false, 7, 0));
+            var returnContext = FakeShellFlowContext.AtSettlement(
+                new SettlementViewData(LobbyPresenter.Orchard03LevelId, false, 7, 0));
             var returnPresenter = CreatePresenter<SettlementPresenter>("SettlementReturnValidation");
             try
             {
@@ -116,16 +154,22 @@ namespace FruitDefense.Shell
                 Assert(returnPresenter.TryReturn(), "Return command is accepted");
                 Assert(returnContext.ReturnCount == 1 && returnContext.ClearedBeforeReturn,
                     "Return clears completed session/result before navigation");
+                Assert(returnContext.SelectedLevelId == LobbyPresenter.Orchard03LevelId
+                    && returnContext.PersistedSelectedLevelId == LobbyPresenter.Orchard03LevelId,
+                    "Return restores the completed level as the Lobby selection");
                 Assert(returnContext.Navigator.HasPendingRoute
                     && returnContext.Navigator.PendingRoute == AppRoute.Lobby,
                     "Return requests Lobby");
+                Assert(!returnPresenter.TryReturn() && returnContext.ReturnCount == 1,
+                    "duplicate Return is ignored while navigation loads");
             }
             finally
             {
                 DestroyPresenter(returnPresenter);
             }
 
-            var retryContext = FakeShellFlowContext.AtSettlement(new SettlementViewData(false, 9, 0));
+            var retryContext = FakeShellFlowContext.AtSettlement(
+                new SettlementViewData(LobbyPresenter.Orchard03LevelId, false, 9, 0));
             var completedSessionId = retryContext.CompletedSessionId;
             var completedSeed = retryContext.CompletedSeed;
             var retryPresenter = CreatePresenter<SettlementPresenter>("SettlementRetryValidation");
@@ -133,15 +177,16 @@ namespace FruitDefense.Shell
             {
                 retryPresenter.Initialize(retryContext);
                 Assert(retryPresenter.TryRetry(), "Retry command is accepted");
-                Assert(retryContext.RetryCount == 1, "Retry issues exactly one flow command");
+                Assert(retryContext.RetryCount == 1,
+                    "Retry issues exactly one flow command");
                 Assert(retryContext.RetrySessionId != completedSessionId
                     && Guid.TryParse(retryContext.RetrySessionId, out _),
-                    "Retry creates a new session identity");
+                    "Retry creates a fresh session identity");
                 Assert(retryContext.RetrySeed != 0 && retryContext.RetrySeed != completedSeed,
-                    "Retry creates a new nonzero seed");
-                Assert(retryContext.RetryLevelId == "orchard-01"
+                    "Retry creates a fresh nonzero seed");
+                Assert(retryContext.RetryLevelId == LobbyPresenter.Orchard03LevelId
                     && retryContext.RetryContentVersion == "builtin-test-v1",
-                    "Retry retains level and content version");
+                    "Retry retains the completed level and content version");
                 Assert(!retryPresenter.TryRetry() && retryContext.RetryCount == 1,
                     "duplicate Retry is ignored while navigation loads");
             }
@@ -154,12 +199,13 @@ namespace FruitDefense.Shell
         private static void ValidateInvalidResultRecovery()
         {
             ValidateRecovery(false, SettlementPresenter.MissingResult);
-            ValidateRecovery(true, "settlement-result-session-mismatch");
+            ValidateRecovery(true, "settlement-result-level-mismatch");
         }
 
         private static void ValidateRecovery(bool mismatch, string expectedErrorCode)
         {
-            var context = FakeShellFlowContext.AtSettlement(new SettlementViewData(true, 1, 1));
+            var context = FakeShellFlowContext.AtSettlement(
+                new SettlementViewData(LobbyPresenter.Orchard02LevelId, true, 1, 1));
             context.HasSettlementResult = false;
             context.ResultMismatch = mismatch;
             var presenter = CreatePresenter<SettlementPresenter>(
@@ -167,7 +213,8 @@ namespace FruitDefense.Shell
             try
             {
                 presenter.Initialize(context);
-                Assert(!presenter.HasViewData, "invalid Settlement does not bind fabricated view data");
+                Assert(!presenter.HasViewData,
+                    "invalid Settlement does not bind fabricated view data");
                 Assert(context.ReportedError.Code == expectedErrorCode,
                     "invalid Settlement reports a structured recoverable error");
                 Assert(context.ReturnCount == 1
@@ -198,23 +245,38 @@ namespace FruitDefense.Shell
             if (!condition) throw new InvalidOperationException("Shell flow validation failed: " + message);
         }
 
-        private sealed class FakeShellFlowContext : IShellFlowContext
+        private sealed class FakeShellFlowContext : IShellFlowContext, ILevelSelectionFlowContext
         {
+            private static readonly IReadOnlyList<LevelDefinition> Levels = Array.AsReadOnly(new[]
+            {
+                new LevelDefinition("orchard-01", "map-01", "waves-01", "rules-01", "theme-01"),
+                new LevelDefinition("orchard-02", "map-02", "waves-02", "rules-02", "theme-02"),
+                new LevelDefinition("orchard-03", "map-03", "waves-03", "rules-03", "theme-03"),
+            });
+
             private readonly AppNavigator _navigator;
             private SettlementViewData _settlementViewData;
 
-            private FakeShellFlowContext(AppNavigator navigator, string bundledContentVersion)
+            private FakeShellFlowContext(AppNavigator navigator, string bundledContentVersion,
+                string selectedLevelId)
             {
                 _navigator = navigator;
                 BundledContentVersion = bundledContentVersion;
+                SelectedLevelId = selectedLevelId;
+                PersistedSelectedLevelId = selectedLevelId;
                 CompletedSessionId = Guid.NewGuid().ToString("N");
                 CompletedSeed = 301;
-                CompletedLevelId = "orchard-01";
+                CompletedLevelId = selectedLevelId;
                 CompletedContentVersion = bundledContentVersion;
             }
 
             public IAppNavigator Navigator => _navigator;
             public string BundledContentVersion { get; }
+            public IReadOnlyList<LevelDefinition> PlayableLevels => Levels;
+            public string SelectedLevelId { get; private set; }
+            public string PersistedSelectedLevelId { get; private set; }
+            public string RecoveredUnavailableLevelId { get; private set; }
+            public int SelectionCount { get; private set; }
             public bool HasSettlementResult { get; set; }
             public bool ResultMismatch { get; set; }
             public string CompletedSessionId { get; private set; }
@@ -235,9 +297,19 @@ namespace FruitDefense.Shell
             public string RetryContentVersion { get; private set; }
             public ShellFlowError ReportedError { get; private set; }
 
-            public static FakeShellFlowContext AtLobby(string bundledContentVersion)
+            public static FakeShellFlowContext AtLobby(string bundledContentVersion,
+                string selectedLevelId)
             {
-                return new FakeShellFlowContext(new AppNavigator(), bundledContentVersion);
+                return new FakeShellFlowContext(new AppNavigator(), bundledContentVersion,
+                    selectedLevelId);
+            }
+
+            public static FakeShellFlowContext AtRecoveredLobby(string bundledContentVersion,
+                string unavailableLevelId, string defaultLevelId)
+            {
+                var context = AtLobby(bundledContentVersion, defaultLevelId);
+                context.RecoveredUnavailableLevelId = unavailableLevelId;
+                return context;
             }
 
             public static FakeShellFlowContext AtSettlement(SettlementViewData viewData)
@@ -245,11 +317,35 @@ namespace FruitDefense.Shell
                 var navigator = new AppNavigator();
                 Transition(navigator, AppRoute.Battle);
                 Transition(navigator, AppRoute.Settlement);
-                return new FakeShellFlowContext(navigator, "builtin-test-v1")
+                var levelId = string.IsNullOrEmpty(viewData.LevelId)
+                    ? LobbyPresenter.Orchard01LevelId
+                    : viewData.LevelId;
+                return new FakeShellFlowContext(navigator, "builtin-test-v1", levelId)
                 {
                     _settlementViewData = viewData,
                     HasSettlementResult = true,
+                    CompletedLevelId = levelId,
                 };
+            }
+
+            public bool TrySelectLevel(string levelId, out ShellFlowError error)
+            {
+                if (_navigator.TransitionState != AppTransitionState.Idle)
+                {
+                    error = new ShellFlowError("app-transition-in-progress");
+                    return false;
+                }
+                if (!ContainsLevel(levelId))
+                {
+                    error = new ShellFlowError("battle-level-resolution-failed", levelId);
+                    return false;
+                }
+
+                SelectedLevelId = levelId;
+                PersistedSelectedLevelId = levelId;
+                SelectionCount++;
+                error = ShellFlowError.None;
+                return true;
             }
 
             public bool TryStartDefaultBattle(
@@ -259,6 +355,12 @@ namespace FruitDefense.Shell
                 string contentVersion,
                 out ShellFlowError error)
             {
+                if (!ContainsLevel(levelId)
+                    || !string.Equals(levelId, SelectedLevelId, StringComparison.Ordinal))
+                {
+                    error = new ShellFlowError("battle-level-resolution-failed", levelId);
+                    return false;
+                }
                 if (!_navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 {
                     error = new ShellFlowError(navigationError);
@@ -274,12 +376,13 @@ namespace FruitDefense.Shell
                 return true;
             }
 
-            public bool TryGetSettlementViewData(out SettlementViewData viewData, out ShellFlowError error)
+            public bool TryGetSettlementViewData(out SettlementViewData viewData,
+                out ShellFlowError error)
             {
                 if (ResultMismatch)
                 {
                     viewData = default;
-                    error = new ShellFlowError("settlement-result-session-mismatch");
+                    error = new ShellFlowError("settlement-result-level-mismatch");
                     return false;
                 }
 
@@ -287,6 +390,13 @@ namespace FruitDefense.Shell
                 {
                     viewData = default;
                     error = new ShellFlowError(SettlementPresenter.MissingResult);
+                    return false;
+                }
+                if (!string.Equals(_settlementViewData.LevelId, CompletedLevelId,
+                        StringComparison.Ordinal))
+                {
+                    viewData = default;
+                    error = new ShellFlowError("settlement-result-level-mismatch");
                     return false;
                 }
 
@@ -297,7 +407,18 @@ namespace FruitDefense.Shell
 
             public bool TryReturnToLobby(out ShellFlowError error)
             {
+                if (_navigator.TransitionState != AppTransitionState.Idle)
+                {
+                    error = new ShellFlowError("app-transition-in-progress");
+                    return false;
+                }
+
                 ReturnCount++;
+                if (!string.IsNullOrEmpty(CompletedLevelId))
+                {
+                    SelectedLevelId = CompletedLevelId;
+                    PersistedSelectedLevelId = CompletedLevelId;
+                }
                 HasSettlementResult = false;
                 CompletedSessionId = string.Empty;
                 ClearedBeforeReturn = !HasSettlementResult && string.IsNullOrEmpty(CompletedSessionId);
@@ -313,6 +434,12 @@ namespace FruitDefense.Shell
 
             public bool TryRetryBattle(out ShellFlowError error)
             {
+                if (_navigator.TransitionState != AppTransitionState.Idle)
+                {
+                    error = new ShellFlowError("app-transition-in-progress");
+                    return false;
+                }
+
                 var previousSession = CompletedSessionId;
                 var previousSeed = CompletedSeed;
                 var sessionId = Guid.NewGuid().ToString("N");
@@ -327,7 +454,9 @@ namespace FruitDefense.Shell
                 RetryCount++;
                 RetryLevelId = CompletedLevelId;
                 RetryContentVersion = CompletedContentVersion;
-                RetrySessionId = sessionId == previousSession ? Guid.NewGuid().ToString("N") : sessionId;
+                RetrySessionId = sessionId == previousSession
+                    ? Guid.NewGuid().ToString("N")
+                    : sessionId;
                 RetrySeed = seed;
                 HasSettlementResult = false;
                 error = ShellFlowError.None;
@@ -339,11 +468,72 @@ namespace FruitDefense.Shell
                 ReportedError = error;
             }
 
+            private static bool ContainsLevel(string levelId)
+            {
+                for (var i = 0; i < Levels.Count; i++)
+                {
+                    if (string.Equals(Levels[i].LevelId, levelId, StringComparison.Ordinal))
+                        return true;
+                }
+                return false;
+            }
+
             private static void Transition(AppNavigator navigator, AppRoute route)
             {
                 if (!navigator.TryBeginTransition(route, out var error)
                     || !navigator.TryCompleteTransition(out error))
                     throw new InvalidOperationException("Fake navigation setup failed: " + error);
+            }
+        }
+
+        private sealed class LegacyLobbyContext : IShellFlowContext
+        {
+            private readonly AppNavigator _navigator = new AppNavigator();
+
+            public LegacyLobbyContext(string contentVersion)
+            {
+                BundledContentVersion = contentVersion;
+            }
+
+            public IAppNavigator Navigator => _navigator;
+            public string BundledContentVersion { get; }
+            public string StartLevelId { get; private set; }
+
+            public bool TryStartDefaultBattle(string levelId, string sessionId, int seed,
+                string contentVersion, out ShellFlowError error)
+            {
+                if (!_navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
+                {
+                    error = new ShellFlowError(navigationError);
+                    return false;
+                }
+                StartLevelId = levelId;
+                error = ShellFlowError.None;
+                return true;
+            }
+
+            public bool TryGetSettlementViewData(out SettlementViewData viewData,
+                out ShellFlowError error)
+            {
+                viewData = default;
+                error = new ShellFlowError(SettlementPresenter.MissingResult);
+                return false;
+            }
+
+            public bool TryReturnToLobby(out ShellFlowError error)
+            {
+                error = new ShellFlowError("unsupported");
+                return false;
+            }
+
+            public bool TryRetryBattle(out ShellFlowError error)
+            {
+                error = new ShellFlowError("unsupported");
+                return false;
+            }
+
+            public void ReportRecoverableError(ShellFlowError error)
+            {
             }
         }
     }

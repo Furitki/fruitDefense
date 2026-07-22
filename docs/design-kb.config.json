@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kitVersion": "0.2.1",
+  "projectId": "600115a0-6e2b-43be-bf0e-407d6860b611",
+  "title": "furitDefense 设计知识库",
+  "contentRoots": [
+    "docs"
+  ],
+  "exclude": [
+    "docs/AGENTS.md"
+  ],
+  "output": "docs/design-kb.html"
+}

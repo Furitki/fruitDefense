@@ -9,8 +9,8 @@ namespace FruitDefense.Content
     public enum BattleTargetKind { Self, EventTarget, FrontmostEnemyInRange, AllEnemiesInRadius, AllEnemies, LineFromCaster }
     public enum BattleEffectKind { Damage, LaunchProjectile, GrantResource, ApplyStatus, EmitCue }
     public enum BattleProjectileMode { Tracking, TimedArc, LinearReturn }
-    public enum BattleStatusKind { Slow, Stun, Freeze, HitCount, Burn }
-    public enum BattleStatusStackingKind { Refresh, Independent, ProcAfterHits }
+    public enum BattleStatusKind { Modifier, Slow, Stun, Freeze, HitCount, Burn }
+    public enum BattleStatusStackingKind { Refresh, Independent, ProcAfterHits, Additive }
 
     public static class BattleSkillTiming
     {
@@ -102,6 +102,11 @@ namespace FruitDefense.Content
         public int HitsToProc { get; internal set; }
         public string ProcStatusId { get; internal set; }
         public string CueId { get; internal set; }
+        public CombatStatusPolarity Polarity { get; internal set; }
+        public IReadOnlyList<string> Tags { get; internal set; }
+        public bool BlocksMovement { get; internal set; }
+        public IReadOnlyList<CompiledStatusModifier> Modifiers { get; internal set; }
+        public CombatPeriodicEffectKind PeriodicEffect { get; internal set; }
     }
 
     internal static class BattleSkillCompiler
@@ -147,6 +152,7 @@ namespace FruitDefense.Content
         private static readonly IReadOnlyDictionary<string, BattleStatusKind> StatusKinds =
             new ReadOnlyDictionary<string, BattleStatusKind>(new Dictionary<string, BattleStatusKind>(StringComparer.Ordinal)
             {
+                { "status-kind.modifier", BattleStatusKind.Modifier },
                 { "status-kind.slow", BattleStatusKind.Slow },
                 { "status-kind.stun", BattleStatusKind.Stun },
                 { "status-kind.freeze", BattleStatusKind.Freeze },
@@ -160,6 +166,7 @@ namespace FruitDefense.Content
                 { "stacking.refresh", BattleStatusStackingKind.Refresh },
                 { "stacking.independent", BattleStatusStackingKind.Independent },
                 { "stacking.proc-after-hits", BattleStatusStackingKind.ProcAfterHits },
+                { "stacking.additive", BattleStatusStackingKind.Additive },
             });
 
         public static bool SupportsTrigger(string id) { return Triggers.ContainsKey(id); }
@@ -171,16 +178,7 @@ namespace FruitDefense.Content
 
         public static CompiledBattleSkill Compile(SkillDefinitionDto source)
         {
-            var effects = source.effects.Select(effect => new CompiledSkillEffect
-            {
-                Kind = Effects[effect.kindId],
-                ProjectileId = effect.projectileId,
-                StatusId = effect.statusId,
-                Magnitude = effect.magnitude,
-                Radius = effect.radiusLegacyUnits,
-                ResourceAmount = effect.resourceAmount,
-                CueId = effect.cueId,
-            }).ToArray();
+            var effects = source.effects.Select(CompileEffect).ToArray();
             return new CompiledBattleSkill
             {
                 Id = source.id,
@@ -196,6 +194,20 @@ namespace FruitDefense.Content
                 CueId = source.cueId,
                 Tags = Array.AsReadOnly((string[])source.tags.Clone()),
                 Effects = Array.AsReadOnly(effects),
+            };
+        }
+
+        internal static CompiledSkillEffect CompileEffect(SkillEffectDefinitionDto effect)
+        {
+            return new CompiledSkillEffect
+            {
+                Kind = Effects[effect.kindId],
+                ProjectileId = effect.projectileId,
+                StatusId = effect.statusId,
+                Magnitude = effect.magnitude,
+                Radius = effect.radiusLegacyUnits,
+                ResourceAmount = effect.resourceAmount,
+                CueId = effect.cueId,
             };
         }
 
@@ -230,6 +242,11 @@ namespace FruitDefense.Content
                 HitsToProc = source.hitsToProc,
                 ProcStatusId = source.procStatusId,
                 CueId = source.cueId,
+                Polarity = CombatFrameworkCompiler.CompilePolarity(source.polarityId),
+                Tags = Array.AsReadOnly((string[])source.tags.Clone()),
+                BlocksMovement = source.blocksMovement,
+                Modifiers = Array.AsReadOnly(source.modifiers.Select(CombatFrameworkCompiler.Compile).ToArray()),
+                PeriodicEffect = CombatFrameworkCompiler.CompilePeriodicEffect(source.periodicEffectId),
             };
         }
     }

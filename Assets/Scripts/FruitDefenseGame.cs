@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using FruitDefense.App;
 using FruitDefense.Battle;
+using FruitDefense.Content;
 using FruitDefense.Core;
 using FruitDefense.Platform;
 using FruitDefense.Presentation;
+using FruitDefense.Tilemaps;
 using UnityEngine;
 
 namespace FruitDefense
@@ -85,11 +87,16 @@ namespace FruitDefense
         private const string BetweenWaveActionLabel = "\u7ACB\u5373\u5F00\u59CB\u4E0B\u4E00\u6CE2";
         private const string DefaultStatus = "点击水果查看信息；拖动完成种植、移动、返回与合成";
         private static readonly Rect HeaderRect = new Rect(8f, 8f, 386f, 60f);
-        private static readonly Rect BoardRect = new Rect(4f, 76f, 394f, 398f);
-        private static readonly Rect BuildRect = new Rect(8f, 482f, 386f, 220f);
-        private static readonly Rect DetailRect = new Rect(8f, 710f, 386f, 92f);
-        private static readonly Rect StatusRect = new Rect(8f, 810f, 386f, 56f);
+        private static readonly Rect BattleSurfaceRect = new Rect(0f, 72f, 402f, 798f);
+        private static readonly Rect BoardRect = new Rect(0f, 72f, 402f, 500f);
+        private static readonly Rect ToolTrayRect = new Rect(8f, 580f, 386f, 68f);
+        private static readonly Rect NurseryTrayRect = new Rect(8f, 656f, 386f, 80f);
+        private static readonly Rect RefreshActionRect = new Rect(8f, 744f, 386f, 44f);
+        private static readonly Rect DetailRect = new Rect(8f, 796f, 386f, 70f);
         private static readonly Rect ModalRect = new Rect(36f, 300f, 330f, 244f);
+        private const float MergeHintMinWidth = 92f;
+        private const float MergeHintMaxWidth = 160f;
+        private const float MergeHintHeight = 24f;
 
         private GameSimulation _game;
         private readonly BattlePresentationBuffer _presentation = new BattlePresentationBuffer();
@@ -106,6 +113,8 @@ namespace FruitDefense
         private Texture2D _tempArtAtlas;
         private Texture2D _combatVfxAtlas;
         private Texture2D _attackRangeTexture;
+        [SerializeField] private BattlefieldTerrainPalette[] battlefieldTerrainPalettes =
+            Array.Empty<BattlefieldTerrainPalette>();
         private BattlefieldProjection _projection;
         private GUIStyle _title;
         private GUIStyle _heading;
@@ -127,11 +136,69 @@ namespace FruitDefense
         private float _nurseryRollDisplayUntil;
 
         public GameSimulation Simulation { get { return _game; } }
+        public ResolvedLevelDefinition ActiveLevel { get { return _game == null ? null : _game.ActiveLevel; } }
         public BattleLaunchRequest CurrentRequest { get { return _currentRequest; } }
         public bool IsInitialized { get { return _isInitialized; } }
         public bool HasSubmittedResult { get { return _resultSubmitted; } }
+        public IReadOnlyList<BattlefieldTerrainPalette> BattlefieldTerrainPalettes
+        {
+            get { return battlefieldTerrainPalettes ?? Array.Empty<BattlefieldTerrainPalette>(); }
+        }
+        public DualGridTileSet BattlefieldGrassTileSet { get { return DefaultTerrainTileSet(BattlefieldLayerIds.Surfaces.Grass); } }
+        public DualGridTileSet BattlefieldRouteTileSet { get { return DefaultTerrainTileSet(BattlefieldLayerIds.Surfaces.StoneRoad); } }
+        public Texture2D BattlefieldSoilBaseTexture
+        {
+            get { return BattlefieldTerrainPalettes.Count == 0 ? null : BattlefieldTerrainPalettes[0].SoilBaseTexture; }
+        }
         public string LastResultSubmissionError { get; private set; } = string.Empty;
         public static int ActiveSessionHostCount { get; private set; }
+
+        public void ConfigureBattlefieldTerrain(IEnumerable<BattlefieldTerrainPalette> palettes)
+        {
+            battlefieldTerrainPalettes = (palettes ?? Enumerable.Empty<BattlefieldTerrainPalette>()).ToArray();
+        }
+
+        public bool ValidateBattlefieldTerrain(out string reason)
+        {
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var palette in BattlefieldTerrainPalettes)
+            {
+                if (!BattlefieldDualGridTerrain.Validate(palette, out reason)) return false;
+                if (!ids.Add(palette.PaletteId))
+                {
+                    reason = "Battlefield terrain palette identity is duplicated: " + palette.PaletteId;
+                    return false;
+                }
+            }
+            var required = BundledLevelCatalogFactory.CreateSource().TerrainPaletteIds;
+            if (required.Any(id => !ids.Contains(id)))
+            {
+                reason = "A bundled level theme references an unregistered battlefield terrain palette.";
+                return false;
+            }
+            reason = "ok";
+            return true;
+        }
+
+        public bool TryResolveBattlefieldTerrainPalette(string paletteId,
+            out BattlefieldTerrainPalette palette, out string reason)
+        {
+            palette = BattlefieldTerrainPalettes.FirstOrDefault(value => value != null
+                && string.Equals(value.PaletteId, paletteId, StringComparison.Ordinal));
+            if (palette == null)
+            {
+                reason = "Battlefield terrain palette is not registered: " + (paletteId ?? string.Empty);
+                return false;
+            }
+            return BattlefieldDualGridTerrain.Validate(palette, out reason);
+        }
+
+        private DualGridTileSet DefaultTerrainTileSet(string surfaceId)
+        {
+            if (BattlefieldTerrainPalettes.Count == 0 || BattlefieldTerrainPalettes[0] == null) return null;
+            DualGridTileSet tileSet;
+            return BattlefieldTerrainPalettes[0].TryGetTileSet(surfaceId, out tileSet) ? tileSet : null;
+        }
 
         public static bool ValidateInspectionOnlyInteraction(out string reason)
         {
@@ -180,6 +247,29 @@ namespace FruitDefense
                 return false;
             }
 
+            var plantHint = new PlantDropStatus(true, PlantDropAction.Plant, "可种植");
+            var moveHint = new PlantDropStatus(true, PlantDropAction.Move, "可移动");
+            var invalidHint = new PlantDropStatus(false, PlantDropAction.Invalid, "无效目标");
+            var mergeHint = new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 2 星");
+            if (ShouldShowMergeHint(DragPayloadType.Plant, plantHint)
+                || ShouldShowMergeHint(DragPayloadType.Plant, moveHint)
+                || ShouldShowMergeHint(DragPayloadType.Plant, invalidHint)
+                || ShouldShowMergeHint(DragPayloadType.Weapon, mergeHint)
+                || !ShouldShowMergeHint(DragPayloadType.Plant, mergeHint))
+            {
+                reason = "floating drag hint is not limited to legal plant merges";
+                return false;
+            }
+
+            var compactHint = MergeHintRect(new Rect(180f, 180f, 48f, 48f), 118f);
+            if (compactHint.width < MergeHintMinWidth || compactHint.width > MergeHintMaxWidth
+                || compactHint.width >= 280f || compactHint.height != MergeHintHeight
+                || compactHint.height >= 30f || compactHint.xMin < 8f || compactHint.xMax > DesignWidth - 8f)
+            {
+                reason = "merge hint frame is not compact or contained";
+                return false;
+            }
+
             var projection = new BattlefieldProjection(simulation.Map, BoardRect);
             var center = simulation.PotPoint(firstPot);
             var range = EffectiveAttackRange(first);
@@ -201,45 +291,105 @@ namespace FruitDefense
         public static bool ValidatePortraitLayout(out string reason)
         {
             var design = new Rect(0f, 0f, DesignWidth, DesignHeight);
-            var regions = new[] { HeaderRect, BoardRect, BuildRect, DetailRect, StatusRect };
-            foreach (var region in regions)
+            var topLevelRegions = new[] { HeaderRect, BattleSurfaceRect };
+            foreach (var region in topLevelRegions)
             {
-                if (region.xMin < design.xMin || region.yMin < design.yMin
-                    || region.xMax > design.xMax || region.yMax > design.yMax)
+                if (!ContainsRect(design, region))
                 {
                     reason = "region outside design bounds: " + region;
                     return false;
                 }
             }
 
-            for (var index = 1; index < regions.Length; index++)
+            if (HeaderRect.yMax > BattleSurfaceRect.yMin)
             {
-                if (regions[index - 1].yMax > regions[index].yMin)
+                reason = "header overlaps the embedded battle surface";
+                return false;
+            }
+
+            var embeddedRegions = new[]
+            {
+                BoardRect, ToolTrayRect, NurseryTrayRect, RefreshRect(), DetailRect,
+            };
+            foreach (var region in embeddedRegions)
+            {
+                if (!ContainsRect(BattleSurfaceRect, region))
                 {
-                    reason = "portrait regions overlap vertically";
+                    reason = "embedded region leaves the battle surface: " + region;
                     return false;
                 }
             }
 
-            if (BoardRect.width <= 386f || BoardRect.height <= 320f || BoardRect.width < 390f)
+            for (var index = 1; index < embeddedRegions.Length; index++)
             {
-                reason = "battlefield was not enlarged to the nearly full-width target";
+                if (embeddedRegions[index - 1].yMax > embeddedRegions[index].yMin)
+                {
+                    reason = "embedded battle regions overlap vertically";
+                    return false;
+                }
+            }
+
+            if (BoardRect.width < DesignWidth || BoardRect.height <= 398f)
+            {
+                reason = "battlefield did not reach the enlarged full-width target";
                 return false;
             }
 
             var projection = new BattlefieldProjection(GameConfig.DefaultBattlefield, BoardRect);
+            var legacyProjection = new BattlefieldProjection(GameConfig.DefaultBattlefield,
+                new Rect(4f, 76f, 394f, 398f));
             if (!projection.ValidatePlantingGeometry(out reason)) return false;
             if (!projection.ValidateControlInset(out reason)) return false;
-            if (projection.PotSize + .01f < BattlefieldProjection.ReferencePotSize)
+            if (projection.TileSize <= legacyProjection.TileSize)
             {
-                reason = "flowerpot target is not doubled from the legacy reference size";
+                reason = "enlarged battlefield did not increase projected tile size";
+                return false;
+            }
+            if (GameConfig.DefaultBattlefield.PlantableCells.Count != 35)
+            {
+                reason = "default battlefield does not expose 35 plantable cells";
+                return false;
+            }
+            var sampleCell = GameConfig.DefaultBattlefield.PlantableCells[0];
+            var hitRect = projection.PotHitRect(sampleCell);
+            var visualRect = projection.PotVisualRect(sampleCell);
+            if (Mathf.Abs(visualRect.width / hitRect.width - BattlefieldProjection.PotVisualRatio) > .001f
+                || BattlefieldProjection.PotVisualRatio < .85f
+                || BattlefieldProjection.PotVisualRatio > .92f
+                || visualRect.xMin < hitRect.xMin || visualRect.yMin < hitRect.yMin
+                || visualRect.xMax > hitRect.xMax || visualRect.yMax > hitRect.yMax)
+            {
+                reason = "frameless flowerpot visual is not near-cell-size or contained";
+                return false;
+            }
+            var nurseryCell = NurseryRect(0);
+            var nurseryIcon = FramelessSlotIconRect(nurseryCell);
+            var potToolCell = PotToolRect();
+            var potToolIcon = PotToolIconRect();
+            if (!ContainsRect(nurseryCell, nurseryIcon)
+                || nurseryIcon.width / nurseryCell.width < .9f
+                || nurseryIcon.height / nurseryCell.height < .9f
+                || !ContainsRect(potToolCell, potToolIcon)
+                || potToolIcon.height / potToolCell.height < .9f)
+            {
+                reason = "frameless tray icon does not nearly fill its logical cell";
+                return false;
+            }
+            var offsetSample = new Rect(100f, 100f, 40f, 40f);
+            var zeroOffset = ApplyPlantVisualHeight(offsetSample, 0f);
+            var unitOffset = ApplyPlantVisualHeight(offsetSample, 1f);
+            if (zeroOffset.center != offsetSample.center
+                || Mathf.Abs(unitOffset.center.x - offsetSample.center.x) > .001f
+                || Mathf.Abs(unitOffset.center.y - (offsetSample.center.y - 1f)) > .001f)
+            {
+                reason = "plant visual height does not preserve exact zero/unit center semantics";
                 return false;
             }
             foreach (var routePoint in projection.RoutePoints)
             {
-                if (!BoardRect.Contains(routePoint))
+                if (!projection.GridRect.Contains(routePoint))
                 {
-                    reason = "projected route leaves the battlefield";
+                    reason = "projected route leaves the square tile grid";
                     return false;
                 }
             }
@@ -251,7 +401,8 @@ namespace FruitDefense
                 WeaponToolRect(WeaponKind.Chili), PotToolRect(),
                 RefreshRect(),
                 projection.WaveActionRect,
-                new Rect(DetailRect.xMax - 52f, DetailRect.y + 4f, 44f, 44f),
+                DetailCloseRect(),
+                NurseryRect(0), NurseryRect(1), NurseryRect(2), NurseryRect(3), NurseryRect(4),
             };
             foreach (var target in primaryTargets)
             {
@@ -455,16 +606,7 @@ namespace FruitDefense
             IBattleResultSink resultSink,
             BattlefieldMapDefinition map = null)
         {
-            if (_hasInitialized)
-                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.AlreadyInitialized);
-            if (request == null)
-                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.InvalidRequest);
-            if (!request.TryValidate(out var requestError))
-                return BattleSessionInitializationResult.Failed(requestError);
-            if (navigator == null)
-                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.NavigatorRequired);
-            if (resultSink == null)
-                return BattleSessionInitializationResult.Failed(BattleSessionInitializationResult.ResultSinkRequired);
+            if (!TryValidateInitialization(request, navigator, resultSink, out var failure)) return failure;
 
             GameSimulation simulation;
             try
@@ -477,6 +619,87 @@ namespace FruitDefense
                 return BattleSessionInitializationResult.Failed(
                     BattleSessionInitializationResult.SimulationConstructionFailed);
             }
+
+            return CompleteInitialization(request, navigator, resultSink, simulation);
+        }
+
+        public BattleSessionInitializationResult Initialize(
+            BattleLaunchRequest request,
+            IAppNavigator navigator,
+            IBattleResultSink resultSink,
+            ResolvedLevelDefinition resolvedLevel)
+        {
+            if (!TryValidateInitialization(request, navigator, resultSink, out var failure)) return failure;
+            if (resolvedLevel == null)
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.ResolvedLevelRequired);
+            if (!string.Equals(request.LevelId, resolvedLevel.Identity.LevelId, StringComparison.Ordinal))
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.ResolvedLevelMismatch);
+            if (resolvedLevel.BattleContent == null
+                || !string.Equals(request.ContentVersion,
+                    resolvedLevel.BattleContent.Header.contentVersion, StringComparison.Ordinal))
+            {
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.ResolvedContentMismatch);
+            }
+
+            GameSimulation simulation;
+            try
+            {
+                simulation = new GameSimulation(resolvedLevel, request.Seed);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.SimulationConstructionFailed);
+            }
+
+            return CompleteInitialization(request, navigator, resultSink, simulation);
+        }
+
+        private bool TryValidateInitialization(BattleLaunchRequest request,
+            IAppNavigator navigator, IBattleResultSink resultSink,
+            out BattleSessionInitializationResult failure)
+        {
+            if (_hasInitialized)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.AlreadyInitialized);
+                return false;
+            }
+            if (request == null)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.InvalidRequest);
+                return false;
+            }
+            if (!request.TryValidate(out var requestError))
+            {
+                failure = BattleSessionInitializationResult.Failed(requestError);
+                return false;
+            }
+            if (navigator == null)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.NavigatorRequired);
+                return false;
+            }
+            if (resultSink == null)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.ResultSinkRequired);
+                return false;
+            }
+
+            failure = default;
+            return true;
+        }
+
+        private BattleSessionInitializationResult CompleteInitialization(BattleLaunchRequest request,
+            IAppNavigator navigator, IBattleResultSink resultSink, GameSimulation simulation)
+        {
 
             _hasInitialized = true;
             _isInitialized = true;
@@ -539,6 +762,28 @@ namespace FruitDefense
                     "session", SessionNotInitialized);
 
             var result = _game.RestoreSnapshot(snapshot);
+            if (!result.Succeeded) return result;
+
+            _presentation.Clear();
+            CancelTransientInteraction();
+            return result;
+        }
+
+        public BattleSnapshotV2 ExportCurrentSessionSnapshotV2(CompiledLevelCatalog levelCatalog)
+        {
+            if (!_isInitialized || _game == null)
+                throw new InvalidOperationException(SessionNotInitialized);
+            return _game.ExportSnapshotV2(levelCatalog);
+        }
+
+        public BattleSnapshotRestoreResult RestoreCurrentSessionSnapshotV2(
+            BattleSnapshotV2 snapshot, CompiledLevelCatalog levelCatalog)
+        {
+            if (!_isInitialized || _game == null)
+                return new BattleSnapshotRestoreResult(BattleSnapshotRestoreCode.InvalidPayload,
+                    "session", SessionNotInitialized);
+
+            var result = _game.RestoreSnapshotV2(snapshot, levelCatalog);
             if (!result.Succeeded) return result;
 
             _presentation.Clear();
@@ -700,7 +945,7 @@ namespace FruitDefense
         {
             if (!_isInitialized || _game == null) return;
             if (!Application.absoluteURL.Contains("acceptance=1")) return;
-            _game = new GameSimulation(20260714);
+            _game.Reset(20260714);
             _game.DiscardPendingPresentationEvents();
             _presentation.Clear();
             _projection = new BattlefieldProjection(_game.Map, BoardRect);
@@ -713,32 +958,33 @@ namespace FruitDefense
             switch (stateName)
             {
                 case "adjacent-pots":
-                    AddAcceptancePot(new Vector2Int(3, 2), PlantKind.Pea);
-                    AddAcceptancePot(new Vector2Int(4, 2), PlantKind.Watermelon);
+                    GetAcceptanceAdjacentCells(out var firstAdjacent, out var secondAdjacent);
+                    AddAcceptancePot(firstAdjacent, PlantKind.Pea);
+                    AddAcceptancePot(secondAdjacent, PlantKind.Watermelon);
                     break;
                 case "drag-target":
-                    AddAcceptancePot(new Vector2Int(3, 2));
+                    AddAcceptancePot(GetAcceptanceCell(0));
                     _game.State.Plants.Add(new Plant
                     {
                         Id = _game.State.NextId++, Kind = PlantKind.Pea, Star = 1, NurseryIndex = 0,
                     });
                     break;
                 case "selection-inspection":
-                    AddAcceptancePot(new Vector2Int(3, 2), PlantKind.Pea);
-                    AddAcceptancePot(new Vector2Int(4, 2));
+                    AddAcceptancePot(GetAcceptanceCell(0), PlantKind.Pea);
+                    AddAcceptancePot(GetAcceptanceCell(1));
                     _game.State.Plants.Add(new Plant
                     {
                         Id = _game.State.NextId++, Kind = PlantKind.Sunflower, Star = 1, NurseryIndex = 0,
                     });
                     break;
                 case "active-wave":
-                    AddAcceptancePot(new Vector2Int(2, 0), PlantKind.Pea);
-                    AddAcceptancePot(new Vector2Int(5, 0), PlantKind.Watermelon);
+                    AddAcceptancePot(GetAcceptanceCell(0), PlantKind.Pea);
+                    AddAcceptancePot(GetAcceptanceCell(_game.Map.PlantableCells.Count - 1), PlantKind.Watermelon);
                     _game.StartWave(out _);
                     break;
                 case "between-wave":
-                    AddAcceptancePot(new Vector2Int(2, 0), PlantKind.Pea);
-                    AddAcceptancePot(new Vector2Int(5, 0), PlantKind.Watermelon);
+                    AddAcceptancePot(GetAcceptanceCell(0), PlantKind.Pea);
+                    AddAcceptancePot(GetAcceptanceCell(_game.Map.PlantableCells.Count - 1), PlantKind.Watermelon);
                     _game.State.Phase = GamePhase.BetweenWaves;
                     _game.State.WaveIndex = 1;
                     _game.State.BetweenTimer = 9.5f;
@@ -752,16 +998,36 @@ namespace FruitDefense
                     }
                     break;
                 default:
-                    AddAcceptancePot(new Vector2Int(1, 0));
-                    AddAcceptancePot(new Vector2Int(3, 0));
-                    AddAcceptancePot(new Vector2Int(5, 0));
-                    AddAcceptancePot(new Vector2Int(7, 1));
-                    AddAcceptancePot(new Vector2Int(7, 3));
-                    AddAcceptancePot(new Vector2Int(1, 5));
-                    AddAcceptancePot(new Vector2Int(4, 5));
-                    AddAcceptancePot(new Vector2Int(6, 5));
+                    for (var index = 0; index < Mathf.Min(8, _game.Map.PlantableCells.Count); index++)
+                        AddAcceptancePot(GetAcceptanceCell(index));
                     break;
             }
+        }
+
+        private Vector2Int GetAcceptanceCell(int index)
+        {
+            var cells = _game.Map.PlantableCells;
+            if (cells.Count == 0) throw new InvalidOperationException("Acceptance map has no plantable cells.");
+            return cells[Mathf.Clamp(index, 0, cells.Count - 1)];
+        }
+
+        private void GetAcceptanceAdjacentCells(out Vector2Int first, out Vector2Int second)
+        {
+            var cells = _game.Map.PlantableCells;
+            for (var firstIndex = 0; firstIndex < cells.Count; firstIndex++)
+            {
+                for (var secondIndex = firstIndex + 1; secondIndex < cells.Count; secondIndex++)
+                {
+                    if (!_game.Map.Topology.AreCardinalNeighbors(cells[firstIndex], cells[secondIndex]))
+                        continue;
+                    first = cells[firstIndex];
+                    second = cells[secondIndex];
+                    return;
+                }
+            }
+
+            first = GetAcceptanceCell(0);
+            second = GetAcceptanceCell(Mathf.Min(1, cells.Count - 1));
         }
 
         private void AddAcceptancePot(Vector2Int cell, PlantKind? plantKind = null)
@@ -782,22 +1048,18 @@ namespace FruitDefense
         private void OnGUI()
         {
             if (!_isInitialized || _game == null) return;
-            var safeArea = Screen.safeArea;
-            if (safeArea.width <= 0f || safeArea.height <= 0f)
-                safeArea = new Rect(0f, 0f, Screen.width, Screen.height);
+            var safeArea = RuntimeSafeAreaResolver.ResolveCurrent();
+            var viewportLayout = BattlefieldProjection.CalculateViewportLayout(
+                Screen.width, Screen.height, safeArea, DesignWidth, DesignHeight);
             GUI.matrix = Matrix4x4.identity;
-            DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), new Color(.91f, .86f, .75f));
-            var scale = Mathf.Min(safeArea.width / DesignWidth, safeArea.height / DesignHeight);
-            var offsetX = safeArea.x + (safeArea.width - DesignWidth * scale) * .5f;
-            var safeTop = Screen.height - safeArea.yMax;
-            var offsetY = safeTop + (safeArea.height - DesignHeight * scale) * .5f;
-            GUI.matrix = Matrix4x4.TRS(new Vector3(offsetX, offsetY, 0f), Quaternion.identity, new Vector3(scale, scale, 1f));
+            var background = ThemeColor(theme => theme.BackgroundColor, new Color(.91f, .86f, .75f));
+            DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), background);
+            GUI.matrix = viewportLayout.GuiMatrix;
             HandleDragInput(Event.current);
-            DrawRect(new Rect(0f, 0f, DesignWidth, DesignHeight), new Color(.91f, .86f, .75f));
+            DrawRect(new Rect(0f, 0f, DesignWidth, DesignHeight), background);
             DrawHeader();
             DrawBoard();
-            DrawBuildPanel();
-            DrawStatusPanel();
+            DrawEmbeddedBattleControls();
             DrawDragGhost();
             DrawOverlay();
         }
@@ -884,7 +1146,7 @@ namespace FruitDefense
             {
                 foreach (var pot in _game.State.Pots.Where(value => value.Active))
                 {
-                    var rect = PotRect(pot);
+                    var rect = PotHitRect(pot);
                     targets.Add(new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = rect });
                 }
                 for (var slot = 0; slot < 5; slot++)
@@ -1008,11 +1270,7 @@ namespace FruitDefense
                 return new InteractionStatus(false, "松开将取消，物品返回原位");
             if (session.Type == DragPayloadType.Plant)
             {
-                var status = target.Type == DropTargetType.Pot
-                    ? _game.GetPlantDropStatus(session.PlantId, target.Id)
-                    : target.Type == DropTargetType.Nursery
-                        ? _game.GetNurseryDropStatus(session.PlantId, target.Slot)
-                        : new PlantDropStatus(false, PlantDropAction.Invalid, "这里不能放置水果");
+                var status = PlantDragTargetStatus(session, target);
                 return new InteractionStatus(status.Legal, status.Reason);
             }
             if (session.Type == DragPayloadType.Weapon)
@@ -1021,6 +1279,31 @@ namespace FruitDefense
                     : new InteractionStatus(false, "请拖到一株植物上");
             return new InteractionStatus(target.Type == DropTargetType.Expansion && _game.CanExpand(target.Cell),
                 target.Type == DropTargetType.Expansion && _game.CanExpand(target.Cell) ? "松开添加花盆" : "请拖到绿色扩建格");
+        }
+
+        private PlantDropStatus PlantDragTargetStatus(DragSession session, DropTarget target)
+        {
+            if (session == null || session.Type != DragPayloadType.Plant)
+                return new PlantDropStatus(false, PlantDropAction.Invalid, "这里不能放置水果");
+            return target.Type == DropTargetType.Pot
+                ? _game.GetPlantDropStatus(session.PlantId, target.Id)
+                : target.Type == DropTargetType.Nursery
+                    ? _game.GetNurseryDropStatus(session.PlantId, target.Slot)
+                    : new PlantDropStatus(false, PlantDropAction.Invalid, "这里不能放置水果");
+        }
+
+        private static bool ShouldShowMergeHint(DragPayloadType payloadType, PlantDropStatus status)
+        {
+            return payloadType == DragPayloadType.Plant
+                && status.Legal
+                && status.Action == PlantDropAction.Merge;
+        }
+
+        private static Rect MergeHintRect(Rect dragRect, float labelWidth)
+        {
+            var width = Mathf.Clamp(labelWidth + 20f, MergeHintMinWidth, MergeHintMaxWidth);
+            var x = Mathf.Clamp(dragRect.center.x - width * .5f, 8f, DesignWidth - 8f - width);
+            return new Rect(x, dragRect.yMax + 4f, width, MergeHintHeight);
         }
 
         private void ToggleWeaponSelection(WeaponKind weapon)
@@ -1040,19 +1323,40 @@ namespace FruitDefense
         private static Rect NurseryRect(int slot)
         {
             const float gap = 5f;
-            var width = (BuildRect.width - 16f - gap * 4f) / 5f;
-            return new Rect(BuildRect.x + 8f + slot * (width + gap), BuildRect.y + 106f, width, 62f);
+            var width = (NurseryTrayRect.width - 16f - gap * 4f) / 5f;
+            return new Rect(NurseryTrayRect.x + 8f + slot * (width + gap),
+                NurseryTrayRect.y + 18f, width, NurseryTrayRect.height - 22f);
         }
 
         private static Rect WeaponToolRect(WeaponKind weapon)
         {
             var index = weapon == WeaponKind.Gatling ? 0 : weapon == WeaponKind.Ice ? 1 : 2;
-            return new Rect(BuildRect.x + 8f + index * 94f, BuildRect.y + 30f, 88f, 50f);
+            return ToolRect(index);
         }
 
-        private static Rect PotToolRect() { return new Rect(BuildRect.x + 8f + 3f * 94f, BuildRect.y + 30f, 88f, 50f); }
+        private static Rect PotToolRect() { return ToolRect(3); }
 
-        private static Rect RefreshRect() { return new Rect(BuildRect.x + 8f, BuildRect.y + 172f, BuildRect.width - 16f, 44f); }
+        private static Rect PotToolIconRect()
+        {
+            var rect = PotToolRect();
+            var size = rect.height - 2f;
+            return new Rect(rect.x + 1f, rect.y + 1f, size, size);
+        }
+
+        private static Rect ToolRect(int index)
+        {
+            const float gap = 5f;
+            var width = (ToolTrayRect.width - 16f - gap * 3f) / 4f;
+            return new Rect(ToolTrayRect.x + 8f + index * (width + gap),
+                ToolTrayRect.y + 18f, width, ToolTrayRect.height - 22f);
+        }
+
+        private static Rect RefreshRect() { return RefreshActionRect; }
+
+        private static Rect DetailCloseRect()
+        {
+            return new Rect(DetailRect.xMax - 48f, DetailRect.y + 4f, 44f, 44f);
+        }
 
         private BattlefieldProjection Projection
         {
@@ -1063,18 +1367,22 @@ namespace FruitDefense
             }
         }
 
-        private Rect ExpansionRect(Vector2Int cell) { return Projection.CellRect(cell); }
+        private Rect ExpansionRect(Vector2Int cell) { return Projection.PotHitRect(cell); }
 
-        private Rect PotRect(Pot pot)
+        private Rect PotHitRect(Pot pot)
         {
-            return Projection.PotRect(pot.Cell);
+            return Projection.PotHitRect(pot.Cell);
+        }
+        private Rect PotVisualRect(Pot pot)
+        {
+            return Projection.PotVisualRect(pot.Cell);
         }
         private Rect PlantSourceRect(Plant plant)
         {
             if (plant.PotId >= 0)
             {
                 var pot = _game.PotById(plant.PotId);
-                return pot == null ? new Rect() : PotRect(pot);
+                return pot == null ? new Rect() : PotHitRect(pot);
             }
             return plant.NurseryIndex >= 0 ? NurseryRect(plant.NurseryIndex) : new Rect();
         }
@@ -1083,13 +1391,22 @@ namespace FruitDefense
             return new Rect(rect.x - amount, rect.y - amount, rect.width + amount * 2f, rect.height + amount * 2f);
         }
 
+        private static Rect FramelessSlotIconRect(Rect rect) { return Grow(rect, -2f); }
+
+        private static bool ContainsRect(Rect outer, Rect inner)
+        {
+            return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin
+                && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;
+        }
+
         private void DrawHeader()
         {
             DrawPanel(HeaderRect, new Color(.99f, .97f, .88f));
             GUI.Label(new Rect(16f, 12f, 118f, 24f), "水果塔防", _title);
             GUI.Label(new Rect(16f, 38f, 88f, 24f), "阳光 <b>" + _game.State.Sun + "</b>", _body);
             GUI.Label(new Rect(104f, 38f, 82f, 24f), "核心 <b>" + _game.State.Lives + "</b>", _body);
-            GUI.Label(new Rect(186f, 38f, 76f, 24f), "波次 <b>" + _game.State.WaveIndex + "/15</b>", _body);
+            GUI.Label(new Rect(186f, 38f, 76f, 24f), "波次 <b>" + _game.State.WaveIndex
+                + "/" + _game.MaxWaves + "</b>", _body);
             if (ColoredButton(new Rect(274f, 16f, 52f, 44f), _game.State.Paused ? "继续" : "暂停", new Color(.96f, .84f, .48f)))
                 _game.TogglePause();
             if (ColoredButton(new Rect(334f, 16f, 52f, 44f), _game.State.Speed + " 倍", new Color(.83f, .91f, .67f)))
@@ -1098,16 +1415,15 @@ namespace FruitDefense
 
         private void DrawBoard()
         {
-            DrawPanel(BoardRect, new Color(.37f, .62f, .24f));
-            DrawRect(new Rect(BoardRect.x + 6f, BoardRect.y + 6f, BoardRect.width - 12f, BoardRect.height - 12f), new Color(.46f, .68f, .28f));
-            var points = Projection.RoutePoints;
-            for (var index = 0; index < points.Count - 1; index++)
-            {
-                DrawLine(points[index], points[index + 1], Projection.MapDistanceToScreen(GameConfig.MapDistance(8f)), new Color(.41f, .43f, .24f));
-                DrawLine(points[index], points[index + 1], Projection.MapDistanceToScreen(GameConfig.MapDistance(6f)), new Color(.88f, .73f, .43f));
-            }
+            var ground = ThemeColor(theme => theme.GroundColor, new Color(.46f, .68f, .28f));
+            DrawPanel(BattleSurfaceRect, Color.Lerp(ground, Color.black, .18f));
+            var texturedTerrain = DrawBattlefieldTerrain();
+            if (!texturedTerrain)
+                DrawRect(new Rect(BoardRect.x + 6f, BoardRect.y + 6f,
+                    BoardRect.width - 12f, BoardRect.height - 12f), ground);
+            DrawRouteTiles(texturedTerrain);
             DrawCore();
-            DrawPlantingCells();
+            DrawPlantingCells(texturedTerrain);
             DrawInspectedAttackRange();
             if (_potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot)) DrawExpansionCandidates();
             DrawPotsAndPlants();
@@ -1118,18 +1434,107 @@ namespace FruitDefense
             DrawBoardStatus();
         }
 
+        private bool DrawBattlefieldTerrain()
+        {
+            string reason;
+            var theme = _game == null ? null : _game.Theme;
+            BattlefieldTerrainPalette palette;
+            if (theme == null || !TryResolveBattlefieldTerrainPalette(
+                    theme.TerrainPaletteId, out palette, out reason)) return false;
+
+            var map = _game.Map;
+            var grid = Projection.GridRect;
+            GUI.BeginGroup(grid);
+            var previous = GUI.color;
+            GUI.color = Color.white;
+            GUI.DrawTextureWithTexCoords(
+                new Rect(0f, 0f, grid.width, grid.height),
+                palette.SoilBaseTexture,
+                BattlefieldDualGridTerrain.BaseTextureUv(
+                    map, palette.ReferenceTileSet, palette.SoilBaseTexture),
+                true);
+
+            foreach (var binding in palette.SurfaceBindings)
+                DrawBattlefieldTerrainLayer(map, grid, binding.TileSet, binding.SurfaceId);
+
+            GUI.color = previous;
+            GUI.EndGroup();
+            return true;
+        }
+
+        private void DrawBattlefieldTerrainLayer(BattlefieldMapDefinition map, Rect grid,
+            DualGridTileSet tileSet, string surfaceId)
+        {
+            for (var vertexY = 0; vertexY <= map.GridHeight; vertexY++)
+            for (var vertexX = 0; vertexX <= map.GridWidth; vertexX++)
+            {
+                var mask = BattlefieldDualGridTerrain.ResolveMask(
+                    map, vertexX, vertexY, surfaceId);
+                Sprite sprite;
+                if (mask == DualGridMask.Empty || !tileSet.TryGetSprite(mask, out sprite)) continue;
+                var rect = BattlefieldDualGridTerrain.VisualTileRect(
+                    Projection, vertexX, vertexY);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(rect, sprite.texture,
+                    BattlefieldDualGridTerrain.SpriteUv(sprite), true);
+            }
+        }
+
         private void DrawCore()
         {
-            var rect = Projection.LegacyVisualRect(_game.Map.Core, 172f, 140f);
-            DrawRect(rect, new Color(.71f, .79f, .45f));
+            var rect = Projection.CoreRect;
+            DrawRect(rect, ThemeColor(theme => theme.CoreColor, new Color(.71f, .79f, .45f)));
             GUI.Label(new Rect(rect.x, rect.y + rect.height * .08f, rect.width, rect.height * .55f), "♣",
                 Style(17, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.19f, .38f, .16f)));
             GUI.Label(new Rect(rect.x, rect.center.y + rect.height * .08f, rect.width, 18f), "核心", _tiny);
         }
 
-        private void DrawPlantingCells()
+        private void DrawRouteTiles(bool texturedRoute)
+        {
+            var routeEdge = ThemeColor(theme => theme.RouteEdgeColor, new Color(.41f, .43f, .24f));
+            var route = ThemeColor(theme => theme.RouteColor, new Color(.88f, .73f, .43f));
+            var accent = ThemeColor(theme => theme.AccentColor, new Color(.9f, .38f, .24f));
+            foreach (var descriptor in _game.Map.RouteTileDescriptors)
+            {
+                var rect = Projection.RouteTileRect(descriptor.Cell);
+                if (!texturedRoute)
+                {
+                    DrawRect(rect, Color.Lerp(routeEdge, Color.black, .12f));
+                    DrawRouteTileLayer(rect, descriptor.Connections, .62f, routeEdge);
+                    DrawRouteTileLayer(rect, descriptor.Connections, .43f, route);
+                }
+                if (descriptor.Kind != BattlefieldRouteTileKind.Entry
+                    && descriptor.Kind != BattlefieldRouteTileKind.Exit) continue;
+                var markerSize = rect.width * .28f;
+                var marker = new Rect(rect.center.x - markerSize * .5f, rect.center.y - markerSize * .5f,
+                    markerSize, markerSize);
+                DrawRect(marker, descriptor.Kind == BattlefieldRouteTileKind.Entry
+                    ? new Color(.42f, .82f, .32f)
+                    : accent);
+            }
+        }
+
+        private static void DrawRouteTileLayer(
+            Rect tile, BattlefieldRouteConnections connections, float widthRatio, Color color)
+        {
+            var width = tile.width * widthRatio;
+            var half = width * .5f;
+            var center = tile.center;
+            DrawRect(new Rect(center.x - half, center.y - half, width, width), color);
+            if ((connections & BattlefieldRouteConnections.North) != 0)
+                DrawRect(new Rect(center.x - half, tile.yMin, width, center.y - tile.yMin), color);
+            if ((connections & BattlefieldRouteConnections.East) != 0)
+                DrawRect(new Rect(center.x, center.y - half, tile.xMax - center.x, width), color);
+            if ((connections & BattlefieldRouteConnections.South) != 0)
+                DrawRect(new Rect(center.x - half, center.y, width, tile.yMax - center.y), color);
+            if ((connections & BattlefieldRouteConnections.West) != 0)
+                DrawRect(new Rect(tile.xMin, center.y - half, center.x - tile.xMin, width), color);
+        }
+
+        private void DrawPlantingCells(bool texturedTerrain)
         {
             var expansionActive = _potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot);
+            var plantable = ThemeColor(theme => theme.PlantableColor, new Color(.58f, .72f, .36f));
             foreach (var cell in _game.Map.PlantableCells)
             {
                 var rect = ExpansionRect(cell);
@@ -1142,8 +1547,24 @@ namespace FruitDefense
                         : new Color(.34f, .48f, .22f, .8f);
                 var fill = active
                     ? new Color(.46f, .31f, .17f, .7f)
-                    : new Color(.58f, .72f, .36f, .42f);
-                DrawRect(Grow(rect, .5f), border);
+                    : new Color(plantable.r, plantable.g, plantable.b, .42f);
+                if (texturedTerrain)
+                {
+                    border = active
+                        ? new Color(.42f, .29f, .16f, .72f)
+                        : expansionActive && legal
+                            ? new Color(.72f, .9f, .32f, .95f)
+                            : new Color(.25f, .28f, .25f, .32f);
+                    fill = active
+                        ? new Color(1f, 1f, 1f, .025f)
+                        : expansionActive && legal
+                            ? new Color(.58f, .78f, .32f, .2f)
+                            : new Color(1f, 1f, 1f, .025f);
+                }
+                if (texturedTerrain)
+                    DrawOutline(Grow(rect, .5f), 1f, border);
+                else
+                    DrawRect(Grow(rect, .5f), border);
                 DrawRect(rect, fill);
                 if (!active)
                     GUI.Label(rect, expansionActive && legal ? "+" : "·", Style(11, FontStyle.Bold, TextAnchor.MiddleCenter,
@@ -1174,26 +1595,28 @@ namespace FruitDefense
         {
             foreach (var pot in _game.State.Pots.Where(value => value.Active))
             {
-                var rect = PotRect(pot);
+                var hitRect = PotHitRect(pot);
+                var rect = PotVisualRect(pot);
                 var plant = _game.PlantAtPot(pot.Id);
                 var selected = plant != null && plant.Id == _inspectedPlantId;
                 var border = selected ? new Color(1f, .84f, .23f) : new Color(.58f, .42f, .24f);
                 var target = _drag != null && _drag.Active && _drag.Type == DragPayloadType.Weapon && plant != null
-                    ? new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = rect }
-                    : new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = rect };
+                    ? new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = hitRect }
+                    : new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = hitRect };
                 if (IsCurrentDropTarget(target)) border = DropHighlightColor(target);
                 if (plant != null && plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil)
                     border = Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f));
-                DrawRect(Grow(rect, .5f), border);
-                DrawRect(rect, plant == null ? new Color(.84f, .65f, .38f) : new Color(.64f, .43f, .23f));
+                var returning = plant != null && plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil;
+                if (selected || IsCurrentDropTarget(target) || returning)
+                    DrawOutline(Grow(hitRect, -1f), 2f, border);
                 DrawTempSprite(rect, plant == null ? TempSprite.EmptyPot : TempSprite.OccupiedPot);
                 if (plant == null)
                 {
-                    if (GUI.Button(rect, GUIContent.none, GUIStyle.none)) HandlePotClick(pot.Id);
+                    if (GUI.Button(hitRect, GUIContent.none, GUIStyle.none)) HandlePotClick(pot.Id);
                     continue;
                 }
-                if (GUI.Button(rect, GUIContent.none, GUIStyle.none)) HandlePlantClick(plant);
-                DrawAnimatedPlant(new Rect(rect.x + 2f, rect.y - 8f, rect.width - 4f, rect.height - 3f), plant);
+                if (GUI.Button(hitRect, GUIContent.none, GUIStyle.none)) HandlePlantClick(plant);
+                DrawAnimatedPlant(Grow(rect, 1f), plant);
                 GUI.Label(new Rect(rect.x - 4f, rect.yMax - 1f, rect.width + 8f, 10f), new string('★', plant.Star), _tiny);
                 if (plant.Weapon != WeaponKind.None)
                     DrawTempSprite(new Rect(rect.xMax - 10f, rect.y - 4f, 11f, 11f), WeaponSprite(plant.Weapon));
@@ -1257,11 +1680,14 @@ namespace FruitDefense
                 if (_game.State.Pots.Any(pot => pot.Active && pot.Cell == cell)) continue;
                 var legal = _game.CanExpand(cell);
                 var rect = ExpansionRect(cell);
+                var visualRect = Projection.PotVisualRect(cell);
                 var target = new DropTarget { Type = DropTargetType.Expansion, Cell = cell, Rect = rect };
                 if (IsCurrentDropTarget(target))
-                    DrawRect(Grow(rect, 6f), legal ? new Color(.95f, .83f, .2f) : new Color(.9f, .25f, .2f));
-                DrawRect(rect, legal ? new Color(.32f, .69f, .28f, .42f) : new Color(.42f, .36f, .34f, .58f));
-                DrawTempSprite(rect, legal ? TempSprite.ExpansionPot : TempSprite.LockedPot);
+                    DrawOutline(Grow(rect, -1f), 3f, legal ? new Color(.95f, .83f, .2f) : new Color(.9f, .25f, .2f));
+                else
+                    DrawOutline(Grow(rect, -1f), 1f,
+                        legal ? new Color(.32f, .69f, .28f, .72f) : new Color(.42f, .36f, .34f, .72f));
+                DrawTempSprite(visualRect, legal ? TempSprite.ExpansionPot : TempSprite.LockedPot);
                 if (GUI.Button(rect, GUIContent.none, GUIStyle.none) && legal)
                 {
                     SetStatus(_game.ExpandPot(cell, out var reason), reason);
@@ -1366,8 +1792,17 @@ namespace FruitDefense
             {
                 var point = ToBoard(feedback.Point);
                 var style = Style(11, FontStyle.Bold, TextAnchor.MiddleCenter, feedback.Color);
-                GUI.Label(new Rect(point.x - 45f, point.y - 28f, 90f, 18f), feedback.Text, style);
+                GUI.Label(BattlefieldFeedbackRect(Projection.GridRect, point), feedback.Text, style);
             }
+        }
+
+        public static Rect BattlefieldFeedbackRect(Rect gridRect, Vector2 point)
+        {
+            var width = Mathf.Min(90f, Mathf.Max(0f, gridRect.width));
+            var height = Mathf.Min(18f, Mathf.Max(0f, gridRect.height));
+            var x = Mathf.Clamp(point.x - width * .5f, gridRect.xMin, gridRect.xMax - width);
+            var y = Mathf.Clamp(point.y - 28f, gridRect.yMin, gridRect.yMax - height);
+            return new Rect(x, y, width, height);
         }
 
         private void DrawBoardStatus()
@@ -1393,11 +1828,13 @@ namespace FruitDefense
             GUI.Label(strip, text, Style(12, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .16f, .09f)));
         }
 
-        private void DrawBuildPanel()
+        private void DrawEmbeddedBattleControls()
         {
-            DrawPanel(BuildRect, new Color(.99f, .97f, .89f));
-            GUI.Label(new Rect(BuildRect.x + 8f, BuildRect.y + 5f, 180f, 20f), "构筑与扩建", _heading);
+            DrawRect(ToolTrayRect, new Color(.97f, .94f, .82f, .94f));
+            GUI.Label(new Rect(ToolTrayRect.x + 8f, ToolTrayRect.y, 180f, 18f), "构筑栏", _small);
             DrawTools();
+            DrawRect(NurseryTrayRect, new Color(.97f, .94f, .82f, .94f));
+            GUI.Label(new Rect(NurseryTrayRect.x + 8f, NurseryTrayRect.y, 180f, 18f), "刷新栏", _small);
             DrawNursery();
             DrawSelectedPlant();
         }
@@ -1410,9 +1847,9 @@ namespace FruitDefense
             var draggingPot = _drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot;
             var potColor = _potToolSelected || draggingPot ? new Color(1f, .83f, .32f) : new Color(.84f, .9f, .66f);
             var potRect = PotToolRect();
-            DrawRect(potRect, potColor);
-            DrawTempSprite(new Rect(potRect.x + 6f, potRect.y + 5f, 36f, 36f), TempSprite.EmptyPot);
-            GUI.Label(new Rect(potRect.x + 43f, potRect.y + 3f, 41f, 44f), "花盆\n×" + _game.State.Inventory.Pots, _small);
+            if (_potToolSelected || draggingPot) DrawOutline(potRect, 2f, potColor);
+            DrawTempSprite(PotToolIconRect(), TempSprite.EmptyPot);
+            GUI.Label(new Rect(potRect.x + 47f, potRect.y + 3f, potRect.width - 49f, 44f), "花盆\n×" + _game.State.Inventory.Pots, _small);
             if (GUI.Button(potRect, GUIContent.none, GUIStyle.none) && _game.State.Inventory.Pots > 0)
             {
                 TogglePotTool();
@@ -1433,7 +1870,6 @@ namespace FruitDefense
 
         private void DrawNursery()
         {
-            GUI.Label(new Rect(BuildRect.x + 8f, BuildRect.y + 84f, 180f, 20f), "刷新栏", _body);
             for (var slot = 0; slot < 5; slot++)
             {
                 var rect = NurseryRect(slot);
@@ -1442,14 +1878,14 @@ namespace FruitDefense
                 var targetHovered = IsCurrentDropTarget(target);
                 if (plant == null)
                 {
-                    if (targetHovered) DrawRect(Grow(rect, 2f), DropHighlightColor(target));
-                    DrawRect(rect, new Color(.91f, .87f, .77f));
+                    if (targetHovered) DrawOutline(Grow(rect, -1f), 2f, DropHighlightColor(target));
                     var showingPotReward = Time.unscaledTime < _nurseryRollDisplayUntil
                         && _game.LastNurseryPotSlots.Contains(slot);
                     if (showingPotReward)
                     {
-                        DrawTempSprite(new Rect(rect.x + 8f, rect.y + 2f, rect.width - 16f, 39f), TempSprite.EmptyPot);
-                        GUI.Label(new Rect(rect.x + 2f, rect.y + 42f, rect.width - 4f, 18f), "花盆入库", _tiny);
+                        DrawTempSprite(FramelessSlotIconRect(rect), TempSprite.EmptyPot);
+                        GUI.Label(new Rect(rect.x + 2f, rect.yMax - 18f,
+                            rect.width - 4f, 16f), "花盆入库", _tiny);
                     }
                     else
                         GUI.Label(rect, "空位", _small);
@@ -1458,18 +1894,31 @@ namespace FruitDefense
                     continue;
                 }
                 var selected = plant.Id == _inspectedPlantId;
-                var color = selected ? new Color(1f, .83f, .31f) : new Color(.96f, .93f, .82f);
-                if (targetHovered) DrawRect(Grow(rect, 2f), DropHighlightColor(target));
+                var showOutline = selected;
+                var outline = new Color(1f, .83f, .31f);
+                if (targetHovered)
+                {
+                    showOutline = true;
+                    outline = DropHighlightColor(target);
+                }
                 if (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Weapon)
                 {
                     var plantTarget = new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = rect };
-                    if (IsCurrentDropTarget(plantTarget)) DrawRect(Grow(rect, 2f), DropHighlightColor(plantTarget));
+                    if (IsCurrentDropTarget(plantTarget))
+                    {
+                        showOutline = true;
+                        outline = DropHighlightColor(plantTarget);
+                    }
                 }
                 if (plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil)
-                    DrawRect(Grow(rect, 2f), Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f)));
-                DrawRect(rect, color);
-                DrawTempSprite(new Rect(rect.x + 8f, rect.y + 2f, rect.width - 16f, 42f), PlantSprite(plant.Kind));
-                GUI.Label(new Rect(rect.x + 2f, rect.y + 44f, rect.width - 4f, 16f), new string('★', plant.Star), _tiny);
+                {
+                    showOutline = true;
+                    outline = Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f));
+                }
+                if (showOutline) DrawOutline(Grow(rect, -1f), 2f, outline);
+                DrawTempSprite(FramelessSlotIconRect(rect), PlantSprite(plant.Kind));
+                GUI.Label(new Rect(rect.x + 2f, rect.yMax - 18f,
+                    rect.width - 4f, 16f), new string('★', plant.Star), _tiny);
                 if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
                     HandlePlantClick(plant);
             }
@@ -1492,36 +1941,22 @@ namespace FruitDefense
         private void DrawSelectedPlant()
         {
             var plant = _game.PlantById(_inspectedPlantId);
-            if (plant == null)
-            {
-                DrawRect(new Rect(DetailRect.x, DetailRect.y, DetailRect.width, 48f), new Color(.93f, .89f, .78f));
-                GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 4f, DetailRect.width - 16f, 40f),
-                    "点击水果查看信息和攻击范围；拖动完成种植、移动、返回与合成。", _body);
-                return;
-            }
+            if (plant == null) return;
             DrawPanel(DetailRect, new Color(.93f, .89f, .78f));
             var stats = GameConfig.Plant(plant.Kind);
-            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 4f, 270f, 22f), stats.Name + " · " + plant.Star + " 星", _heading);
-            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 27f, 315f, 20f), stats.Description, _body);
+            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 4f,
+                DetailRect.width - 64f, 22f), stats.Name + " · " + plant.Star + " 星", _heading);
             var effectiveRange = EffectiveAttackRange(plant);
             var rangeText = effectiveRange > .0001f
                 ? Mathf.RoundToInt(GameConfig.LegacyDistance(effectiveRange)).ToString()
                 : "无攻击范围";
-            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 50f, 360f, 34f),
+            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 28f,
+                DetailRect.width - 64f, 34f),
                 "伤害 " + Mathf.RoundToInt(stats.Damage * GameConfig.StarDamage(plant.Star))
                 + " · 范围 " + rangeText
                 + " · 装备 " + GameConfig.WeaponName(plant.Weapon), _small);
-            if (ColoredButton(new Rect(DetailRect.xMax - 52f, DetailRect.y + 4f, 44f, 44f), "关闭", new Color(.85f, .78f, .65f)))
+            if (ColoredButton(DetailCloseRect(), "关闭", new Color(.85f, .78f, .65f)))
                 _inspectedPlantId = -1;
-        }
-
-        private void DrawStatusPanel()
-        {
-            DrawRect(StatusRect, new Color(.90f, .85f, .72f));
-            GUI.Label(new Rect(StatusRect.x + 8f, StatusRect.y + 3f, 90f, 20f), "操作提示", _heading);
-            var status = Time.unscaledTime < _statusUntil ? _status
-                : "点击查看信息；拖动水果可种植、移动、返回苗圃或合成。";
-            GUI.Label(new Rect(StatusRect.x + 8f, StatusRect.y + 22f, StatusRect.width - 16f, 24f), status, _body);
         }
 
         private bool IsCurrentDropTarget(DropTarget candidate)
@@ -1544,11 +1979,7 @@ namespace FruitDefense
             if (_drag == null) return new Color(.58f, .42f, .24f);
             if (_drag.Type == DragPayloadType.Plant)
             {
-                var status = target.Type == DropTargetType.Pot
-                    ? _game.GetPlantDropStatus(_drag.PlantId, target.Id)
-                    : target.Type == DropTargetType.Nursery
-                        ? _game.GetNurseryDropStatus(_drag.PlantId, target.Slot)
-                        : new PlantDropStatus(false, PlantDropAction.Invalid, "无效目标");
+                var status = PlantDragTargetStatus(_drag, target);
                 if (status.Action == PlantDropAction.Merge && status.Legal) return new Color(1f, .74f, .08f);
                 if (status.Legal) return new Color(.28f, .85f, .28f);
                 if (status.Action == PlantDropAction.Cancel) return new Color(.75f, .72f, .62f);
@@ -1562,7 +1993,6 @@ namespace FruitDefense
         {
             if (_drag == null || !_drag.Active) return;
             var currentTarget = FindDropTargetAt(_drag, _drag.Current);
-            var status = DragTargetStatus(_drag, currentTarget);
             var rect = DragGeometry.PreviewRect(_drag.Current);
             if (currentTarget.Type != DropTargetType.None)
                 rect.center = Vector2.Lerp(rect.center, currentTarget.Rect.center, .42f);
@@ -1572,8 +2002,7 @@ namespace FruitDefense
             var border = currentTarget.Type == DropTargetType.None
                 ? new Color(.78f, .4f, .3f)
                 : DropHighlightColor(currentTarget);
-            DrawRect(Grow(rect, 3f), new Color(border.r, border.g, border.b, .95f));
-            DrawRect(rect, new Color(.22f, .35f, .2f, .9f));
+            DrawOutline(rect, 2f, new Color(border.r, border.g, border.b, .95f));
 
             if (_drag.Type == DragPayloadType.Plant)
             {
@@ -1585,10 +2014,16 @@ namespace FruitDefense
             else
                 DrawTempSprite(rect, TempSprite.EmptyPot);
 
-            var hintRect = new Rect(Mathf.Clamp(rect.center.x - 140f, 8f, DesignWidth - 288f), rect.yMax + 6f, 280f, 30f);
+            var mergeStatus = _drag.Type == DragPayloadType.Plant
+                ? PlantDragTargetStatus(_drag, currentTarget)
+                : default(PlantDropStatus);
+            if (!ShouldShowMergeHint(_drag.Type, mergeStatus)) return;
+
+            var hintStyle = Style(12, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(1f, .86f, .45f));
+            var labelWidth = hintStyle.CalcSize(new GUIContent(mergeStatus.Reason)).x;
+            var hintRect = MergeHintRect(rect, labelWidth);
             DrawRect(hintRect, new Color(.13f, .1f, .07f, .86f));
-            GUI.Label(hintRect, status.Reason, Style(13, FontStyle.Bold, TextAnchor.MiddleCenter,
-                status.Legal ? new Color(.76f, 1f, .66f) : new Color(1f, .72f, .65f)));
+            GUI.Label(hintRect, mergeStatus.Reason, hintStyle);
         }
 
         private void DrawOverlay()
@@ -1600,7 +2035,8 @@ namespace FruitDefense
             }
             else if (phase == GamePhase.Victory)
             {
-                DrawModal("果园守住了！", "成功抵御全部 15 波僵尸", "重新开始", RestartRun);
+                DrawModal("果园守住了！", "成功抵御全部 " + _game.MaxWaves + " 波僵尸",
+                    "重新开始", RestartRun);
             }
             else if (phase == GamePhase.Defeat)
             {
@@ -1765,6 +2201,7 @@ namespace FruitDefense
 
         private void DrawAnimatedPlant(Rect rect, Plant plant)
         {
+            rect = ApplyPlantVisualHeight(rect, PlantVisualHeightOffset(plant));
             var angle = 0f;
             if (plant.ActionUntil > _game.State.Elapsed && plant.ActionUntil > plant.ActionStartedAt)
             {
@@ -1797,6 +2234,26 @@ namespace FruitDefense
             if (Mathf.Abs(angle) > .01f) GUIUtility.RotateAroundPivot(angle, rect.center);
             DrawTempSprite(rect, PlantSprite(plant.Kind));
             GUI.matrix = previousMatrix;
+        }
+
+        private float PlantVisualHeightOffset(Plant plant)
+        {
+            if (plant == null || _game == null || _game.Content == null) return 0f;
+            var contentId = string.IsNullOrEmpty(plant.ContentId)
+                ? LegacyBattleContentIds.Plant(plant.Kind)
+                : plant.ContentId;
+            PlantDefinitionDto definition;
+            return _game.Content.Plants.TryGetValue(contentId, out definition)
+                ? definition.potVisualHeightOffset
+                : 0f;
+        }
+
+        private static Rect ApplyPlantVisualHeight(Rect rect, float height)
+        {
+            var center = rect.center;
+            center.y -= Mathf.Max(0f, height);
+            rect.center = center;
+            return rect;
         }
 
         private void DrawRotatedVfx(Rect rect, CombatSprite sprite, float angle, Color tint)
@@ -1878,6 +2335,23 @@ namespace FruitDefense
             GUI.color = color;
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = previous;
+        }
+
+        private static void DrawOutline(Rect rect, float thickness, Color color)
+        {
+            thickness = Mathf.Max(1f, Mathf.Min(thickness, Mathf.Min(rect.width, rect.height) * .5f));
+            DrawRect(new Rect(rect.x, rect.y, rect.width, thickness), color);
+            DrawRect(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), color);
+            DrawRect(new Rect(rect.x, rect.y + thickness, thickness, rect.height - thickness * 2f), color);
+            DrawRect(new Rect(rect.xMax - thickness, rect.y + thickness, thickness, rect.height - thickness * 2f), color);
+        }
+
+        private Color ThemeColor(Func<LevelPresentationThemeDefinition, string> select,
+            Color fallback)
+        {
+            var theme = _game == null ? null : _game.Theme;
+            if (theme == null || select == null) return fallback;
+            return ColorUtility.TryParseHtmlString(select(theme), out var color) ? color : fallback;
         }
 
         private bool ColoredButton(Rect rect, string text, Color color)

@@ -8,6 +8,7 @@ namespace FruitDefense.Platform
     public enum PlatformId
     {
         Editor,
+        WindowsPreview,
         Web,
         DouyinMiniGame,
         WeChatMiniGame,
@@ -192,6 +193,21 @@ namespace FruitDefense.Platform
         }
     }
 
+    public sealed class WindowsPreviewPlatformAdapter : PlatformAdapterBase
+    {
+        public WindowsPreviewPlatformAdapter()
+            : base(PlatformId.WindowsPreview, PlatformLaunchContext.Empty(PlatformId.WindowsPreview))
+        {
+        }
+
+        public override IEnumerator Initialize(Action<PlatformInitResult> completed)
+        {
+            RequireCompletion(completed);
+            completed(PlatformInitResult.Succeeded());
+            yield break;
+        }
+    }
+
     public sealed class WebPlatformAdapter : PlatformAdapterBase
     {
         public WebPlatformAdapter(string launchUrl)
@@ -241,9 +257,11 @@ namespace FruitDefense.Platform
             return Create(PlatformId.Editor);
 #elif UNITY_WEBGL
             return Create(PlatformId.Web, UnityEngine.Application.absoluteURL);
+#elif UNITY_STANDALONE_WIN
+            return Create(PlatformId.WindowsPreview);
 #else
             throw new PlatformNotSupportedException(
-                "FruitDefense currently supports Editor and WebGL hosts only. Mini-game builds require an explicit adapter symbol.");
+                "FruitDefense currently supports Editor, WebGL, and Windows preview hosts only. Mini-game builds require an explicit adapter symbol.");
 #endif
         }
 
@@ -253,6 +271,8 @@ namespace FruitDefense.Platform
             {
                 case PlatformId.Editor:
                     return new EditorPlatformAdapter();
+                case PlatformId.WindowsPreview:
+                    return new WindowsPreviewPlatformAdapter();
                 case PlatformId.Web:
                     return new WebPlatformAdapter(launchUrl);
                 case PlatformId.DouyinMiniGame:

@@ -4,13 +4,51 @@ param(
   [string]$BuildRoot = "$(Split-Path $PSScriptRoot)\Builds\WebGL",
   [string]$OutputRoot = "$(Split-Path $PSScriptRoot)\Logs\visual-acceptance",
   [string]$ChromePath = 'C:\Program Files\Google\Chrome\Application\chrome.exe',
+  [ValidateRange(1, 16384)]
   [int]$Width = 402,
+  [ValidateRange(1, 16384)]
   [int]$Height = 874,
+  [ValidateRange(0, 16384)]
+  [int]$SafeTop = 0,
+  [ValidateRange(0, 16384)]
+  [int]$SafeBottom = 0,
+  [ValidateSet('orchard-01', 'orchard-02', 'orchard-03')]
+  [string]$LevelId = 'orchard-01',
   [int]$TimeoutSeconds = 45,
-  [switch]$Flow
+  [switch]$Flow,
+  [switch]$SelfCheck
 )
 
 $ErrorActionPreference = 'Stop'
+$referenceWidth = 402.0
+$referenceHeight = 874.0
+if ($SafeTop + $SafeBottom -ge $Height) {
+  throw "Safe-area insets must leave positive content height: height=$Height top=$SafeTop bottom=$SafeBottom"
+}
+$safeContentHeight = $Height - $SafeTop - $SafeBottom
+$referenceScale = [Math]::Min($Width / $referenceWidth, $safeContentHeight / $referenceHeight)
+$referenceOffsetX = ($Width - $referenceWidth * $referenceScale) / 2.0
+$referenceOffsetY = $SafeTop + ($safeContentHeight - $referenceHeight * $referenceScale) / 2.0
+$shellContentWidth = [Math]::Min(370.0 * $referenceScale, $Width - 32.0 * $referenceScale)
+$shellContentX = ($Width - $shellContentWidth) / 2.0
+$shellContentY = $SafeTop + 18.0 * $referenceScale
+$safeAreaEvidence = [ordered]@{
+  top = $SafeTop
+  bottom = $SafeBottom
+  left = 0
+  right = 0
+  coordinateSpace = 'css-pixel/top-left'
+  contentRect = [ordered]@{ x = 0; y = $SafeTop; width = $Width; height = $safeContentHeight }
+  designReference = [ordered]@{ width = [int]$referenceWidth; height = [int]$referenceHeight }
+  designScale = $referenceScale
+  designOffset = [ordered]@{ x = $referenceOffsetX; y = $referenceOffsetY }
+  shellContentRect = [ordered]@{
+    x = $shellContentX
+    y = $shellContentY
+    width = $shellContentWidth
+    height = [Math]::Max(0, $Height - $SafeBottom - $shellContentY - 18.0 * $referenceScale)
+  }
+}
 $projectRoot = Split-Path $PSScriptRoot
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $outputDir = Join-Path $OutputRoot $timestamp
@@ -19,7 +57,126 @@ $serverProcess = $null
 $chromeProcess = $null
 $socket = $null
 $script:CdpId = 0
-$acceptanceQuery = if ($Flow) { 'acceptance=1' } else { 'acceptance=1&route=battle' }
+
+function Set-UrlQueryParameter {
+  param([string]$TargetUrl, [string]$Name, [string]$Value)
+  $builder = [UriBuilder]::new($TargetUrl)
+  $pairs = [ordered]@{}
+  foreach ($part in $builder.Query.TrimStart('?').Split('&', [StringSplitOptions]::RemoveEmptyEntries)) {
+    $components = $part.Split('=', 2)
+    $key = [Uri]::UnescapeDataString($components[0])
+    $pairs[$key] = if ($components.Count -eq 2) { [Uri]::UnescapeDataString($components[1]) } else { '' }
+  }
+  $pairs[$Name] = $Value
+  $builder.Query = (($pairs.GetEnumerator() | ForEach-Object {
+    [Uri]::EscapeDataString([string]$_.Key) + '=' + [Uri]::EscapeDataString([string]$_.Value)
+  }) -join '&')
+  return $builder.Uri.AbsoluteUri
+}
+
+function Set-AcceptanceQuery {
+  param([string]$TargetUrl)
+  $result = Set-UrlQueryParameter -TargetUrl $TargetUrl -Name 'acceptance' -Value '1'
+  if (-not $Flow) {
+    $result = Set-UrlQueryParameter -TargetUrl $result -Name 'route' -Value 'battle'
+  }
+  $result = Set-UrlQueryParameter -TargetUrl $result -Name 'levelId' -Value $LevelId
+  $result = Set-UrlQueryParameter -TargetUrl $result -Name 'safeTop' -Value ([string]$SafeTop)
+  $result = Set-UrlQueryParameter -TargetUrl $result -Name 'safeBottom' -Value ([string]$SafeBottom)
+  return $result
+}
+
+function Convert-ReferencePoint {
+  param([double]$X, [double]$Y)
+  return [ordered]@{
+    x = $referenceOffsetX + $X * $referenceScale
+    y = $referenceOffsetY + $Y * $referenceScale
+  }
+}
+
+function Convert-ReferenceRect {
+  param([double]$X, [double]$Y, [double]$Width, [double]$Height)
+  $topLeft = Convert-ReferencePoint -X $X -Y $Y
+  $bottomRight = Convert-ReferencePoint -X ($X + $Width) -Y ($Y + $Height)
+  return [ordered]@{
+    xMin = [Math]::Max(0, [Math]::Floor($topLeft.x))
+    yMin = [Math]::Max(0, [Math]::Floor($topLeft.y))
+    xMax = [Math]::Min($script:Width, [Math]::Ceiling($bottomRight.x))
+    yMax = [Math]::Min($script:Height, [Math]::Ceiling($bottomRight.y))
+  }
+}
+
+function Convert-ShellReferencePoint {
+  param([double]$X, [double]$Y)
+  # PortraitShellLayout anchors content at the safe-area top rather than vertically centering it.
+  return [ordered]@{
+    x = $shellContentX + ($X - 16.0) * $referenceScale
+    y = $SafeTop + $Y * $referenceScale
+  }
+}
+
+$referenceControls = [ordered]@{
+  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 151 }
+  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 249 }
+  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 347 }
+  lobbyStart = [ordered]@{ x = 201; y = 446 }
+  settlementRetry = [ordered]@{ x = 201; y = 449 }
+  settlementReturn = [ordered]@{ x = 201; y = 528 }
+  headerPause = [ordered]@{ x = 300; y = 38 }
+  waveAction = [ordered]@{ x = 302; y = 548 }
+  pauseContinue = [ordered]@{ x = 125; y = 492 }
+  pauseRestart = [ordered]@{ x = 277; y = 492 }
+  nurserySlot0 = [ordered]@{ x = 51; y = 703 }
+  acceptanceCell0 = [ordered]@{ x = 32; y = 195 }
+  acceptanceCell1 = [ordered]@{ x = 80; y = 195 }
+}
+$controls = [ordered]@{}
+foreach ($name in $referenceControls.Keys) {
+  $isShellControl = $name.StartsWith('lobby') -or $name.StartsWith('settlement')
+  $controls[$name] = if ($isShellControl) {
+    Convert-ShellReferencePoint -X $referenceControls[$name].x -Y $referenceControls[$name].y
+  }
+  else {
+    Convert-ReferencePoint -X $referenceControls[$name].x -Y $referenceControls[$name].y
+  }
+}
+$levelCardControlName = 'lobbyLevel' + ($LevelId -replace '-', '').Replace('orchard', 'Orchard')
+if (-not $controls.Contains($levelCardControlName)) {
+  throw "No Lobby control is defined for level '$LevelId'."
+}
+$headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
+$formerActionRegion = Convert-ReferenceRect -X 8 -Y 760 -Width 386 -Height 50
+$hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
+$hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
+$formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
+$nearBlackLumaThreshold = 0.08
+$maxBlackFraction = 0.01
+$maxNearBlackFraction = 0.05
+$framePixelThresholds = [ordered]@{
+  sampleStepPixels = 4
+  nearBlackLuma = $nearBlackLumaThreshold
+  maxBlackFraction = $maxBlackFraction
+  maxNearBlackFraction = $maxNearBlackFraction
+  maxInvalidFraction = 0.05
+}
+$expectedLevelIdentities = [ordered]@{
+  'orchard-01' = [ordered]@{
+    levelId = 'orchard-01'; mapId = 'orchard-01'
+    waveSetId = 'waves.orchard-01.teaching'; ruleSetId = 'rules.orchard-01.baseline'
+    themeId = 'theme.orchard-01.day'
+  }
+  'orchard-02' = [ordered]@{
+    levelId = 'orchard-02'; mapId = 'orchard-02'
+    waveSetId = 'waves.orchard-02.coverage'; ruleSetId = 'rules.orchard-02.coverage'
+    themeId = 'theme.orchard-02.creek'
+  }
+  'orchard-03' = [ordered]@{
+    levelId = 'orchard-03'; mapId = 'orchard-03'
+    waveSetId = 'waves.orchard-03.pressure'; ruleSetId = 'rules.orchard-03.pressure'
+    themeId = 'theme.orchard-03.dusk'
+  }
+}
+$expectedLevelIdentity = $expectedLevelIdentities[$LevelId]
 
 function Get-FreeTcpPort {
   $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
@@ -253,6 +410,105 @@ function Wait-AppRoute {
   throw "Timed out waiting for app route $Route; current=$current"
 }
 
+function Get-AcceptanceIdentity {
+  $json = Invoke-JavaScript -Expression @'
+JSON.stringify(window.fruitDefenseAcceptanceIdentity ?? null)
+'@
+  if ([string]::IsNullOrWhiteSpace([string]$json) -or $json -eq 'null') { return $null }
+  return $json | ConvertFrom-Json
+}
+
+function Assert-AcceptanceIdentity {
+  param(
+    [object]$Actual,
+    [int]$Route,
+    [string]$Stage,
+    [ValidateSet('Required', 'Cleared')]
+    [string]$SessionMode
+  )
+  if ($null -eq $Actual) { throw "Acceptance identity is missing at stage '$Stage'." }
+  if ([int]$Actual.route -ne $Route) {
+    throw "Acceptance route mismatch at '$Stage': expected=$Route actual=$($Actual.route)."
+  }
+  $expectedRouteName = @('lobby', 'battle', 'settlement')[$Route]
+  if ([string]$Actual.routeName -cne $expectedRouteName) {
+    throw "Acceptance route name mismatch at '$Stage': expected=$expectedRouteName actual=$($Actual.routeName)."
+  }
+  foreach ($field in @('levelId', 'mapId', 'waveSetId', 'ruleSetId', 'themeId')) {
+    if ([string]$Actual.$field -cne [string]$expectedLevelIdentity[$field]) {
+      throw (
+        "Acceptance identity mismatch at '$Stage' field=$field " +
+        "expected=$($expectedLevelIdentity[$field]) actual=$($Actual.$field).")
+    }
+  }
+  if ($SessionMode -eq 'Required') {
+    if ([string]::IsNullOrWhiteSpace([string]$Actual.sessionId) -or [int]$Actual.seed -eq 0) {
+      throw "Acceptance session is incomplete at '$Stage': session=$($Actual.sessionId) seed=$($Actual.seed)."
+    }
+  }
+  elseif (-not [string]::IsNullOrEmpty([string]$Actual.sessionId) -or [int]$Actual.seed -ne 0) {
+    throw "Acceptance session was not cleared at '$Stage': session=$($Actual.sessionId) seed=$($Actual.seed)."
+  }
+  return $Actual
+}
+
+function Wait-AcceptanceIdentity {
+  param(
+    [int]$Route,
+    [string]$Stage,
+    [ValidateSet('Required', 'Cleared')]
+    [string]$SessionMode
+  )
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $actual = $null
+  do {
+    $actual = Get-AcceptanceIdentity
+    if ($null -ne $actual -and [int]$actual.route -eq $Route) {
+      $matchesComposite = $true
+      foreach ($field in @('levelId', 'mapId', 'waveSetId', 'ruleSetId', 'themeId')) {
+        if ([string]$actual.$field -cne [string]$expectedLevelIdentity[$field]) {
+          $matchesComposite = $false
+          break
+        }
+      }
+      $matchesSession = if ($SessionMode -eq 'Required') {
+        -not [string]::IsNullOrWhiteSpace([string]$actual.sessionId) -and [int]$actual.seed -ne 0
+      }
+      else {
+        [string]::IsNullOrEmpty([string]$actual.sessionId) -and [int]$actual.seed -eq 0
+      }
+      if ($matchesComposite -and $matchesSession) {
+        return Assert-AcceptanceIdentity -Actual $actual -Route $Route -Stage $Stage -SessionMode $SessionMode
+      }
+    }
+    Start-Sleep -Milliseconds 200
+  } while ((Get-Date) -lt $deadline)
+  return Assert-AcceptanceIdentity -Actual $actual -Route $Route -Stage $Stage -SessionMode $SessionMode
+}
+
+function Assert-SameSession {
+  param([object]$Expected, [object]$Actual, [string]$Stage)
+  if ([string]$Expected.sessionId -cne [string]$Actual.sessionId -or
+      [int]$Expected.seed -ne [int]$Actual.seed) {
+    throw (
+      "Acceptance session changed unexpectedly at '$Stage': " +
+      "expected=$($Expected.sessionId)/$($Expected.seed) " +
+      "actual=$($Actual.sessionId)/$($Actual.seed).")
+  }
+}
+
+function Assert-FreshSession {
+  param([object]$Previous, [object]$Actual, [string]$Stage)
+  if ([string]::IsNullOrWhiteSpace([string]$Actual.sessionId) -or [int]$Actual.seed -eq 0 -or
+      [string]$Previous.sessionId -ceq [string]$Actual.sessionId -or
+      [int]$Previous.seed -eq [int]$Actual.seed) {
+    throw (
+      "Acceptance retry did not create a fresh session at '$Stage': " +
+      "previous=$($Previous.sessionId)/$($Previous.seed) " +
+      "actual=$($Actual.sessionId)/$($Actual.seed).")
+  }
+}
+
 function Save-Screenshot {
   param([string]$Name)
   $capture = Invoke-Cdp -Method 'Page.captureScreenshot' -Params @{
@@ -275,30 +531,45 @@ function Get-ImageMetrics {
     $darkPixels = 0
     $lightPixels = 0
     $blackSamples = 0
+    $nearBlackSamples = 0
     $invalidSamples = 0
     $sampleCount = 0
     $formerActionColorPixels = 0
-    # Header copy occupies this interior area; panel borders and buttons are excluded.
-    for ($y = 11; $y -lt 64; $y++) {
-      for ($x = 13; $x -lt 263; $x++) {
+    $sampleStep = 4
+    $maxNearBlackRunSamples = 0
+    # These design-space regions are projected through the same safe-content transform as input controls.
+    for ($y = $headerSampleRegion.yMin; $y -lt $headerSampleRegion.yMax; $y++) {
+      for ($x = $headerSampleRegion.xMin; $x -lt $headerSampleRegion.xMax; $x++) {
         $pixel = $bitmap.GetPixel($x, $y)
         $luma = (.2126 * $pixel.R + .7152 * $pixel.G + .0722 * $pixel.B) / 255.0
         if ($pixel.A -gt 128 -and $luma -lt .48) { $darkPixels++ }
         if ($pixel.A -gt 128 -and $luma -gt .75) { $lightPixels++ }
       }
     }
-    for ($y = 0; $y -lt $bitmap.Height; $y += 4) {
-      for ($x = 0; $x -lt $bitmap.Width; $x += 4) {
+    $frameSampleYMin = [Math]::Max(0, $SafeTop)
+    $frameSampleYMax = [Math]::Min($bitmap.Height, $bitmap.Height - $SafeBottom)
+    for ($y = $frameSampleYMin; $y -lt $frameSampleYMax; $y += $sampleStep) {
+      $nearBlackRunSamples = 0
+      for ($x = 0; $x -lt $bitmap.Width; $x += $sampleStep) {
         $pixel = $bitmap.GetPixel($x, $y)
         $luma = (.2126 * $pixel.R + .7152 * $pixel.G + .0722 * $pixel.B) / 255.0
+        $isNearBlack = $pixel.A -gt 128 -and $luma -lt $nearBlackLumaThreshold
+        if ($isNearBlack) {
+          $nearBlackSamples++
+          $nearBlackRunSamples++
+          $maxNearBlackRunSamples = [Math]::Max($maxNearBlackRunSamples, $nearBlackRunSamples)
+        }
+        else { $nearBlackRunSamples = 0 }
         $sampleCount++
         if ($pixel.A -gt 128 -and $luma -lt .025) { $blackSamples++ }
         if ($pixel.A -le 128 -or $luma -lt .025) { $invalidSamples++ }
       }
     }
-    # The removed persistent action row occupied x=8..394, y=760..810.
-    for ($y = 760; $y -lt [Math]::Min(810, $bitmap.Height); $y++) {
-      for ($x = 8; $x -lt [Math]::Min(394, $bitmap.Width); $x++) {
+    $maxNearBlackRunFraction = [Math]::Min(
+      1.0, $maxNearBlackRunSamples * $sampleStep / [double]$bitmap.Width)
+    # The removed persistent action row occupied reference rect x=8..394, y=760..810.
+    for ($y = $formerActionRegion.yMin; $y -lt [Math]::Min($formerActionRegion.yMax, $bitmap.Height); $y++) {
+      for ($x = $formerActionRegion.xMin; $x -lt [Math]::Min($formerActionRegion.xMax, $bitmap.Width); $x++) {
         $pixel = $bitmap.GetPixel($x, $y)
         $looksLikeOldOrange = $pixel.R -gt 190 -and $pixel.G -gt 90 -and $pixel.G -lt 190 -and $pixel.B -lt 90
         $looksLikeOldRed = $pixel.R -gt 180 -and $pixel.G -lt 115 -and $pixel.B -lt 110
@@ -311,25 +582,54 @@ function Get-ImageMetrics {
       headerDarkPixels = $darkPixels
       headerLightPixels = $lightPixels
       blackFraction = if ($sampleCount -gt 0) { $blackSamples / [double]$sampleCount } else { 1.0 }
+      nearBlackFraction = if ($sampleCount -gt 0) { $nearBlackSamples / [double]$sampleCount } else { 1.0 }
+      maxNearBlackHorizontalRunFraction = $maxNearBlackRunFraction
       invalidFraction = if ($sampleCount -gt 0) { $invalidSamples / [double]$sampleCount } else { 1.0 }
       formerActionColorPixels = $formerActionColorPixels
+      sampledRegions = [ordered]@{
+        header = $headerSampleRegion
+        formerAction = $formerActionRegion
+        frameContent = [ordered]@{
+          xMin = 0
+          yMin = $frameSampleYMin
+          xMax = $bitmap.Width
+          yMax = $frameSampleYMax
+        }
+      }
     }
   }
   finally { $bitmap.Dispose() }
 }
 
+function Test-StableFrameMetrics {
+  param([object]$Metrics)
+  return $Metrics.invalidFraction -lt .05 -and
+    $Metrics.blackFraction -lt $maxBlackFraction -and
+    $Metrics.nearBlackFraction -lt $maxNearBlackFraction
+}
+
 function Save-StableScreenshot {
   param([string]$Name, [bool]$RequireHud = $true)
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $attempts = 0
   do {
+    $attempts++
     $path = Save-Screenshot -Name $Name
     $metrics = Get-ImageMetrics -Path $path
     $dimensionsOk = $metrics.width -eq $Width -and $metrics.height -eq $Height
-    $frameOk = $metrics.invalidFraction -lt .05
-    $hudOk = -not $RequireHud -or ($metrics.headerDarkPixels -ge 80 -and $metrics.headerLightPixels -ge 5000)
+    $frameOk = Test-StableFrameMetrics -Metrics $metrics
+    $hudOk = -not $RequireHud -or (
+      $metrics.headerDarkPixels -ge $hudDarkPixelThreshold -and
+      $metrics.headerLightPixels -ge $hudLightPixelThreshold)
     if ($dimensionsOk -and $frameOk -and $hudOk) {
       return [pscustomobject]@{ Path = $path; Metrics = $metrics }
     }
+    Write-Warning (
+      "Retrying unstable screenshot '$Name' attempt=$attempts " +
+      "dimensions=$($metrics.width)x$($metrics.height) " +
+      "invalid=$($metrics.invalidFraction) black=$($metrics.blackFraction) " +
+      "nearBlack=$($metrics.nearBlackFraction) " +
+      "maxNearBlackRun=$($metrics.maxNearBlackHorizontalRunFraction)")
     Start-Sleep -Milliseconds 500
   } while ((Get-Date) -lt $deadline)
   throw "Stable screenshot timed out: $Name metrics=$($metrics | ConvertTo-Json -Compress)"
@@ -342,6 +642,117 @@ function Stop-OwnedChrome {
   Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -eq 'chrome.exe' -and $_.CommandLine -like "*$profileDir*" } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+}
+
+$mappedDesignBounds = [ordered]@{
+  xMin = $referenceOffsetX
+  yMin = $referenceOffsetY
+  xMax = $referenceOffsetX + $referenceWidth * $referenceScale
+  yMax = $referenceOffsetY + $referenceHeight * $referenceScale
+}
+if ($mappedDesignBounds.xMin -lt -0.001 -or $mappedDesignBounds.yMin -lt ($SafeTop - 0.001) -or
+    $mappedDesignBounds.xMax -gt ($Width + 0.001) -or
+    $mappedDesignBounds.yMax -gt ($Height - $SafeBottom + 0.001)) {
+  throw "Mapped 402x874 design viewport escapes safe content: $($mappedDesignBounds | ConvertTo-Json -Compress)"
+}
+
+if ($SelfCheck) {
+  $syntheticHealthyMetrics = [pscustomobject]@{
+    invalidFraction = 0.0
+    blackFraction = 0.0
+    nearBlackFraction = 0.0005
+    maxNearBlackHorizontalRunFraction = 0.01
+  }
+  $syntheticBlackBlockMetrics = [pscustomobject]@{
+    invalidFraction = 0.02
+    blackFraction = 0.02
+    nearBlackFraction = 0.03
+    maxNearBlackHorizontalRunFraction = 0.25
+  }
+  $syntheticNearBlackBlockMetrics = [pscustomobject]@{
+    invalidFraction = 0.0
+    blackFraction = 0.0
+    nearBlackFraction = 0.06
+    maxNearBlackHorizontalRunFraction = 0.25
+  }
+  if (-not (Test-StableFrameMetrics -Metrics $syntheticHealthyMetrics) -or
+      (Test-StableFrameMetrics -Metrics $syntheticBlackBlockMetrics) -or
+      (Test-StableFrameMetrics -Metrics $syntheticNearBlackBlockMetrics)) {
+    throw 'Black-frame stability guard self-check failed.'
+  }
+  foreach ($controlName in @(
+      'lobbyLevelOrchard01', 'lobbyLevelOrchard02', 'lobbyLevelOrchard03',
+      'lobbyStart', 'settlementRetry', 'settlementReturn')) {
+    $point = $controls[$controlName]
+    if ($point.x -lt 0 -or $point.x -gt $Width -or
+        $point.y -lt $SafeTop -or $point.y -gt ($Height - $SafeBottom)) {
+      throw "Mapped shell control escapes safe content: $controlName=$($point | ConvertTo-Json -Compress)"
+    }
+  }
+  if (-not ($controls.lobbyLevelOrchard01.y -lt $controls.lobbyLevelOrchard02.y -and
+      $controls.lobbyLevelOrchard02.y -lt $controls.lobbyLevelOrchard03.y -and
+      $controls.lobbyLevelOrchard03.y -lt $controls.lobbyStart.y)) {
+    throw 'Mapped Lobby card and Start controls are not ordered.'
+  }
+  if ($expectedLevelIdentity.Count -ne 5) {
+    throw "Expected composite identity is incomplete for level '$LevelId'."
+  }
+  $syntheticBattleIdentity = [pscustomobject]@{
+    route = 1; routeName = 'battle'; sessionId = 'session-a'; seed = 101
+    levelId = $expectedLevelIdentity.levelId; mapId = $expectedLevelIdentity.mapId
+    waveSetId = $expectedLevelIdentity.waveSetId; ruleSetId = $expectedLevelIdentity.ruleSetId
+    themeId = $expectedLevelIdentity.themeId
+  }
+  $syntheticSettlementIdentity = [pscustomobject]@{
+    route = 2; routeName = 'settlement'; sessionId = 'session-a'; seed = 101
+    levelId = $expectedLevelIdentity.levelId; mapId = $expectedLevelIdentity.mapId
+    waveSetId = $expectedLevelIdentity.waveSetId; ruleSetId = $expectedLevelIdentity.ruleSetId
+    themeId = $expectedLevelIdentity.themeId
+  }
+  $syntheticLobbyIdentity = [pscustomobject]@{
+    route = 0; routeName = 'lobby'; sessionId = ''; seed = 0
+    levelId = $expectedLevelIdentity.levelId; mapId = $expectedLevelIdentity.mapId
+    waveSetId = $expectedLevelIdentity.waveSetId; ruleSetId = $expectedLevelIdentity.ruleSetId
+    themeId = $expectedLevelIdentity.themeId
+  }
+  $syntheticRetryIdentity = [pscustomobject]@{
+    route = 1; routeName = 'battle'; sessionId = 'session-b'; seed = 202
+    levelId = $expectedLevelIdentity.levelId; mapId = $expectedLevelIdentity.mapId
+    waveSetId = $expectedLevelIdentity.waveSetId; ruleSetId = $expectedLevelIdentity.ruleSetId
+    themeId = $expectedLevelIdentity.themeId
+  }
+  Assert-AcceptanceIdentity -Actual $syntheticBattleIdentity `
+    -Route 1 -Stage 'self-check-battle' -SessionMode Required | Out-Null
+  Assert-AcceptanceIdentity -Actual $syntheticSettlementIdentity `
+    -Route 2 -Stage 'self-check-settlement' -SessionMode Required | Out-Null
+  Assert-AcceptanceIdentity -Actual $syntheticLobbyIdentity `
+    -Route 0 -Stage 'self-check-lobby' -SessionMode Cleared | Out-Null
+  Assert-SameSession -Expected $syntheticBattleIdentity `
+    -Actual $syntheticSettlementIdentity -Stage 'self-check-settlement'
+  Assert-FreshSession -Previous $syntheticSettlementIdentity `
+    -Actual $syntheticRetryIdentity -Stage 'self-check-retry'
+  [ordered]@{
+    levelId = $LevelId
+    expectedCompositeIdentity = $expectedLevelIdentity
+    viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+    safeArea = $safeAreaEvidence
+    mappedDesignBounds = $mappedDesignBounds
+    referenceControls = $referenceControls
+    mappedControls = $controls
+    sampledRegions = [ordered]@{ header = $headerSampleRegion; formerAction = $formerActionRegion }
+    thresholds = [ordered]@{
+      hudDarkPixels = $hudDarkPixelThreshold
+      hudLightPixels = $hudLightPixelThreshold
+      formerActionColorPixels = $formerActionPixelThreshold
+      framePixels = $framePixelThresholds
+    }
+    blackFrameGuard = 'pass'
+    shellControlMapping = 'pass'
+    compositeIdentityContract = 'pass'
+    sessionLifecycleContract = 'pass'
+  } | ConvertTo-Json -Depth 8
+  Write-Host 'FRUIT_DEFENSE_ACCEPTANCE_SELF_CHECK_OK'
+  return
 }
 
 try {
@@ -373,22 +784,14 @@ try {
       $env:STATIC_ROOT = $oldStaticRoot
       $env:PORT = $oldPort
     }
-    $Url = "http://127.0.0.1:$serverPort/?$acceptanceQuery"
+    $Url = "http://127.0.0.1:$serverPort/"
   }
   elseif ([string]::IsNullOrWhiteSpace($Url)) {
     throw 'Provide -Url or use -ServeLocal.'
   }
-  elseif ($Url -notmatch '(?:\?|&)acceptance=1(?:&|$)') {
-    $Url += $(if ($Url.Contains('?')) { "&$acceptanceQuery" } else { "?$acceptanceQuery" })
-  }
-  elseif (-not $Flow -and $Url -notmatch '(?:\?|&)route=battle(?:&|$)') {
-    $Url += '&route=battle'
-  }
+  $Url = Set-AcceptanceQuery -TargetUrl $Url
 
   $pageResponse = Wait-Http -TargetUrl $Url -Seconds $TimeoutSeconds
-  if ($pageResponse.Content -notmatch "width=$Width height=$Height") {
-    throw "WebGL page does not declare the expected $Width x $Height portrait canvas."
-  }
   $delivery = Get-UnityDeliveryMetadata -PageUrl $Url -PageResponse $pageResponse
 
   $debugPort = Get-FreeTcpPort
@@ -426,6 +829,15 @@ try {
   finally { $connectCts.Dispose() }
   Invoke-Cdp -Method 'Page.enable' | Out-Null
   Invoke-Cdp -Method 'Runtime.enable' | Out-Null
+  $browserVersion = Invoke-Cdp -Method 'Browser.getVersion'
+  $browserEvidence = [ordered]@{
+    product = $browserVersion.product
+    userAgent = $browserVersion.userAgent
+    protocolVersion = $browserVersion.protocolVersion
+    jsVersion = $browserVersion.jsVersion
+    executable = (Resolve-Path -LiteralPath $ChromePath).Path
+    launchMode = 'external-headless-chrome-cdp'
+  }
   Invoke-Cdp -Method 'Emulation.setDeviceMetricsOverride' -Params @{
     width = $Width
     height = $Height
@@ -438,6 +850,7 @@ try {
   $readinessExpression = @'
 (() => {
   const canvas = document.querySelector('#unity-canvas');
+  const canvasRect = canvas ? canvas.getBoundingClientRect() : null;
   const loading = document.querySelector('#unity-loading-bar');
   const warning = document.querySelector('#unity-warning');
   return JSON.stringify({
@@ -446,6 +859,11 @@ try {
     canvas: !!canvas,
     width: canvas ? canvas.width : 0,
     height: canvas ? canvas.height : 0,
+    cssWidth: canvasRect ? canvasRect.width : 0,
+    cssHeight: canvasRect ? canvasRect.height : 0,
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    devicePixelRatio: window.devicePixelRatio,
     loading: loading ? getComputedStyle(loading).display : 'missing',
     warning: warning ? warning.textContent.trim() : '',
     acceptanceReady: !!window.fruitDefenseUnityInstance,
@@ -457,53 +875,74 @@ try {
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
   do {
     $readiness = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
-    if ($readiness.canvas -and $readiness.loading -eq 'none' -and $readiness.width -gt 0 -and $readiness.acceptanceReady) { break }
+    $viewportReady = $readiness.innerWidth -eq $Width -and $readiness.innerHeight -eq $Height
+    $canvasReady = $readiness.width -eq $Width -and $readiness.height -eq $Height -and
+      [Math]::Abs([double]$readiness.cssWidth - $Width) -lt 0.51 -and
+      [Math]::Abs([double]$readiness.cssHeight - $Height) -lt 0.51
+    if ($readiness.canvas -and $readiness.loading -eq 'none' -and $readiness.acceptanceReady -and
+        $viewportReady -and $canvasReady) { break }
     Start-Sleep -Milliseconds 400
   } while ((Get-Date) -lt $deadline)
   if (-not $readiness.canvas -or $readiness.loading -ne 'none' -or -not $readiness.acceptanceReady) {
     throw "Unity player did not finish loading. state=$($readiness | ConvertTo-Json -Compress)"
   }
   if ($readiness.warning) { throw "Unity player warning: $($readiness.warning)" }
+  if (-not $viewportReady -or -not $canvasReady) {
+    throw "Chrome viewport or Unity canvas did not resolve to ${Width}x${Height}. state=$($readiness | ConvertTo-Json -Compress)"
+  }
 
   $screenshots = [ordered]@{}
-  # Named centers are derived from the shared 402 x 874 layout rectangles.
-  $controls = [ordered]@{
-    lobbyStart = [ordered]@{ x = 201; y = 152 }
-    settlementRetry = [ordered]@{ x = 201; y = 449 }
-    settlementReturn = [ordered]@{ x = 201; y = 528 }
-    headerPause = [ordered]@{ x = 300; y = 38 }
-    waveAction = [ordered]@{ x = 298; y = 450 }
-    pauseContinue = [ordered]@{ x = 125; y = 492 }
-    pauseRestart = [ordered]@{ x = 277; y = 492 }
-    nurserySlot0 = [ordered]@{ x = 51; y = 619 }
-    cell32 = [ordered]@{ x = 178; y = 223 }
-    cell42 = [ordered]@{ x = 224; y = 223 }
-  }
 
   if ($Flow) {
     Wait-AppRoute -Route 0
     $flowScreenshots = [ordered]@{}
     $flowMetrics = [ordered]@{}
+    $flowIdentities = [ordered]@{}
+
+    Invoke-CanvasClick -X $controls[$levelCardControlName].x -Y $controls[$levelCardControlName].y
+    $flowIdentities.lobby = Wait-AcceptanceIdentity `
+      -Route 0 -Stage 'selected-lobby' -SessionMode Cleared
     $flowScreenshots.lobby = (Save-StableScreenshot -Name '01-lobby' -RequireHud $false).Path
 
     Invoke-CanvasClick -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
     Wait-AppRoute -Route 1
+    $flowIdentities.battle = Wait-AcceptanceIdentity `
+      -Route 1 -Stage 'battle' -SessionMode Required
     $flowScreenshots.battle = (Save-StableScreenshot -Name '02-battle' -RequireHud $true).Path
 
     Invoke-AcceptanceFlowCommand -Command 'victory'
     Wait-AppRoute -Route 2
+    $flowIdentities.settlement = Wait-AcceptanceIdentity `
+      -Route 2 -Stage 'settlement' -SessionMode Required
+    Assert-SameSession -Expected $flowIdentities.battle `
+      -Actual $flowIdentities.settlement -Stage 'settlement'
     $flowScreenshots.settlement = (Save-StableScreenshot -Name '03-settlement' -RequireHud $false).Path
 
     Invoke-CanvasClick -X $controls.settlementReturn.x -Y $controls.settlementReturn.y
     Wait-AppRoute -Route 0
+    $flowIdentities.returnedLobby = Wait-AcceptanceIdentity `
+      -Route 0 -Stage 'returned-lobby' -SessionMode Cleared
     $flowScreenshots.returnedLobby = (Save-StableScreenshot -Name '04-returned-lobby' -RequireHud $false).Path
 
     Invoke-CanvasClick -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
     Wait-AppRoute -Route 1
+    $flowIdentities.secondBattle = Wait-AcceptanceIdentity `
+      -Route 1 -Stage 'second-battle' -SessionMode Required
+    if ([string]$flowIdentities.secondBattle.sessionId -ceq [string]$flowIdentities.battle.sessionId) {
+      throw 'Returning to Lobby and starting again reused the completed session ID.'
+    }
     Invoke-AcceptanceFlowCommand -Command 'victory'
     Wait-AppRoute -Route 2
+    $flowIdentities.secondSettlement = Wait-AcceptanceIdentity `
+      -Route 2 -Stage 'second-settlement' -SessionMode Required
+    Assert-SameSession -Expected $flowIdentities.secondBattle `
+      -Actual $flowIdentities.secondSettlement -Stage 'second-settlement'
     Invoke-CanvasClick -X $controls.settlementRetry.x -Y $controls.settlementRetry.y
     Wait-AppRoute -Route 1
+    $flowIdentities.retryBattle = Wait-AcceptanceIdentity `
+      -Route 1 -Stage 'retry-battle' -SessionMode Required
+    Assert-FreshSession -Previous $flowIdentities.secondSettlement `
+      -Actual $flowIdentities.retryBattle -Stage 'retry-battle'
     $flowScreenshots.retryBattle = (Save-StableScreenshot -Name '05-retry-battle' -RequireHud $true).Path
 
     foreach ($state in $flowScreenshots.Keys) {
@@ -511,8 +950,12 @@ try {
       if ($flowMetrics[$state].width -ne $Width -or $flowMetrics[$state].height -ne $Height) {
         throw "Unexpected flow screenshot dimensions for ${state}: $($flowMetrics[$state].width)x$($flowMetrics[$state].height)"
       }
-      if ($flowMetrics[$state].blackFraction -ge .05 -or $flowMetrics[$state].invalidFraction -ge .05) {
-        throw "Invalid flow frame for ${state}: black=$($flowMetrics[$state].blackFraction) invalid=$($flowMetrics[$state].invalidFraction)"
+      if (-not (Test-StableFrameMetrics -Metrics $flowMetrics[$state])) {
+        throw (
+          "Invalid flow frame for ${state}: black=$($flowMetrics[$state].blackFraction) " +
+          "nearBlack=$($flowMetrics[$state].nearBlackFraction) " +
+          "maxNearBlackRun=$($flowMetrics[$state].maxNearBlackHorizontalRunFraction) " +
+          "invalid=$($flowMetrics[$state].invalidFraction)")
       }
     }
 
@@ -520,18 +963,38 @@ try {
       accepted = $true
       capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
       url = $Url
-      viewport = [ordered]@{ width = $Width; height = $Height }
+      levelId = $LevelId
+      expectedCompositeIdentity = $expectedLevelIdentity
+      viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+      safeArea = $safeAreaEvidence
+      browser = $browserEvidence
+      canvas = $readiness
       checks = [ordered]@{
         lobbyToBattle = 'pass'
         battleToSettlement = 'pass'
         settlementReturn = 'pass'
         settlementRetry = 'pass'
+        selectedLevelLaunch = 'pass'
+        compositeIdentityPerRoute = 'pass'
+        settlementSessionPreserved = 'pass'
+        returnSelectionPreserved = 'pass'
+        retryFreshSessionAndSeed = 'pass'
+        requestedViewportAndCanvas = 'pass'
+        safeAreaQueryApplied = 'pass'
         noBlackOrTransparentFrames = 'pass'
+        noLargeNearBlackRegions = 'pass'
       }
       delivery = $delivery
+      routeIdentities = $flowIdentities
       screenshots = $flowScreenshots
       imageMetrics = $flowMetrics
+      pixelThresholds = [ordered]@{
+        framePixels = $framePixelThresholds
+        hudDarkPixels = $hudDarkPixelThreshold
+        hudLightPixels = $hudLightPixelThreshold
+      }
       controls = $controls
+      referenceControls = $referenceControls
     }
     $flowManifestPath = Join-Path $outputDir 'flow-acceptance.json'
     $flowManifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $flowManifestPath -Encoding UTF8
@@ -539,6 +1002,9 @@ try {
     return
   }
 
+  Wait-AppRoute -Route 1
+  $directBattleIdentity = Wait-AcceptanceIdentity `
+    -Route 1 -Stage 'direct-battle' -SessionMode Required
   Set-AcceptanceState -State 'initial'
   $readyCapture = Save-StableScreenshot -Name '01-ready'
   $screenshots.ready = $readyCapture.Path
@@ -564,21 +1030,21 @@ try {
   $screenshots.adjacentPots = (Save-StableScreenshot -Name '08-adjacent-pots').Path
 
   Set-AcceptanceState -State 'drag-target'
-  Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y -ToX $controls.cell32.x -ToY $controls.cell32.y
+  Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y -ToX $controls.acceptanceCell0.x -ToY $controls.acceptanceCell0.y
   $screenshots.dragTarget = (Save-StableScreenshot -Name '09-drag-target').Path
-  Stop-CanvasDrag -X $controls.cell32.x -Y $controls.cell32.y
+  Stop-CanvasDrag -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
 
   Set-AcceptanceState -State 'dense-board'
   $screenshots.denseBoard = (Save-StableScreenshot -Name '10-dense-board').Path
 
   Set-AcceptanceState -State 'selection-inspection'
-  # Deterministic interaction state: attacking plant at cell (3, 2), empty pot at cell (4, 2).
-  Invoke-CanvasClick -X $controls.cell32.x -Y $controls.cell32.y
+  # Deterministic interaction state projected through the enlarged board: attacking plant and empty pot use the first two canonical plantable cells.
+  Invoke-CanvasClick -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
   $screenshots.inspectionClick = (Save-StableScreenshot -Name '11-inspection-click').Path
-  Invoke-CanvasClick -X $controls.cell42.x -Y $controls.cell42.y
+  Invoke-CanvasClick -X $controls.acceptanceCell1.x -Y $controls.acceptanceCell1.y
   $screenshots.destinationClickNoMove = (Save-StableScreenshot -Name '12-destination-click-no-move').Path
-  Start-CanvasDrag -FromX $controls.cell32.x -FromY $controls.cell32.y -ToX $controls.cell42.x -ToY $controls.cell42.y
-  Stop-CanvasDrag -X $controls.cell42.x -Y $controls.cell42.y
+  Start-CanvasDrag -FromX $controls.acceptanceCell0.x -FromY $controls.acceptanceCell0.y -ToX $controls.acceptanceCell1.x -ToY $controls.acceptanceCell1.y
+  Stop-CanvasDrag -X $controls.acceptanceCell1.x -Y $controls.acceptanceCell1.y
   $screenshots.dragRelocation = (Save-StableScreenshot -Name '13-after-drag-move').Path
 
   $metrics = [ordered]@{}
@@ -587,17 +1053,20 @@ try {
     if ($metrics[$state].width -ne $Width -or $metrics[$state].height -ne $Height) {
       throw "Unexpected screenshot dimensions for ${state}: $($metrics[$state].width)x$($metrics[$state].height)"
     }
-    if ($metrics[$state].blackFraction -ge .05) {
-      throw "Black-frame check failed for ${state}: $($metrics[$state].blackFraction)"
-    }
-    if ($metrics[$state].invalidFraction -ge .05) {
-      throw "Transparent-frame check failed for ${state}: $($metrics[$state].invalidFraction)"
+    if (-not (Test-StableFrameMetrics -Metrics $metrics[$state])) {
+      throw (
+        "Frame stability check failed for ${state}: black=$($metrics[$state].blackFraction) " +
+        "nearBlack=$($metrics[$state].nearBlackFraction) " +
+        "maxNearBlackRun=$($metrics[$state].maxNearBlackHorizontalRunFraction) " +
+        "invalid=$($metrics[$state].invalidFraction)")
     }
   }
-  if ($metrics.ready.headerDarkPixels -lt 80 -or $metrics.ready.headerLightPixels -lt 5000) {
-    throw "HUD text check failed: dark=$($metrics.ready.headerDarkPixels) light=$($metrics.ready.headerLightPixels)."
+  if ($metrics.ready.headerDarkPixels -lt $hudDarkPixelThreshold -or
+      $metrics.ready.headerLightPixels -lt $hudLightPixelThreshold) {
+    throw "HUD text check failed: dark=$($metrics.ready.headerDarkPixels)/$hudDarkPixelThreshold light=$($metrics.ready.headerLightPixels)/$hudLightPixelThreshold."
   }
-  if ($metrics.ready.formerActionColorPixels -gt 12 -or $metrics.activeWave.formerActionColorPixels -gt 12) {
+  if ($metrics.ready.formerActionColorPixels -gt $formerActionPixelThreshold -or
+      $metrics.activeWave.formerActionColorPixels -gt $formerActionPixelThreshold) {
     throw "Former bottom action-row colors are still present: ready=$($metrics.ready.formerActionColorPixels) active=$($metrics.activeWave.formerActionColorPixels)."
   }
 
@@ -605,7 +1074,11 @@ try {
     accepted = $true
     capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
     url = $Url
-    viewport = [ordered]@{ width = $Width; height = $Height }
+    levelId = $LevelId
+    expectedCompositeIdentity = $expectedLevelIdentity
+    viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+    safeArea = $safeAreaEvidence
+    browser = $browserEvidence
     canvas = $readiness
     checks = [ordered]@{
       http = 'pass'
@@ -615,11 +1088,16 @@ try {
       immutableBuildCache = 'pass'
       revalidatableHtml = 'pass'
       unityLoaded = 'pass'
+      directRouteLevelIdentity = 'pass'
+      compositeIdentity = 'pass'
+      requestedViewportAndCanvas = 'pass'
+      safeAreaQueryApplied = 'pass'
       chineseHudInk = 'pass'
       screenshotDimensions = 'pass'
       requiredStates = 'pass'
       contextualWaveLabels = 'pass'
       oldBottomActionRowAbsent = 'pass'
+      noLargeNearBlackRegions = 'pass'
       pauseContinuePreservesRun = 'pass'
       pauseRestartProducesCleanReadyState = 'pass'
       inspectionClickInformationAndRange = 'pass'
@@ -627,9 +1105,17 @@ try {
       dragRelocation = 'pass'
     }
     delivery = $delivery
+    routeIdentities = [ordered]@{ battle = $directBattleIdentity }
     screenshots = $screenshots
     imageMetrics = $metrics
     controls = $controls
+    referenceControls = $referenceControls
+    pixelThresholds = [ordered]@{
+      hudDarkPixels = $hudDarkPixelThreshold
+      hudLightPixels = $hudLightPixelThreshold
+      formerActionColorPixels = $formerActionPixelThreshold
+      framePixels = $framePixelThresholds
+    }
     sessionSequence = [ordered]@{
       labels = [ordered]@{
         ready = -join @([char]0x5F00, [char]0x59CB, [char]0x6CE2, [char]0x6B21)
@@ -648,8 +1134,8 @@ try {
       )
     }
     interactionSequence = [ordered]@{
-      source = [ordered]@{ cell = @(3, 2); x = $controls.cell32.x; y = $controls.cell32.y }
-      destination = [ordered]@{ cell = @(4, 2); x = $controls.cell42.x; y = $controls.cell42.y }
+      source = [ordered]@{ cell = @(0, 1); x = $controls.acceptanceCell0.x; y = $controls.acceptanceCell0.y }
+      destination = [ordered]@{ cell = @(1, 1); x = $controls.acceptanceCell1.x; y = $controls.acceptanceCell1.y }
       steps = @(
         'click source plant to inspect',
         'click empty destination without relocation',

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: CartoonGrassDualGridTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: 91fd98ea83327b4469f719082101046b, type: 2}
+  - {fileID: 11400000, guid: b8a260f1e2efc1d488b6e2b64c400b1a, type: 2}
+  - {fileID: 11400000, guid: db360819573bb1b4f92c2bb7f73fe38c, type: 2}
+  - {fileID: 11400000, guid: c7d70a51eac1e81479c86a142f844431, type: 2}
+  - {fileID: 11400000, guid: 65871eb0fb17967498a1f40549aadbc3, type: 2}
+  - {fileID: 11400000, guid: 28d223b509c09de4187f8e8d17eacb61, type: 2}
+  - {fileID: 11400000, guid: 9fb6f51baa1ba684b957b167bc4aebea, type: 2}
+  - {fileID: 11400000, guid: a3083cf7bcc18e04fa5ca720ce63d0df, type: 2}
+  - {fileID: 11400000, guid: 0577de9677123a249bdafec604620704, type: 2}
+  - {fileID: 11400000, guid: b3c20497d1b6e014582640c2ce96e056, type: 2}
+  - {fileID: 11400000, guid: 3675da6851a17be48bed477ab98b9c38, type: 2}
+  - {fileID: 11400000, guid: b3c36efb30b747246b29276af291ef29, type: 2}
+  - {fileID: 11400000, guid: 402cdf7bbbbf81a4f8c48db293851b69, type: 2}
+  - {fileID: 11400000, guid: 70f74b06ee2589e4a9ba40897af500f9, type: 2}
+  - {fileID: 11400000, guid: a62c5be3466da2d48a39453fb32fc94c, type: 2}
+  - {fileID: 11400000, guid: d568d77ad90ab5343a5abaca2e3e875f, type: 2}

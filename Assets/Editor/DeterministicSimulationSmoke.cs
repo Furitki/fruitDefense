@@ -164,6 +164,7 @@ namespace FruitDefense.Editor
             Add(ref hash, state.RandomSeed);
             Add(ref hash, state.LogicTick);
             Add(ref hash, state.NextStatusSequence);
+            Add(ref hash, state.NextCombatEventSequence);
             Add(ref hash, simulation.RandomState);
             Add(ref hash, simulation.FrameAccumulatorSeconds);
             Add(ref hash, state.Inventory.Gatling);
@@ -206,6 +207,7 @@ namespace FruitDefense.Editor
                     Add(ref hash, runtime.BurstShotsRemaining);
                     Add(ref hash, runtime.BurstIntervalTicks);
                 }
+                AddEntityRuntime(ref hash, plant);
             }
             foreach (var zombie in state.Zombies)
             {
@@ -222,6 +224,12 @@ namespace FruitDefense.Editor
                 Add(ref hash, zombie.HitStunUntil);
                 Add(ref hash, zombie.IceHits);
                 Add(ref hash, zombie.ContentId);
+                foreach (var runtime in zombie.PassiveRuntimes)
+                {
+                    Add(ref hash, runtime.PassiveId);
+                    Add(ref hash, runtime.CooldownTicks);
+                    Add(ref hash, runtime.LastRootEventSequence);
+                }
                 foreach (var status in zombie.Statuses)
                 {
                     Add(ref hash, status.DefinitionId);
@@ -269,9 +277,30 @@ namespace FruitDefense.Editor
             return hash;
         }
 
+        private static void AddEntityRuntime(ref ulong hash, CombatEntityState entity)
+        {
+            foreach (var runtime in entity.PassiveRuntimes)
+            {
+                Add(ref hash, runtime.PassiveId);
+                Add(ref hash, runtime.CooldownTicks);
+                Add(ref hash, runtime.LastRootEventSequence);
+            }
+            foreach (var status in entity.Statuses)
+            {
+                Add(ref hash, status.DefinitionId);
+                Add(ref hash, status.SourceEntityId);
+                Add(ref hash, status.RemainingTicks);
+                Add(ref hash, status.StackCount);
+                Add(ref hash, status.Magnitude);
+                Add(ref hash, status.Sequence);
+                Add(ref hash, status.TickProgress);
+            }
+        }
+
         private static void Add(ref ulong hash, bool value) { Add(ref hash, value ? 1 : 0); }
         private static void Add(ref ulong hash, int value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, uint value) { Add(ref hash, BitConverter.GetBytes(value)); }
+        private static void Add(ref ulong hash, long value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, float value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, double value) { Add(ref hash, BitConverter.GetBytes(value)); }
         private static void Add(ref ulong hash, string value)

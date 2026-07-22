@@ -25,8 +25,10 @@ MonoBehaviour:
       damage: 12
       attackIntervalSeconds: 1
       rangeLegacyUnits: 44
+      potVisualHeightOffset: 6
       skillIds:
       - skill.plant.pea.attack
+      passiveIds: []
       tags:
       - plant.damage
       - plant.ranged
@@ -42,8 +44,10 @@ MonoBehaviour:
       damage: 12
       attackIntervalSeconds: 2.2
       rangeLegacyUnits: 44
+      potVisualHeightOffset: 6
       skillIds:
       - skill.plant.watermelon.attack
+      passiveIds: []
       tags:
       - plant.damage
       - plant.ranged
@@ -59,8 +63,10 @@ MonoBehaviour:
       damage: 6
       attackIntervalSeconds: 1.6
       rangeLegacyUnits: 38
+      potVisualHeightOffset: 7
       skillIds:
       - skill.plant.banana.attack
+      passiveIds: []
       tags:
       - plant.damage
       - plant.ranged
@@ -76,8 +82,10 @@ MonoBehaviour:
       damage: 12
       attackIntervalSeconds: 1.8
       rangeLegacyUnits: 18
+      potVisualHeightOffset: 5
       skillIds:
       - skill.plant.durian.attack
+      passiveIds: []
       tags:
       - plant.damage
       - plant.melee
@@ -92,8 +100,10 @@ MonoBehaviour:
       damage: 0
       attackIntervalSeconds: 10
       rangeLegacyUnits: 0
+      potVisualHeightOffset: 5
       skillIds:
       - skill.plant.sunflower.produce
+      passiveIds: []
       tags:
       - plant.producer
       projectileId:
@@ -107,24 +117,44 @@ MonoBehaviour:
       speedLegacyUnits: 4.4
       killReward: 1
       threat: 1
+      skillIds: []
+      passiveIds: []
+      tags:
+      - enemy
+      - enemy.normal
     - id: enemy.runner
       displayName: "\u8DEF\u969C\u5FEB\u5C38"
       health: 25
       speedLegacyUnits: 6.4
       killReward: 1
       threat: 1
+      skillIds: []
+      passiveIds: []
+      tags:
+      - enemy
+      - enemy.fast
     - id: enemy.armored
       displayName: "\u94C1\u6876\u50F5\u5C38"
       health: 80
       speedLegacyUnits: 3.4
       killReward: 1
       threat: 2
+      skillIds: []
+      passiveIds: []
+      tags:
+      - enemy
+      - enemy.armored
     - id: enemy.boss
       displayName: "\u56ED\u4E01\u5C38\u738B"
       health: 430
       speedLegacyUnits: 2.7
       killReward: 1
       threat: 3
+      skillIds: []
+      passiveIds: []
+      tags:
+      - enemy
+      - enemy.boss
     equipment:
     - id: equipment.gatling
       displayName: "\u673A\u67AA"
@@ -143,6 +173,8 @@ MonoBehaviour:
         burstCountOverride: 4
         burstIntervalSeconds: 0.2
         resourceAmountDelta: 0
+      passiveIds: []
+      passiveGrants: []
     - id: equipment.ice
       displayName: "\u51B0\u5757"
       skillIds:
@@ -164,6 +196,14 @@ MonoBehaviour:
       - skillId: skill.equipment.ice.producer-opening
         requiredPlantTag: plant.producer
       modifiers: []
+      passiveIds:
+      - passive.equipment.ice.on-hit
+      - passive.equipment.ice.producer-opening
+      passiveGrants:
+      - passiveId: passive.equipment.ice.on-hit
+        requiredPlantTag: plant.damage
+      - passiveId: passive.equipment.ice.producer-opening
+        requiredPlantTag: plant.producer
     - id: equipment.chili
       displayName: "\u8FA3\u6912"
       skillIds:
@@ -187,6 +227,11 @@ MonoBehaviour:
         burstCountOverride: 0
         burstIntervalSeconds: 0
         resourceAmountDelta: 1
+      passiveIds:
+      - passive.equipment.chili.on-hit
+      passiveGrants:
+      - passiveId: passive.equipment.chili.on-hit
+        requiredPlantTag: plant.damage
     skills:
     - id: skill.plant.pea.attack
       triggerId: trigger.cooldown
@@ -422,6 +467,86 @@ MonoBehaviour:
       visualId:
       cueId: cue.status.chili
       actionSeconds: 0
+    passives:
+    - id: passive.equipment.ice.on-hit
+      triggerId: passive-trigger.after-damage-dealt
+      ownerRoleId: owner.event-source
+      targetId: passive-target.event-target
+      priority: 0
+      cooldownSeconds: 0
+      tags:
+      - passive.equipment
+      - passive.on-hit
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.slow
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.hit-count
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.ice
+    - id: passive.equipment.ice.producer-opening
+      triggerId: passive-trigger.wave-first-spawned
+      ownerRoleId: owner.any
+      targetId: passive-target.all-enemies
+      priority: 0
+      cooldownSeconds: 0
+      tags:
+      - passive.equipment
+      - passive.producer
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.ice.slow
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.ice
+    - id: passive.equipment.chili.on-hit
+      triggerId: passive-trigger.after-damage-dealt
+      ownerRoleId: owner.event-source
+      targetId: passive-target.event-target
+      priority: 0
+      cooldownSeconds: 0
+      tags:
+      - passive.equipment
+      - passive.on-hit
+      effects:
+      - kindId: effect.apply-status
+        projectileId:
+        statusId: status.chili.burn
+        magnitude: 0.2
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId:
+      - kindId: effect.emit-cue
+        projectileId:
+        statusId:
+        magnitude: 1
+        radiusLegacyUnits: 0
+        resourceAmount: 0
+        cueId: cue.status.chili
     projectiles:
     - id: projectile.pea
       travelMode: travel.tracking
@@ -464,6 +589,18 @@ MonoBehaviour:
       kindId: status-kind.slow
       procStatusId:
       cueId: cue.status.ice
+      polarityId: polarity.debuff
+      tags:
+      - status.control
+      - status.ice
+      - status.slow
+      blocksMovement: 0
+      modifiers:
+      - attributeId: attribute.move-speed
+        operationId: modifier.multiplicative
+        value: 0.55
+        scaleWithMagnitude: 0
+      periodicEffectId: periodic.none
     - id: status.ice.freeze
       stackingMode: stacking.refresh
       durationSeconds: 1
@@ -474,6 +611,14 @@ MonoBehaviour:
       kindId: status-kind.freeze
       procStatusId:
       cueId: cue.status.ice
+      polarityId: polarity.debuff
+      tags:
+      - status.control
+      - status.freeze
+      - status.ice
+      blocksMovement: 1
+      modifiers: []
+      periodicEffectId: periodic.none
     - id: status.ice.hit-count
       stackingMode: stacking.proc-after-hits
       durationSeconds: 99999
@@ -484,6 +629,13 @@ MonoBehaviour:
       kindId: status-kind.hit-count
       procStatusId: status.ice.freeze
       cueId: cue.status.ice
+      polarityId: polarity.neutral
+      tags:
+      - status.counter
+      - status.ice
+      blocksMovement: 0
+      modifiers: []
+      periodicEffectId: periodic.none
     - id: status.chili.burn
       stackingMode: stacking.independent
       durationSeconds: 3
@@ -494,6 +646,13 @@ MonoBehaviour:
       kindId: status-kind.burn
       procStatusId:
       cueId: cue.status.chili
+      polarityId: polarity.debuff
+      tags:
+      - status.burn
+      - status.damage-over-time
+      blocksMovement: 0
+      modifiers: []
+      periodicEffectId: periodic.damage
     - id: status.combat.hit-stun
       stackingMode: stacking.refresh
       durationSeconds: 0.1
@@ -504,6 +663,13 @@ MonoBehaviour:
       kindId: status-kind.stun
       procStatusId:
       cueId:
+      polarityId: polarity.debuff
+      tags:
+      - status.control
+      - status.hit-stun
+      blocksMovement: 1
+      modifiers: []
+      periodicEffectId: periodic.none
     waves:
     - id: wave.01
       index: 1

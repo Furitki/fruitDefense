@@ -4,8 +4,49 @@ using UnityEngine;
 
 namespace FruitDefense.Core
 {
+    public readonly struct BattlefieldViewportLayout
+    {
+        public Vector2 ViewportSize { get; }
+        public Rect SafeArea { get; }
+        public Rect SafeAreaInGuiSpace { get; }
+        public Rect DesignViewportRect { get; }
+        public float Scale { get; }
+        public Vector2 Offset { get; }
+        public Matrix4x4 GuiMatrix { get; }
+
+        public BattlefieldViewportLayout(
+            Vector2 viewportSize,
+            Rect safeArea,
+            Rect safeAreaInGuiSpace,
+            Rect designViewportRect,
+            float scale,
+            Vector2 offset)
+        {
+            ViewportSize = viewportSize;
+            SafeArea = safeArea;
+            SafeAreaInGuiSpace = safeAreaInGuiSpace;
+            DesignViewportRect = designViewportRect;
+            Scale = scale;
+            Offset = offset;
+            GuiMatrix = Matrix4x4.TRS(new Vector3(offset.x, offset.y, 0f), Quaternion.identity,
+                new Vector3(scale, scale, 1f));
+        }
+
+        public Rect ProjectDesignRect(Rect designRect)
+        {
+            return new Rect(
+                Offset.x + designRect.x * Scale,
+                Offset.y + designRect.y * Scale,
+                designRect.width * Scale,
+                designRect.height * Scale);
+        }
+    }
+
     public sealed class BattlefieldProjection
     {
+        private const float RectangleOverlapEpsilon = 0.001f;
+        public const float PotVisualRatio = 0.88f;
+        public const float CoreVisualRatio = 0.84f;
         public const float ReferenceLegacyPotSize = 62f;
         public const float PreviousReferenceBoardWidth = 386f;
         public const float PreviousReferenceBoardScaleDivisor = 1050f;
@@ -25,12 +66,64 @@ namespace FruitDefense.Core
         public Rect BoardRect { get; private set; }
         public Rect MapViewportRect { get; private set; }
         public Rect ContentRect { get; private set; }
+        public Rect GridRect { get; private set; }
         public Rect ControlStripRect { get; private set; }
         public Rect WaveActionRect { get; private set; }
+        public Rect CoreRect { get; private set; }
         public float MapScale { get; private set; }
         public float PotSize { get; private set; }
         public float CellSize { get; private set; }
+        public float TileSize { get; private set; }
         public IReadOnlyList<Vector2> RoutePoints { get; private set; }
+
+        public static IReadOnlyList<Vector2Int> RequiredPortraitViewports { get; } = new[]
+        {
+            new Vector2Int(360, 800),
+            new Vector2Int(375, 812),
+            new Vector2Int(402, 874),
+            new Vector2Int(430, 932),
+        };
+
+        public static BattlefieldViewportLayout CalculateViewportLayout(
+            float viewportWidth,
+            float viewportHeight,
+            Rect safeArea,
+            float designWidth,
+            float designHeight)
+        {
+            viewportWidth = Mathf.Max(0f, viewportWidth);
+            viewportHeight = Mathf.Max(0f, viewportHeight);
+            var viewport = new Rect(0f, 0f, viewportWidth, viewportHeight);
+            var safeXMin = Mathf.Clamp(safeArea.xMin, viewport.xMin, viewport.xMax);
+            var safeYMin = Mathf.Clamp(safeArea.yMin, viewport.yMin, viewport.yMax);
+            var safeXMax = Mathf.Clamp(safeArea.xMax, viewport.xMin, viewport.xMax);
+            var safeYMax = Mathf.Clamp(safeArea.yMax, viewport.yMin, viewport.yMax);
+            var resolvedSafeArea = Rect.MinMaxRect(safeXMin, safeYMin, safeXMax, safeYMax);
+            if (resolvedSafeArea.width <= 0f || resolvedSafeArea.height <= 0f)
+                resolvedSafeArea = viewport;
+
+            designWidth = Mathf.Max(.0001f, designWidth);
+            designHeight = Mathf.Max(.0001f, designHeight);
+            var scale = Mathf.Max(0f, Mathf.Min(
+                resolvedSafeArea.width / designWidth,
+                resolvedSafeArea.height / designHeight));
+            var offsetX = resolvedSafeArea.x + (resolvedSafeArea.width - designWidth * scale) * .5f;
+            var safeTop = viewportHeight - resolvedSafeArea.yMax;
+            var offsetY = safeTop + (resolvedSafeArea.height - designHeight * scale) * .5f;
+            var guiSafeArea = new Rect(
+                resolvedSafeArea.x,
+                safeTop,
+                resolvedSafeArea.width,
+                resolvedSafeArea.height);
+            var designViewport = new Rect(offsetX, offsetY, designWidth * scale, designHeight * scale);
+            return new BattlefieldViewportLayout(
+                new Vector2(viewportWidth, viewportHeight),
+                resolvedSafeArea,
+                guiSafeArea,
+                designViewport,
+                scale,
+                new Vector2(offsetX, offsetY));
+        }
 
         public BattlefieldProjection(BattlefieldMapDefinition map, Rect boardRect)
         {
@@ -56,19 +149,23 @@ namespace FruitDefense.Core
                 boardRect.yMax - ControlBottomPadding - WaveActionHeight,
                 WaveActionWidth,
                 WaveActionHeight);
-            var bounds = map.MapBounds;
-            var scaleX = bounds.width <= .0001f ? 1f : ContentRect.width / bounds.width;
-            var scaleY = bounds.height <= .0001f ? 1f : ContentRect.height / bounds.height;
-            MapScale = Mathf.Min(scaleX, scaleY);
-            var projectedWidth = bounds.width * MapScale;
-            var projectedHeight = bounds.height * MapScale;
+            var gridWidth = Mathf.Max(1, map.GridWidth);
+            var gridHeight = Mathf.Max(1, map.GridHeight);
+            TileSize = Mathf.Max(0f, Mathf.Min(ContentRect.width / gridWidth, ContentRect.height / gridHeight));
+            var projectedWidth = TileSize * gridWidth;
+            var projectedHeight = TileSize * gridHeight;
+            GridRect = new Rect(
+                ContentRect.center.x - projectedWidth * .5f,
+                ContentRect.center.y - projectedHeight * .5f,
+                projectedWidth,
+                projectedHeight);
+            MapScale = map.MapUnitsPerCell <= .0001f ? TileSize : TileSize / map.MapUnitsPerCell;
             _mapOrigin = new Vector2(
-                ContentRect.center.x - projectedWidth * .5f - bounds.xMin * MapScale,
-                ContentRect.center.y - projectedHeight * .5f - bounds.yMin * MapScale);
-            var horizontalPitch = map.GridWidth <= 1 ? float.MaxValue : MapScale;
-            var verticalPitch = map.GridHeight <= 1 ? float.MaxValue : MapScale;
-            PotSize = Mathf.Min(ReferencePotSize, Mathf.Min(horizontalPitch, verticalPitch));
-            CellSize = PotSize;
+                GridRect.xMin + TileSize * .5f,
+                GridRect.yMin + TileSize * .5f);
+            CellSize = TileSize;
+            PotSize = TileSize * PotVisualRatio;
+            CoreRect = TileLocalVisualRect(map.CoreCell, CoreVisualRatio);
             RoutePoints = map.RouteNodes.Select(MapToScreen).ToArray();
         }
 
@@ -77,14 +174,39 @@ namespace FruitDefense.Core
             return _mapOrigin + point * MapScale;
         }
 
+        public Rect TileRect(Vector2Int cell)
+        {
+            return new Rect(
+                GridRect.xMin + cell.x * TileSize,
+                GridRect.yMin + cell.y * TileSize,
+                TileSize,
+                TileSize);
+        }
+
+        public Rect RouteTileRect(Vector2Int cell)
+        {
+            return TileRect(cell);
+        }
+
+        public Rect PotHitRect(Vector2Int cell)
+        {
+            return TileRect(cell);
+        }
+
+        public Rect PotVisualRect(Vector2Int cell)
+        {
+            return TileLocalVisualRect(cell, PotVisualRatio);
+        }
+
+        // Compatibility aliases for callers outside the presentation migration.
         public Rect CellRect(Vector2Int cell)
         {
-            return CenteredRect(MapToScreen(_map.CellToMap(cell)), CellSize, CellSize);
+            return TileRect(cell);
         }
 
         public Rect PotRect(Vector2Int cell)
         {
-            return CenteredRect(MapToScreen(_map.CellToMap(cell)), PotSize, PotSize);
+            return PotHitRect(cell);
         }
 
         public Rect MapRect(Vector2 center, float mapWidth, float mapHeight)
@@ -115,34 +237,37 @@ namespace FruitDefense.Core
 
         public bool ValidatePlantingGeometry(out string reason)
         {
-            if (_map.PlantableCells.Count != 48)
+            if (_map.PlantableCells.Count == 0)
             {
-                reason = "expected 48 projected planting cells";
+                reason = "expected projected planting cells";
                 return false;
             }
-            var rects = _map.PlantableCells.Select(CellRect).ToArray();
+            var rects = _map.PlantableCells.Select(PotHitRect).ToArray();
             for (var index = 0; index < rects.Length; index++)
             {
                 var rect = rects[index];
-                if (rect.xMin < BoardRect.xMin || rect.yMin < BoardRect.yMin
-                    || rect.xMax > BoardRect.xMax || rect.yMax > BoardRect.yMax)
+                if (rect.xMin < GridRect.xMin - .01f || rect.yMin < GridRect.yMin - .01f
+                    || rect.xMax > GridRect.xMax + .01f || rect.yMax > GridRect.yMax + .01f)
                 {
                     reason = "projected cell is clipped by battlefield: " + _map.PlantableCells[index];
                     return false;
                 }
-                if (Mathf.Min(rect.width, rect.height) < 44f)
+                if (Mathf.Abs(rect.width - rect.height) > .01f)
                 {
-                    reason = "projected flowerpot target is smaller than 44 logical points: " + rect;
+                    reason = "projected tile is not square: " + rect;
                     return false;
                 }
-                if (CellRect(_map.PlantableCells[index]) != PotRect(_map.PlantableCells[index]))
+                var visual = PotVisualRect(_map.PlantableCells[index]);
+                if (!Contains(rect, visual)
+                    || Mathf.Abs(visual.width / rect.width - PotVisualRatio) > .001f
+                    || PotHitRect(_map.PlantableCells[index]) != TileRect(_map.PlantableCells[index]))
                 {
-                    reason = "cell and flowerpot hit bounds are not shared";
+                    reason = "flowerpot visual and hit bounds are inconsistent";
                     return false;
                 }
                 for (var other = index + 1; other < rects.Length; other++)
                 {
-                    if (!rect.Overlaps(rects[other])) continue;
+                    if (!HasPositiveAreaOverlap(rect, rects[other])) continue;
                     reason = "projected flowerpot targets overlap: " + _map.PlantableCells[index]
                         + " and " + _map.PlantableCells[other];
                     return false;
@@ -164,29 +289,21 @@ namespace FruitDefense.Core
 
             foreach (var cell in _map.PlantableCells)
             {
-                if (!WaveActionRect.Overlaps(CellRect(cell))) continue;
+                if (!WaveActionRect.Overlaps(PotHitRect(cell))) continue;
                 reason = "battlefield wave action overlaps planting target: " + cell;
                 return false;
             }
 
-            if (WaveActionRect.Overlaps(LegacyVisualRect(_map.Core, 172f, 140f)))
+            if (WaveActionRect.Overlaps(CoreRect))
             {
                 reason = "battlefield wave action overlaps the core";
                 return false;
             }
 
-            var routeHalfWidth = MapDistanceToScreen(GameConfig.MapDistance(8f)) * .5f;
-            for (var index = 1; index < RoutePoints.Count; index++)
+            foreach (var cell in _map.RouteCells)
             {
-                var from = RoutePoints[index - 1];
-                var to = RoutePoints[index];
-                var routeBounds = Rect.MinMaxRect(
-                    Mathf.Min(from.x, to.x) - routeHalfWidth,
-                    Mathf.Min(from.y, to.y) - routeHalfWidth,
-                    Mathf.Max(from.x, to.x) + routeHalfWidth,
-                    Mathf.Max(from.y, to.y) + routeHalfWidth);
-                if (!WaveActionRect.Overlaps(routeBounds)) continue;
-                reason = "battlefield wave action overlaps route segment " + (index - 1);
+                if (!WaveActionRect.Overlaps(RouteTileRect(cell))) continue;
+                reason = "battlefield wave action overlaps route tile " + cell;
                 return false;
             }
 
@@ -197,6 +314,26 @@ namespace FruitDefense.Core
         private static Rect CenteredRect(Vector2 center, float width, float height)
         {
             return new Rect(center.x - width * .5f, center.y - height * .5f, width, height);
+        }
+
+        private Rect TileLocalVisualRect(Vector2Int cell, float ratio)
+        {
+            var tile = TileRect(cell);
+            var size = tile.width * Mathf.Clamp01(ratio);
+            return CenteredRect(tile.center, size, size);
+        }
+
+        private static bool Contains(Rect outer, Rect inner)
+        {
+            return inner.xMin >= outer.xMin - .01f && inner.yMin >= outer.yMin - .01f
+                && inner.xMax <= outer.xMax + .01f && inner.yMax <= outer.yMax + .01f;
+        }
+
+        private static bool HasPositiveAreaOverlap(Rect first, Rect second)
+        {
+            var overlapWidth = Mathf.Min(first.xMax, second.xMax) - Mathf.Max(first.xMin, second.xMin);
+            var overlapHeight = Mathf.Min(first.yMax, second.yMax) - Mathf.Max(first.yMin, second.yMin);
+            return overlapWidth > RectangleOverlapEpsilon && overlapHeight > RectangleOverlapEpsilon;
         }
     }
 }

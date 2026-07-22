@@ -1,3 +1,10 @@
+---
+id: p1-first-wave-gate
+parent: design-kb-home
+order: 30
+status: active
+---
+
 # P1 first-wave gate
 
 Observed on 2026-07-15 against Unity `6000.3.19f1` on branch

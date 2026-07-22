@@ -58,6 +58,21 @@ namespace FruitDefense.App
                     "editor adapter initializes through the common contract");
             }
 
+            using (var windowsPreview = PlatformAdapterFactory.Create(PlatformId.WindowsPreview))
+            {
+                var result = Initialize(windowsPreview);
+                Assert(windowsPreview is WindowsPreviewPlatformAdapter
+                    && windowsPreview.Id == PlatformId.WindowsPreview
+                    && result.Success,
+                    "Windows preview adapter initializes through the common contract");
+                Assert(!(windowsPreview is WebPlatformAdapter),
+                    "Windows preview never falls back to Web");
+                Assert(windowsPreview.LaunchContext.Platform == PlatformId.WindowsPreview
+                    && windowsPreview.LaunchContext.LaunchUrl == string.Empty
+                    && windowsPreview.LaunchContext.Query.Count == 0,
+                    "Windows preview exposes an empty platform-neutral launch context");
+            }
+
             using (var web = PlatformAdapterFactory.Create(PlatformId.Web, "https://fruit.example/?acceptance=1"))
             {
                 var visibilityEvents = 0;

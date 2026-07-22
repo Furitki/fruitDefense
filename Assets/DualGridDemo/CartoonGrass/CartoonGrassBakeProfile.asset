@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df7710b46883ae458f98123ab93b6bd, type: 3}
+  m_Name: CartoonGrassBakeProfile
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::FruitDefense.Editor.DualGridTerrainBakeProfile
+  grassTexture: {fileID: 2800000, guid: 37b8677f44ff1514f8eaab6ad0e296c1, type: 3}
+  soilTexture: {fileID: 2800000, guid: bfdbac09411691b4eb229a0e10d41d48, type: 3}
+  terrainId: CartoonGrass
+  outputFolder: Assets/DualGridDemo/CartoonGrass
+  tileSize: 512
+  supersampleScale: 4
+  alphaAntialiasPixels: 1.1
+  exposedSoilPixels: 9
+  grassBlendPixels: 6
+  broadIrregularityPixels: 20
+  fineIrregularityPixels: 5
+  grassBladeExtensionPixels: 3.25
+  oppositeCornerSeparation: 0.14
+  deterministicSeed: 7319

@@ -75,6 +75,7 @@ namespace FruitDefense.Content
             RequireCollection(catalog.enemies, "enemies", result);
             RequireCollection(catalog.equipment, "equipment", result);
             RequireCollection(catalog.skills, "skills", result);
+            RequireCollection(catalog.passives, "passives", result);
             RequireCollection(catalog.projectiles, "projectiles", result);
             RequireCollection(catalog.statuses, "statuses", result);
             RequireCollection(catalog.waves, "waves", result);
@@ -84,15 +85,17 @@ namespace FruitDefense.Content
             var enemyIds = ValidateIds(catalog.enemies, "enemies", value => value.id, result);
             var equipmentIds = ValidateIds(catalog.equipment, "equipment", value => value.id, result);
             var skillIds = ValidateIds(catalog.skills, "skills", value => value.id, result);
+            var passiveIds = ValidateIds(catalog.passives, "passives", value => value.id, result);
             var projectileIds = ValidateIds(catalog.projectiles, "projectiles", value => value.id, result);
             var statusIds = ValidateIds(catalog.statuses, "statuses", value => value.id, result);
             ValidateIds(catalog.waves, "waves", value => value.id, result);
             ValidateIds(catalog.starTiers, "starTiers", value => value.id, result);
 
-            ValidatePlants(catalog.plants, skillIds, projectileIds, equipmentIds, result);
-            ValidateEnemies(catalog.enemies, result);
-            ValidateEquipment(catalog.equipment, skillIds, statusIds, plantIds, result);
+            ValidatePlants(catalog.plants, skillIds, passiveIds, projectileIds, equipmentIds, result);
+            ValidateEnemies(catalog.enemies, skillIds, passiveIds, result);
+            ValidateEquipment(catalog.equipment, skillIds, passiveIds, statusIds, plantIds, result);
             ValidateSkills(catalog.skills, projectileIds, statusIds, result);
+            ValidatePassives(catalog.passives, projectileIds, statusIds, result);
             ValidateProjectiles(catalog.projectiles, result);
             ValidateStatuses(catalog.statuses, statusIds, result);
             ValidateEquipmentSkillBindings(catalog, result);
@@ -150,6 +153,7 @@ namespace FruitDefense.Content
         }
 
         private static void ValidatePlants(PlantDefinitionDto[] values, HashSet<string> skillIds,
+            HashSet<string> passiveIds,
             HashSet<string> projectileIds, HashSet<string> equipmentIds, ContentValidationResult result)
         {
             if (values == null) return;
@@ -160,14 +164,18 @@ namespace FruitDefense.Content
                 RequireFiniteAtLeast(value.damage, 0f, "plants", value.id, "damage", result);
                 RequireFiniteGreater(value.attackIntervalSeconds, 0f, "plants", value.id, "attackIntervalSeconds", result);
                 RequireFiniteAtLeast(value.rangeLegacyUnits, 0f, "plants", value.id, "rangeLegacyUnits", result);
+                RequireFiniteAtLeast(value.potVisualHeightOffset, 0f, "plants", value.id,
+                    "potVisualHeightOffset", result);
                 RequireReferences(value.skillIds, skillIds, "plants", value.id, "skillIds", true, result);
+                RequireReferences(value.passiveIds, passiveIds, "plants", value.id, "passiveIds", false, result);
                 RequireOptionalReference(value.projectileId, projectileIds, "plants", value.id, "projectileId", result);
                 RequireReferences(value.allowedEquipmentIds, equipmentIds, "plants", value.id, "allowedEquipmentIds", false, result);
                 RequireStableNames(value.tags, "plants", value.id, "tags", true, result);
             }
         }
 
-        private static void ValidateEnemies(EnemyDefinitionDto[] values, ContentValidationResult result)
+        private static void ValidateEnemies(EnemyDefinitionDto[] values, HashSet<string> skillIds,
+            HashSet<string> passiveIds, ContentValidationResult result)
         {
             if (values == null) return;
             foreach (var value in values)
@@ -178,10 +186,14 @@ namespace FruitDefense.Content
                 RequireFiniteGreater(value.speedLegacyUnits, 0f, "enemies", value.id, "speedLegacyUnits", result);
                 RequireIntAtLeast(value.killReward, 0, "enemies", value.id, "killReward", result);
                 RequireIntAtLeast(value.threat, 1, "enemies", value.id, "threat", result);
+                RequireReferences(value.skillIds, skillIds, "enemies", value.id, "skillIds", false, result);
+                RequireReferences(value.passiveIds, passiveIds, "enemies", value.id, "passiveIds", false, result);
+                RequireStableNames(value.tags, "enemies", value.id, "tags", true, result);
             }
         }
 
         private static void ValidateEquipment(EquipmentDefinitionDto[] values, HashSet<string> skillIds,
+            HashSet<string> passiveIds,
             HashSet<string> statusIds, HashSet<string> plantIds, ContentValidationResult result)
         {
             if (values == null) return;
@@ -191,6 +203,7 @@ namespace FruitDefense.Content
                 RequireText(value.displayName, "equipment", value.id, "displayName", result);
                 RequireReferences(value.skillIds, skillIds, "equipment", value.id, "skillIds", false, result);
                 RequireReferences(value.statusIds, statusIds, "equipment", value.id, "statusIds", false, result);
+                RequireReferences(value.passiveIds, passiveIds, "equipment", value.id, "passiveIds", false, result);
                 RequireReferences(value.compatiblePlantIds, plantIds, "equipment", value.id, "compatiblePlantIds", true, result);
                 if (value.grants == null)
                     result.Add("collection.required", "equipment", value.id, "grants", "Grant collection cannot be null.");
@@ -223,6 +236,81 @@ namespace FruitDefense.Content
                         RequireIntAtLeast(modifier.burstCountOverride, 0, "equipment", value.id, "modifiers.burstCountOverride", result);
                         RequireFiniteAtLeast(modifier.burstIntervalSeconds, 0f, "equipment", value.id, "modifiers.burstIntervalSeconds", result);
                     }
+                if (value.passiveGrants == null)
+                    result.Add("collection.required", "equipment", value.id, "passiveGrants", "Passive grant collection cannot be null.");
+                else
+                    foreach (var grant in value.passiveGrants)
+                    {
+                        if (grant == null)
+                        {
+                            result.Add("definition.null", "equipment", value.id, "passiveGrants", "Passive grant entry is null.");
+                            continue;
+                        }
+                        RequireOptionalReference(grant.passiveId, passiveIds, "equipment", value.id,
+                            "passiveGrants.passiveId", result);
+                        if (string.IsNullOrEmpty(grant.passiveId))
+                            result.Add("reference.required", "equipment", value.id,
+                                "passiveGrants.passiveId", "Granted passive is required.");
+                        RequireOptionalStableName(grant.requiredPlantTag, "equipment", value.id,
+                            "passiveGrants.requiredPlantTag", result);
+                    }
+            }
+        }
+
+        private static void ValidatePassives(PassiveDefinitionDto[] values, HashSet<string> projectileIds,
+            HashSet<string> statusIds, ContentValidationResult result)
+        {
+            if (values == null) return;
+            foreach (var value in values)
+            {
+                if (value == null) continue;
+                RequireStableReferenceName(value.triggerId, "passives", value.id, "triggerId", result);
+                RequireStableReferenceName(value.ownerRoleId, "passives", value.id, "ownerRoleId", result);
+                RequireStableReferenceName(value.targetId, "passives", value.id, "targetId", result);
+                RequireFiniteAtLeast(value.cooldownSeconds, 0f, "passives", value.id, "cooldownSeconds", result);
+                RequireStableNames(value.tags, "passives", value.id, "tags", true, result);
+                if (!CombatFrameworkCompiler.SupportsPassiveTrigger(value.triggerId))
+                    result.Add("mechanism.unknown", "passives", value.id, "triggerId",
+                        "Unsupported passive trigger '" + value.triggerId + "'.");
+                if (!CombatFrameworkCompiler.SupportsOwnerRole(value.ownerRoleId))
+                    result.Add("mechanism.unknown", "passives", value.id, "ownerRoleId",
+                        "Unsupported passive owner role '" + value.ownerRoleId + "'.");
+                if (!CombatFrameworkCompiler.SupportsPassiveTarget(value.targetId))
+                    result.Add("mechanism.unknown", "passives", value.id, "targetId",
+                        "Unsupported passive target '" + value.targetId + "'.");
+                if (value.effects == null || value.effects.Length == 0)
+                {
+                    result.Add("collection.required", "passives", value.id, "effects", "At least one effect is required.");
+                    continue;
+                }
+                foreach (var effect in value.effects)
+                {
+                    if (effect == null)
+                    {
+                        result.Add("definition.null", "passives", value.id, "effects", "Effect entry is null.");
+                        continue;
+                    }
+                    RequireStableReferenceName(effect.kindId, "passives", value.id, "effects.kindId", result);
+                    if (!BattleSkillCompiler.SupportsEffect(effect.kindId))
+                        result.Add("mechanism.unknown", "passives", value.id, "effects.kindId",
+                            "Unsupported effect '" + effect.kindId + "'.");
+                    RequireOptionalReference(effect.projectileId, projectileIds, "passives", value.id,
+                        "effects.projectileId", result);
+                    RequireOptionalReference(effect.statusId, statusIds, "passives", value.id,
+                        "effects.statusId", result);
+                    RequireFiniteAtLeast(effect.magnitude, 0f, "passives", value.id, "effects.magnitude", result);
+                    RequireFiniteAtLeast(effect.radiusLegacyUnits, 0f, "passives", value.id,
+                        "effects.radiusLegacyUnits", result);
+                    RequireIntAtLeast(effect.resourceAmount, 0, "passives", value.id,
+                        "effects.resourceAmount", result);
+                    RequireOptionalStableName(effect.cueId, "passives", value.id, "effects.cueId", result);
+                    if (effect.kindId == "effect.launch-projectile" && string.IsNullOrEmpty(effect.projectileId))
+                        result.Add("reference.required", "passives", value.id,
+                            "effects.projectileId", "Projectile effect requires a projectile.");
+                    if (effect.kindId == "effect.apply-status" && string.IsNullOrEmpty(effect.statusId))
+                        result.Add("reference.required", "passives", value.id,
+                            "effects.statusId", "Status effect requires a status.");
+                }
             }
         }
 
@@ -320,6 +408,42 @@ namespace FruitDefense.Content
                 RequireIntAtLeast(value.hitsToProc, 0, "statuses", value.id, "hitsToProc", result);
                 RequireOptionalReference(value.procStatusId, statusIds, "statuses", value.id, "procStatusId", result);
                 RequireOptionalStableName(value.cueId, "statuses", value.id, "cueId", result);
+                RequireStableReferenceName(value.polarityId, "statuses", value.id, "polarityId", result);
+                RequireStableReferenceName(value.periodicEffectId, "statuses", value.id, "periodicEffectId", result);
+                RequireStableNames(value.tags, "statuses", value.id, "tags", true, result);
+                if (!CombatFrameworkCompiler.SupportsPolarity(value.polarityId))
+                    result.Add("mechanism.unknown", "statuses", value.id, "polarityId",
+                        "Unsupported status polarity '" + value.polarityId + "'.");
+                if (!CombatFrameworkCompiler.SupportsPeriodicEffect(value.periodicEffectId))
+                    result.Add("mechanism.unknown", "statuses", value.id, "periodicEffectId",
+                        "Unsupported periodic effect '" + value.periodicEffectId + "'.");
+                if (value.periodicEffectId != "periodic.none" && value.tickIntervalSeconds <= 0f)
+                    result.Add("status.periodic.invalid", "statuses", value.id, "tickIntervalSeconds",
+                        "Periodic status requires a positive tick interval.");
+                if (value.modifiers == null)
+                    result.Add("collection.required", "statuses", value.id, "modifiers",
+                        "Status modifier collection cannot be null.");
+                else
+                    foreach (var modifier in value.modifiers)
+                    {
+                        if (modifier == null)
+                        {
+                            result.Add("definition.null", "statuses", value.id, "modifiers",
+                                "Status modifier entry is null.");
+                            continue;
+                        }
+                        RequireStableReferenceName(modifier.attributeId, "statuses", value.id,
+                            "modifiers.attributeId", result);
+                        RequireStableReferenceName(modifier.operationId, "statuses", value.id,
+                            "modifiers.operationId", result);
+                        RequireFinite(modifier.value, "statuses", value.id, "modifiers.value", result);
+                        if (!CombatFrameworkCompiler.SupportsAttribute(modifier.attributeId))
+                            result.Add("mechanism.unknown", "statuses", value.id, "modifiers.attributeId",
+                                "Unsupported combat attribute '" + modifier.attributeId + "'.");
+                        if (!CombatFrameworkCompiler.SupportsOperation(modifier.operationId))
+                            result.Add("mechanism.unknown", "statuses", value.id, "modifiers.operationId",
+                                "Unsupported modifier operation '" + modifier.operationId + "'.");
+                    }
                 if (value.stackingMode == "stacking.proc-after-hits" && (value.hitsToProc <= 0 || string.IsNullOrEmpty(value.procStatusId)))
                     result.Add("status.proc.invalid", "statuses", value.id, "procStatusId", "Hit-count status requires hitsToProc and procStatusId.");
             }
@@ -566,6 +690,13 @@ namespace FruitDefense.Content
         private static void RequireText(string value, string category, string id, string field, ContentValidationResult result)
         {
             if (string.IsNullOrWhiteSpace(value)) result.Add("definition.text.required", category, id, field, "Value is required.");
+        }
+
+        private static void RequireFinite(float value, string category, string id, string field,
+            ContentValidationResult result)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                result.Add("definition.numeric.invalid", category, id, field, "Value must be finite.");
         }
 
         private static void RequireFiniteGreater(float value, float minimum, string category, string id,

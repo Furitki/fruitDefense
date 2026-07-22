@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: StoneFloorDualGridTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: f3efee2b61fb51748aa4fdf9a8952011, type: 2}
+  - {fileID: 11400000, guid: 7d1194ea9828c804292ae6a36b1ad34a, type: 2}
+  - {fileID: 11400000, guid: 7578634664d5a0c41ab63228dc80c491, type: 2}
+  - {fileID: 11400000, guid: 6d2d8d8dfe413694d872e52d1c06502e, type: 2}
+  - {fileID: 11400000, guid: 8ba336028e2a8994b8213d98c73e4e52, type: 2}
+  - {fileID: 11400000, guid: 262ae6d9ff9bff242af51174e3a05c19, type: 2}
+  - {fileID: 11400000, guid: dc70478a599ce1e42a36e391c667a311, type: 2}
+  - {fileID: 11400000, guid: 453db406c6729e64bb36a3b0aa71d7af, type: 2}
+  - {fileID: 11400000, guid: f56a3292a9f74824da24667c5f51f758, type: 2}
+  - {fileID: 11400000, guid: a24b01cd6c807c94b8a71331fd5399da, type: 2}
+  - {fileID: 11400000, guid: fd01555f6f9060b4290fded6b8824c60, type: 2}
+  - {fileID: 11400000, guid: 1f29b2c03dd123845b1a96702c5f30b1, type: 2}
+  - {fileID: 11400000, guid: acd904b5cc1e229408b58b1b7e9cf896, type: 2}
+  - {fileID: 11400000, guid: e59d9d7036f97a44bb0d5fe0325bc340, type: 2}
+  - {fileID: 11400000, guid: 4c9667bd134177e478996f07b01d642f, type: 2}
+  - {fileID: 11400000, guid: c0026cedd955ac54a9c3c14cbb1de4f1, type: 2}

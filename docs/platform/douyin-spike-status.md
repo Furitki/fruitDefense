@@ -1,3 +1,10 @@
+---
+id: douyin-spike-status
+parent: design-kb-home
+order: 50
+status: active
+---
+
 # Douyin Unity compatibility spike status
 
 Observed on 2026-07-15 against Unity 6000.3.19f1 and baseline revision `4034f7e`.

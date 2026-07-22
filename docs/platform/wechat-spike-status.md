@@ -1,3 +1,10 @@
+---
+id: wechat-spike-status
+parent: design-kb-home
+order: 60
+status: active
+---
+
 # WeChat Unity 6.3 spike status
 
 Generated from `scripts/check-wechat-readiness.ps1` on 2026-07-15.

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: DemoDualGridTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: 4e202b3910127864d92076ca43f05bd0, type: 2}
+  - {fileID: 11400000, guid: e76f86583b87eff4da685c739f9e1f4d, type: 2}
+  - {fileID: 11400000, guid: 945922eab5f5aef46b3425e3d237abf2, type: 2}
+  - {fileID: 11400000, guid: e611658b92ea1a246886c20e106b535c, type: 2}
+  - {fileID: 11400000, guid: e0bdcf7bef6b729428df29c72837629d, type: 2}
+  - {fileID: 11400000, guid: a62de63508b976f40a0fe0b77cdcfb43, type: 2}
+  - {fileID: 11400000, guid: b3742fd06e1436b429b27b33c0b9cdfc, type: 2}
+  - {fileID: 11400000, guid: 131b969ba9842aa47a39ebe824c46e5a, type: 2}
+  - {fileID: 11400000, guid: 2735d68af75c1ab40b231a491d73638f, type: 2}
+  - {fileID: 11400000, guid: 420b33f916037c043b501bcb8d2f6475, type: 2}
+  - {fileID: 11400000, guid: 172d7440bb05ce44e9fee61fda4f7e4e, type: 2}
+  - {fileID: 11400000, guid: 69d1de73f01e0ae44a7723c951c0df7b, type: 2}
+  - {fileID: 11400000, guid: c5c2e8c6f3e79d4479ab9ad59981cab3, type: 2}
+  - {fileID: 11400000, guid: 148764581d4290b418172a3a61fa59c8, type: 2}
+  - {fileID: 11400000, guid: 6481eed8dc775c54b9d5acf3872b6993, type: 2}
+  - {fileID: 11400000, guid: f76fd1ac98841d44189ffecb05132a8b, type: 2}

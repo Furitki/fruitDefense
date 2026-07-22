@@ -55,9 +55,30 @@ namespace FruitDefense.Core
             return JsonUtility.ToJson(ExportSnapshot(), prettyPrint);
         }
 
+        public BattleSnapshotV2 ExportSnapshotV2(CompiledLevelCatalog levelCatalog)
+        {
+            var resolved = RequireSnapshotLevelCatalog(levelCatalog);
+            var gameplay = ExportSnapshot();
+            var snapshot = CreateV2Snapshot(gameplay, levelCatalog, resolved.Identity,
+                resolved.Map.GameplayFingerprint);
+            snapshot.combatRuntime = ExportCombatRuntime();
+            return snapshot;
+        }
+
+        public string ExportSnapshotV2Json(CompiledLevelCatalog levelCatalog, bool prettyPrint = false)
+        {
+            return JsonUtility.ToJson(ExportSnapshotV2(levelCatalog), prettyPrint);
+        }
+
         public string OutcomeStateChecksum()
         {
             var canonicalJson = JsonUtility.ToJson(ExportSnapshot(), false);
+            if (ActiveLevel != null)
+            {
+                canonicalJson = Identity.MapId + "\n" + Identity.WaveSetId + "\n"
+                    + Identity.RuleSetId + "\n" + canonicalJson;
+                canonicalJson += "\n" + JsonUtility.ToJson(ExportCombatRuntime(), false);
+            }
             using (var hash = SHA256.Create())
             {
                 var bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(canonicalJson));
@@ -98,16 +119,465 @@ namespace FruitDefense.Core
         public BattleSnapshotRestoreResult RestoreSnapshot(BattleSnapshotV1 snapshot,
             CompiledBattleContentCatalog availableContent)
         {
+            if (ActiveLevel != null)
+                return Failure(BattleSnapshotRestoreCode.UnsupportedSchema, "schemaVersion",
+                    "Resolved-level simulations require schema V2 or the explicit bundled V1 migration path.");
             GameState candidate;
             var result = TryBuildCandidate(snapshot, availableContent, out candidate);
             if (!result.Succeeded) return result;
+            CommitSnapshotCandidate(candidate, snapshot.randomState);
+            return BattleSnapshotRestoreResult.Ok();
+        }
 
-            _random.RestoreState(snapshot.randomState);
+        public BattleSnapshotRestoreResult RestoreSnapshotV2Json(string json,
+            CompiledLevelCatalog availableCatalog)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot JSON is empty.");
+            BattleSnapshotV2 snapshot;
+            try
+            {
+                snapshot = JsonUtility.FromJson<BattleSnapshotV2>(json);
+            }
+            catch (Exception exception)
+            {
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", exception.Message);
+            }
+            if (snapshot == null)
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot JSON produced no envelope.");
+            return RestoreSnapshotV2(snapshot, availableCatalog);
+        }
+
+        public BattleSnapshotRestoreResult RestoreSnapshotV2(BattleSnapshotV2 snapshot,
+            CompiledLevelCatalog availableCatalog)
+        {
+            ResolvedLevelDefinition resolved;
+            var identityResult = ValidateV2Identity(snapshot, availableCatalog, out resolved);
+            if (!identityResult.Succeeded) return identityResult;
+
+            GameState candidate;
+            var gameplay = CreateV1GameplaySnapshot(snapshot);
+            var result = TryBuildCandidate(gameplay, availableCatalog.BattleContent, out candidate);
+            if (!result.Succeeded) return result;
+
+            result = ApplyV2CombatRuntime(snapshot.combatRuntime, candidate,
+                availableCatalog.BattleContent);
+            if (!result.Succeeded) return result;
+
+            CommitSnapshotCandidate(candidate, snapshot.randomState);
+            return BattleSnapshotRestoreResult.Ok();
+        }
+
+        public BattleSnapshotRestoreResult RestoreLegacySnapshotV1Json(string json,
+            CompiledLevelCatalog availableCatalog)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot JSON is empty.");
+            BattleSnapshotV1 snapshot;
+            try
+            {
+                snapshot = JsonUtility.FromJson<BattleSnapshotV1>(json);
+            }
+            catch (Exception exception)
+            {
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", exception.Message);
+            }
+            if (snapshot == null)
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot JSON produced no envelope.");
+            return RestoreLegacySnapshotV1(snapshot, availableCatalog);
+        }
+
+        public BattleSnapshotRestoreResult RestoreLegacySnapshotV1(BattleSnapshotV1 snapshot,
+            CompiledLevelCatalog availableCatalog)
+        {
+            if (snapshot == null)
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot is null.");
+            if (snapshot.schemaVersion != BattleSnapshotSchema.Version)
+                return Failure(BattleSnapshotRestoreCode.UnsupportedSchema, "schemaVersion",
+                    "Legacy migration accepts only battle snapshot schema V1.");
+            if (availableCatalog == null)
+                return Failure(BattleSnapshotRestoreCode.LevelCatalogUnavailable, "catalogId",
+                    "The compiled level catalog is unavailable.");
+            if (!StringEquals(availableCatalog.CatalogId, BundledLevelCatalogIds.Catalog))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleLevelCatalog, "catalogId",
+                    "Legacy migration accepts only the supported bundled level catalog.");
+            if (!StringEquals(snapshot.catalogId, BattleContentSchema.BundledCatalogId)
+                || !StringEquals(availableCatalog.ContentCatalogId, BattleContentSchema.BundledCatalogId))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "catalogId",
+                    "Legacy migration requires the supported bundled content catalog identity.");
+            if (!StringEquals(snapshot.contentVersion, BattleContentSchema.BundledContentVersion)
+                || !StringEquals(availableCatalog.ContentVersion, BattleContentSchema.BundledContentVersion))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentVersion",
+                    "Legacy migration requires the supported bundled content version.");
+            if (!StringEquals(snapshot.mapId, BattlefieldMapDefinition.DefaultMapId))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleMap, "mapId",
+                    "Legacy migration requires an explicit orchard-01 map identity.");
+
+            var resolution = availableCatalog.Resolve(BundledLevelCatalogIds.Levels.Orchard01);
+            if (!resolution.Succeeded)
+                return Failure(BattleSnapshotRestoreCode.UnknownLevel,
+                    string.IsNullOrEmpty(resolution.Error.Field) ? "levelId" : resolution.Error.Field,
+                    "The supported orchard-01 definition is unavailable: " + resolution.Error.Message);
+            var activeResult = ValidateActiveResolvedIdentity(resolution.Value);
+            if (!activeResult.Succeeded) return activeResult;
+
+            GameState candidate;
+            var result = TryBuildCandidate(snapshot, availableCatalog.BattleContent, out candidate);
+            if (!result.Succeeded) return result;
+            CommitSnapshotCandidate(candidate, snapshot.randomState);
+            return BattleSnapshotRestoreResult.Ok();
+        }
+
+        private void CommitSnapshotCandidate(GameState candidate, uint randomState)
+        {
+            _random.RestoreState(randomState);
             State = candidate;
             _lastNurseryPotSlots.Clear();
             ResetFrameAccumulator();
             _presentationEvents.Reset();
+        }
+
+        private ResolvedLevelDefinition RequireSnapshotLevelCatalog(CompiledLevelCatalog levelCatalog)
+        {
+            if (levelCatalog == null) throw new ArgumentNullException(nameof(levelCatalog));
+            if (ActiveLevel == null || Identity == null)
+                throw new InvalidOperationException("Snapshot V2 export requires an active resolved level.");
+            if (!StringEquals(levelCatalog.ContentCatalogId, _content.Header.catalogId)
+                || !StringEquals(levelCatalog.ContentVersion, _content.Header.contentVersion))
+                throw new InvalidOperationException("Snapshot level catalog does not match the active battle content.");
+            var resolution = levelCatalog.Resolve(Identity.LevelId);
+            if (!resolution.Succeeded)
+                throw new InvalidOperationException("Active level cannot be resolved for snapshot export: "
+                    + resolution.Error);
+            var activeResult = ValidateActiveResolvedIdentity(resolution.Value);
+            if (!activeResult.Succeeded)
+                throw new InvalidOperationException("Active level cannot be exported: " + activeResult);
+            return resolution.Value;
+        }
+
+        private BattleSnapshotRestoreResult ValidateV2Identity(BattleSnapshotV2 snapshot,
+            CompiledLevelCatalog availableCatalog, out ResolvedLevelDefinition resolved)
+        {
+            resolved = null;
+            if (snapshot == null)
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "$", "Snapshot is null.");
+            if (snapshot.schemaVersion != BattleSnapshotV2Schema.Version)
+                return Failure(BattleSnapshotRestoreCode.UnsupportedSchema, "schemaVersion",
+                    "Only battle snapshot schema V2 is supported by this restore path.");
+            if (availableCatalog == null)
+                return Failure(BattleSnapshotRestoreCode.LevelCatalogUnavailable, "catalogId",
+                    "The compiled level catalog is unavailable.");
+            if (!StringEquals(snapshot.catalogId, availableCatalog.CatalogId))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleLevelCatalog, "catalogId",
+                    "Snapshot level catalog identity does not match the supplied catalog.");
+            if (!StringEquals(snapshot.contentCatalogId, availableCatalog.ContentCatalogId))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentCatalogId",
+                    "Snapshot content catalog identity does not match the supplied catalog.");
+            if (!StringEquals(snapshot.contentVersion, availableCatalog.ContentVersion))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentVersion",
+                    "Snapshot content version does not match the supplied catalog.");
+            if (availableCatalog.BattleContent == null || availableCatalog.BattleContent.Header == null
+                || !StringEquals(availableCatalog.ContentCatalogId,
+                    availableCatalog.BattleContent.Header.catalogId)
+                || !StringEquals(availableCatalog.ContentVersion,
+                    availableCatalog.BattleContent.Header.contentVersion))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentCatalogId",
+                    "The supplied level catalog has inconsistent battle content identity.");
+            if (!StringEquals(_content.Header.catalogId, availableCatalog.ContentCatalogId))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentCatalogId",
+                    "The active simulation uses a different content catalog identity.");
+            if (!StringEquals(_content.Header.contentVersion, availableCatalog.ContentVersion))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleContent, "contentVersion",
+                    "The active simulation uses a different content version.");
+
+            var resolution = availableCatalog.Resolve(snapshot.levelId);
+            if (!resolution.Succeeded)
+                return Failure(BattleSnapshotRestoreCode.UnknownLevel,
+                    string.IsNullOrEmpty(resolution.Error.Field) ? "levelId" : resolution.Error.Field,
+                    resolution.Error.Message);
+            resolved = resolution.Value;
+
+            var comparison = CompareIdentity(snapshot.mapId, resolved.Identity.MapId, "mapId");
+            if (!comparison.Succeeded) return comparison;
+            if (!string.IsNullOrEmpty(snapshot.gameplayMapFingerprint)
+                && !StringEquals(snapshot.gameplayMapFingerprint, resolved.Map.GameplayFingerprint))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleMap, "gameplayMapFingerprint",
+                    "Snapshot gameplay topology does not match the resolved map.");
+            comparison = CompareIdentity(snapshot.waveSetId, resolved.Identity.WaveSetId, "waveSetId");
+            if (!comparison.Succeeded) return comparison;
+            comparison = CompareIdentity(snapshot.ruleSetId, resolved.Identity.RuleSetId, "ruleSetId");
+            if (!comparison.Succeeded) return comparison;
+            comparison = CompareIdentity(snapshot.themeId, resolved.Identity.ThemeId, "themeId");
+            if (!comparison.Succeeded) return comparison;
+            return ValidateActiveResolvedIdentity(resolved);
+        }
+
+        private BattleSnapshotRestoreResult ValidateActiveResolvedIdentity(
+            ResolvedLevelDefinition resolved)
+        {
+            if (ActiveLevel == null || Identity == null)
+                return Failure(BattleSnapshotRestoreCode.IncompatibleLevel, "levelId",
+                    "Snapshot restore requires a simulation constructed from a resolved level.");
+            var comparison = CompareIdentity(Identity.LevelId, resolved.Identity.LevelId, "levelId");
+            if (!comparison.Succeeded) return comparison;
+            comparison = CompareIdentity(Identity.MapId, resolved.Identity.MapId, "mapId");
+            if (!comparison.Succeeded) return comparison;
+            if (!StringEquals(Map.GameplayFingerprint, resolved.Map.GameplayFingerprint))
+                return Failure(BattleSnapshotRestoreCode.IncompatibleMap, "gameplayMapFingerprint",
+                    "The active simulation uses a different gameplay topology.");
+            comparison = CompareIdentity(Identity.WaveSetId, resolved.Identity.WaveSetId, "waveSetId");
+            if (!comparison.Succeeded) return comparison;
+            comparison = CompareIdentity(Identity.RuleSetId, resolved.Identity.RuleSetId, "ruleSetId");
+            if (!comparison.Succeeded) return comparison;
+            return CompareIdentity(Identity.ThemeId, resolved.Identity.ThemeId, "themeId");
+        }
+
+        private static BattleSnapshotRestoreResult CompareIdentity(string actual,
+            string expected, string path)
+        {
+            return StringEquals(actual, expected)
+                ? BattleSnapshotRestoreResult.Ok()
+                : Failure(BattleSnapshotRestoreCode.IncompatibleLevel, path,
+                    "Snapshot or active level identity does not match the resolved " + path + ".");
+        }
+
+        private static BattleSnapshotV2 CreateV2Snapshot(BattleSnapshotV1 source,
+            CompiledLevelCatalog catalog, LevelCompositeIdentity identity,
+            string gameplayMapFingerprint)
+        {
+            return new BattleSnapshotV2
+            {
+                catalogId = catalog.CatalogId,
+                contentCatalogId = catalog.ContentCatalogId,
+                contentVersion = catalog.ContentVersion,
+                levelId = identity.LevelId,
+                mapId = identity.MapId,
+                gameplayMapFingerprint = gameplayMapFingerprint ?? string.Empty,
+                waveSetId = identity.WaveSetId,
+                ruleSetId = identity.RuleSetId,
+                themeId = identity.ThemeId,
+                logicStep = source.logicStep,
+                randomState = source.randomState,
+                randomSeed = source.randomSeed,
+                phase = source.phase,
+                paused = source.paused,
+                speed = source.speed,
+                elapsed = source.elapsed,
+                sun = source.sun,
+                lives = source.lives,
+                refreshCount = source.refreshCount,
+                waveIndex = source.waveIndex,
+                waveSpawned = source.waveSpawned,
+                waveTotal = source.waveTotal,
+                spawnCooldown = source.spawnCooldown,
+                betweenTimer = source.betweenTimer,
+                nextEntityId = source.nextEntityId,
+                nextStatusSequence = source.nextStatusSequence,
+                availablePots = source.availablePots,
+                equipment = source.equipment,
+                pots = source.pots,
+                plants = source.plants,
+                enemies = source.enemies,
+                projectiles = source.projectiles,
+            };
+        }
+
+        private static BattleSnapshotV1 CreateV1GameplaySnapshot(BattleSnapshotV2 source)
+        {
+            return new BattleSnapshotV1
+            {
+                schemaVersion = BattleSnapshotSchema.Version,
+                catalogId = source.contentCatalogId,
+                contentVersion = source.contentVersion,
+                mapId = source.mapId,
+                logicStep = source.logicStep,
+                randomState = source.randomState,
+                randomSeed = source.randomSeed,
+                phase = source.phase,
+                paused = source.paused,
+                speed = source.speed,
+                elapsed = source.elapsed,
+                sun = source.sun,
+                lives = source.lives,
+                refreshCount = source.refreshCount,
+                waveIndex = source.waveIndex,
+                waveSpawned = source.waveSpawned,
+                waveTotal = source.waveTotal,
+                spawnCooldown = source.spawnCooldown,
+                betweenTimer = source.betweenTimer,
+                nextEntityId = source.nextEntityId,
+                nextStatusSequence = source.nextStatusSequence,
+                availablePots = source.availablePots,
+                equipment = source.equipment,
+                pots = source.pots,
+                plants = source.plants,
+                enemies = source.enemies,
+                projectiles = source.projectiles,
+            };
+        }
+
+        private BattleSnapshotCombatRuntimeV2 ExportCombatRuntime()
+        {
+            var liveEntityIds = new HashSet<int>(CombatEntities().Select(value => value.Id));
+            return new BattleSnapshotCombatRuntimeV2
+            {
+                present = true,
+                nextCombatEventSequence = State.NextCombatEventSequence,
+                entities = CombatEntities().Select(entity => new BattleSnapshotEntityRuntimeV2
+                {
+                    entityId = entity.Id,
+                    passives = entity.PassiveRuntimes.OrderBy(value => value.PassiveId, StringComparer.Ordinal)
+                        .Select(value => new BattleSnapshotPassiveRuntimeV2
+                        {
+                            definitionId = value.PassiveId,
+                            cooldownTicks = value.CooldownTicks,
+                            lastRootEventSequence = value.LastRootEventSequence,
+                        }).ToArray(),
+                    statuses = entity.Statuses.OrderBy(value => value.Sequence)
+                        .Select(value => ExportRuntimeStatus(value, liveEntityIds)).ToArray(),
+                }).ToArray(),
+            };
+        }
+
+        private static BattleSnapshotStatusV1 ExportRuntimeStatus(StatusInstance value,
+            HashSet<int> liveEntityIds)
+        {
+            return new BattleSnapshotStatusV1
+            {
+                definitionId = value.DefinitionId,
+                sourceEntityId = value.SourceEntityId > 0 && liveEntityIds.Contains(value.SourceEntityId)
+                    ? value.SourceEntityId : 0,
+                remainingTicks = value.RemainingTicks,
+                stackCount = value.StackCount,
+                magnitude = value.Magnitude,
+                sequence = value.Sequence,
+                tickProgress = value.TickProgress,
+            };
+        }
+
+        private BattleSnapshotRestoreResult ApplyV2CombatRuntime(BattleSnapshotCombatRuntimeV2 runtime,
+            GameState candidate, CompiledBattleContentCatalog availableContent)
+        {
+            if (runtime == null || !runtime.present)
+            {
+                candidate.NextCombatEventSequence = 1;
+                return BattleSnapshotRestoreResult.Ok();
+            }
+            if (runtime.entities == null)
+                return Failure(BattleSnapshotRestoreCode.InvalidPayload, "combatRuntime.entities",
+                    "Combat runtime entity sidecars must not be null.");
+            if (runtime.nextCombatEventSequence <= 0)
+                return Failure(BattleSnapshotRestoreCode.InvalidIdentity,
+                    "combatRuntime.nextCombatEventSequence",
+                    "Next combat event sequence must be positive.");
+
+            var entities = candidate.Plants.Cast<CombatEntityState>().Concat(candidate.Zombies)
+                .ToDictionary(value => value.Id);
+            if (runtime.entities.Length != entities.Count)
+                return Failure(BattleSnapshotRestoreCode.InvalidReference, "combatRuntime.entities",
+                    "Combat runtime sidecars must cover every plant and enemy exactly once.");
+            var seenEntities = new HashSet<int>();
+            var seenSequences = new HashSet<int>();
+            var maxStatusSequence = 0;
+            foreach (var sidecar in runtime.entities.OrderBy(value => value == null ? 0 : value.entityId))
+            {
+                if (sidecar == null || !seenEntities.Add(sidecar.entityId)
+                    || !entities.ContainsKey(sidecar.entityId))
+                    return Failure(BattleSnapshotRestoreCode.InvalidReference, "combatRuntime.entities",
+                        "Combat runtime sidecars contain a missing, duplicate, or unknown entity ID.");
+                if (sidecar.passives == null || sidecar.statuses == null)
+                    return Failure(BattleSnapshotRestoreCode.InvalidPayload,
+                        "combatRuntime.entities[" + sidecar.entityId + "]",
+                        "Passive and status runtime arrays must not be null.");
+
+                var entity = entities[sidecar.entityId];
+                var allowedPassives = ResolveCandidatePassives(entity, availableContent);
+                var allowedIds = new HashSet<string>(allowedPassives.Select(value => value.Id), StringComparer.Ordinal);
+                var seenPassives = new HashSet<string>(StringComparer.Ordinal);
+                entity.PassiveRuntimes.Clear();
+                foreach (var passive in sidecar.passives.OrderBy(value => value.definitionId, StringComparer.Ordinal))
+                {
+                    if (passive == null || string.IsNullOrEmpty(passive.definitionId)
+                        || !allowedIds.Contains(passive.definitionId))
+                        return Failure(BattleSnapshotRestoreCode.UnknownDefinition,
+                            "combatRuntime.entities[" + sidecar.entityId + "].passives",
+                            "Passive runtime definition is unavailable for this entity.");
+                    if (!seenPassives.Add(passive.definitionId))
+                        return Failure(BattleSnapshotRestoreCode.InvalidIdentity,
+                            "combatRuntime.entities[" + sidecar.entityId + "].passives",
+                            "Passive runtime definitions must be unique per entity.");
+                    if (passive.cooldownTicks < 0 || passive.lastRootEventSequence < 0
+                        || passive.lastRootEventSequence >= runtime.nextCombatEventSequence)
+                        return Failure(BattleSnapshotRestoreCode.InvalidNumericValue,
+                            "combatRuntime.entities[" + sidecar.entityId + "].passives",
+                            "Passive cooldown or root-event sequence is outside legal bounds.");
+                    entity.PassiveRuntimes.Add(new PassiveRuntimeState
+                    {
+                        PassiveId = passive.definitionId,
+                        CooldownTicks = passive.cooldownTicks,
+                        LastRootEventSequence = passive.lastRootEventSequence,
+                    });
+                }
+
+                entity.Statuses.Clear();
+                foreach (var status in sidecar.statuses.OrderBy(value => value.sequence))
+                {
+                    CompiledStatusDefinition definition;
+                    if (status == null || string.IsNullOrEmpty(status.definitionId)
+                        || !availableContent.RuntimeStatuses.TryGetValue(status.definitionId, out definition))
+                        return Failure(BattleSnapshotRestoreCode.UnknownDefinition,
+                            "combatRuntime.entities[" + sidecar.entityId + "].statuses",
+                            "Status runtime definition is unavailable.");
+                    if (status.sourceEntityId != 0 && !entities.ContainsKey(status.sourceEntityId))
+                        return Failure(BattleSnapshotRestoreCode.InvalidReference,
+                            "combatRuntime.entities[" + sidecar.entityId + "].statuses.sourceEntityId",
+                            "Status source entity is unavailable.");
+                    if (status.remainingTicks <= 0 || status.stackCount <= 0
+                        || status.stackCount > definition.MaxStacks || !FiniteNonNegative(status.magnitude)
+                        || status.sequence <= 0 || status.tickProgress < 0
+                        || (definition.TickIntervalTicks > 0
+                            && status.tickProgress >= definition.TickIntervalTicks))
+                        return Failure(BattleSnapshotRestoreCode.InvalidNumericValue,
+                            "combatRuntime.entities[" + sidecar.entityId + "].statuses",
+                            "Status counters, magnitude, or sequence are outside legal bounds.");
+                    if (definition.Stacking == BattleStatusStackingKind.ProcAfterHits
+                        && status.stackCount >= definition.HitsToProc)
+                        return Failure(BattleSnapshotRestoreCode.InvalidNumericValue,
+                            "combatRuntime.entities[" + sidecar.entityId + "].statuses.stackCount",
+                            "Hit-count status must proc before reaching its configured threshold.");
+                    if (!seenSequences.Add(status.sequence))
+                        return Failure(BattleSnapshotRestoreCode.InvalidIdentity,
+                            "combatRuntime.entities[" + sidecar.entityId + "].statuses.sequence",
+                            "Status sequences must be globally unique.");
+                    maxStatusSequence = Math.Max(maxStatusSequence, status.sequence);
+                    entity.Statuses.Add(new StatusInstance
+                    {
+                        DefinitionId = status.definitionId,
+                        SourceEntityId = status.sourceEntityId,
+                        RemainingTicks = status.remainingTicks,
+                        StackCount = status.stackCount,
+                        Magnitude = status.magnitude,
+                        Sequence = status.sequence,
+                        TickProgress = status.tickProgress,
+                    });
+                }
+                var zombie = entity as Zombie;
+                if (zombie != null) RebuildLegacyStatusViews(candidate.Elapsed, zombie, availableContent);
+            }
+            if (candidate.NextStatusSequence <= maxStatusSequence)
+                return Failure(BattleSnapshotRestoreCode.InvalidIdentity, "nextStatusSequence",
+                    "Next status sequence must exceed every combat runtime status sequence.");
+            candidate.NextCombatEventSequence = runtime.nextCombatEventSequence;
             return BattleSnapshotRestoreResult.Ok();
+        }
+
+        private static IReadOnlyList<CompiledBattlePassive> ResolveCandidatePassives(
+            CombatEntityState entity, CompiledBattleContentCatalog content)
+        {
+            var plant = entity as Plant;
+            if (plant != null)
+                return content.ResolvePlantPassives(plant.ContentId, plant.EquipmentId);
+            return content.ResolveEnemyPassives(entity.ContentId);
         }
 
         private BattleSnapshotEquipmentV1[] ExportEquipment()
@@ -269,7 +739,7 @@ namespace FruitDefense.Core
             if (snapshot.logicStep < 0 || snapshot.randomState == 0u || snapshot.speed < 1 || snapshot.speed > 2
                 || !FiniteNonNegative(snapshot.elapsed) || snapshot.sun < 0 || snapshot.lives < 0
                 || snapshot.refreshCount < 0 || snapshot.waveIndex < 0
-                || snapshot.waveIndex > availableContent.BattleRules.maxWaves
+                || snapshot.waveIndex > _ruleSet.MaxWaves
                 || snapshot.waveSpawned < 0 || snapshot.waveTotal < 0
                 || snapshot.waveSpawned > snapshot.waveTotal || !Finite(snapshot.spawnCooldown)
                 || !FiniteNonNegative(snapshot.betweenTimer) || snapshot.availablePots < 0)
@@ -357,7 +827,7 @@ namespace FruitDefense.Core
                 }
                 else
                 {
-                    if (value.nurseryIndex < 0 || value.nurseryIndex >= availableContent.BattleRules.nurserySlotCount)
+                    if (value.nurseryIndex < 0 || value.nurseryIndex >= _ruleSet.NurserySlotCount)
                         return Failure(BattleSnapshotRestoreCode.InvalidReference,
                             "plants[" + value.entityId + "].nurseryIndex", "Nursery index is outside the catalog rules.");
                     if (!occupiedNurserySlots.Add(value.nurseryIndex))
@@ -704,12 +1174,20 @@ namespace FruitDefense.Core
 
         private static string ResolveMapIdentity(BattlefieldMapDefinition map, bool bundledDefault)
         {
+            if (!string.IsNullOrWhiteSpace(map.MapId)) return map.MapId;
             if (bundledDefault) return BattleSnapshotSchema.DefaultMapId;
+            if (map.UsesLayeredMap) return map.GameplayFingerprint;
             const ulong offset = 14695981039346656037ul;
             var hash = offset;
             AddMapHash(ref hash, map.GridWidth);
             AddMapHash(ref hash, map.GridHeight);
+            AddMapHash(ref hash, map.MapUnitsPerCell);
             AddMapHash(ref hash, map.LegacyToMapScale);
+            foreach (var cell in map.RouteCells)
+            {
+                AddMapHash(ref hash, cell.x);
+                AddMapHash(ref hash, cell.y);
+            }
             foreach (var cell in map.PlantableCells.OrderBy(value => value.x).ThenBy(value => value.y))
             {
                 AddMapHash(ref hash, cell.x);

@@ -39,9 +39,8 @@ namespace FruitDefense.Core
     }
 
     [Serializable]
-    public sealed class Plant
+    public sealed class Plant : CombatEntityState
     {
-        public int Id;
         public PlantKind Kind;
         public int Star = 1;
         public int PotId = -1;
@@ -55,9 +54,9 @@ namespace FruitDefense.Core
         public Vector2 Facing = Vector2.right;
         public float ActionStartedAt;
         public float ActionUntil;
-        public string ContentId = string.Empty;
         public string EquipmentId = string.Empty;
-        public readonly List<SkillRuntimeState> SkillRuntimes = new List<SkillRuntimeState>();
+        public override CombatFaction Faction { get { return CombatFaction.Player; } }
+        public override bool IsAlive { get { return true; } }
     }
 
     [Serializable]
@@ -98,9 +97,8 @@ namespace FruitDefense.Core
     }
 
     [Serializable]
-    public sealed class Zombie
+    public sealed class Zombie : CombatEntityState
     {
-        public int Id;
         public ZombieKind Kind;
         public float Hp;
         public float MaxHp;
@@ -113,8 +111,8 @@ namespace FruitDefense.Core
         public float HitStunUntil;
         public int IceHits;
         public readonly List<BurnStack> Burns = new List<BurnStack>();
-        public string ContentId = string.Empty;
-        public readonly List<StatusInstance> Statuses = new List<StatusInstance>();
+        public override CombatFaction Faction { get { return CombatFaction.Enemy; } }
+        public override bool IsAlive { get { return Hp > 0f; } }
     }
 
     [Serializable]
@@ -192,6 +190,7 @@ namespace FruitDefense.Core
         public int RandomSeed;
         public int LogicTick;
         public int NextStatusSequence = 1;
+        public long NextCombatEventSequence = 1;
         public readonly List<Plant> Plants = new List<Plant>();
         public readonly List<Pot> Pots = new List<Pot>();
         public readonly List<Zombie> Zombies = new List<Zombie>();

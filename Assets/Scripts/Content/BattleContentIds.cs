@@ -54,6 +54,13 @@ namespace FruitDefense.Content
             public const string Banana = "projectile.banana";
         }
 
+        public static class Passives
+        {
+            public const string IceOnHit = "passive.equipment.ice.on-hit";
+            public const string IceProducerOpening = "passive.equipment.ice.producer-opening";
+            public const string ChiliOnHit = "passive.equipment.chili.on-hit";
+        }
+
         public static class Statuses
         {
             public const string IceSlow = "status.ice.slow";

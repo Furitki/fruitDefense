@@ -42,6 +42,15 @@ namespace FruitDefense.Editor
             Assert(iceProducer.Any(skill => skill.Id == BattleContentIds.Skills.IceProducerOpening)
                 && iceProducer.All(skill => skill.Id != BattleContentIds.Skills.IceOnHit),
                 "ice grants are selected by producer tag");
+            var iceProducerPassives = catalog.ResolvePlantPassives(
+                BattleContentIds.Plants.Sunflower, BattleContentIds.Equipment.Ice);
+            Assert(iceProducerPassives.Any(value => value.Id == BattleContentIds.Passives.IceProducerOpening)
+                && iceProducerPassives.All(value => value.Id != BattleContentIds.Passives.IceOnHit),
+                "ice passives are selected independently by producer tag");
+            var iceDamagePassives = catalog.ResolvePlantPassives(
+                BattleContentIds.Plants.Pea, BattleContentIds.Equipment.Ice);
+            Assert(iceDamagePassives.Single().Id == BattleContentIds.Passives.IceOnHit,
+                "ice on-hit is a first-class passive instead of a polling skill");
             var chiliProducer = catalog.ResolvePlantSkills(BattleContentIds.Plants.Sunflower, BattleContentIds.Equipment.Chili)
                 .Single(skill => skill.Id == BattleContentIds.Skills.SunflowerProduce);
             Assert(chiliProducer.ResourceAmount == 2, "chili producer modifier adds one resource");

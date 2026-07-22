@@ -50,11 +50,19 @@ namespace FruitDefense.Content
 
         public static ZombieKind EnemyKindFromId(string id)
         {
-            if (id == BattleContentIds.Enemies.Normal) return ZombieKind.Normal;
-            if (id == BattleContentIds.Enemies.Runner) return ZombieKind.Runner;
-            if (id == BattleContentIds.Enemies.Armored) return ZombieKind.Armored;
-            if (id == BattleContentIds.Enemies.Boss) return ZombieKind.Boss;
+            ZombieKind kind;
+            if (TryEnemyKindFromId(id, out kind)) return kind;
             throw new ArgumentOutOfRangeException(nameof(id), id, "No legacy enemy enum adapter exists.");
+        }
+
+        public static bool TryEnemyKindFromId(string id, out ZombieKind kind)
+        {
+            if (id == BattleContentIds.Enemies.Normal) { kind = ZombieKind.Normal; return true; }
+            if (id == BattleContentIds.Enemies.Runner) { kind = ZombieKind.Runner; return true; }
+            if (id == BattleContentIds.Enemies.Armored) { kind = ZombieKind.Armored; return true; }
+            if (id == BattleContentIds.Enemies.Boss) { kind = ZombieKind.Boss; return true; }
+            kind = default(ZombieKind);
+            return false;
         }
 
         public static bool TryEquipment(WeaponKind kind, out string id)

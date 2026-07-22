@@ -1,3 +1,10 @@
+---
+id: p0-release-baseline
+parent: design-kb-home
+order: 20
+status: active
+---
+
 # FruitDefense P0 release baseline
 
 Recorded on 2026-07-15 for branch `codex/p0-p1-foundation` with Unity `6000.3.19f1`.

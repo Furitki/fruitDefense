@@ -1,5 +1,6 @@
 using System;
 using FruitDefense.App;
+using FruitDefense.Content;
 using FruitDefense.Core;
 using FruitDefense.Platform;
 
@@ -135,6 +136,9 @@ namespace FruitDefense.Battle
         public const string InvalidContentVersion = "battle-content-version-required";
         public const string NavigatorRequired = "battle-navigator-required";
         public const string ResultSinkRequired = "battle-result-sink-required";
+        public const string ResolvedLevelRequired = "battle-resolved-level-required";
+        public const string ResolvedLevelMismatch = "battle-resolved-level-mismatch";
+        public const string ResolvedContentMismatch = "battle-resolved-content-version-mismatch";
         public const string SimulationConstructionFailed = "battle-simulation-construction-failed";
 
         private BattleSessionInitializationResult(bool success, string errorCode)
@@ -170,6 +174,7 @@ namespace FruitDefense.Battle
         bool HasSubmittedResult { get; }
         BattleLaunchRequest CurrentRequest { get; }
         GameSimulation Simulation { get; }
+        ResolvedLevelDefinition ActiveLevel { get; }
 
         BattleSessionInitializationResult Initialize(
             BattleLaunchRequest request,
@@ -177,8 +182,17 @@ namespace FruitDefense.Battle
             IBattleResultSink resultSink,
             BattlefieldMapDefinition map = null);
 
+        BattleSessionInitializationResult Initialize(
+            BattleLaunchRequest request,
+            IAppNavigator navigator,
+            IBattleResultSink resultSink,
+            ResolvedLevelDefinition resolvedLevel);
+
         void HandlePlatformVisibility(PlatformVisibility visibility);
         bool RestartCurrentSession(out string errorCode);
+        BattleSnapshotV2 ExportCurrentSessionSnapshotV2(CompiledLevelCatalog levelCatalog);
+        BattleSnapshotRestoreResult RestoreCurrentSessionSnapshotV2(
+            BattleSnapshotV2 snapshot, CompiledLevelCatalog levelCatalog);
         bool TrySubmitTerminalResult();
         void DisposeSession();
     }
