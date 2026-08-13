@@ -144,9 +144,9 @@ for asset_path in "`$loader_path" "`$data_path" "`$framework_path" "`$wasm_path"
   digest=`$(sha256sum '$RemoteDir/dist/Build/'"`$file_name" | awk '{print `$1}')
   if [ "`${digest#`$version}" = "`$digest" ]; then echo "version does not match bytes: `$asset_path" >&2; exit 1; fi
   curl -fsSI "http://127.0.0.1:3000/Build/`$asset_path" | tr -d '\r' > "`$headers_file"
-  cache_control=`$(awk 'BEGIN{IGNORECASE=1} /^cache-control:/ {sub(/^[^:]*:[[:space:]]*/, ""); print; exit}' "`$headers_file")
-  etag=`$(awk 'BEGIN{IGNORECASE=1} /^etag:/ {sub(/^[^:]*:[[:space:]]*/, ""); print; exit}' "`$headers_file")
-  content_type=`$(awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/^[^:]*:[[:space:]]*/, ""); print; exit}' "`$headers_file")
+  cache_control=`$(sed -n 's/^[Cc]ache-[Cc]ontrol:[[:space:]]*//p' "`$headers_file" | head -n 1)
+  etag=`$(sed -n 's/^[Ee][Tt]ag:[[:space:]]*//p' "`$headers_file" | head -n 1)
+  content_type=`$(sed -n 's/^[Cc]ontent-[Tt]ype:[[:space:]]*//p' "`$headers_file" | head -n 1)
   case "`$cache_control" in *public*max-age=31536000*immutable*) ;; *) echo "invalid cache-control for `$asset_path: `$cache_control" >&2; exit 1;; esac
   if [ "`$etag" != "\"`$digest\"" ]; then echo "invalid etag for `$asset_path: `$etag" >&2; exit 1; fi
   if [[ "`$asset_path" == WebGL.loader.js* ]]; then
