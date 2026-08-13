@@ -1,7 +1,7 @@
 ## 1. Deterministic Web Payloads
 
 - [x] 1.1 Enable Unity's no-unique-identifier production WebGL build option and keep per-payload content hashing authoritative.
-- [ ] 1.2 Move the grass and soil HD bake source textures outside runtime `Resources` with their `.meta` GUIDs preserved, then verify editor-profile references and runtime atlas loads.
+- [x] 1.2 Move the grass and soil HD bake source textures outside runtime `Resources` with their `.meta` GUIDs preserved, then verify editor-profile references and runtime atlas loads.
 
 ## 2. Local Build Evidence
 
@@ -18,8 +18,8 @@
 
 ## 4. Validation and Delivery
 
-- [ ] 4.1 Run OpenSpec validation, PowerShell parser/self-checks, Unity aggregate editor smoke, and reference validation after the asset move.
-- [ ] 4.2 Build the same clean revision twice and confirm all four payload digests match; record the data-size reduction.
-- [ ] 4.3 Run local cold/warm portrait acceptance and confirm schema-3 local evidence.
-- [ ] 4.4 Publish ordinary WebGL, verify same-profile release-transition reuse plus deployed visual acceptance, and confirm schema-3 publication evidence.
-- [ ] 4.5 Update the P0 release baseline with the verified revision, payload versions, size, transition evidence, and ordinary-WebGL boundary.
+- [x] 4.1 Run OpenSpec validation, PowerShell parser/self-checks, Unity aggregate editor smoke, and reference validation after the asset move.
+- [x] 4.2 Build the same clean revision twice and confirm all four payload digests match; record the data-size reduction.
+- [x] 4.3 Run local cold/warm portrait acceptance and confirm schema-3 local evidence.
+- [x] 4.4 Publish ordinary WebGL, verify same-profile release-transition reuse plus deployed visual acceptance, and confirm schema-3 publication evidence.
+- [x] 4.5 Update the P0 release baseline with the verified revision, payload versions, size, transition evidence, and ordinary-WebGL boundary.
