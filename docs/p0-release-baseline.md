@@ -7,8 +7,8 @@ status: active
 
 # FruitDefense P0 release baseline
 
-Recorded on 2026-08-13 for the deployed `main` revision
-`cd946b7f58304e93842cf108a3cf92e31da9b6e0` with Unity `6000.3.19f1`.
+Recorded on 2026-08-14 for the deployed `main` revision
+`e9f91d3ab21031a3957aa738ec707099ae537105` with Unity `6000.3.19f1`.
 
 ## Runtime shape
 
@@ -22,13 +22,11 @@ Recorded on 2026-08-13 for the deployed `main` revision
 ## Versioned artifacts
 
 - Catalog ID/version: `catalog.bundled.orchard@1.0.0`.
-- WebGL payload versions: loader `69214ab44707`, data `22d99aec373f`,
-  framework `713319cb0c52`, and Wasm `7b18f089ae68`.
-- WebGL output: 8,753,851 bytes; entry SHA-256
-  `EB9DD988C8633C9FBFB234C37727FB63CBF48D55032BA158E8191141F99DD306`.
-- The data payload is 4,711,509 bytes. Moving editor-only HD terrain bake inputs
-  out of runtime `Resources` reduced the total artifact and data payload by
-  8,904,421 bytes from the previous deployed baseline.
+- WebGL payload versions: loader `c222dba000b7`, data `4774cd1e5a6d`,
+  framework `ecf670072498`, and Wasm `6f50b3bba3ee`.
+- WebGL output: 8,772,874 bytes; entry SHA-256
+  `3A4305C70F313C8E91D15F6C27E6FF8F7FC11DA78FE141317FA00F4ADDDEFBD4`.
+- The data payload is 4,712,677 bytes.
 - Ordinary WebGL public URL: `http://175.178.80.66:3000/`.
 
 ## Release gates
@@ -40,12 +38,13 @@ Recorded on 2026-08-13 for the deployed `main` revision
   byte lengths for all four payloads.
 - Local portrait acceptance: `scripts/accept-webgl-portrait.ps1 -ServeLocal` -> `FRUIT_DEFENSE_VISUAL_ACCEPTANCE_OK`.
 - Online publication: `scripts/publish-online.ps1 -Execute` -> `FRUIT_DEFENSE_ONLINE_PUBLISH_OK`; remote entry health and WebGL delivery headers passed.
-- Accepted local manifest: `Logs/visual-acceptance/20260813-215309/acceptance.json`.
+- Accepted local manifest: `Logs/visual-acceptance/20260814-000120/acceptance.json`.
 - Accepted deployed manifest:
-  `Logs/visual-acceptance-transition/20260813-215308-653d81c1/candidate/acceptance.json`.
-- The deployed release-N to release-N+1 transition reused loader, data, framework,
-  and Wasm with 0 expected and 0 observed payload bytes. The candidate's subsequent
-  same-release warm reload also transferred 0 payload bytes.
+  `Logs/visual-acceptance-transition/20260814-000120-ccc72256/candidate/acceptance.json`.
+- The deployed release-N to release-N+1 transition changed loader, data, framework,
+  and Wasm. It expected 8,753,071 payload bytes and observed 8,754,271 transferred
+  bytes including response overhead. The candidate's subsequent same-release warm
+  reload transferred 0 payload bytes.
 - Strong content ETags, independent payload versions, immutable matching-version
   caching, exact remote header checks, and HTML revalidation all passed.
 - Schema-3 publication manifest: `Builds/Pipeline/online-publish-manifest.json`.
