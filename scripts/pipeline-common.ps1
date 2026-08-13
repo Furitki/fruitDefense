@@ -185,7 +185,7 @@ function Get-FruitDefenseFileHash {
   return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash
 }
 
-function Get-FruitDefenseWebAssetVersions {
+function Get-FruitDefenseWebPayloadEvidence {
   param(
     [Parameter(Mandatory = $true)][string]$EntryPath
   )
@@ -201,15 +201,91 @@ function Get-FruitDefenseWebAssetVersions {
     framework = 'frameworkUrl\s*:\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
     wasm = 'codeUrl\s*:\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
   }
-  $versions = [ordered]@{}
+  $buildRoot = Split-Path -Parent $EntryPath
+  $buildDirectory = Join-Path $buildRoot 'Build'
+  $payloads = [ordered]@{}
   foreach ($role in $patterns.Keys) {
     $match = [regex]::Match($content, $patterns[$role])
     if (-not $match.Success) {
       throw "WebGL entry does not contain a valid versioned $role payload: $EntryPath"
     }
-    $versions[$role] = $match.Groups['version'].Value
+    $fileName = $match.Groups['file'].Value
+    $version = $match.Groups['version'].Value
+    $payloadPath = Join-Path $buildDirectory $fileName
+    $sha256 = (Get-FruitDefenseFileHash -Path $payloadPath).ToLowerInvariant()
+    if ($sha256.Substring(0, 12) -cne $version) {
+      throw "WebGL $role payload digest does not match its advertised version: version=$version sha256=$sha256"
+    }
+    $payloads[$role] = [ordered]@{
+      role = $role
+      fileName = $fileName
+      version = $version
+      sha256 = $sha256
+      sizeBytes = [int64](Get-Item -LiteralPath $payloadPath).Length
+    }
+  }
+  return $payloads
+}
+
+function Get-FruitDefenseWebAssetVersions {
+  param(
+    [Parameter(Mandatory = $true)][string]$EntryPath
+  )
+
+  $payloads = Get-FruitDefenseWebPayloadEvidence -EntryPath $EntryPath
+  $versions = [ordered]@{}
+  foreach ($role in $payloads.Keys) {
+    $versions[$role] = [string]$payloads[$role].version
   }
   return $versions
+}
+
+function Compare-FruitDefenseWebPayloadEvidence {
+  param(
+    [Parameter(Mandatory = $true)][System.Collections.IDictionary]$First,
+    [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Second
+  )
+
+  $roles = @('loader', 'data', 'framework', 'wasm')
+  $differences = @()
+  foreach ($role in $roles) {
+    if (-not $First.Contains($role) -or -not $Second.Contains($role)) {
+      $differences += [ordered]@{
+        role = $role
+        reason = 'missing-role'
+        firstPresent = $First.Contains($role)
+        secondPresent = $Second.Contains($role)
+      }
+      continue
+    }
+
+    $firstPayload = $First[$role]
+    $secondPayload = $Second[$role]
+    $changedFields = @()
+    foreach ($field in @('fileName', 'version', 'sha256', 'sizeBytes')) {
+      if ([string]$firstPayload[$field] -cne [string]$secondPayload[$field]) {
+        $changedFields += $field
+      }
+    }
+    if ($changedFields.Count -gt 0) {
+      $differences += [ordered]@{
+        role = $role
+        reason = 'payload-mismatch'
+        changedFields = @($changedFields)
+        first = $firstPayload
+        second = $secondPayload
+      }
+    }
+  }
+
+  return [ordered]@{
+    result = if ($differences.Count -eq 0) { 'pass' } else { 'fail' }
+    buildCount = 2
+    comparedRoles = $roles
+    differences = @($differences)
+    firstPayloads = $First
+    secondPayloads = $Second
+  }
 }
 
 function Write-FruitDefenseJson {

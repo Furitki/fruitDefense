@@ -16,6 +16,10 @@ param(
   [string]$LevelId = 'orchard-01',
   [int]$TimeoutSeconds = 45,
   [switch]$Flow,
+  [string]$ProfilePath,
+  [switch]$CacheSeedOnly,
+  [string]$CacheSeedManifestPath,
+  [string]$OutputDirectory,
   [switch]$SelfCheck
 )
 
@@ -51,12 +55,31 @@ $safeAreaEvidence = [ordered]@{
 }
 $projectRoot = Split-Path $PSScriptRoot
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$outputDir = Join-Path $OutputRoot $timestamp
-$profileDir = Join-Path $env:TEMP "fruit-defense-cdp-$([Guid]::NewGuid().ToString('N'))"
+$outputDir = if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+  Join-Path $OutputRoot $timestamp
+} else {
+  [IO.Path]::GetFullPath($OutputDirectory)
+}
+$ownsProfile = [string]::IsNullOrWhiteSpace($ProfilePath)
+$profileDir = if ($ownsProfile) {
+  Join-Path $env:TEMP "fruit-defense-cdp-$([Guid]::NewGuid().ToString('N'))"
+} else {
+  [IO.Path]::GetFullPath($ProfilePath)
+}
 $serverProcess = $null
 $chromeProcess = $null
 $socket = $null
 $script:CdpId = 0
+
+if ($CacheSeedOnly -and $ownsProfile) {
+  throw 'Cache seed mode requires -ProfilePath so the browser cache survives this run.'
+}
+if (-not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath) -and $ownsProfile) {
+  throw 'Cross-release acceptance requires -ProfilePath from the cache seed run.'
+}
+if ($CacheSeedOnly -and -not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath)) {
+  throw 'Cache seed mode cannot consume another cache seed manifest.'
+}
 
 function Set-UrlQueryParameter {
   param([string]$TargetUrl, [string]$Name, [string]$Value)
@@ -465,6 +488,59 @@ function Assert-WarmCacheTransfer {
   }
 }
 
+function Get-ReleaseTransitionEvidence {
+  param(
+    [Parameter(Mandatory = $true)][object]$SeedManifest,
+    [Parameter(Mandatory = $true)][System.Collections.Specialized.OrderedDictionary]$CandidateDelivery,
+    [Parameter(Mandatory = $true)][System.Collections.Specialized.OrderedDictionary]$CandidateRun
+  )
+
+  if ($SeedManifest.schemaVersion -ne 1 -or $SeedManifest.evidenceType -ne 'webgl-cache-seed') {
+    throw "Unsupported WebGL cache seed manifest: $CacheSeedManifestPath"
+  }
+
+  $reusedRoles = @()
+  $changedRoles = @()
+  [long]$expectedDownloadBytes = 0
+  [long]$observedCandidateTransferBytes = 0
+  foreach ($role in @('loader', 'data', 'framework', 'wasm')) {
+    $seedAssetProperty = $SeedManifest.delivery.assets.PSObject.Properties[$role]
+    if ($null -eq $seedAssetProperty) {
+      throw "WebGL cache seed manifest is missing the $role payload."
+    }
+    $seedAsset = $seedAssetProperty.Value
+    $candidateAsset = $CandidateDelivery.assets[$role]
+    $candidateTiming = $CandidateRun.assets[$role]
+    $observedCandidateTransferBytes += [long]$candidateTiming.transferSize
+    if ([string]$seedAsset.version -ceq [string]$candidateAsset.version) {
+      $reusedRoles += $role
+      $transferSize = [long]$candidateTiming.transferSize
+      if ($transferSize -gt $warmAssetTransferLimitBytes) {
+        throw "Cross-release WebGL $role payload redownloaded unchanged bytes: $transferSize > $warmAssetTransferLimitBytes"
+      }
+    }
+    else {
+      $changedRoles += $role
+      $expectedDownloadBytes += [long]$candidateAsset.contentLength
+    }
+  }
+
+  return [ordered]@{
+    state = 'compared'
+    seedManifestPath = (Resolve-Path -LiteralPath $CacheSeedManifestPath).Path
+    baselineUrl = [string]$SeedManifest.url
+    candidateUrl = $Url
+    baselineAssetVersions = $SeedManifest.delivery.assetVersions
+    candidateAssetVersions = $CandidateDelivery.assetVersions
+    reusedRoles = @($reusedRoles)
+    changedRoles = @($changedRoles)
+    expectedDownloadBytes = $expectedDownloadBytes
+    observedCandidateTransferBytes = $observedCandidateTransferBytes
+    unchangedPayloadTransferLimitBytes = $warmAssetTransferLimitBytes
+    candidateFirstLoad = $CandidateRun
+  }
+}
+
 function Invoke-CanvasClick {
   param([double]$X, [double]$Y)
   Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
@@ -767,6 +843,12 @@ function Save-StableScreenshot {
 }
 
 function Stop-OwnedChrome {
+  if ($socket -and $socket.State -eq [Net.WebSockets.WebSocketState]::Open) {
+    try { Invoke-Cdp -Method 'Browser.close' | Out-Null } catch { }
+  }
+  if ($chromeProcess -and -not $chromeProcess.HasExited) {
+    try { [void]$chromeProcess.WaitForExit(5000) } catch { }
+  }
   if ($chromeProcess -and -not $chromeProcess.HasExited) {
     Stop-Process -Id $chromeProcess.Id -Force -ErrorAction SilentlyContinue
   }
@@ -879,6 +961,47 @@ if ($SelfCheck) {
   if (-not $warmCacheGuardRejectedBody) {
     throw 'Warm-cache transfer guard self-check failed.'
   }
+  $syntheticSeedManifest = [pscustomobject]@{
+    schemaVersion = 1
+    evidenceType = 'webgl-cache-seed'
+    url = 'http://example.test/'
+    delivery = [pscustomobject]@{
+      assetVersions = [pscustomobject]@{ loader = 'aaaaaaaaaaaa'; data = 'bbbbbbbbbbbb'; framework = 'cccccccccccc'; wasm = 'dddddddddddd' }
+      assets = [pscustomobject]@{
+        loader = [pscustomobject]@{ version = 'aaaaaaaaaaaa' }
+        data = [pscustomobject]@{ version = 'bbbbbbbbbbbb' }
+        framework = [pscustomobject]@{ version = 'cccccccccccc' }
+        wasm = [pscustomobject]@{ version = 'dddddddddddd' }
+      }
+    }
+  }
+  $syntheticCandidateDelivery = [ordered]@{
+    assetVersions = [ordered]@{ loader = 'aaaaaaaaaaaa'; data = 'eeeeeeeeeeee'; framework = 'cccccccccccc'; wasm = 'dddddddddddd' }
+    assets = [ordered]@{
+      loader = [ordered]@{ version = 'aaaaaaaaaaaa'; contentLength = 10 }
+      data = [ordered]@{ version = 'eeeeeeeeeeee'; contentLength = 200 }
+      framework = [ordered]@{ version = 'cccccccccccc'; contentLength = 30 }
+      wasm = [ordered]@{ version = 'dddddddddddd'; contentLength = 40 }
+    }
+  }
+  $syntheticCandidateRun = [ordered]@{
+    totalPayloadTransferSize = 200
+    assets = [ordered]@{
+      loader = [ordered]@{ transferSize = 0 }
+      data = [ordered]@{ transferSize = 200 }
+      framework = [ordered]@{ transferSize = 0 }
+      wasm = [ordered]@{ transferSize = 0 }
+    }
+  }
+  $script:CacheSeedManifestPath = $PSCommandPath
+  $transition = Get-ReleaseTransitionEvidence `
+    -SeedManifest $syntheticSeedManifest `
+    -CandidateDelivery $syntheticCandidateDelivery `
+    -CandidateRun $syntheticCandidateRun
+  if ($transition.expectedDownloadBytes -ne 200 -or $transition.changedRoles.Count -ne 1 -or
+      $transition.changedRoles[0] -ne 'data' -or $transition.reusedRoles.Count -ne 3) {
+    throw 'Cross-release payload classification self-check failed.'
+  }
   [ordered]@{
     levelId = $LevelId
     expectedCompositeIdentity = $expectedLevelIdentity
@@ -899,6 +1022,7 @@ if ($SelfCheck) {
     compositeIdentityContract = 'pass'
      sessionLifecycleContract = 'pass'
      warmCacheTransferGuard = 'pass'
+     crossReleaseCacheGuard = 'pass'
   } | ConvertTo-Json -Depth 8
   Write-Host 'FRUIT_DEFENSE_ACCEPTANCE_SELF_CHECK_OK'
   return
@@ -1054,6 +1178,41 @@ try {
     -Label 'cold' `
     -DeliveryAssets $delivery.assets `
     -StartedAt $coldStartedAt
+  if ($CacheSeedOnly) {
+    $seedManifest = [ordered]@{
+      schemaVersion = 1
+      evidenceType = 'webgl-cache-seed'
+      accepted = $true
+      capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+      url = $Url
+      browser = $browserEvidence
+      delivery = $delivery
+      cacheRun = $coldCacheRun
+      profilePath = $profileDir
+      checks = [ordered]@{
+        unityLoaded = 'pass'
+        perAssetContentVersions = 'pass'
+        strongContentEtags = 'pass'
+        cacheSeedPersisted = 'pass'
+      }
+    }
+    $seedManifestPath = Join-Path $outputDir 'cache-seed.json'
+    $seedManifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $seedManifestPath -Encoding UTF8
+    Write-Host "FRUIT_DEFENSE_CACHE_SEED_OK manifest=$seedManifestPath"
+    return
+  }
+
+  $releaseTransition = $null
+  if (-not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath)) {
+    if (-not (Test-Path -LiteralPath $CacheSeedManifestPath -PathType Leaf)) {
+      throw "WebGL cache seed manifest not found: $CacheSeedManifestPath"
+    }
+    $seedManifest = Get-Content -LiteralPath $CacheSeedManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $releaseTransition = Get-ReleaseTransitionEvidence `
+      -SeedManifest $seedManifest `
+      -CandidateDelivery $delivery `
+      -CandidateRun $coldCacheRun
+  }
   $coldTimeOrigin = [double]$readiness.timeOrigin
   $warmStartedAt = [DateTimeOffset]::UtcNow
   Invoke-Cdp -Method 'Page.reload' -Params @{ ignoreCache = $false } | Out-Null
@@ -1098,6 +1257,11 @@ try {
   $delivery['cacheRuns'] = [ordered]@{
     cold = $coldCacheRun
     warm = $warmCacheRun
+  }
+  $delivery['releaseTransition'] = if ($null -eq $releaseTransition) {
+    [ordered]@{ state = 'not-requested' }
+  } else {
+    $releaseTransition
   }
 
   $screenshots = [ordered]@{}
@@ -1195,6 +1359,7 @@ try {
         perAssetContentVersions = 'pass'
         strongContentEtags = 'pass'
         warmCacheReuse = 'pass'
+        crossReleaseCacheReuse = if ($null -eq $releaseTransition) { 'not-requested' } else { 'pass' }
       }
       delivery = $delivery
       routeIdentities = $flowIdentities
@@ -1301,6 +1466,7 @@ try {
         immutableBuildCache = 'pass'
         revalidatableHtml = 'pass'
         warmCacheReuse = 'pass'
+        crossReleaseCacheReuse = if ($null -eq $releaseTransition) { 'not-requested' } else { 'pass' }
       unityLoaded = 'pass'
       directRouteLevelIdentity = 'pass'
       compositeIdentity = 'pass'
@@ -1362,14 +1528,14 @@ try {
   Write-Host "FRUIT_DEFENSE_VISUAL_ACCEPTANCE_OK manifest=$manifestPath"
 }
 finally {
-  if ($socket) { $socket.Dispose() }
   Stop-OwnedChrome
+  if ($socket) { $socket.Dispose() }
   if ($serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue
   }
   $tempRoot = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\') + '\'
   $resolvedProfile = [IO.Path]::GetFullPath($profileDir)
-  if ($resolvedProfile.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+  if ($ownsProfile -and $resolvedProfile.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase)) {
     Remove-Item -LiteralPath $resolvedProfile -Recurse -Force -ErrorAction SilentlyContinue
   }
 }

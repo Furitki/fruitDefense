@@ -31,6 +31,7 @@ try {
   $gitState = Get-FruitDefenseGitState -ProjectRoot $projectRoot
   $logsRoot = Join-Path $projectRoot 'Logs'
   $manifestPath = Join-Path $projectRoot 'Builds\Pipeline\local-build-manifest.json'
+  Remove-Item -LiteralPath $manifestPath -Force -ErrorAction SilentlyContinue
 
   $p0Log = Join-Path $logsRoot 'pipeline-local-p0.log'
   $p0Args = @(
@@ -49,23 +50,40 @@ try {
   $targetEvidence = @()
   foreach ($buildTarget in $requestedTargets) {
     if ($buildTarget -eq 'Web') {
+      $webFirstLog = Join-Path $logsRoot 'pipeline-local-web-first.log'
       $webLog = Join-Path $logsRoot 'pipeline-local-web.log'
       $webArgs = @(
         '-batchmode', '-nographics', '-quit',
         '-projectPath', $projectRoot,
         '-executeMethod', 'FruitDefense.Editor.WebBuild.Build',
-        '-logFile', $webLog
+        '-logFile', $webFirstLog
       )
-      $webStep = Invoke-FruitDefenseUnityBatch `
+      $firstWebStep = Invoke-FruitDefenseUnityBatch `
+        -UnityPath $UnityPath `
+        -Arguments $webArgs `
+        -LogPath $webFirstLog `
+        -SuccessPattern 'FRUIT_DEFENSE_WEB_BUILD_OK' `
+        -StepName 'WebGL deterministic build 1/2'
+
+      $webOutput = Join-Path $projectRoot 'Builds\WebGL'
+      $webEntry = Join-Path $webOutput 'index.html'
+      $firstPayloads = Get-FruitDefenseWebPayloadEvidence -EntryPath $webEntry
+
+      $webArgs[$webArgs.Count - 1] = $webLog
+      $secondWebStep = Invoke-FruitDefenseUnityBatch `
         -UnityPath $UnityPath `
         -Arguments $webArgs `
         -LogPath $webLog `
         -SuccessPattern 'FRUIT_DEFENSE_WEB_BUILD_OK' `
-        -StepName 'WebGL build'
-
-      $webOutput = Join-Path $projectRoot 'Builds\WebGL'
-      $webEntry = Join-Path $webOutput 'index.html'
-      $webAssetVersions = Get-FruitDefenseWebAssetVersions -EntryPath $webEntry
+        -StepName 'WebGL deterministic build 2/2'
+      $secondPayloads = Get-FruitDefenseWebPayloadEvidence -EntryPath $webEntry
+      $determinism = Compare-FruitDefenseWebPayloadEvidence `
+        -First $firstPayloads `
+        -Second $secondPayloads
+      if ($determinism.result -ne 'pass') {
+        $details = $determinism.differences | ConvertTo-Json -Compress -Depth 8
+        throw "WebGL payload determinism check failed: $details"
+      }
 
       $targetEvidence += [pscustomobject]@{
         target = 'Web'
@@ -73,10 +91,14 @@ try {
         primaryArtifact = $webEntry
         primarySha256 = Get-FruitDefenseFileHash -Path $webEntry
         sizeBytes = Get-FruitDefenseDirectorySize -Path $webOutput
-        assetVersions = $webAssetVersions
+        payloads = $secondPayloads
+        determinism = $determinism
         codeAssemblySha256 = $null
-        logPath = $webStep.logPath
-        durationSeconds = $webStep.durationSeconds
+        logPath = $secondWebStep.logPath
+        verificationLogPath = $firstWebStep.logPath
+        durationSeconds = [math]::Round(
+          $firstWebStep.durationSeconds + $secondWebStep.durationSeconds,
+          3)
       }
       continue
     }
@@ -104,16 +126,18 @@ try {
       primaryArtifact = $pcExecutable
       primarySha256 = Get-FruitDefenseFileHash -Path $pcExecutable
       sizeBytes = Get-FruitDefenseDirectorySize -Path $pcOutput
-      assetVersions = $null
+      payloads = $null
+      determinism = $null
       codeAssemblySha256 = Get-FruitDefenseFileHash -Path $pcAssembly
       logPath = $pcStep.logPath
+      verificationLogPath = $null
       durationSeconds = $pcStep.durationSeconds
     }
   }
 
   $pipelineFinishedAt = [DateTimeOffset]::UtcNow
   $manifest = [ordered]@{
-    schemaVersion = 2
+    schemaVersion = 3
     pipeline = 'local-build'
     requestedTarget = $Target
     unityVersion = $unityVersion

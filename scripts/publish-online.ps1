@@ -18,6 +18,7 @@ $localBuildScript = Join-Path $PSScriptRoot 'build-local.ps1'
 $deployScript = Join-Path $projectRoot 'deploy.ps1'
 $localManifestPath = Join-Path $projectRoot 'Builds\Pipeline\local-build-manifest.json'
 $publishManifestPath = Join-Path $projectRoot 'Builds\Pipeline\online-publish-manifest.json'
+$deploymentTransitionPath = Join-Path $projectRoot 'Builds\Pipeline\deployment-transition.json'
 $webEntryPath = Join-Path $projectRoot 'Builds\WebGL\index.html'
 
 if (-not (Test-Path -LiteralPath $commonScript -PathType Leaf)) {
@@ -36,7 +37,7 @@ function Get-ValidatedWebEvidence {
     throw "Local build manifest not found: $ManifestPath"
   }
   $manifest = Get-Content -LiteralPath $ManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-  if ($manifest.schemaVersion -ne 2 -or $manifest.pipeline -ne 'local-build') {
+  if ($manifest.schemaVersion -ne 3 -or $manifest.pipeline -ne 'local-build') {
     throw "Unsupported local build manifest: $ManifestPath"
   }
   if ($manifest.gitRevision -ne $ExpectedRevision) {
@@ -58,11 +59,20 @@ function Get-ValidatedWebEvidence {
   if ($currentHash -ne $webEvidence[0].primarySha256) {
     throw 'Current WebGL index hash does not match the local build manifest.'
   }
-  $currentAssetVersions = Get-FruitDefenseWebAssetVersions -EntryPath $WebEntryPath
-  foreach ($role in $currentAssetVersions.Keys) {
-    $evidenceVersion = $webEvidence[0].assetVersions.PSObject.Properties[$role]
-    if ($null -eq $evidenceVersion -or [string]$evidenceVersion.Value -ne [string]$currentAssetVersions[$role]) {
-      throw "Current WebGL $role version does not match the local build manifest."
+  if ([string]$webEvidence[0].determinism.result -ne 'pass') {
+    throw 'Local Web build manifest does not contain a passed deterministic comparison.'
+  }
+  $currentPayloads = Get-FruitDefenseWebPayloadEvidence -EntryPath $WebEntryPath
+  foreach ($role in $currentPayloads.Keys) {
+    $evidenceProperty = $webEvidence[0].payloads.PSObject.Properties[$role]
+    if ($null -eq $evidenceProperty) {
+      throw "Local Web build manifest is missing the $role payload."
+    }
+    $evidencePayload = $evidenceProperty.Value
+    foreach ($field in @('fileName', 'version', 'sha256', 'sizeBytes')) {
+      if ([string]$evidencePayload.$field -cne [string]$currentPayloads[$role][$field]) {
+        throw "Current WebGL $role $field does not match the local build manifest."
+      }
     }
   }
 
@@ -139,8 +149,18 @@ $publishStartedAt = [DateTimeOffset]::UtcNow
   -SkipBuild
 $publishFinishedAt = [DateTimeOffset]::UtcNow
 
+if (-not (Test-Path -LiteralPath $deploymentTransitionPath -PathType Leaf)) {
+  throw "Deployment transition evidence not found: $deploymentTransitionPath"
+}
+$deploymentTransition = Get-Content -LiteralPath $deploymentTransitionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ($deploymentTransition.schemaVersion -ne 1 -or
+    $deploymentTransition.evidenceType -ne 'webgl-release-transition' -or
+    -not [bool]$deploymentTransition.accepted) {
+  throw "Invalid deployment transition evidence: $deploymentTransitionPath"
+}
+
 $publishManifest = [ordered]@{
-  schemaVersion = 2
+  schemaVersion = 3
   pipeline = 'online-publish'
   target = 'ordinary-webgl'
   gitRevision = $gitState.revision
@@ -149,13 +169,17 @@ $publishManifest = [ordered]@{
   user = $User
   remoteDir = $RemoteDir
   publicUrl = "http://${Server}:3000/"
-  webAssetVersions = $webEvidence.assetVersions
+  webPayloads = $webEvidence.payloads
+  deterministicBuild = $webEvidence.determinism
   webEntrySha256 = $webEvidence.primarySha256
   webSizeBytes = $webEvidence.sizeBytes
   localManifestPath = $localManifestPath
   startedAtUtc = $publishStartedAt.ToString('o')
   finishedAtUtc = $publishFinishedAt.ToString('o')
   durationSeconds = [math]::Round(($publishFinishedAt - $publishStartedAt).TotalSeconds, 3)
+  releaseTransition = $deploymentTransition.releaseTransition
+  deploymentTransitionPath = $deploymentTransitionPath
+  deployedAcceptancePath = $deploymentTransition.candidateManifestPath
   miniGameRelease = $false
 }
 Write-FruitDefenseJson -Value $publishManifest -Path $publishManifestPath

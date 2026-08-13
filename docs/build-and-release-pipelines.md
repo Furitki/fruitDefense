@@ -33,9 +33,10 @@ Generated outputs:
 | `Builds/WebGL/` | Ordinary WebGL artifact |
 | `Builds/Windows/` | Local Windows preview artifact |
 | `Logs/pipeline-local-p0.log` | Unified P0 gate log |
-| `Logs/pipeline-local-web.log` | WebGL build log |
+| `Logs/pipeline-local-web-first.log` | First deterministic WebGL verification build log |
+| `Logs/pipeline-local-web.log` | Second deterministic WebGL build log for the retained candidate |
 | `Logs/pipeline-local-pc.log` | Windows build log |
-| `Builds/Pipeline/local-build-manifest.json` | Revision, dirty state, target, size, hash, per-payload WebGL versions, duration, and log evidence |
+| `Builds/Pipeline/local-build-manifest.json` | Revision, dirty state, target, size, per-payload WebGL full hashes/versions/lengths, two-build comparison, duration, and log evidence |
 
 Local preview builds may use uncommitted source. The manifest records `dirtyBeforeBuild`; this evidence is deliberately rejected by the online pipeline.
 
@@ -83,9 +84,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish-online.ps1 `
   -KeyPath "$HOME\.ssh\id_ed25519"
 ```
 
-After the source/artifact gates pass, the pipeline delegates to `deploy.ps1 -SkipBuild`. That workflow remains responsible for local portrait acceptance, archive/upload, remote service replacement, entry health, WebGL delivery headers, service status, and deployed acceptance. Local and deployed acceptance each use a fresh browser profile for a cold launch followed by a same-profile warm reload; publication fails if any advertised payload body is downloaded again during the warm run.
+After the source/artifact gates pass, the pipeline delegates to `deploy.ps1 -SkipBuild`. That workflow remains responsible for local portrait acceptance, seeding the current public release into a persistent browser profile, archive/upload, remote service replacement, entry health, WebGL delivery headers, service status, and deployed acceptance. Local acceptance still performs a cold launch followed by a same-profile warm reload. Deployment opens release N before replacement and release N+1 after replacement in the same browser profile; publication fails if an unchanged advertised payload body is downloaded again. Candidate acceptance then repeats a same-release warm reload for the new release.
 
-WebGL payloads use independent SHA-256-derived versions. Unchanged loader, data, framework, or WebAssembly bytes therefore retain their cache key when a different payload changes. The static service grants immutable caching only when the requested version matches the served content and emits a strong content-hash ETag. Local and online pipeline manifests use schema version 2 and store the four payload versions instead of one shared Web content version; old schema-1 build evidence must be rebuilt rather than reused.
+WebGL payloads use independent SHA-256-derived versions. The production build suppresses Unity's per-build unique identifier, and the local pipeline builds WebGL twice; all four full payload hashes and byte lengths must match before the second output becomes publishable. Unchanged loader, data, framework, or WebAssembly bytes therefore retain their cache key when a different payload changes. The static service grants immutable caching only when the requested version matches the served content and emits a strong content-hash ETag.
+
+Local and online pipeline manifests use schema version 3. Local evidence stores the four complete payload records plus the deterministic comparison. Online evidence classifies payload roles as reused or changed and records expected and observed release-transition download bytes. Older manifest schemas must be rebuilt rather than reused.
 
 Successful publication writes `Builds/Pipeline/online-publish-manifest.json` and emits:
 

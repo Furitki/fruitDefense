@@ -40,7 +40,9 @@ namespace FruitDefense.Editor
                 scenes = scenes,
                 locationPathName = outputPath,
                 target = BuildTarget.WebGL,
-                options = BuildOptions.None,
+                // Keep byte-identical source inputs on one stable cache identity. Unity's
+                // generated build GUID is otherwise embedded in the Web data package.
+                options = BuildOptions.NoUniqueIdentifier,
             };
 
             var report = BuildPipeline.BuildPlayer(options);

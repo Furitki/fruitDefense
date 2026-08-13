@@ -10,9 +10,9 @@ namespace FruitDefense.Editor
     public static class DualGridTextureTileSetGenerator
     {
         public const string SourceTexturePath =
-            "Assets/Resources/TempArt/cartoon-grass-seamless-hd.png";
+            "Assets/ArtSources/TempArt/cartoon-grass-seamless-hd.png";
         public const string SoilTexturePath =
-            "Assets/Resources/TempArt/cartoon-soil-seamless-hd.png";
+            "Assets/ArtSources/TempArt/cartoon-soil-seamless-hd.png";
         public const string OutputFolder = "Assets/DualGridDemo/CartoonGrass";
         public const string DefaultProfilePath = OutputFolder + "/CartoonGrassBakeProfile.asset";
         public const string TileSetPath = OutputFolder + "/CartoonGrassDualGridTileSet.asset";
