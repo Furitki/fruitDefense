@@ -146,9 +146,10 @@ for asset_path in "`$loader_path" "`$data_path" "`$framework_path" "`$wasm_path"
   curl -fsSI "http://127.0.0.1:3000/Build/`$asset_path" | tr -d '\r' > "`$headers_file"
   cache_control=`$(sed -n 's/^[Cc]ache-[Cc]ontrol:[[:space:]]*//p' "`$headers_file" | head -n 1)
   etag=`$(sed -n 's/^[Ee][Tt]ag:[[:space:]]*//p' "`$headers_file" | head -n 1)
+  etag_digest=`$(printf '%s' "`$etag" | tr -d '\042')
   content_type=`$(sed -n 's/^[Cc]ontent-[Tt]ype:[[:space:]]*//p' "`$headers_file" | head -n 1)
   case "`$cache_control" in *public*max-age=31536000*immutable*) ;; *) echo "invalid cache-control for `$asset_path: `$cache_control" >&2; exit 1;; esac
-  if [ "`$etag" != "\"`$digest\"" ]; then echo "invalid etag for `$asset_path: `$etag" >&2; exit 1; fi
+  if [ "`$etag_digest" != "`$digest" ]; then echo "invalid etag for `$asset_path: `$etag" >&2; exit 1; fi
   if [[ "`$asset_path" == WebGL.loader.js* ]]; then
     case "`$content_type" in text/javascript*) ;; *) echo "invalid loader content-type: `$content_type" >&2; exit 1;; esac
   else
