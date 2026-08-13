@@ -827,7 +827,7 @@ namespace FruitDefense.Content
                 var cell = new Vector2Int(x, y);
                 var index = CellIndex(cell);
                 var landform = route.Contains(cell)
-                    ? BattlefieldLayerIds.Surfaces.StoneRoad
+                    ? string.Empty
                     : gameplayCells[index].HasCapability(BattlefieldLayerIds.Capabilities.Plantable)
                         ? BattlefieldLayerIds.Surfaces.Grass : string.Empty;
                 visualCells[index] = new BattlefieldVisualCellAuthoringRecord(

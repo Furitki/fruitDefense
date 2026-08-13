@@ -82,7 +82,7 @@ namespace FruitDefense.Editor
             var soilLandform = RequireAsset<DualGridTileSet>(SoilLandformTileSetPath);
             var grassOnSoil = RequireAsset<DualGridTileSet>(GrassOnSoilEdgeTileSetPath);
             var squareGrass = RequireAsset<DualGridTileSet>(
-                SquareTerrainArtProfile.GrassLandformTileSetPath);
+                ProjectSetup.BattlefieldGrassTileSetPath);
             var squareSoil = RequireAsset<DualGridTileSet>(
                 SquareTerrainArtProfile.SoilLandformTileSetPath);
             var squareStoneRoad = RequireAsset<DualGridTileSet>(

@@ -97,6 +97,7 @@ namespace FruitDefense
         private const float MergeHintMinWidth = 92f;
         private const float MergeHintMaxWidth = 160f;
         private const float MergeHintHeight = 24f;
+        private const float TerrainTileSeamOverlap = .75f;
 
         private GameSimulation _game;
         private readonly BattlePresentationBuffer _presentation = new BattlePresentationBuffer();
@@ -1569,6 +1570,26 @@ namespace FruitDefense
         private void DrawBattlefieldBaseLayer(BattlefieldMapDefinition map, Rect grid,
             BattlefieldTerrainPalette palette)
         {
+            var uniformSurfaceId = map.BaseSurfaceAt(Vector2Int.zero);
+            var uniformBase = true;
+            for (var cellY = 0; cellY < map.GridHeight && uniformBase; cellY++)
+            for (var cellX = 0; cellX < map.GridWidth; cellX++)
+                if (!string.Equals(map.BaseSurfaceAt(new Vector2Int(cellX, cellY)),
+                        uniformSurfaceId, StringComparison.Ordinal))
+                {
+                    uniformBase = false;
+                    break;
+                }
+
+            Texture2D uniformTexture;
+            if (uniformBase && palette.TryGetBaseTexture(uniformSurfaceId, out uniformTexture))
+            {
+                GUI.DrawTextureWithTexCoords(new Rect(0f, 0f, grid.width, grid.height),
+                    uniformTexture,
+                    BattlefieldDualGridTerrain.BaseTextureUv(map, null, uniformTexture), true);
+                return;
+            }
+
             for (var cellY = 0; cellY < map.GridHeight; cellY++)
             for (var cellX = 0; cellX < map.GridWidth; cellX++)
             {
@@ -1595,7 +1616,7 @@ namespace FruitDefense
                 var rect = BattlefieldDualGridTerrain.VisualTileRect(
                     Projection, vertexX, vertexY);
                 rect.position -= grid.position;
-                GUI.DrawTextureWithTexCoords(rect, sprite.texture,
+                GUI.DrawTextureWithTexCoords(Grow(rect, TerrainTileSeamOverlap), sprite.texture,
                     BattlefieldDualGridTerrain.SpriteUv(sprite), true);
             }
         }
@@ -1616,7 +1637,7 @@ namespace FruitDefense
                 var rect = BattlefieldDualGridTerrain.VisualTileRect(
                     Projection, vertexX, vertexY);
                 rect.position -= grid.position;
-                GUI.DrawTextureWithTexCoords(rect, sprite.texture,
+                GUI.DrawTextureWithTexCoords(Grow(rect, TerrainTileSeamOverlap), sprite.texture,
                     BattlefieldDualGridTerrain.SpriteUv(sprite), true);
             }
         }
@@ -1655,6 +1676,7 @@ namespace FruitDefense
             // by reverting to the legacy plantable-cell terrain treatment.
             if (!texturedTerrain) return;
             var expansionActive = _potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot);
+            if (!expansionActive) return;
             var plantable = ThemeColor(theme => theme.PlantableColor, new Color(.58f, .72f, .36f));
             foreach (var cell in _game.Map.PlantableCells)
             {
@@ -1822,16 +1844,20 @@ namespace FruitDefense
             foreach (var zombie in _game.State.Zombies)
             {
                 var point = ToBoard(_game.Map.Route.Sample(zombie.PathProgress));
-                var size = Projection.LegacyVisualSize(48f);
+                var size = Projection.LegacyVisualSize(96f);
                 var rect = new Rect(point.x - size * .5f, point.y - size * .5f, size, size);
                 var frozen = zombie.FreezeUntil > _game.State.Elapsed;
+                var slowed = zombie.SlowUntil > _game.State.Elapsed;
                 if (frozen) DrawVfxSprite(Grow(rect, 4f), CombatSprite.FrozenAura, new Color(1f, 1f, 1f, .82f));
-                DrawRect(Grow(rect, 1f), frozen ? new Color(.45f, .8f, 1f) : new Color(.33f, .19f, .18f));
-                DrawRect(rect, zombie.SlowUntil > _game.State.Elapsed ? new Color(.45f, .65f, .75f) : new Color(.52f, .34f, .26f));
-                DrawTempSprite(rect, ZombieSprite(zombie.Kind), zombie.HitStunUntil > _game.State.Elapsed ? new Color(1f, 1f, 1f, .58f) : Color.white);
+                var tint = slowed ? new Color(.72f, .9f, 1f) : Color.white;
+                if (zombie.HitStunUntil > _game.State.Elapsed)
+                    tint = Color.Lerp(tint, Color.white, .72f);
+                DrawTempSprite(rect, ZombieSprite(zombie.Kind), tint);
                 if (zombie.Burns.Count > 0)
                     DrawVfxSprite(new Rect(rect.xMax - 5f, rect.y - 6f, 11f, 11f), CombatSprite.Burning);
-                var healthRect = new Rect(point.x - size * .5f, rect.y - 4f, size, 2f);
+                var healthWidth = Projection.LegacyVisualSize(80f);
+                var healthRect = new Rect(point.x - healthWidth * .5f, rect.y - 3f,
+                    healthWidth, 2f);
                 DrawRect(healthRect, new Color(.22f, .16f, .12f));
                 healthRect.width *= Mathf.Clamp01(zombie.Hp / zombie.MaxHp);
                 DrawRect(healthRect, new Color(.85f, .22f, .16f));

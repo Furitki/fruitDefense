@@ -100,15 +100,28 @@ for attempt in `$(seq 1 20); do
 done
 curl -fsS http://127.0.0.1:3000/ >/dev/null
 echo 'remote entry health check passed'
-wasm_path=`$(grep -o 'WebGL\.wasm\.unityweb?v=[0-9a-f]\{12\}' '$RemoteDir/dist/index.html' | head -n 1)
-test -n "`$wasm_path"
 headers_file=/tmp/fruit-defense-webgl-headers
-curl -fsSI "http://127.0.0.1:3000/Build/`$wasm_path" | tr -d '\r' > "`$headers_file"
-grep -qi '^content-type: application/octet-stream' "`$headers_file"
-if grep -qi '^content-encoding:' "`$headers_file"; then cat "`$headers_file" >&2; rm -f "`$headers_file"; exit 1; fi
-grep -Eqi '^cache-control: .*max-age=31536000.*immutable' "`$headers_file"
+loader_path=`$(grep -o 'WebGL\.loader\.js?v=[0-9a-f]\{12\}' '$RemoteDir/dist/index.html' | head -n 1)
+data_path=`$(grep -o 'WebGL\.data\.unityweb?v=[0-9a-f]\{12\}' '$RemoteDir/dist/index.html' | head -n 1)
+framework_path=`$(grep -o 'WebGL\.framework\.js\.unityweb?v=[0-9a-f]\{12\}' '$RemoteDir/dist/index.html' | head -n 1)
+wasm_path=`$(grep -o 'WebGL\.wasm\.unityweb?v=[0-9a-f]\{12\}' '$RemoteDir/dist/index.html' | head -n 1)
+for asset_path in "`$loader_path" "`$data_path" "`$framework_path" "`$wasm_path"; do
+  test -n "`$asset_path"
+  version=`$(printf '%s' "`$asset_path" | sed 's/^.*?v=//')
+  curl -fsSI "http://127.0.0.1:3000/Build/`$asset_path" | tr -d '\r' > "`$headers_file"
+  grep -Eqi '^cache-control: .*max-age=31536000.*immutable' "`$headers_file"
+  grep -Eqi "^etag: \"`$version[0-9a-f]{52}\"$" "`$headers_file"
+  if [[ "`$asset_path" == WebGL.loader.js* ]]; then
+    grep -qi '^content-type: text/javascript' "`$headers_file"
+  else
+    grep -qi '^content-type: application/octet-stream' "`$headers_file"
+  fi
+  if grep -qi '^content-encoding:' "`$headers_file"; then cat "`$headers_file" >&2; rm -f "`$headers_file"; exit 1; fi
+done
+curl -fsSI "http://127.0.0.1:3000/Build/WebGL.wasm.unityweb?v=000000000000" | tr -d '\r' > "`$headers_file"
+if grep -Eqi '^cache-control: .*immutable' "`$headers_file"; then cat "`$headers_file" >&2; rm -f "`$headers_file"; exit 1; fi
 rm -f "`$headers_file"
-echo 'remote WebGL delivery headers passed'
+echo 'remote WebGL per-asset delivery headers passed'
 bash '$RemoteDir/deploy/service.sh' status
 "@
   $remoteCommand = $remoteCommand.Replace("`r`n", "`n").Trim()

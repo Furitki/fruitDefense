@@ -228,10 +228,10 @@ namespace FruitDefense.Editor
                 {
                     Assert(asset.TryGetVisual(routeCell, out var visual)
                         && visual.BaseSurfaceId == BattlefieldLayerIds.Surfaces.Soil
-                        && visual.LandformSurfaceId == BattlefieldLayerIds.Surfaces.StoneRoad
-                        && visual.ContourStyleId == BattlefieldLayerIds.ContourStyles.Square
+                        && string.IsNullOrEmpty(visual.LandformSurfaceId)
+                        && string.IsNullOrEmpty(visual.ContourStyleId)
                         && string.IsNullOrEmpty(visual.EdgeStyleId),
-                        "recommendation paints semantic stone-road route cells");
+                        "recommendation leaves monster-route cells as base-only dirt");
                 }
                 Assert(asset.TryGetVisual(new Vector2Int(0, 1), out var plantableVisual)
                     && plantableVisual.LandformSurfaceId == BattlefieldLayerIds.Surfaces.Grass

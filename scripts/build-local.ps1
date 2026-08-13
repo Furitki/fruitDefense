@@ -65,11 +65,7 @@ try {
 
       $webOutput = Join-Path $projectRoot 'Builds\WebGL'
       $webEntry = Join-Path $webOutput 'index.html'
-      $webMarker = Select-String -LiteralPath $webLog -Pattern 'FRUIT_DEFENSE_WEB_BUILD_OK' |
-        Select-Object -Last 1
-      if (-not $webMarker -or $webMarker.Line -notmatch 'version=([0-9a-f]{12})') {
-        throw "WebGL build content version is missing from $webLog"
-      }
+      $webAssetVersions = Get-FruitDefenseWebAssetVersions -EntryPath $webEntry
 
       $targetEvidence += [pscustomobject]@{
         target = 'Web'
@@ -77,7 +73,7 @@ try {
         primaryArtifact = $webEntry
         primarySha256 = Get-FruitDefenseFileHash -Path $webEntry
         sizeBytes = Get-FruitDefenseDirectorySize -Path $webOutput
-        contentVersion = $Matches[1]
+        assetVersions = $webAssetVersions
         codeAssemblySha256 = $null
         logPath = $webStep.logPath
         durationSeconds = $webStep.durationSeconds
@@ -108,7 +104,7 @@ try {
       primaryArtifact = $pcExecutable
       primarySha256 = Get-FruitDefenseFileHash -Path $pcExecutable
       sizeBytes = Get-FruitDefenseDirectorySize -Path $pcOutput
-      contentVersion = $null
+      assetVersions = $null
       codeAssemblySha256 = Get-FruitDefenseFileHash -Path $pcAssembly
       logPath = $pcStep.logPath
       durationSeconds = $pcStep.durationSeconds
@@ -117,7 +113,7 @@ try {
 
   $pipelineFinishedAt = [DateTimeOffset]::UtcNow
   $manifest = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     pipeline = 'local-build'
     requestedTarget = $Target
     unityVersion = $unityVersion

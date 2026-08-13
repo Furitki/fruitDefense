@@ -1,10 +1,12 @@
-import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 import http from 'node:http'
 import { basename, extname, join, normalize, resolve, sep } from 'node:path'
 
 const rootDir = resolve(process.env.STATIC_ROOT ?? './dist')
 const buildRoot = resolve(join(rootDir, 'Build'))
 const port = Number(process.env.PORT ?? 3000)
+const contentHashes = new Map()
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -17,6 +19,15 @@ const mimeTypes = {
   '.wasm': 'application/wasm',
 }
 
+const getContentHash = (filePath) => {
+  let hash = contentHashes.get(filePath)
+  if (!hash) {
+    hash = createHash('sha256').update(readFileSync(filePath)).digest('hex')
+    contentHashes.set(filePath, hash)
+  }
+  return hash
+}
+
 const sendFile = (request, response, filePath, url) => {
   const compressionExtension = extname(filePath)
   const compressed = compressionExtension === '.gz' || compressionExtension === '.br'
@@ -24,11 +35,12 @@ const sendFile = (request, response, filePath, url) => {
     ? extname(basename(filePath, compressionExtension))
     : extname(filePath)
   const stats = statSync(filePath)
-  const etag = `W/"${stats.size.toString(16)}-${Math.trunc(stats.mtimeMs).toString(16)}"`
+  const contentHash = getContentHash(filePath)
+  const etag = `"${contentHash}"`
   const isBuildFile = filePath === buildRoot || filePath.startsWith(`${buildRoot}${sep}`)
   const isVersionedBuildAsset = isBuildFile
     && url.pathname.startsWith('/Build/')
-    && Boolean(url.searchParams.get('v'))
+    && url.searchParams.get('v') === contentHash.slice(0, 12)
   const headers = {
     'Cache-Control': isVersionedBuildAsset
       ? 'public, max-age=31536000, immutable'

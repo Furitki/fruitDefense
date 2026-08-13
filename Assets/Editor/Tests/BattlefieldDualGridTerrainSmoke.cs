@@ -32,6 +32,11 @@ namespace FruitDefense.Editor
             var terrainValid = BattlefieldDualGridTerrain.Validate(palette, out var terrainReason);
             Assert(terrainValid,
                 "battlefield terrain assets validate: " + terrainReason);
+            Assert(AssetDatabase.GetAssetPath(grassTileSet)
+                    == ProjectSetup.BattlefieldGrassTileSetPath
+                && AssetDatabase.GetAssetPath(baseTexture)
+                    == ProjectSetup.BattlefieldTerrainBaseTexturePath,
+                "release battlefield uses the third registered grass-on-soil brush outputs");
             ValidateImportedArt(grassTileSet, "grass");
             ValidateImportedArt(routeTileSet, "route");
             ValidateBaseTexture(baseTexture);
@@ -60,7 +65,7 @@ namespace FruitDefense.Editor
                     + map.MapId);
                 Assert(BattlefieldDualGridTerrain.Validate(map, palette, out terrainReason),
                     "map requires only exact contour palette bindings: " + terrainReason);
-                ValidateMap(map, grassTileSet, routeTileSet, baseTexture);
+                ValidateMap(map, grassTileSet, routeTileSet, baseTexture, true);
             }
             Assert(validatedMapIds.SetEquals(expectedMapIds),
                 "every unique current catalog map participates in terrain validation");
@@ -82,7 +87,7 @@ namespace FruitDefense.Editor
                     acceptanceMap, palette, out terrainReason),
                 "isolated acceptance map requires exact contour palette bindings: "
                 + terrainReason);
-            ValidateMap(acceptanceMap, grassTileSet, routeTileSet, baseTexture);
+            ValidateMap(acceptanceMap, grassTileSet, routeTileSet, baseTexture, false);
 
             ValidateSetupBinding(palette, grassTileSet, routeTileSet, baseTexture);
             ValidateReleaseSceneBinding(palette, grassTileSet, routeTileSet, baseTexture);
@@ -124,7 +129,7 @@ namespace FruitDefense.Editor
                 && !importer.mipmapEnabled && importer.wrapMode == TextureWrapMode.Repeat,
                 "battlefield terrain base texture preserves painterly sampling");
             Assert(baseTexture.width == 64 && baseTexture.height == 64,
-                "battlefield terrain base texture matches the active Runtime64 tile contract");
+                "battlefield terrain base texture matches the selected Runtime64 brush contract");
         }
 
         private static void ValidateDirectedEdges(BattlefieldTerrainPalette palette)
@@ -342,7 +347,8 @@ namespace FruitDefense.Editor
         }
 
         private static void ValidateMap(BattlefieldMapDefinition map,
-            DualGridTileSet grassTileSet, DualGridTileSet routeTileSet, Texture2D baseTexture)
+            DualGridTileSet grassTileSet, DualGridTileSet routeTileSet, Texture2D baseTexture,
+            bool expectBaseOnlyDirtRoute)
         {
             Assert(map != null, "terrain map is present");
             Assert(map.UsesLayeredMap, "terrain map uses layered semantic surfaces");
@@ -351,6 +357,12 @@ namespace FruitDefense.Editor
             Assert(BattlefieldDualGridTerrain.VisualTileCount(map)
                 == (map.GridWidth + 1) * (map.GridHeight + 1),
                 "terrain visual count covers every vertex: " + map.MapId);
+            if (expectBaseOnlyDirtRoute)
+                Assert(map.RouteCells.All(cell =>
+                        map.BaseSurfaceAt(cell) == BattlefieldLayerIds.Surfaces.Soil
+                        && string.IsNullOrEmpty(map.LandformSurfaceAt(cell))
+                        && string.IsNullOrEmpty(map.ContourStyleAt(cell))),
+                    "bundled monster route renders as base-only dirt: " + map.MapId);
 
             var projection = new BattlefieldProjection(map, ReferenceBoardRect);
             var grassMasks = new HashSet<DualGridMask>();
@@ -371,14 +383,17 @@ namespace FruitDefense.Editor
                 Assert(actualGrass == expectedGrass,
                     "grass mask matches plantable corners for " + map.MapId
                     + " at (" + vertexX + "," + vertexY + ")");
-                var expectedRoute = ExpectedMask(map, vertexX, vertexY,
-                    BattlefieldLayerIds.Surfaces.StoneRoad,
-                    BattlefieldLayerIds.ContourStyles.Square);
                 var actualRoute = BattlefieldDualGridTerrain.ResolveLandformMask(map,
                     vertexX, vertexY, BattlefieldLayerIds.Surfaces.StoneRoad,
                     BattlefieldLayerIds.ContourStyles.Square);
-                Assert(actualRoute == expectedRoute,
-                    "route mask matches monster-route corners for " + map.MapId
+                var expectedRoute = ExpectedMask(map, vertexX, vertexY,
+                    BattlefieldLayerIds.Surfaces.StoneRoad,
+                    BattlefieldLayerIds.ContourStyles.Square);
+                Assert(actualRoute == expectedRoute
+                        && (!expectBaseOnlyDirtRoute || actualRoute == DualGridMask.Empty),
+                    (expectBaseOnlyDirtRoute
+                        ? "dirt monster route has no stone-road overlay for "
+                        : "authored route mask matches route corners for ") + map.MapId
                     + " at (" + vertexX + "," + vertexY + ")");
                 Assert(((int)actualGrass & (int)actualRoute) == 0,
                     "grass and route do not occupy the same logical corner for " + map.MapId
@@ -409,8 +424,9 @@ namespace FruitDefense.Editor
 
             Assert(grassFullCount > 0 && grassTransitionCount > 0 && grassMasks.Count > 1,
                 "terrain map exercises full grass and transition masks: " + map.MapId);
-            Assert(routeNonEmptyCount > 0 && routeTransitionCount > 0 && routeMasks.Count > 1,
-                "terrain map exercises stone-route transition masks: " + map.MapId);
+            if (!expectBaseOnlyDirtRoute)
+                Assert(routeNonEmptyCount > 0 && routeTransitionCount > 0 && routeMasks.Count > 1,
+                    "acceptance map exercises authored route transition masks: " + map.MapId);
             var first = BattlefieldDualGridTerrain.VisualTileRect(projection, 0, 0);
             var last = BattlefieldDualGridTerrain.VisualTileRect(
                 projection, map.GridWidth, map.GridHeight);

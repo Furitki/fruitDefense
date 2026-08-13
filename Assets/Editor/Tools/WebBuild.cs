@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -65,12 +64,15 @@ namespace FruitDefense.Editor
                 throw new InvalidOperationException(
                     $"Expected four versioned WebGL payloads, found {payloadPaths.Length}.");
 
-            var buildVersion = CreateContentVersion(payloadPaths);
+            var payloadVersions = payloadPaths.ToDictionary(
+                path => Path.GetFileName(path),
+                CreateContentVersion,
+                StringComparer.Ordinal);
             foreach (var payloadPath in payloadPaths)
             {
                 var fileName = Path.GetFileName(payloadPath);
                 var source = $"/{fileName}\"";
-                var versioned = $"/{fileName}?v={buildVersion}\"";
+                var versioned = $"/{fileName}?v={payloadVersions[fileName]}\"";
                 if (!indexHtml.Contains(source))
                     throw new InvalidOperationException(
                         $"WebGL index does not reference generated payload: {fileName}");
@@ -91,28 +93,19 @@ namespace FruitDefense.Editor
                 .Sum(path => new FileInfo(path).Length);
             var payloadSummary = string.Join(
                 ", ",
-                payloadPaths.Select(path => $"{Path.GetFileName(path)}={new FileInfo(path).Length}"));
+                payloadPaths.Select(path =>
+                    $"{Path.GetFileName(path)}:version={payloadVersions[Path.GetFileName(path)]}"
+                    + $":size={new FileInfo(path).Length}"));
             Debug.Log(
                 $"FRUIT_DEFENSE_WEB_BUILD_OK path={outputPath} compression=BrotliFallback "
-                + $"stripping=High version={buildVersion} size={outputSize} payloads=[{payloadSummary}]");
+                + $"stripping=High size={outputSize} payloads=[{payloadSummary}]");
         }
 
-        private static string CreateContentVersion(string[] payloadPaths)
+        private static string CreateContentVersion(string payloadPath)
         {
-            var fingerprint = new StringBuilder();
-            foreach (var path in payloadPaths)
-            {
-                using var stream = File.OpenRead(path);
-                using var fileHash = SHA256.Create();
-                fingerprint.Append(Path.GetFileName(path));
-                fingerprint.Append(':');
-                fingerprint.Append(BitConverter.ToString(fileHash.ComputeHash(stream)).Replace("-", string.Empty));
-                fingerprint.Append(';');
-            }
-
-            using var buildHash = SHA256.Create();
-            var digest = buildHash.ComputeHash(Encoding.UTF8.GetBytes(fingerprint.ToString()));
-            return BitConverter.ToString(digest)
+            using var stream = File.OpenRead(payloadPath);
+            using var fileHash = SHA256.Create();
+            return BitConverter.ToString(fileHash.ComputeHash(stream))
                 .Replace("-", string.Empty)
                 .Substring(0, 12)
                 .ToLowerInvariant();

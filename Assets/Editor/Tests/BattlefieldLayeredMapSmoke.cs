@@ -94,10 +94,11 @@ namespace FruitDefense.Editor
                 "unknown edge style");
 
             var partialExactEdge = source.VisualCells.ToArray();
-            partialExactEdge[0] = new BattlefieldVisualCellSource(
-                partialExactEdge[0].BaseSurfaceId,
-                partialExactEdge[0].LandformSurfaceId,
-                partialExactEdge[0].ContourStyleId,
+            const int grassCellIndex = 4;
+            partialExactEdge[grassCellIndex] = new BattlefieldVisualCellSource(
+                partialExactEdge[grassCellIndex].BaseSurfaceId,
+                partialExactEdge[grassCellIndex].LandformSurfaceId,
+                partialExactEdge[grassCellIndex].ContourStyleId,
                 BattlefieldLayerIds.EdgeStyles.Refined);
             ExpectIssue(Copy(source, visualCells: partialExactEdge),
                 "edge.shared-region-mix",

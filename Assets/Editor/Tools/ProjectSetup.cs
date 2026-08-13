@@ -14,7 +14,7 @@ namespace FruitDefense.Editor
     public static class ProjectSetup
     {
         internal const string BattlefieldGrassTileSetPath =
-            SquareTerrainArtProfile.GrassLandformTileSetPath;
+            "Assets/LayeredTerrain/CompositeBrushes/GrassSoil/GrassSoilCompositeTileSet.asset";
         internal const string BattlefieldRouteTileSetPath =
             SquareTerrainArtProfile.StoneRoadLandformTileSetPath;
         internal const string BattlefieldTerrainBaseTexturePath =
@@ -313,14 +313,14 @@ namespace FruitDefense.Editor
                 && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
                     surface => surface == BattlefieldLayerIds.Surfaces.Grass) == 35
                 && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
-                    surface => surface == BattlefieldLayerIds.Surfaces.StoneRoad) == 20
+                    surface => surface == BattlefieldLayerIds.Surfaces.StoneRoad) == 0
                 && System.Linq.Enumerable.Count(map.VisualSurfaceIds,
-                    surface => surface == BattlefieldLayerIds.Surfaces.Soil) == 1
+                    surface => surface == BattlefieldLayerIds.Surfaces.Soil) == 21
                 && System.Linq.Enumerable.Count(map.GameplayCells,
                     cell => cell.Has(BattlefieldCellCapabilities.Plantable)) == 35
                 && System.Linq.Enumerable.Count(map.GameplayCells,
                     cell => cell.Has(BattlefieldCellCapabilities.EnemyTraversable)) == 20,
-                "orchard-01 has independent visual-surface and gameplay-capability coverage");
+                "orchard-01 uses grass landforms and base-only dirt routes independently from gameplay capabilities");
             Assert(map.PlantableCells.Count == System.Linq.Enumerable.Count(System.Linq.Enumerable.Distinct(map.PlantableCells)),
                 "default battlefield cells are unique");
 

@@ -152,7 +152,7 @@ namespace FruitDefense.Editor
                 palettes, "publication.template-missing");
 
             var partialEdge = CreatePublishableMap("map.smoke.invalid.partial-edge");
-            SetVisualEdgeStyle(partialEdge, 0, BattlefieldLayerIds.EdgeStyles.Refined);
+            SetVisualEdgeStyle(partialEdge, 4, BattlefieldLayerIds.EdgeStyles.Refined);
             ExpectBuildFailure(Manifest(Entry(0,
                     "level.smoke.invalid.partial-edge", partialEdge)), palettes,
                 "canonical.edge.shared-region-mix");

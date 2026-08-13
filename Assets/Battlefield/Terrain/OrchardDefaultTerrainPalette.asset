@@ -42,7 +42,7 @@ MonoBehaviour:
     tileSet: {fileID: 11400000, guid: 897d878e9497c6e4d935ea42058d6001, type: 2}
   - surfaceId: surface.grass
     contourStyleId: contour.square
-    tileSet: {fileID: 11400000, guid: ef399dc10411dd84ab6a276f72e506ea, type: 2}
+    tileSet: {fileID: 11400000, guid: b57b287881df5404a9320385b2898ecb, type: 2}
   - surfaceId: surface.stone-road
     contourStyleId: contour.square
     tileSet: {fileID: 11400000, guid: 0a6730ef0e26d5b49b9ae3129ee21909, type: 2}

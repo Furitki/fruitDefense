@@ -36,7 +36,7 @@ function Get-ValidatedWebEvidence {
     throw "Local build manifest not found: $ManifestPath"
   }
   $manifest = Get-Content -LiteralPath $ManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-  if ($manifest.schemaVersion -ne 1 -or $manifest.pipeline -ne 'local-build') {
+  if ($manifest.schemaVersion -ne 2 -or $manifest.pipeline -ne 'local-build') {
     throw "Unsupported local build manifest: $ManifestPath"
   }
   if ($manifest.gitRevision -ne $ExpectedRevision) {
@@ -57,6 +57,13 @@ function Get-ValidatedWebEvidence {
   $currentHash = Get-FruitDefenseFileHash -Path $WebEntryPath
   if ($currentHash -ne $webEvidence[0].primarySha256) {
     throw 'Current WebGL index hash does not match the local build manifest.'
+  }
+  $currentAssetVersions = Get-FruitDefenseWebAssetVersions -EntryPath $WebEntryPath
+  foreach ($role in $currentAssetVersions.Keys) {
+    $evidenceVersion = $webEvidence[0].assetVersions.PSObject.Properties[$role]
+    if ($null -eq $evidenceVersion -or [string]$evidenceVersion.Value -ne [string]$currentAssetVersions[$role]) {
+      throw "Current WebGL $role version does not match the local build manifest."
+    }
   }
 
   return $webEvidence[0]
@@ -133,7 +140,7 @@ $publishStartedAt = [DateTimeOffset]::UtcNow
 $publishFinishedAt = [DateTimeOffset]::UtcNow
 
 $publishManifest = [ordered]@{
-  schemaVersion = 1
+  schemaVersion = 2
   pipeline = 'online-publish'
   target = 'ordinary-webgl'
   gitRevision = $gitState.revision
@@ -142,7 +149,7 @@ $publishManifest = [ordered]@{
   user = $User
   remoteDir = $RemoteDir
   publicUrl = "http://${Server}:3000/"
-  webContentVersion = $webEvidence.contentVersion
+  webAssetVersions = $webEvidence.assetVersions
   webEntrySha256 = $webEvidence.primarySha256
   webSizeBytes = $webEvidence.sizeBytes
   localManifestPath = $localManifestPath

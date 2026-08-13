@@ -185,6 +185,33 @@ function Get-FruitDefenseFileHash {
   return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash
 }
 
+function Get-FruitDefenseWebAssetVersions {
+  param(
+    [Parameter(Mandatory = $true)][string]$EntryPath
+  )
+
+  if (-not (Test-Path -LiteralPath $EntryPath -PathType Leaf)) {
+    throw "WebGL entry file not found: $EntryPath"
+  }
+
+  $content = Get-Content -LiteralPath $EntryPath -Raw -Encoding UTF8
+  $patterns = [ordered]@{
+    loader = 'loaderUrl\s*=\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
+    data = 'dataUrl\s*:\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
+    framework = 'frameworkUrl\s*:\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
+    wasm = 'codeUrl\s*:\s*buildUrl\s*\+\s*"/(?<file>[^"?]+)\?v=(?<version>[0-9a-f]{12})"'
+  }
+  $versions = [ordered]@{}
+  foreach ($role in $patterns.Keys) {
+    $match = [regex]::Match($content, $patterns[$role])
+    if (-not $match.Success) {
+      throw "WebGL entry does not contain a valid versioned $role payload: $EntryPath"
+    }
+    $versions[$role] = $match.Groups['version'].Value
+  }
+  return $versions
+}
+
 function Write-FruitDefenseJson {
   param(
     [Parameter(Mandatory = $true)]$Value,

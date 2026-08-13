@@ -1060,9 +1060,7 @@ namespace FruitDefense.Core
                 if (routeLookup.Contains(cell))
                 {
                     visuals[index] = new BattlefieldVisualCellSource(
-                        BattlefieldLayerIds.Surfaces.Soil,
-                        BattlefieldLayerIds.Surfaces.StoneRoad,
-                        BattlefieldLayerIds.ContourStyles.Square, string.Empty);
+                        BattlefieldLayerIds.Surfaces.Soil);
                     gameplay[index] = new BattlefieldGameplayCellSource(
                         new[] { BattlefieldLayerIds.Capabilities.EnemyTraversable });
                 }

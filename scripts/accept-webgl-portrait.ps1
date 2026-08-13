@@ -159,6 +159,8 @@ $framePixelThresholds = [ordered]@{
   maxNearBlackFraction = $maxNearBlackFraction
   maxInvalidFraction = 0.05
 }
+$warmAssetTransferLimitBytes = 16KB
+$warmTotalTransferLimitBytes = 64KB
 $expectedLevelIdentities = [ordered]@{
   'orchard-01' = [ordered]@{
     levelId = 'orchard-01'; mapId = 'orchard-01'
@@ -225,7 +227,7 @@ function Get-UnityDeliveryMetadata {
     wasm = 'application/octet-stream'
   }
   $assets = [ordered]@{}
-  $versions = New-Object System.Collections.Generic.List[string]
+  $assetVersions = [ordered]@{}
 
   foreach ($name in $patterns.Keys) {
     $match = [regex]::Match($PageResponse.Content, $patterns[$name])
@@ -242,7 +244,7 @@ function Get-UnityDeliveryMetadata {
     if ($version -notmatch '^[0-9a-f]{12}$') {
       throw "WebGL $name asset has an invalid content version: $version"
     }
-    $versions.Add($version)
+    $assetVersions[$name] = $version
 
     $response = Invoke-WebRequest -UseBasicParsing -Method Head -Uri $assetUri.AbsoluteUri -TimeoutSec 15
     $cacheControl = [string]$response.Headers['Cache-Control']
@@ -267,23 +269,35 @@ function Get-UnityDeliveryMetadata {
       }
     }
 
+    $etag = [string]$response.Headers['ETag']
+    $etagMatch = [regex]::Match($etag, '^"(?<sha256>[0-9a-f]{64})"$')
+    if (-not $etagMatch.Success -or
+        $etagMatch.Groups['sha256'].Value.Substring(0, 12) -cne $version) {
+      throw "WebGL $name asset ETag does not identify its advertised content version: version=$version etag=$etag"
+    }
+
+    $wrongVersion = if ($version -ceq '000000000000') { '111111111111' } else { '000000000000' }
+    $wrongVersionUrl = Set-UrlQueryParameter -TargetUrl $assetUri.AbsoluteUri -Name 'v' -Value $wrongVersion
+    $wrongVersionResponse = Invoke-WebRequest -UseBasicParsing -Method Head -Uri $wrongVersionUrl -TimeoutSec 15
+    $wrongVersionCacheControl = [string]$wrongVersionResponse.Headers['Cache-Control']
+    if ($wrongVersionCacheControl -match 'immutable') {
+      throw "WebGL $name asset grants immutable caching to an incorrect version: $wrongVersionCacheControl"
+    }
+
     $assets[$name] = [ordered]@{
       url = $assetUri.AbsoluteUri
+      version = $version
       contentType = $contentType
       contentEncoding = $contentEncoding
       cacheControl = $cacheControl
       contentLength = $contentLength
-      etag = [string]$response.Headers['ETag']
+      etag = $etag
+      contentSha256 = $etagMatch.Groups['sha256'].Value
     }
   }
 
-  $uniqueVersions = @($versions | Select-Object -Unique)
-  if ($uniqueVersions.Count -ne 1) {
-    throw "WebGL assets do not share one content version: $($uniqueVersions -join ', ')"
-  }
-
   return [ordered]@{
-    version = $uniqueVersions[0]
+    assetVersions = $assetVersions
     htmlCacheControl = $htmlCacheControl
     assets = $assets
   }
@@ -364,6 +378,91 @@ function Invoke-JavaScript {
   $valueProperty = $remoteObjectProperty.Value.PSObject.Properties['value']
   if ($null -eq $valueProperty) { return $null }
   return $valueProperty.Value
+}
+
+function Get-UnityResourceTiming {
+  param(
+    [Parameter(Mandatory = $true)][string]$Label,
+    [Parameter(Mandatory = $true)][System.Collections.Specialized.OrderedDictionary]$DeliveryAssets,
+    [Parameter(Mandatory = $true)][DateTimeOffset]$StartedAt
+  )
+
+  $expectedAssets = @(
+    foreach ($role in $DeliveryAssets.Keys) {
+      [ordered]@{ role = $role; url = [string]$DeliveryAssets[$role].url }
+    }
+  )
+  $expectedJson = ConvertTo-Json -InputObject $expectedAssets -Compress -Depth 4
+  $expression = @"
+(() => {
+  const expectedAssets = $expectedJson;
+  const entries = performance.getEntriesByType('resource');
+  return JSON.stringify(expectedAssets.map(asset => {
+    const matches = entries.filter(entry => entry.name === asset.url);
+    if (!matches.length) return { role: asset.role, url: asset.url, missing: true };
+    const entry = matches[matches.length - 1];
+    return {
+      role: asset.role,
+      url: asset.url,
+      missing: false,
+      startTimeMilliseconds: Math.round(entry.startTime * 1000) / 1000,
+      durationMilliseconds: Math.round(entry.duration * 1000) / 1000,
+      transferSize: entry.transferSize,
+      encodedBodySize: entry.encodedBodySize,
+      decodedBodySize: entry.decodedBodySize,
+      responseStatus: entry.responseStatus || 0,
+      deliveryType: entry.deliveryType || '',
+      nextHopProtocol: entry.nextHopProtocol || ''
+    };
+  }));
+})()
+"@
+  $timings = (Invoke-JavaScript -Expression $expression) | ConvertFrom-Json
+  $assets = [ordered]@{}
+  [long]$totalTransferSize = 0
+  foreach ($timing in $timings) {
+    if ($timing.missing) {
+      throw "Browser resource timing is missing the $($timing.role) payload: $($timing.url)"
+    }
+    $assets[[string]$timing.role] = [ordered]@{
+      url = [string]$timing.url
+      startTimeMilliseconds = [double]$timing.startTimeMilliseconds
+      durationMilliseconds = [double]$timing.durationMilliseconds
+      transferSize = [long]$timing.transferSize
+      encodedBodySize = [long]$timing.encodedBodySize
+      decodedBodySize = [long]$timing.decodedBodySize
+      responseStatus = [int]$timing.responseStatus
+      deliveryType = [string]$timing.deliveryType
+      nextHopProtocol = [string]$timing.nextHopProtocol
+    }
+    $totalTransferSize += [long]$timing.transferSize
+  }
+
+  $completedAt = [DateTimeOffset]::UtcNow
+  return [ordered]@{
+    label = $Label
+    startedAtUtc = $StartedAt.ToString('o')
+    completedAtUtc = $completedAt.ToString('o')
+    startupDurationMilliseconds = [math]::Round(($completedAt - $StartedAt).TotalMilliseconds, 3)
+    totalPayloadTransferSize = $totalTransferSize
+    assets = $assets
+  }
+}
+
+function Assert-WarmCacheTransfer {
+  param(
+    [Parameter(Mandatory = $true)][System.Collections.Specialized.OrderedDictionary]$WarmRun
+  )
+
+  foreach ($role in $WarmRun.assets.Keys) {
+    $transferSize = [long]$WarmRun.assets[$role].transferSize
+    if ($transferSize -gt $warmAssetTransferLimitBytes) {
+      throw "Warm WebGL $role payload redownloaded too many bytes: $transferSize > $warmAssetTransferLimitBytes"
+    }
+  }
+  if ([long]$WarmRun.totalPayloadTransferSize -gt $warmTotalTransferLimitBytes) {
+    throw "Warm WebGL payload transfer exceeded the total allowance: $($WarmRun.totalPayloadTransferSize) > $warmTotalTransferLimitBytes"
+  }
 }
 
 function Invoke-CanvasClick {
@@ -763,6 +862,23 @@ if ($SelfCheck) {
     -Actual $syntheticSettlementIdentity -Stage 'self-check-settlement'
   Assert-FreshSession -Previous $syntheticSettlementIdentity `
     -Actual $syntheticRetryIdentity -Stage 'self-check-retry'
+  $syntheticWarmRun = [ordered]@{
+    totalPayloadTransferSize = 1200
+    assets = [ordered]@{
+      loader = [ordered]@{ transferSize = 300 }
+      data = [ordered]@{ transferSize = 300 }
+      framework = [ordered]@{ transferSize = 300 }
+      wasm = [ordered]@{ transferSize = 300 }
+    }
+  }
+  Assert-WarmCacheTransfer -WarmRun $syntheticWarmRun
+  $syntheticWarmRun.assets.data.transferSize = $warmAssetTransferLimitBytes + 1
+  $warmCacheGuardRejectedBody = $false
+  try { Assert-WarmCacheTransfer -WarmRun $syntheticWarmRun }
+  catch { $warmCacheGuardRejectedBody = $true }
+  if (-not $warmCacheGuardRejectedBody) {
+    throw 'Warm-cache transfer guard self-check failed.'
+  }
   [ordered]@{
     levelId = $LevelId
     expectedCompositeIdentity = $expectedLevelIdentity
@@ -781,7 +897,8 @@ if ($SelfCheck) {
     blackFrameGuard = 'pass'
     shellControlMapping = 'pass'
     compositeIdentityContract = 'pass'
-    sessionLifecycleContract = 'pass'
+     sessionLifecycleContract = 'pass'
+     warmCacheTransferGuard = 'pass'
   } | ConvertTo-Json -Depth 8
   Write-Host 'FRUIT_DEFENSE_ACCEPTANCE_SELF_CHECK_OK'
   return
@@ -834,6 +951,7 @@ try {
     "--window-size=$Width,$Height", '--force-device-scale-factor=1',
     "--remote-debugging-port=$debugPort", "--user-data-dir=$profileDir", $Url
   )
+  $coldStartedAt = [DateTimeOffset]::UtcNow
   $chromeProcess = Start-Process -FilePath $ChromePath -ArgumentList $chromeArgs -WindowStyle Hidden -PassThru
 
   $debugUrl = "http://127.0.0.1:$debugPort/json"
@@ -904,6 +1022,7 @@ try {
     innerWidth: window.innerWidth,
     innerHeight: window.innerHeight,
     devicePixelRatio: window.devicePixelRatio,
+    timeOrigin: performance.timeOrigin,
     loading: loading ? getComputedStyle(loading).display : 'missing',
     warning: warning ? warning.textContent.trim() : '',
     acceptanceReady: !!window.fruitDefenseUnityInstance,
@@ -929,6 +1048,56 @@ try {
   if ($readiness.warning) { throw "Unity player warning: $($readiness.warning)" }
   if (-not $viewportReady -or -not $canvasReady) {
     throw "Chrome viewport or Unity canvas did not resolve to ${Width}x${Height}. state=$($readiness | ConvertTo-Json -Compress)"
+  }
+
+  $coldCacheRun = Get-UnityResourceTiming `
+    -Label 'cold' `
+    -DeliveryAssets $delivery.assets `
+    -StartedAt $coldStartedAt
+  $coldTimeOrigin = [double]$readiness.timeOrigin
+  $warmStartedAt = [DateTimeOffset]::UtcNow
+  Invoke-Cdp -Method 'Page.reload' -Params @{ ignoreCache = $false } | Out-Null
+
+  $warmReadiness = $null
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  do {
+    try {
+      $candidateReadiness = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
+      $newDocument = [Math]::Abs([double]$candidateReadiness.timeOrigin - $coldTimeOrigin) -gt 0.001
+      $warmViewportReady = $candidateReadiness.innerWidth -eq $Width -and $candidateReadiness.innerHeight -eq $Height
+      $warmCanvasReady = $candidateReadiness.width -eq $Width -and $candidateReadiness.height -eq $Height -and
+        [Math]::Abs([double]$candidateReadiness.cssWidth - $Width) -lt 0.51 -and
+        [Math]::Abs([double]$candidateReadiness.cssHeight - $Height) -lt 0.51
+      if ($newDocument -and $candidateReadiness.canvas -and
+          $candidateReadiness.loading -eq 'none' -and $candidateReadiness.acceptanceReady -and
+          $warmViewportReady -and $warmCanvasReady) {
+        $warmReadiness = $candidateReadiness
+        break
+      }
+    }
+    catch {
+      # Navigation can temporarily destroy the Runtime execution context.
+    }
+    Start-Sleep -Milliseconds 400
+  } while ((Get-Date) -lt $deadline)
+  if ($null -eq $warmReadiness) {
+    throw 'Warm WebGL reload did not finish in a new browser document.'
+  }
+  if ($warmReadiness.warning) { throw "Unity player warning after warm reload: $($warmReadiness.warning)" }
+
+  $readiness = $warmReadiness
+  $warmCacheRun = Get-UnityResourceTiming `
+    -Label 'warm' `
+    -DeliveryAssets $delivery.assets `
+    -StartedAt $warmStartedAt
+  Assert-WarmCacheTransfer -WarmRun $warmCacheRun
+  $delivery['cacheLimits'] = [ordered]@{
+    perAssetTransferBytes = $warmAssetTransferLimitBytes
+    totalTransferBytes = $warmTotalTransferLimitBytes
+  }
+  $delivery['cacheRuns'] = [ordered]@{
+    cold = $coldCacheRun
+    warm = $warmCacheRun
   }
 
   $screenshots = [ordered]@{}
@@ -1023,6 +1192,9 @@ try {
         safeAreaQueryApplied = 'pass'
         noBlackOrTransparentFrames = 'pass'
         noLargeNearBlackRegions = 'pass'
+        perAssetContentVersions = 'pass'
+        strongContentEtags = 'pass'
+        warmCacheReuse = 'pass'
       }
       delivery = $delivery
       routeIdentities = $flowIdentities
@@ -1120,13 +1292,15 @@ try {
     safeArea = $safeAreaEvidence
     browser = $browserEvidence
     canvas = $readiness
-    checks = [ordered]@{
-      http = 'pass'
-      wasm = 'pass'
-      contentVersion = 'pass'
-      brotliFallbackDelivery = 'pass'
-      immutableBuildCache = 'pass'
-      revalidatableHtml = 'pass'
+      checks = [ordered]@{
+        http = 'pass'
+        wasm = 'pass'
+        perAssetContentVersions = 'pass'
+        strongContentEtags = 'pass'
+        brotliFallbackDelivery = 'pass'
+        immutableBuildCache = 'pass'
+        revalidatableHtml = 'pass'
+        warmCacheReuse = 'pass'
       unityLoaded = 'pass'
       directRouteLevelIdentity = 'pass'
       compositeIdentity = 'pass'
