@@ -46,7 +46,7 @@ function Get-ValidatedWebEvidence {
     throw 'Local Web build manifest records a dirty source tree and cannot be published.'
   }
 
-  $webEvidence = @($manifest.targets) | Where-Object { $_.target -eq 'Web' }
+  $webEvidence = @(@($manifest.targets) | Where-Object { $_.target -eq 'Web' })
   if ($webEvidence.Count -ne 1) {
     throw 'Local build manifest does not contain exactly one successful Web target.'
   }
