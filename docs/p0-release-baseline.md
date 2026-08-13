@@ -7,8 +7,8 @@ status: active
 
 # FruitDefense P0 release baseline
 
-Recorded on 2026-08-13 for local branch `main` at revision
-`8497ccf58bfadc495ba86fa7748ec6aad109dbaa` with Unity `6000.3.19f1`.
+Recorded on 2026-08-13 for the deployed `main` revision
+`85142849f6a3883f3837fc3e9bcd981090a24f2d` with Unity `6000.3.19f1`.
 
 ## Runtime shape
 
@@ -22,9 +22,10 @@ Recorded on 2026-08-13 for local branch `main` at revision
 ## Versioned artifacts
 
 - Catalog ID/version: `catalog.bundled.orchard@1.0.0`.
-- WebGL content version: `f80e7e90b714`.
-- WebGL output: 17,704,265 bytes; entry SHA-256
-  `69C64E79EB82DAFCBD10B5E817301594C0B262E7A530981345B4BDC757851E7A`.
+- WebGL payload versions: loader `69214ab44707`, data `e939d5c1273f`,
+  framework `713319cb0c52`, and Wasm `7b18f089ae68`.
+- WebGL output: 17,658,272 bytes; entry SHA-256
+  `72C82E7BEC80FC498E934D42D44F7BBB9C67951A1CC4DC419430DFFB86818BD9`.
 - Ordinary WebGL public URL: `http://175.178.80.66:3000/`.
 
 ## Release gates
@@ -34,9 +35,12 @@ Recorded on 2026-08-13 for local branch `main` at revision
 - WebGL build: `FruitDefense.Editor.WebBuild.Build` -> `FRUIT_DEFENSE_WEB_BUILD_OK`.
 - Local portrait acceptance: `scripts/accept-webgl-portrait.ps1 -ServeLocal` -> `FRUIT_DEFENSE_VISUAL_ACCEPTANCE_OK`.
 - Online publication: `scripts/publish-online.ps1 -Execute` -> `FRUIT_DEFENSE_ONLINE_PUBLISH_OK`; remote entry health and WebGL delivery headers passed.
-- Accepted local manifest: `Logs/visual-acceptance/20260813-175033/acceptance.json`.
-- Accepted deployed manifest: `Logs/visual-acceptance/20260813-175100/acceptance.json`.
-- Publication manifest: `Builds/Pipeline/online-publish-manifest.json`.
+- Accepted local manifest: `Logs/visual-acceptance/20260813-205224/acceptance.json`.
+- Accepted deployed manifest: `Logs/visual-acceptance/20260813-205257/acceptance.json`.
+- The deployed warm reload transferred 0 WebGL payload bytes; strong content ETags,
+  independent payload versions, immutable matching-version caching, and HTML
+  revalidation all passed.
+- Schema-2 publication manifest: `Builds/Pipeline/online-publish-manifest.json`.
 
 ## Deferred to P1
 
