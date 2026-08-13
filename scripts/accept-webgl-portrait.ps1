@@ -319,9 +319,24 @@ function Invoke-Cdp {
       [Net.WebSockets.WebSocketMessageType]::Text,
       $true,
       $cts.Token).GetAwaiter().GetResult() | Out-Null
-    do { $message = Receive-CdpMessage -WebSocket $socket -Token $cts.Token } while ($message.id -ne $id)
-    if ($message.error) { throw "CDP $Method failed: $($message.error.message)" }
-    return $message.result
+    do {
+      $message = Receive-CdpMessage -WebSocket $socket -Token $cts.Token
+      $messageId = $message.PSObject.Properties['id']
+    } while ($null -eq $messageId -or [int]$messageId.Value -ne $id)
+    $errorProperty = $message.PSObject.Properties['error']
+    if ($null -ne $errorProperty) {
+      $errorValue = $errorProperty.Value
+      $errorMessage = $errorValue.PSObject.Properties['message']
+      $errorText = if ($null -ne $errorMessage) {
+        [string]$errorMessage.Value
+      } else {
+        $errorValue | ConvertTo-Json -Compress -Depth 8
+      }
+      throw "CDP $Method failed: $errorText"
+    }
+    $resultProperty = $message.PSObject.Properties['result']
+    if ($null -eq $resultProperty) { throw "CDP $Method returned no result." }
+    return $resultProperty.Value
   }
   finally { $cts.Dispose() }
 }
@@ -333,8 +348,22 @@ function Invoke-JavaScript {
     returnByValue = $true
     awaitPromise = $true
   }
-  if ($result.exceptionDetails) { throw "Browser JavaScript failed: $($result.exceptionDetails.text)" }
-  return $result.result.value
+  $exceptionProperty = $result.PSObject.Properties['exceptionDetails']
+  if ($null -ne $exceptionProperty) {
+    $details = $exceptionProperty.Value
+    $textProperty = $details.PSObject.Properties['text']
+    $description = if ($null -ne $textProperty) {
+      [string]$textProperty.Value
+    } else {
+      $details | ConvertTo-Json -Compress -Depth 8
+    }
+    throw "Browser JavaScript failed: $description"
+  }
+  $remoteObjectProperty = $result.PSObject.Properties['result']
+  if ($null -eq $remoteObjectProperty) { throw 'Browser JavaScript returned no remote object.' }
+  $valueProperty = $remoteObjectProperty.Value.PSObject.Properties['value']
+  if ($null -eq $valueProperty) { return $null }
+  return $valueProperty.Value
 }
 
 function Invoke-CanvasClick {
@@ -514,9 +543,12 @@ function Save-Screenshot {
   $capture = Invoke-Cdp -Method 'Page.captureScreenshot' -Params @{
     format = 'png'; fromSurface = $true; captureBeyondViewport = $false
   }
-  if (-not $capture.data) { throw "Screenshot did not return image data: $Name" }
+  $dataProperty = $capture.PSObject.Properties['data']
+  if ($null -eq $dataProperty -or [string]::IsNullOrWhiteSpace([string]$dataProperty.Value)) {
+    throw "Screenshot did not return image data: $Name"
+  }
   $path = Join-Path $outputDir "$Name.png"
-  [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($capture.data))
+  [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String([string]$dataProperty.Value))
   if (-not (Test-Path -LiteralPath $path) -or (Get-Item $path).Length -lt 1024) {
     throw "Screenshot is missing or unexpectedly small: $path"
   }
@@ -811,7 +843,10 @@ try {
       $rawTargets = Invoke-RestMethod -Uri $debugUrl -TimeoutSec 3
       $target = $null
       foreach ($candidate in $rawTargets) {
-        if ($candidate.type -eq 'page' -and $candidate.url -eq $Url) {
+        $typeProperty = $candidate.PSObject.Properties['type']
+        $urlProperty = $candidate.PSObject.Properties['url']
+        if ($null -ne $typeProperty -and $null -ne $urlProperty -and
+            [string]$typeProperty.Value -eq 'page' -and [string]$urlProperty.Value -eq $Url) {
           $target = $candidate
           break
         }
@@ -824,7 +859,12 @@ try {
 
   $socket = [Net.WebSockets.ClientWebSocket]::new()
   $connectCts = [Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(10))
-  $debuggerUrl = [string]@($target.webSocketDebuggerUrl)[0]
+  $debuggerProperty = $target.PSObject.Properties['webSocketDebuggerUrl']
+  if ($null -eq $debuggerProperty -or
+      [string]::IsNullOrWhiteSpace([string]$debuggerProperty.Value)) {
+    throw 'Chrome DevTools page target has no websocket debugger URL.'
+  }
+  $debuggerUrl = [string]$debuggerProperty.Value
   try { $socket.ConnectAsync([Uri]$debuggerUrl, $connectCts.Token).GetAwaiter().GetResult() | Out-Null }
   finally { $connectCts.Dispose() }
   Invoke-Cdp -Method 'Page.enable' | Out-Null
