@@ -83,13 +83,12 @@ namespace FruitDefense.Editor
                 "stone-water reverse uses its registered complemented view: " + fallbackReason);
 
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
-            foreach (var run in new[] { "A-grass-soil", "B-stone-water" })
+            foreach (var package in new[] { "GrassSoil", "StoneWater" })
             {
-                var candidate = Path.Combine(projectRoot, "Builds", "Evidence",
-                    "dual-grid-runtime64-20260731", run,
-                    "candidate");
-                Assert(TerrainBrushImportSetup.ResolveCandidateRoot(candidate) == candidate,
-                    run + " candidate resolves as a reusable one-click import package");
+                var packageRoot = Path.Combine(projectRoot, "Assets", "LayeredTerrain",
+                    "CompositeBrushes", package);
+                Assert(TerrainBrushImportSetup.ResolveCandidateRoot(packageRoot) == packageRoot,
+                    package + " resolves as a reusable one-click import package");
             }
             Debug.Log("FRUIT_DEFENSE_TERRAIN_BRUSH_REGISTRY_OK count=" + definitions.Count);
         }
