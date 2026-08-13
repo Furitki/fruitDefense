@@ -12,6 +12,7 @@ namespace FruitDefense.Editor
 
         public static void Run()
         {
+            ValidateCanonicalTextHashing();
             ValidateDeterministicTopologyRepeat();
             ValidateProvenanceGuards();
             SquareTerrainArtGenerator.GenerateAvailableSquareAssets();
@@ -141,6 +142,17 @@ namespace FruitDefense.Editor
                 "\"grassFeatherOutsideMaxPixels\": 7",
                 "\"grassFeatherOutsideMaxPixels\": 8"),
                 "narrow top-down feather contract");
+        }
+
+        private static void ValidateCanonicalTextHashing()
+        {
+            var lfHash = SquareTerrainArtValidator.HashCanonicalText("line one\nline two\n");
+            var crlfHash = SquareTerrainArtValidator.HashCanonicalText("line one\r\nline two\r\n");
+            var crHash = SquareTerrainArtValidator.HashCanonicalText("line one\rline two\r");
+            if (!string.Equals(lfHash, crlfHash, StringComparison.Ordinal)
+                || !string.Equals(lfHash, crHash, StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    "Square provenance text hashing depends on checkout line endings.");
         }
 
         private static void ExpectProvenanceRejected(string json, string label)

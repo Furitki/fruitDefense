@@ -1628,9 +1628,21 @@ namespace FruitDefense.Editor
 
         private static string HashFile(string path)
         {
+            var absolute = SquareTerrainArtGenerator.AbsolutePath(path);
+            var extension = Path.GetExtension(path);
+            if (string.Equals(extension, ".txt", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(extension, ".json", StringComparison.OrdinalIgnoreCase))
+                return HashCanonicalText(File.ReadAllText(absolute));
+
             using (var sha = SHA256.Create())
-                return ToHex(sha.ComputeHash(File.ReadAllBytes(
-                    SquareTerrainArtGenerator.AbsolutePath(path))));
+                return ToHex(sha.ComputeHash(File.ReadAllBytes(absolute)));
+        }
+
+        internal static string HashCanonicalText(string text)
+        {
+            var canonical = text.Replace("\r\n", "\n").Replace('\r', '\n');
+            using (var sha = SHA256.Create())
+                return ToHex(sha.ComputeHash(Encoding.UTF8.GetBytes(canonical)));
         }
 
         private static string ToHex(byte[] bytes)
