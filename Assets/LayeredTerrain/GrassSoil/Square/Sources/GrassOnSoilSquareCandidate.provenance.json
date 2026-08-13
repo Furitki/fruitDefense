@@ -1,0 +1,112 @@
+{
+  "schema": "fruit-defense.square-terrain-imagegen-provenance.v2",
+  "date": "2026-07-23",
+  "styleReference": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png",
+    "sha256": "be554e857249aa294b5152059962561448e545c2da4764eddd10105866e119e4",
+    "width": 685,
+    "height": 352,
+    "colorMode": "RGB"
+  },
+  "machineTopology": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+    "sha256": "646e32b5929bb39e13ce3ffd2583a4990410302de5e878aa01ccb682dd194c15",
+    "width": 1024,
+    "height": 1024,
+    "colorMode": "RGBA"
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "toolName": "image_gen__imagegen",
+      "promptPath": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareAttempt01.prompt.txt",
+      "promptSha256": "a0918e2027b95e8c86023eaf17291e38c1adb8f15421d6a62ae1e0a2899ceb87",
+      "toolArguments": {
+        "referenced_image_paths": [
+          "E:/project/unity/furitDefense/Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+          "C:/Users/18163/AppData/Local/Temp/codex-clipboard-3ed40819-8aab-4462-be2b-1288e8999535.png"
+        ]
+      },
+      "retainedReferencedImages": [
+        "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+        "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png"
+      ],
+      "toolOutputPath": "C:/Users/18163/.codex/generated_images/019f8df4-c04f-7911-866f-d09f5b56cd35/exec-a6606a11-dcac-479e-b42c-70e85b1a01ec.png",
+      "retainedOutput": {
+        "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareImagegenAttempt01Rejected.png",
+        "sha256": "498af109b2c092be51d68a59e577d8ec49831ab3286923dc295934aba193fdf5",
+        "width": 1254,
+        "height": 1254,
+        "colorMode": "RGB"
+      },
+      "decision": "rejected",
+      "paintSourceAccepted": false,
+      "atlasTopologyAcceptedDirectly": false,
+      "reason": "Rejected: the first output baked a checkerboard into the pixels and drifted from the required mask topology."
+    },
+    {
+      "attempt": 2,
+      "toolName": "image_gen__imagegen",
+      "promptPath": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareAttempt02.prompt.txt",
+      "promptSha256": "926530abc99f05966031ef4514e28d81cc49e819af39bd5bd3a5354dc3f6668f",
+      "toolArguments": {
+        "referenced_image_paths": [
+          "E:/project/unity/furitDefense/Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+          "C:/Users/18163/AppData/Local/Temp/codex-clipboard-3ed40819-8aab-4462-be2b-1288e8999535.png",
+          "C:/Users/18163/.codex/generated_images/019f8df4-c04f-7911-866f-d09f5b56cd35/exec-a6606a11-dcac-479e-b42c-70e85b1a01ec.png"
+        ]
+      },
+      "retainedReferencedImages": [
+        "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+        "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png",
+        "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareImagegenAttempt01Rejected.png"
+      ],
+      "toolOutputPath": "C:/Users/18163/.codex/generated_images/019f8df4-c04f-7911-866f-d09f5b56cd35/exec-22eedc7c-5544-48c8-8d77-9c77292ea2a9.png",
+      "retainedOutput": {
+        "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareImagegenDraft.png",
+        "sha256": "228856466f4357ad3a3722831987219525e141f385fdfaf5a5a16a2480a73963",
+        "width": 1254,
+        "height": 1254,
+        "colorMode": "RGB"
+      },
+      "decision": "accepted-as-paint-source-only",
+      "paintSourceAccepted": true,
+      "atlasTopologyAcceptedDirectly": false,
+      "reason": "Accepted only for its grass/soil painting. Tile shapes and order still drift, so deterministic square topology owns final packaging."
+    }
+  ],
+  "normalizedCandidate": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareCandidate.png",
+    "sha256": "83158a973fcb18e56f456214b21b545e58536c7a34cc2adc3eb624bdfc4c2f88",
+    "width": 1024,
+    "height": 1024,
+    "colorMode": "RGBA"
+  },
+  "normalization": {
+    "sourceAttempt": 2,
+    "operation": "Pillow LANCZOS resize from 1254x1254 RGB to 1024x1024 RGBA; no topology or replacement painterly pixels added"
+  },
+  "review": {
+    "styleAcceptedAsPaintSource": true,
+    "atlasTopologyAcceptedDirectly": false,
+    "firstAttemptCheckerboardRejected": true,
+    "notes": "The approved horizontal grass-edge/sandy-soil reference is retained in-project. Attempt 1 is rejected. Attempt 2 is paint source only. Runtime sprites never load either raw imagegen result directly."
+  },
+  "packaging": {
+    "tileSize": 256,
+    "atlasColumns": 4,
+    "atlasRows": 4,
+    "maskOrder": "row-major-00-through-15",
+    "transitionBandPixels": 64,
+    "paintOutsideDepthPixels": 12,
+    "protectedSocketPixels": 2,
+    "chromaKey": "#ff00ff",
+    "chromaTolerance": 24,
+    "guideOwnsTopology": true,
+    "diagonalMasksRemainDisconnected": true,
+    "scriptedReplacementArtwork": false,
+    "directImagegenAtlasAllowed": false,
+    "exactCandidateColorCopiesOnly": true,
+    "paintSampling": "full-atlas-signed-distance-orientation-semantic-remap"
+  }
+}

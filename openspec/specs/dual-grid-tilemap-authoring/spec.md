@@ -76,11 +76,15 @@ The system SHALL refresh generated visuals after logical painting in edit mode a
 - **THEN** no automatic output mutation occurs and an explicit rebuild still produces the current result
 
 ### Requirement: Reusable binary terrain layers
-The system SHALL support ground, road, wall, and other binary terrain categories by allowing independent logical/output Tilemap pairs to use different tile-set assets without changing the mask algorithm.
+The system SHALL preserve independent Dual-Grid topology per landform while allowing a configured authoring surface to combine one cell-aligned base layer, one optional landform layer, and one optional ordered-pair edge output. Base, landform, and edge generated outputs MUST remain distinct from logical authoring data.
 
-#### Scenario: Two terrain layers share a Grid
-- **WHEN** road and wall components use distinct source/output pairs under the same Grid
-- **THEN** each output is generated only from its own logical source and configured tile set
+#### Scenario: Two material roles share a Grid
+- **WHEN** material A is configured as base and material B as landform under one shared Grid
+- **THEN** base cells render on the logical grid, B resolves on vertex-aligned Dual-Grid output, and neither output overwrites logical authoring cells
+
+#### Scenario: Pair direction changes
+- **WHEN** the author switches from B on A to A on B
+- **THEN** the corresponding base, landform, and exact directed edge outputs rebuild without changing mask numbering or half-cell alignment
 
 ### Requirement: Developer demo and acceptance validation
 The project SHALL provide an idempotently generated Dual-Grid demo scene with procedural placeholder art and SHALL validate mask resolution, configuration, gallery discovery and selection, alignment, full rebuild, and local refresh from the required editor smoke entry.
@@ -117,13 +121,24 @@ The project SHALL provide an editor-only terrain bake profile that records sourc
 - **THEN** their shared alpha edges are pixel-identical and the bake emits machine-readable evidence
 
 ### Requirement: Layered terrain demo and manual art acceptance
-The developer demo SHALL present generated grass as a transparent Dual-Grid overlay above a corresponding soil base and SHALL provide a Scene-view paint mode that updates generated visuals while the author drags.
+The developer demo SHALL provide base-only, landform-only, and ordered-pair paint modes for two configured materials, SHALL require the exact registered directed refined edge for every landform-bearing laboratory brush, SHALL present pair presets with representative composites built from the real active assets, and SHALL refresh generated output and a lightweight hovered-cell outline while the author paints or erases with Undo support.
 
-#### Scenario: Demo terrain is rendered
-- **WHEN** the connected terrain sample is viewed
-- **THEN** transparent space beneath and around the grass edge reveals the soil base instead of the camera clear color
+#### Scenario: Author paints a pure base
+- **WHEN** base mode is active and the author paints material A
+- **THEN** the selected cell becomes opaque A base and its previous landform and edge are cleared
 
-#### Scenario: Author manually paints the demo
-- **WHEN** manual paint mode is enabled and the author left-drags or Shift-left-drags over the logical grid
-- **THEN** logical grass cells are respectively added or removed and the affected generated vertices refresh immediately
+#### Scenario: Author paints an ordered pair
+- **WHEN** pair mode selects foreground A and background B and the exact directed refined edge is registered
+- **THEN** its preset card shows the real material transition and one gesture writes the pair plus refinement, refreshes the affected base cell and Dual-Grid vertices, and remains undoable
 
+#### Scenario: Exact directed refinement is missing
+- **WHEN** the active contour has no refined edge for the selected ordered pair but has the reverse direction or a bare contour
+- **THEN** that pair brush is unavailable with an actionable reason and neither fallback is substituted
+
+#### Scenario: Pointer moves without painting
+- **WHEN** the active pointer crosses logical cells without a pressed paint button
+- **THEN** the Scene outline follows the resolved cell and does not render a textured result preview
+
+#### Scenario: Project smoke validation runs
+- **WHEN** `FruitDefense.Editor.ProjectSetup.SmokeValidate` executes
+- **THEN** pure bases, both refined pair orders, representative preview sources, hover state, erasing, Undo-safe mutation, generated-output separation, alignment, and all sixteen masks are validated

@@ -1,0 +1,31 @@
+{
+  "schema": "fruit-defense.dual-grid-art-profile.v1",
+  "id": "A-grass-soil",
+  "route": "A",
+  "landformLabel": "Grass",
+  "baseLabel": "Soil",
+  "landformColor": "#FF4779",
+  "baseColor": "#FFFFFF",
+  "reviewSize": 256,
+  "runtimeSize": 64,
+  "runtimeSampling": "lanczos",
+  "boundaryBandWidth": 12,
+  "candidateMode": "route-default",
+  "protectedReviewWidth": 32,
+  "crossoverWidth": 16,
+  "topologyGuide": "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+  "stylePrompt": "Fresh airy simple hand-drawn cartoon grass and soil, top-down, broad flat shapes, light garden colors, very sparse large grass tufts and soil notches.",
+  "unityBrush": {
+    "brushId": "terrain-brush.grass-on-soil",
+    "assetFolderName": "GrassSoil",
+    "displayName": "草地 + 泥土",
+    "landformDisplayName": "草地",
+    "baseDisplayName": "泥土",
+    "landformSurfaceId": "surface.grass",
+    "baseSurfaceId": "surface.soil",
+    "contourStyleId": "contour.square",
+    "edgeStyleId": "edge.refined",
+    "foregroundMask": 15,
+    "backgroundMask": 0
+  }
+}

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c4febaeb6a0c6346a5772c1d9613c57, type: 3}
+  m_Name: "\u77F3\u5934 + \u6C34"
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.TerrainBrushDefinition
+  brushId: terrain-brush.stone-on-water
+  displayName: "\u77F3\u5934 + \u6C34"
+  sourceProfileId: B-stone-water
+  landformDisplayName: "\u77F3\u5934"
+  baseDisplayName: "\u6C34"
+  landformSurfaceId: surface.stone-road
+  baseSurfaceId: surface.water
+  contourStyleId: contour.square
+  edgeStyleId: edge.refined
+  foregroundMask: 15
+  backgroundMask: 0
+  runtimeTileSize: 64
+  compositeTileSet: {fileID: 11400000, guid: 38c1ae3a913d0534789495b8d9dfed35, type: 2}
+  reverseLandformTileSet: {fileID: 11400000, guid: 97ffcbb8c3ab6264e80693ccaf0c43de, type: 2}
+  foregroundBaseTile: {fileID: 11400000, guid: 015e728561b74634c814fb8f6f56953f, type: 2}
+  backgroundBaseTile: {fileID: 11400000, guid: 5d97f45b8c076c54788611217a51fa26, type: 2}
+  foregroundTexture: {fileID: 2800000, guid: 3223a6246f2f27743be6e032971cf4d1, type: 3}
+  backgroundTexture: {fileID: 2800000, guid: 5bc146104e7127f4ba0664237ac225b3, type: 3}
+  sourceManifest: {fileID: 4900000, guid: a9851b8f444ddd04c8a663f681865ed0, type: 3}
+  publishEndpointsToPalette: 1

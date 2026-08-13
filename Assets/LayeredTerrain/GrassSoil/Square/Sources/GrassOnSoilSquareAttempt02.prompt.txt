@@ -1,0 +1,9 @@
+Correct the atlas. Image 1 is the immutable 4x4 topology/mask authority. Image 2 is the desired painted terrain-edge reference. Image 3 is a style draft only; reuse its pleasant grass/soil painting, but its tile shapes/order and checkerboard background are incorrect.
+
+Return one square 4x4 atlas with NO gaps or gutters. Masks 0..15 are exact row-major cells and every cell must match Image 1's occupied regions and rounded-square topology: mask 0 empty; mask 1 only NW quadrant; mask 2 only NE; mask 3 top half; mask 4 only SE; mask 5 two disconnected NW+SE pieces with open center; mask 6 right half; mask 7 all except SW; mask 8 only SW; mask 9 left half; mask 10 two disconnected NE+SW pieces with open center; mask 11 all except SE; mask 12 bottom half; mask 13 all except NE; mask 14 all except NW; mask 15 full.
+
+ABSOLUTE BACKGROUND RULE: paint every unoccupied pixel as one uniform solid RGB #FF00FF. Do not output transparency previews, checkerboard patterns, shadows or antialiasing into the magenta field, pale squares, white, gray, or any background texture. The final system will key out #FF00FF.
+
+Inside occupied regions: hand-painted mobile-game lush green grass top. Along every boundary against magenta, add a broad 35–55px grass-over-soil transition inspired by Image 2: modest irregular grass lip, dark olive contact line, warm sandy-brown exposed earth/cliff and restrained shadow. Decoration stays inside the occupied/topology side; exact tile-edge sockets and center disconnections remain fixed. Cell-aligned square geometry with rounded corners, never diamonds/circles.
+
+No labels, numbers, borders, grid lines, padding, objects, stones, flowers, icons, UI or text. This is a raw production atlas, not a presentation sheet. Exact mask topology and flat #FF00FF background outrank style.

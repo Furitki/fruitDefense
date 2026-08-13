@@ -7,68 +7,84 @@ Define deterministic runtime binding, mask resolution, projection, interaction p
 
 ### Requirement: Release battle terrain binding
 
-The release Battle scene SHALL bind valid generated PixelGrass and StoneFloor Dual-Grid TileSets plus the PixelGrass opaque soil texture to the battle presenter, and project configuration SHALL reproduce the same bindings when the scene is regenerated.
+Each resolved level theme SHALL reference a valid stable terrain-palette identity whose registered runtime palette supplies every required base material, surface-plus-contour landform TileSet, and requested material-pair-plus-contour edge TileSet. One ordered edge binding MAY satisfy the reverse order through complemented mask lookup. Project configuration and the release Battle scene SHALL reproduce the palette registry without hard-coding one level's active composition or silently substituting a missing contour or unrelated pair.
 
 #### Scenario: Release Battle scene is inspected
-- **WHEN** the configured `Assets/Scenes/Battle.unity` presenter is loaded
-- **THEN** it references the generated PixelGrass and StoneFloor TileSets plus PixelGrass soil texture and every required grass and road mask resolves to a renderable sprite
+- **WHEN** the configured `Assets/Scenes/Battle.unity` presenter and palette registry are loaded
+- **THEN** every bundled theme resolves its palette and every referenced base, contour-specific landform, and contour-specific edge asset resolves to renderable sprites
 
 #### Scenario: Project configuration recreates the Battle scene
 - **WHEN** `Fruit Defense/Configure Project` recreates release scenes
-- **THEN** the recreated battle presenter receives the same terrain assets without manual Inspector repair
+- **THEN** the recreated battle presenter receives the same validated layered terrain palette registry without manual Inspector repair
+
+#### Scenario: Contour pair is unavailable
+- **WHEN** a map requests an edge style for a foreground/background/contour combination whose exact or reverse order is not registered
+- **THEN** validation fails with the foreground, background, contour, and style identities and does not use another contour or unrelated material pair
+
+#### Scenario: Base rendering has no contour dependency
+- **WHEN** a palette contains contour TileSets with different native pixel sizes or registration order
+- **THEN** every required opaque base uses its own configured texture and stable cell-space UV scale instead of a landform full-tile fallback
 
 ### Requirement: Canonical map-derived terrain masks
 
-The runtime presenter SHALL treat plantable cells as the occupied grass layer, SHALL treat route, entry, and exit cells as the occupied stone-road layer, SHALL treat core, blocked, out-of-bounds, and other-layer roles as empty for each respective resolver, and SHALL derive both visual layers through the existing NW=`1`, NE=`2`, SE=`4`, SW=`8` mask contract without storing per-map mask choices.
+The runtime presenter SHALL draw each cell's required base directly, SHALL derive landform and pair-edge masks from equality of canonical landform surface plus contour style using the established NW=`1`, NE=`2`, SE=`4`, SW=`8` contract, and SHALL NOT infer any visual layer from plantability, routes, collision, or markers. Migrated bundled maps MUST explicitly select square contours for their gameplay-aligned landforms unless deliberately changed under visual acceptance.
 
-#### Scenario: Interior plantable vertex is grass
-- **WHEN** all four logical cells around a battlefield visual vertex are plantable
-- **THEN** the grass renderer selects mask `15` and the stone-road renderer selects mask `0`
+#### Scenario: Base-only cell is rendered
+- **WHEN** a visual cell declares soil as its base and no landform
+- **THEN** the presenter draws the soil base and no landform, contour, or edge contribution for that cell
 
-#### Scenario: Interior monster route is stone
-- **WHEN** all four logical cells around a battlefield visual vertex belong to the ordered monster route
-- **THEN** the stone-road renderer selects mask `15` and the grass renderer selects mask `0`
+#### Scenario: Square interior landform is rendered
+- **WHEN** all four logical cells around a visual vertex declare grass with square contour
+- **THEN** the square grass renderer selects mask `15` regardless of gameplay capability or valid base material
 
-#### Scenario: Route borders plantable grass
-- **WHEN** plantable and route cells meet around a visual vertex
-- **THEN** the grass mask contains only plantable corners, the stone-road mask contains only route/entry/exit corners, and the soil base remains available through uncovered pixels
+#### Scenario: Contour styles are separated
+- **WHEN** a disconnected organic grass component and square grass component share one map
+- **THEN** each renderer resolves masks only from cells matching both its surface and contour identity
+
+#### Scenario: Pair edge mask is resolved
+- **WHEN** a square grass-on-soil painted edge binding is rendered
+- **THEN** mask membership matches the exact grass foreground, soil background, square contour, and painted edge style without accepting a cell that differs in any key member
+
+#### Scenario: Visual and gameplay layers differ
+- **WHEN** a non-plantable cell declares square grass or an enemy-route cell declares no landform
+- **THEN** terrain follows the authored visual cell while placement and movement continue to follow compiled gameplay topology
 
 #### Scenario: Map perimeter is resolved
 - **WHEN** a visual vertex touches cells outside the canonical map bounds
-- **THEN** the out-of-bounds corners are empty and no terrain mask lookup reads a nonexistent map cell
+- **THEN** out-of-bounds corners are empty for landform and edge resolution and no lookup reads a nonexistent visual cell
 
 ### Requirement: Projection-aligned layered rendering
 
-The presenter SHALL tile the soil base beneath grass and stone-road overlays, SHALL draw `(GridWidth + 1) × (GridHeight + 1)` one-tile-sized candidates per overlay centered on shared projection vertices, SHALL clip both half-cell Dual-Grid overhangs to `BattlefieldProjection.GridRect`, and SHALL replace the procedural route fill with the stone-road overlay while retaining entry and exit markers.
+The presenter SHALL draw cell-aligned opaque bases first, transparent Dual-Grid landforms second, optional ordered pair edges third, and gameplay presentation above them. It SHALL center landform and edge candidates on shared projection vertices, clip their half-cell overhangs to `BattlefieldProjection.GridRect`, and keep base, landform, and edge native dimensions and sampling compatible.
 
 #### Scenario: Terrain is rendered at a portrait viewport
 - **WHEN** the active map is projected at any required portrait viewport or supported safe-area inset
-- **THEN** every grass and stone-road sprite remains square, shares the projection tile size, aligns with logical tile corners, and cannot cover the battle frame or controls
+- **THEN** every base cell remains aligned, every landform and edge sprite remains square and vertex-aligned, and no terrain covers the battle frame or controls
 
 #### Scenario: Scene layers are drawn
-- **WHEN** a battle frame contains terrain, route, core, pots, plants, zombies, projectiles, effects, and interaction feedback
-- **THEN** soil draws first, grass draws second, stone road draws third, and core, route markers, gameplay entities, effects, and feedback draw above them
+- **WHEN** a battle frame contains terrain, pair edges, core, pots, entities, effects, and interaction feedback
+- **THEN** bases draw below landforms, edges draw above their landforms, and all gameplay-readable content remains above terrain
 
 ### Requirement: Interaction and simulation preservation
 
-The terrain integration SHALL NOT change canonical cells, route sampling, battle simulation, persistence, or hit-test geometry, and SHALL retain readable plantable and expansion affordances above the textured terrain.
+The layered terrain integration SHALL NOT change canonical gameplay cells, route sampling, battle simulation, persistence, gameplay map identity, or hit-test geometry, and SHALL retain readable plantable and expansion affordances above every visual composition.
 
-#### Scenario: Player interacts with a textured plantable cell
-- **WHEN** the player selects, drags, drops, or expands on a plantable cell
-- **THEN** the same projected hit rectangle and legality rules apply and the relevant visual feedback remains visible above the terrain
+#### Scenario: Player interacts with a layered terrain cell
+- **WHEN** the player selects, drags, drops, or expands on a cell whose base, landform, or edge differs from its gameplay capability
+- **THEN** the same projected hit rectangle and legality rules apply and feedback remains visible above terrain
 
-#### Scenario: Battle state is saved or restored
-- **WHEN** a snapshot is created or restored while the terrain effect is enabled
-- **THEN** snapshot content and deterministic simulation outcomes are unchanged because terrain remains presentation-only
+#### Scenario: Only terrain composition changes
+- **WHEN** two valid maps differ only in base surfaces, landforms, edge styles, or palette assets
+- **THEN** their gameplay fingerprints, snapshots, deterministic simulation checksums, and outcomes remain equal
 
 ### Requirement: Multi-level and release validation
 
-The required project smoke SHALL validate terrain asset binding, mask sprite availability, map-to-mask resolution, projection geometry, clipping, and all bundled level maps, and the ordinary WebGL acceptance path SHALL exercise the integrated Battle scene.
+The required project smoke SHALL validate visual-cell coverage, contour identity, material and ordered-pair bindings, base/landform/edge sprite availability, square and organic mask topology, projection, clipping, connected-style constraints, and all bundled levels. Ordinary WebGL acceptance SHALL inspect square isolated cells and strips, both ordered pair directions, edge enabled/disabled comparisons, diagonal masks, organic coexistence, controls, and release flow on a real portrait canvas.
 
 #### Scenario: Project smoke runs
 - **WHEN** `FruitDefense.Editor.ProjectSetup.SmokeValidate` executes
-- **THEN** every bundled map produces valid grass and stone-road masks for all visual vertices and the release Battle scene has all three configured terrain assets
+- **THEN** every bundled map and the layered authoring sample have valid base, contour, landform, pair-edge, mask, binding, component, and geometry evidence
 
 #### Scenario: Ordinary WebGL build is accepted
 - **WHEN** the normal WebGL build and portrait acceptance run against the release flow
-- **THEN** the actual Battle scene shows grass under pot-placement cells and stone under the monster route below readable gameplay content without changing the `Bootstrap → Lobby → Battle → Settlement` order
+- **THEN** the Battle scene shows seamless square gameplay terrain plus any reviewed organic regions below readable gameplay content without changing `Bootstrap → Lobby → Battle → Settlement`

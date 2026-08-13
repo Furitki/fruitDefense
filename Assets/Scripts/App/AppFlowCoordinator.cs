@@ -195,6 +195,22 @@ namespace FruitDefense.App
             _compositionReady = true;
             _startupRoutineActive = false;
 
+            string publishedPlaytestLevelId;
+            if (PublishedBattlefieldPlaytestRequest.TryConsume(out publishedPlaytestLevelId))
+            {
+                _selectedLevelId = publishedPlaytestLevelId;
+                if (!TryStartDefaultBattle(
+                    publishedPlaytestLevelId,
+                    "map-editor-playtest-" + Guid.NewGuid().ToString("N"),
+                    20260723,
+                    BundledContentVersion,
+                    out var playtestError))
+                {
+                    _blockingError = playtestError.Code + ":" + playtestError.Detail;
+                }
+                yield break;
+            }
+
             if (ShouldEnterAcceptanceBattle())
             {
                 var acceptanceLevelId = AcceptanceLevelId();

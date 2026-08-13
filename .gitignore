@@ -22,3 +22,5 @@ Recordings/
 .vscode/
 sysinfo.txt
 debug.log
+__pycache__/
+*.py[cod]

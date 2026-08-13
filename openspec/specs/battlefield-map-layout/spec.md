@@ -4,15 +4,19 @@
 TBD - created by archiving change restructure-battlefield-map-and-tiles. Update Purpose after archive.
 ## Requirements
 ### Requirement: Canonical battlefield definition
-The game SHALL define the planting grid, plantable cells, route nodes, entry, exit, core, and initial-flowerpot regions through one canonical battlefield definition consumed by both simulation and presentation.
+The game SHALL define visual surfaces, gameplay cell capabilities/collision, named ordered routes, spawn/goal/core markers, and initial-flowerpot marker groups through one versioned canonical battlefield aggregate, and SHALL compile separate immutable gameplay and presentation views consumed by simulation and presentation without maintaining a second independently mutable position source.
 
 #### Scenario: Default map is loaded
-- **WHEN** a new game is created
-- **THEN** the active map contains an 8-by-6 planting grid with 48 unique plantable cells, a continuous route, one entry, one exit, one core, and semantic groups that place eight initial flowerpots
+- **WHEN** a new game is created from the migrated default map
+- **THEN** the active map exposes the same current grid, plantable cells, continuous primary route, spawn, goal, core, and semantic groups that place eight initial flowerpots
 
 #### Scenario: Flowerpot position is resolved
-- **WHEN** a flowerpot is queried by the simulation or presentation
-- **THEN** its position is derived from its canonical cell instead of a second independently mutable point
+- **WHEN** a flowerpot marker or active flowerpot is queried by simulation or presentation
+- **THEN** its position is derived from its canonical marker/cell and the shared projection instead of a second independently mutable point
+
+#### Scenario: Visual surface is queried
+- **WHEN** presentation resolves a map cell's ground surface
+- **THEN** it reads the canonical visual layout while simulation legality continues to read the independent compiled gameplay cell
 
 ### Requirement: Derived route metrics
 The game SHALL derive route length and route sampling from the active map's ordered route nodes and SHALL NOT assume a fixed number or equal length of route segments.
@@ -26,15 +30,19 @@ The game SHALL derive route length and route sampling from the active map's orde
 - **THEN** the sampled position remains continuous and follows the next configured segment
 
 ### Requirement: Shared battlefield projection
-The portrait presentation SHALL derive route geometry, cell rectangles, flowerpot rectangles, entities, effects, feedback, drag targets, and hit-test regions from one battlefield projection for the current board rectangle.
+The portrait presentation SHALL derive visual surfaces, route geometry, gameplay-marker positions, cell rectangles, flowerpot rectangles, entities, effects, feedback, drag targets, and hit-test regions from one battlefield projection for the current board rectangle.
 
 #### Scenario: Flowerpot is drawn and clicked
-- **WHEN** an active flowerpot is rendered at a canonical cell
+- **WHEN** an active flowerpot is rendered at a canonical marker/cell
 - **THEN** its visual rectangle, click target, drag target, and drop highlight use the same projected bounds
 
 #### Scenario: Projectile leaves a plant
 - **WHEN** a plant creates a projectile or combat effect
 - **THEN** the projected source aligns with the rendered plant and the projected target aligns with the rendered enemy
+
+#### Scenario: Gameplay marker is presented
+- **WHEN** a spawn, goal, core, item, or trigger marker has a visible presentation
+- **THEN** its screen position is derived from its canonical cell through the same projection and remains aligned at every supported portrait safe area
 
 ### Requirement: Doubled flowerpot and tile presentation
 At the 402-by-874 reference viewport, every on-board flowerpot SHALL render and interact at 200% of the previous width and 200% of the previous height, approximately 45.6 by 45.6 logical points, and SHALL remain at least 44 logical points on its shortest interactive dimension.
@@ -83,4 +91,3 @@ The project SHALL validate battlefield topology and geometry in editor smoke tes
 #### Scenario: WebGL reference capture
 - **WHEN** portrait visual acceptance runs against a built player
 - **THEN** evidence confirms visible route continuity, non-overlapping enlarged flowerpots, aligned drag targets, and safe-area containment
-

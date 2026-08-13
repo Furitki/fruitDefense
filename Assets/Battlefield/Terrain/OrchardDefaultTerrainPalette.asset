@@ -13,9 +13,52 @@ MonoBehaviour:
   m_Name: OrchardDefaultTerrainPalette
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.BattlefieldTerrainPalette
   paletteId: palette.orchard.default
-  soilBaseTexture: {fileID: 2800000, guid: d47929c54f0764a4d89c377bdd1c8d2b, type: 3}
+  soilBaseTexture: {fileID: 2800000, guid: 2700b5e627fcfca4297dda40e75437af, type: 3}
   surfaceBindings:
   - surfaceId: surface.grass
-    tileSet: {fileID: 11400000, guid: c85fd6cb1fa2a4140b4204feb4c5c4d6, type: 2}
+    baseTexture: {fileID: 2800000, guid: 3894f90109b3dfd41868cada90555f94, type: 3}
+    tileSet: {fileID: 0}
+  - surfaceId: surface.soil
+    baseTexture: {fileID: 2800000, guid: 2700b5e627fcfca4297dda40e75437af, type: 3}
+    tileSet: {fileID: 0}
   - surfaceId: surface.stone-road
+    baseTexture: {fileID: 2800000, guid: 3223a6246f2f27743be6e032971cf4d1, type: 3}
+    tileSet: {fileID: 0}
+  - surfaceId: surface.water
+    baseTexture: {fileID: 2800000, guid: 5bc146104e7127f4ba0664237ac225b3, type: 3}
+    tileSet: {fileID: 0}
+  landformBindings:
+  - surfaceId: surface.soil
+    contourStyleId: contour.organic
+    tileSet: {fileID: 11400000, guid: 3e1155418d0567f44af4b96697c9dd09, type: 2}
+  - surfaceId: surface.grass
+    contourStyleId: contour.organic
+    tileSet: {fileID: 11400000, guid: 2fc47b69529dfb541a089c835adb5ce8, type: 2}
+  - surfaceId: surface.stone-road
+    contourStyleId: contour.organic
     tileSet: {fileID: 11400000, guid: 4c995549933a8ed48897e6b4e5760de1, type: 2}
+  - surfaceId: surface.soil
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: 897d878e9497c6e4d935ea42058d6001, type: 2}
+  - surfaceId: surface.grass
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: ef399dc10411dd84ab6a276f72e506ea, type: 2}
+  - surfaceId: surface.stone-road
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: 0a6730ef0e26d5b49b9ae3129ee21909, type: 2}
+  edgeBindings:
+  - landformSurfaceId: surface.grass
+    baseSurfaceId: surface.soil
+    contourStyleId: contour.organic
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: b75665e5083dab441a2805aa7b5e1562, type: 2}
+  - landformSurfaceId: surface.grass
+    baseSurfaceId: surface.soil
+    contourStyleId: contour.square
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: b57b287881df5404a9320385b2898ecb, type: 2}
+  - landformSurfaceId: surface.stone-road
+    baseSurfaceId: surface.water
+    contourStyleId: contour.square
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: 38c1ae3a913d0534789495b8d9dfed35, type: 2}

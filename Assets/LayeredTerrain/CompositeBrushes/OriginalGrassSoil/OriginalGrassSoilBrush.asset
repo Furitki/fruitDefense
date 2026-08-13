@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c4febaeb6a0c6346a5772c1d9613c57, type: 3}
+  m_Name: OriginalGrassSoilBrush
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.TerrainBrushDefinition
+  brushId: terrain-brush.original-square-grass-on-soil
+  displayName: "\u539F\u7248\u8349\u5730 + \u6CE5\u571F"
+  sourceProfileId: original-square-grass-soil
+  landformDisplayName: "\u8349\u5730"
+  baseDisplayName: "\u6CE5\u571F"
+  landformSurfaceId: surface.grass
+  baseSurfaceId: surface.soil
+  contourStyleId: contour.square
+  edgeStyleId: edge.refined
+  foregroundMask: 15
+  backgroundMask: 0
+  runtimeTileSize: 256
+  compositeTileSet: {fileID: 11400000, guid: 1b984e39e61f8734d8c54b032e84c3a3, type: 2}
+  reverseLandformTileSet: {fileID: 11400000, guid: 813c3f8ce1d51a24093ce2c5ed1547fa, type: 2}
+  foregroundBaseTile: {fileID: 11400000, guid: 3d71b1ea4e270714eb43b3b4541cda21, type: 2}
+  backgroundBaseTile: {fileID: 11400000, guid: a158e7b4dd9e7c448b398f9b22a9f9c2, type: 2}
+  foregroundTexture: {fileID: 2800000, guid: 3b57ca72d97b98946b5a31c3b6da2452, type: 3}
+  backgroundTexture: {fileID: 2800000, guid: 79bfd5d0bde8065458005f12a1edaebe, type: 3}
+  sourceManifest: {fileID: 4900000, guid: 335e96df42a47814e8f729c23316d076, type: 3}
+  publishEndpointsToPalette: 0

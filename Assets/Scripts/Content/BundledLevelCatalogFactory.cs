@@ -60,6 +60,12 @@ namespace FruitDefense.Content
 
         public static LevelCatalogSource CreateSource()
         {
+            return ComposePublished(CreateBundledSource(),
+                PublishedBattlefieldMapCatalog.LoadGenerated());
+        }
+
+        public static LevelCatalogSource CreateBundledSource()
+        {
             var maps = new[]
             {
                 BattlefieldMapDefinition.CreateDefault(),
@@ -121,6 +127,58 @@ namespace FruitDefense.Content
                 BattleContentSchema.BundledCatalogId, BattleContentSchema.BundledContentVersion,
                 BundledLevelCatalogIds.Levels.Orchard01, levels, maps, waveSets, ruleSets, themes,
                 new[] { BundledLevelCatalogIds.TerrainPalettes.OrchardDefault });
+        }
+
+        public static LevelCatalogSource ComposePublished(LevelCatalogSource bundled,
+            PublishedBattlefieldMapCatalog published)
+        {
+            if (bundled == null) throw new ArgumentNullException(nameof(bundled));
+            if (published == null) return bundled;
+            if (published.SchemaVersion != PublishedBattlefieldMapCatalog.CurrentSchemaVersion)
+                throw new InvalidOperationException("Unsupported published battlefield catalog schema "
+                    + published.SchemaVersion + ". Expected "
+                    + PublishedBattlefieldMapCatalog.CurrentSchemaVersion
+                    + "; rebuild it from current-schema authoring assets.");
+            if (!string.Equals(published.SourceCatalogId, bundled.CatalogId,
+                    StringComparison.Ordinal)
+                || !string.Equals(published.ContentVersion, bundled.ContentVersion,
+                    StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    "Published battlefield catalog does not match the bundled catalog/version.");
+
+            var maps = bundled.Maps.ToList();
+            var levels = bundled.Levels.ToList();
+            var templateLevels = bundled.Levels.ToDictionary(level => level.LevelId,
+                StringComparer.Ordinal);
+            foreach (var entry in published.Entries
+                         .Where(value => value != null)
+                         .OrderBy(value => value.Order)
+                         .ThenBy(value => value.LevelId, StringComparer.Ordinal))
+            {
+                if (entry.Map == null)
+                    throw new InvalidOperationException("Published level '" + entry.LevelId
+                        + "' has no map snapshot.");
+                LevelDefinition template;
+                if (!templateLevels.TryGetValue(entry.TemplateLevelId, out template))
+                    throw new InvalidOperationException("Published level '" + entry.LevelId
+                        + "' references unknown template level '" + entry.TemplateLevelId + "'.");
+
+                CompiledBattlefieldMap compiledMap;
+                BattlefieldLayeredMapValidationResult mapValidation;
+                if (!BattlefieldLayeredMapCompiler.TryCompile(entry.Map.ToSource(),
+                        out compiledMap, out mapValidation))
+                    throw new InvalidOperationException("Published map '" + entry.Map.MapId
+                        + "' is invalid: " + string.Join("\n", mapValidation.Issues
+                            .Select(issue => issue.ToString()).ToArray()));
+                maps.Add(new BattlefieldMapDefinition(compiledMap));
+                levels.Add(new LevelDefinition(entry.LevelId, entry.Map.MapId,
+                    template.WaveSetId, template.RuleSetId, template.ThemeId));
+            }
+
+            return new LevelCatalogSource(bundled.CatalogId, bundled.ContentCatalogId,
+                bundled.ContentVersion, bundled.DefaultLevelId, levels, maps,
+                bundled.WaveSets, bundled.RuleSets, bundled.Themes,
+                bundled.TerrainPaletteIds);
         }
 
         public static bool TryCompile(out CompiledLevelCatalog compiled,

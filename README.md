@@ -9,7 +9,7 @@ FruitDefense 是一个使用 Unity 6 开发的竖屏水果塔防项目。玩家�
 3. 打开 `Assets/Scenes/Bootstrap.unity`，按 Play 运行完整流程。
 4. 冷启动应进入 Lobby；开始关卡后进入 Battle，胜负结束后进入 Settlement。
 
-需要验证完整 P0 基线时，可在 Unity 菜单中运行 `Fruit Defense/Validate P0 Release Gate`。WebGL 构建与验收入口见 `Assets/Editor/WebBuild.cs` 和 `scripts/accept-webgl-portrait.ps1`。本地 Web/PC 构建及默认安全的线上发布入口见 `docs/build-and-release-pipelines.md`。
+需要验证完整 P0 基线时，可在 Unity 菜单中运行 `Fruit Defense/Validation/Run P0 Release Gate`。WebGL 构建与验收入口见 `Assets/Editor/Tools/WebBuild.cs` 和 `scripts/accept-webgl-portrait.ps1`。本地 Web/PC 构建及默认安全的线上发布入口见 `docs/build-and-release-pipelines.md`。
 
 ## 当前玩家流程
 
@@ -38,6 +38,8 @@ FruitDefense 是一个使用 Unity 6 开发的竖屏水果塔防项目。玩家�
 | [P1 首波门禁](docs/p1-first-wave-gate.md) | 当前平台适配与 P1 后续工作的放行条件 |
 | [平台验证](docs/platform/) | 抖音、微信的工具链、设备与兼容性证据 |
 | [构建与发布管线](docs/build-and-release-pipelines.md) | 本地 Web/PC 构建、证据清单和线上 WebGL 发布门禁 |
+| [Dual-Grid 图块生成管线](docs/art/dual-grid-tile-generation-pipeline.md) | A/B 无网格拓扑、AI 模型桥接、16 Mask、Runtime、压力图与机械 QA |
+| [AI 整图视觉精修管线](docs/art/whole-map-visual-refinement-pipeline.md) | 真实地图粗图、模型 provenance、整图 Runtime、Unity 绑定与回滚契约 |
 | [OpenSpec 变更](openspec/changes/) | 单个需求的方案、设计、任务和验收契约 |
 
 ## 工程入口
@@ -53,17 +55,18 @@ FruitDefense 是一个使用 Unity 6 开发的竖屏水果塔防项目。玩家�
 | `Assets/Scripts/Tilemaps` | 双网格逻辑掩码、瓦片配置与生成组件 |
 | `Assets/Scripts/Shell` | 大厅与结算流程 |
 | `Assets/Resources/Content` | 随包发布的版本化战斗内容 |
-| `Assets/Editor` | 项目配置、内容导出、构建和验证入口 |
+| `Assets/Editor/Tools` | 稳定的项目配置、内容导出、地图/地貌制作与构建工具 |
+| `Assets/Editor/Tests` | 自动化 Smoke、发布门禁、验收证据与显式测试夹具；不进入生产内容 |
 
 ### Dual-Grid 瓦片制作
 
-在 Unity 菜单运行 `Fruit Defense/Dual Grid/Create or Refresh Demo`，然后打开 `Assets/Scenes/DualGridDemo.unity`。选择 `Logical Paint - author here`，使用 Tile Palette 绘制任意逻辑占位瓦片；开启 `Automatic Refresh` 时，`Generated Visuals - do not edit` 会按周围四格自动选择 0–15 掩码瓦片。
+`Assets/Scenes/DualGridDemo.unity` 仅作为开发诊断场景保留，不进入发布场景列表；其创建、证据和手工绘制检查由 `Assets/Editor/Tests` 下的自动验收调用，不再占用日常工具菜单。地貌资源与拼接效果使用 `Fruit Defense/地图工具/地貌素材实验室` 验收，原有两张组合笔刷卡和“只绘制纯图”勾选会显示在当前 Scene 的原生 Overlay 中，可停靠、收起或浮动；同一轮廓的一套边缘资源通过正向遮罩/反向补集遮罩服务两个笔刷方向。实验室不会生成可玩地图，正式关卡仍统一使用 `Fruit Defense/地图工具/关卡地图编辑器`。像素 TileSet 开发使用 `Fruit Defense/Dual Grid/Pixel Terrain Wizard`。
 
 高清卡通草地测试集由 `Assets/DualGridDemo/CartoonGrass/CartoonGrassBakeProfile.asset` 保存制作参数，通过 `Fruit Defense/Dual Grid/Generate Cartoon Grass Tile Set` 重新生成。烘焙器组合无缝草地与泥土纹理，以像素距离场分离外轮廓、裸露土层和草土过渡，并使用 4× 子像素积分、确定性草簇及断开的对角拓扑生成 16 张 512×512 Sprite、Tile、底层泥土 Tile 和 `CartoonGrassDualGridTileSet`。生成结果不得手工修改。
 
 每次烘焙会验证 64 组横向与 64 组纵向合法邻接的 RGBA 边缘、`0101/1010` 中心断开和相同 Profile 的重复输出哈希，并将报告写到 `Builds/Evidence/cartoon-grass-dual-grid-seam-test.json`。演示右侧使用“泥土基底 + 透明 Dual-Grid 草地覆盖”分层，左侧掩码廊仍保留透明背景以便诊断 Alpha。
 
-人工绘制检查可运行 `Fruit Defense/Dual Grid/Open Manual Paint Test`：场景视图左键拖动绘制逻辑草地，按住 `Shift` 再左键拖动可擦除，生成层会即时刷新。
+手工绘制回归由统一的 `Fruit Defense/Validation/...` 门禁执行；单项 Smoke、验收板和临时诊断命令不单独暴露在日常菜单。
 
 最终美术通过 `Fruit Defense/Dual-Grid Tile Set` 创建 16 槽配置：`NW=1`、`NE=2`、`SE=4`、`SW=8`，其中 1–15 必填，透明叠加层可将 0 留空。地面、道路和墙体各使用一组独立的逻辑/输出 Tilemap 与组件；输出 Tilemap 完全由生成器管理，全量重建会清空其中的手工修改。完整契约见 [`introduce-dual-grid-tilemap-authoring`](openspec/changes/introduce-dual-grid-tilemap-authoring/)。
 

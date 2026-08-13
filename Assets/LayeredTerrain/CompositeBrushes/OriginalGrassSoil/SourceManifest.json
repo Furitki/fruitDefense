@@ -1,0 +1,15 @@
+{
+  "schema": "fruit-defense.authored-terrain-source.v1",
+  "profileId": "original-square-grass-soil",
+  "description": "Preserved original grass and soil textures with the original square laboratory contour assets.",
+  "endpointTextures": [
+    "Assets/LayeredTerrain/GrassSoil/Base/Grass.png",
+    "Assets/LayeredTerrain/GrassSoil/Base/Soil.png"
+  ],
+  "landformTileSets": [
+    "Assets/LayeredTerrain/GrassSoil/Square/LandformGrass/GrassSquareLandformTileSet.asset",
+    "Assets/LayeredTerrain/GrassSoil/Square/LandformSoil/SoilSquareLandformTileSet.asset"
+  ],
+  "edgeTileSet": "Assets/LayeredTerrain/GrassSoil/Square/EdgeGrassOnSoilPainted/GrassOnSoilSquarePaintedTileSet.asset",
+  "pixelsModifiedByRegistration": false
+}

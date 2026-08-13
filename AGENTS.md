@@ -1,11 +1,29 @@
 # Project Agent Instructions
 
+## Core values
+
+- 不要保留向后兼容性。应删除过时的实现路径，而不是添加兼容层、回退机制或迁移逻辑。
+- 选择能够完整满足当前需求的最简单实现。避免预先设计抽象层、配置项和间接调用。
+- 以分层方式逐步扩展系统。先实现能够端到端运行的最小版本，再以已经可用的产品为基础逐项增加能力。绝不能为了尚未完成的复杂设计而牺牲一个可以正常工作的产品。
+- 保持组件模块化，清晰分离不同关注点。
+- 如果成熟且维护良好的库能够降低整体复杂度或提高可靠性，应优先使用。没有明确理由时，不要重复实现常见功能。
+- 在自行实现或添加新依赖之前，优先利用项目中已有的依赖。不要在没有查阅文档和类型定义的情况下，断定某个库不具备所需能力。
+- 从长期角度作出架构决策。不要接受只能暂时使用、以后还需要替换的权宜方案。
+
 ## Project baseline
 
 - This is a Unity `6000.3.19f1` portrait game project.
 - The release scene flow is `Bootstrap → Lobby → Battle → Settlement`.
 - Treat ordinary WebGL as the shared build and acceptance baseline, not as proof that Douyin or WeChat conversion has succeeded.
 - Preserve unrelated user changes and keep edits scoped to the requested work.
+
+## Editor tooling hygiene
+
+- Put stable, user-facing Unity editor workflows under `Assets/Editor/Tools/` and automated validation under `Assets/Editor/Tests/`; keep reusable test data under `Assets/Editor/Tests/Fixtures/`.
+- Keep daily authoring commands in their task-oriented `Fruit Defense/...` menus. Automated checks may expose only clearly named `Fruit Defense/Validation/...` suite entries; do not scatter individual smoke commands through the daily tool menus.
+- One-shot runners, temporary importers, task-specific debug commands, marker files, and disposable acceptance helpers must be removed after the owning task is validated.
+- Test fixtures and acceptance catalogs must never be stored under production `Resources`, added to release scenes, or merged into the production playable catalog. Load or inject them explicitly from Editor tests.
+- Preserve Unity `.meta` files and GUIDs when reorganizing editor scripts or fixtures, and rerun the aggregate editor smoke after moves.
 
 ## Documentation ownership
 

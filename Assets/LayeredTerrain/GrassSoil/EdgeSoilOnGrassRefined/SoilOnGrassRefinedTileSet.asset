@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: SoilOnGrassRefinedTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: 0a73dde9315ded245ae90e4a41cab2ce, type: 2}
+  - {fileID: 11400000, guid: 841eab845b5300547946ef0902fdaaf8, type: 2}
+  - {fileID: 11400000, guid: 6e7b9c8936988884cbb92785b41d1ddb, type: 2}
+  - {fileID: 11400000, guid: 66797b1b48b26e94bb447960d28d2be0, type: 2}
+  - {fileID: 11400000, guid: ef93fc5e93b8522458fec8dc5343c486, type: 2}
+  - {fileID: 11400000, guid: a76e89a770ec1bb4d8b6ac4921c7159a, type: 2}
+  - {fileID: 11400000, guid: dd09144358a0d5c4096379f2165161b9, type: 2}
+  - {fileID: 11400000, guid: a5b8221080b768f4392e3bd4ba5b52d9, type: 2}
+  - {fileID: 11400000, guid: 766afa7edccbb334090e81aa3291f5aa, type: 2}
+  - {fileID: 11400000, guid: 32ae7530518a83a4a88006a4a950d1f8, type: 2}
+  - {fileID: 11400000, guid: a3856d4bc01f69c4b9fabc1e58f3eb6a, type: 2}
+  - {fileID: 11400000, guid: 7c83d0c3c19897e49b1ffdc4f4698cb4, type: 2}
+  - {fileID: 11400000, guid: 723f2e823bb3d704894a4922c63b157c, type: 2}
+  - {fileID: 11400000, guid: 19c4f167cd014434c9f460344641a548, type: 2}
+  - {fileID: 11400000, guid: bdd7fb51f57273d45b5c79d3797460cc, type: 2}
+  - {fileID: 11400000, guid: a33ce53457ec210428217ec6c46d994d, type: 2}

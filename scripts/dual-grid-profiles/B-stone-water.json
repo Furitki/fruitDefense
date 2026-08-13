@@ -1,0 +1,29 @@
+{
+  "schema": "fruit-defense.dual-grid-art-profile.v1",
+  "id": "B-stone-water",
+  "route": "B",
+  "landformLabel": "Stone",
+  "baseLabel": "Water",
+  "landformColor": "#FF4779",
+  "baseColor": "#FFFFFF",
+  "reviewSize": 256,
+  "runtimeSize": 64,
+  "runtimeSampling": "lanczos",
+  "candidateMode": "pure-model",
+  "protectedReviewWidth": 0,
+  "crossoverWidth": 0,
+  "stylePrompt": "Fresh airy simple hand-drawn cartoon stone and water, top-down, rounded pale stone shapes, clear soft aqua water, very sparse broad ripple strokes and minimal texture.",
+  "unityBrush": {
+    "brushId": "terrain-brush.stone-on-water",
+    "assetFolderName": "StoneWater",
+    "displayName": "石头 + 水",
+    "landformDisplayName": "石头",
+    "baseDisplayName": "水",
+    "landformSurfaceId": "surface.stone-road",
+    "baseSurfaceId": "surface.water",
+    "contourStyleId": "contour.square",
+    "edgeStyleId": "edge.refined",
+    "foregroundMask": 15,
+    "backgroundMask": 0
+  }
+}

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: StoneRoadSquareLandformTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: 74d1d4b679c3aec43af1bd30b6c4aea1, type: 2}
+  - {fileID: 11400000, guid: add98a42caf91414387900c1b29b92c6, type: 2}
+  - {fileID: 11400000, guid: 1d9b71389b4697e4586703b25f185da7, type: 2}
+  - {fileID: 11400000, guid: df1e863caf3bc5441a0d4c507b76c311, type: 2}
+  - {fileID: 11400000, guid: f70ec30b59552144a97e4da8fea5520c, type: 2}
+  - {fileID: 11400000, guid: 08c7afe6a1108a84b9f8ac99c7fa610e, type: 2}
+  - {fileID: 11400000, guid: df46002ea561b404889b370e84a77f83, type: 2}
+  - {fileID: 11400000, guid: b02fd980a2abc6b41974d859a777fb1d, type: 2}
+  - {fileID: 11400000, guid: aecab5b9f537b5349adcff0900809717, type: 2}
+  - {fileID: 11400000, guid: d30b19c2c64338a4fa9211b305cf65b1, type: 2}
+  - {fileID: 11400000, guid: caa578d738fb0414e820ab1e3541b03f, type: 2}
+  - {fileID: 11400000, guid: 519050a0a5a9f5847b095ee0b83437a0, type: 2}
+  - {fileID: 11400000, guid: 2f49f6b2d05a8804097e79c69e515dc3, type: 2}
+  - {fileID: 11400000, guid: 116a8c3b6ac195a4ebb8e3c7a9989ddc, type: 2}
+  - {fileID: 11400000, guid: 39202684bd500f14184c5131ac46a6dd, type: 2}
+  - {fileID: 11400000, guid: 5cbc1f25709453b4a90de7054d0ce9b7, type: 2}

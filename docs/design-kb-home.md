@@ -19,6 +19,11 @@ status: active
 - [P1 首波门禁](p1-first-wave-gate.md)
 - [本地构建与在线发布流程](build-and-release-pipelines.md)
 
+## 美术生产管线
+
+- [Dual-Grid 地图图块生成管线](art/dual-grid-tile-generation-pipeline.md)
+- [AI 整图地图精修与 Unity 接入管线](art/whole-map-visual-refinement-pipeline.md)
+
 ## 平台证据
 
 - [抖音兼容性门禁](platform/douyin-spike-status.md)

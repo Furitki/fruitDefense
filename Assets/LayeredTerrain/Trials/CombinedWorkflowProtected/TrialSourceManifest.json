@@ -1,0 +1,2311 @@
+{
+  "schema": "fruit-defense.combined-dual-grid-candidate.v1",
+  "status": "ready-for-user-visual-review",
+  "candidateId": "ProtectedHybrid",
+  "trialAdaptation": "runtime-semantic alpha composite over soil base",
+  "sourceDerivedManifestPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\evidence\\derived-input-manifest.json",
+  "normalizedModelPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\model\\ModelOnly-Normalized-2048.png",
+  "templateFrameByMask": [
+    12,
+    15,
+    8,
+    9,
+    13,
+    4,
+    1,
+    10,
+    0,
+    11,
+    14,
+    7,
+    3,
+    2,
+    5,
+    6
+  ],
+  "layout": [
+    [
+      8,
+      6,
+      13,
+      12
+    ],
+    [
+      5,
+      14,
+      15,
+      11
+    ],
+    [
+      2,
+      3,
+      7,
+      9
+    ],
+    [
+      0,
+      4,
+      10,
+      1
+    ]
+  ],
+  "reviewSize": 512,
+  "runtimeSize": 32,
+  "runtimePointFactor": 16,
+  "runtimePointFormulaPngTopOrigin": "Runtime32[x,y] = Review512[16*x+8,16*y+7]",
+  "protectedReviewWidth": 64,
+  "crossoverWidth": 32,
+  "crossoverSelection": "(31-offset)*2 threshold against fixed Bayer8; select whole RGBA pixel",
+  "ownershipPerMask": [
+    {
+      "mask": 0,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 1,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 2,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 3,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 4,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 5,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 6,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 7,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 8,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 9,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 10,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 11,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 12,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 13,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 14,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    },
+    {
+      "mask": 15,
+      "historicalOwnedPixelCount": 137202,
+      "modelOwnedPixelCount": 124942,
+      "fallbackOwnedPixelCount": 0,
+      "exactProtectedPixelCount": 114688,
+      "crossoverPixelCount": 45056,
+      "centerModelPixelCount": 102400
+    }
+  ],
+  "sourceVerificationPerMask": [
+    {
+      "mask": 0,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 1,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 2,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 3,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 4,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 5,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 6,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 7,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 8,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 9,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 10,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 11,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 12,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 13,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 14,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    },
+    {
+      "mask": 15,
+      "protectedMismatchCount": 0,
+      "crossoverInvalidSourcePixelCount": 0,
+      "centerModelMismatchCount": 0,
+      "pureCropMismatchCount": 0
+    }
+  ],
+  "seamSafetyClaimed": false,
+  "internalTopologyVisualReviewPending": true,
+  "visualInspectionPerformed": true,
+  "visualApproval": "pending-human-review",
+  "stressMaps": [
+    {
+      "name": "PureGrassRepeat-1024.png",
+      "rule": "true",
+      "maskUsage": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1024
+      ],
+      "tileReconstructionMismatchCount": 0,
+      "image": {
+        "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\PureGrassRepeat-1024.png",
+        "relativePath": "candidates/ProtectedHybrid/Stress1024/PureGrassRepeat-1024.png",
+        "sha256": "8d2cff5aa6736c37c2468422bc9b02d00ba126e0213c4f2190c7e82d37782e97",
+        "decodedRgbaSha256": "62fbb7f51c17fe86b437cc13ff0377bbded13f0ca33a522a2dde08163325db8d",
+        "width": 1024,
+        "height": 1024,
+        "sourceMode": "RGBA",
+        "alphaMin": 255,
+        "alphaMax": 255,
+        "nonOpaquePixelCount": 0,
+        "opaque": true
+      }
+    },
+    {
+      "name": "GrassWithCentralSoilHole-1024.png",
+      "rule": "x < 10 or x > 22 or y < 10 or y > 22",
+      "maskUsage": [
+        144,
+        0,
+        0,
+        12,
+        0,
+        0,
+        12,
+        1,
+        0,
+        12,
+        0,
+        1,
+        12,
+        1,
+        1,
+        828
+      ],
+      "tileReconstructionMismatchCount": 0,
+      "image": {
+        "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\GrassWithCentralSoilHole-1024.png",
+        "relativePath": "candidates/ProtectedHybrid/Stress1024/GrassWithCentralSoilHole-1024.png",
+        "sha256": "6bfca118821d9fa7fb28792e295fc1c305d1a89d9ba4e0af6c31b8dd8ea75891",
+        "decodedRgbaSha256": "937c367a6928ee68ac4a278f4af255b06ba9ae8cbce5626855f7c820af2ff399",
+        "width": 1024,
+        "height": 1024,
+        "sourceMode": "RGBA",
+        "alphaMin": 255,
+        "alphaMax": 255,
+        "nonOpaquePixelCount": 0,
+        "opaque": true
+      }
+    },
+    {
+      "name": "SoilWithCentralGrassIsland-1024.png",
+      "rule": "10 <= x <= 22 and 10 <= y <= 22",
+      "maskUsage": [
+        828,
+        1,
+        1,
+        12,
+        1,
+        0,
+        12,
+        0,
+        1,
+        12,
+        0,
+        0,
+        12,
+        0,
+        0,
+        144
+      ],
+      "tileReconstructionMismatchCount": 0,
+      "image": {
+        "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\SoilWithCentralGrassIsland-1024.png",
+        "relativePath": "candidates/ProtectedHybrid/Stress1024/SoilWithCentralGrassIsland-1024.png",
+        "sha256": "c296445fd17d0db7fa159fb1abe092904e7b5e016fcf3eaba75a548a137936d7",
+        "decodedRgbaSha256": "4eff7993e5e423a84419dbb03bc34bdca67b35e1dc05eb1a66ee247828c3fec1",
+        "width": 1024,
+        "height": 1024,
+        "sourceMode": "RGBA",
+        "alphaMin": 255,
+        "alphaMax": 255,
+        "nonOpaquePixelCount": 0,
+        "opaque": true
+      }
+    },
+    {
+      "name": "DiagonalMixed-1024.png",
+      "rule": "(((floor(x/3)+floor(y/3)) & 1)==0) XOR ((12<=x<=20) or (12<=y<=20))",
+      "maskUsage": [
+        276,
+        0,
+        0,
+        100,
+        0,
+        36,
+        100,
+        1,
+        0,
+        100,
+        36,
+        1,
+        100,
+        1,
+        1,
+        272
+      ],
+      "tileReconstructionMismatchCount": 0,
+      "image": {
+        "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\DiagonalMixed-1024.png",
+        "relativePath": "candidates/ProtectedHybrid/Stress1024/DiagonalMixed-1024.png",
+        "sha256": "8f03740468add6073a2f94b1c56dd93b4a6e266413091308d374100932792610",
+        "decodedRgbaSha256": "6862fe361b7b71cf09a762aa3bb47387dbb7e8df8fdb3df0944f89d9456f36ee",
+        "width": 1024,
+        "height": 1024,
+        "sourceMode": "RGBA",
+        "alphaMin": 255,
+        "alphaMax": 255,
+        "nonOpaquePixelCount": 0,
+        "opaque": true
+      }
+    }
+  ],
+  "adjacency": {
+    "Review512": {
+      "horizontal": {
+        "legalPairCount": 64,
+        "pairMismatchCount": 64,
+        "pixelMismatchCount": 2062597,
+        "comparisonDepth": 64,
+        "mismatchedPairs": [
+          {
+            "leftMask": 0,
+            "rightMask": 0,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 2,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 4,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 6,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 0,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 2,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 4,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 6,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 1,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 3,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 5,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 7,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 1,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 3,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 5,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 7,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 8,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 10,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 12,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 14,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 8,
+            "pixelMismatchCount": 32229
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 10,
+            "pixelMismatchCount": 32228
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 12,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 14,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 9,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 11,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 13,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 15,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 9,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 11,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 13,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 15,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 0,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 2,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 4,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 6,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 0,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 2,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 4,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 6,
+            "pixelMismatchCount": 32203
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 1,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 3,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 5,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 7,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 1,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 3,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 5,
+            "pixelMismatchCount": 32227
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 7,
+            "pixelMismatchCount": 32226
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 8,
+            "pixelMismatchCount": 32228
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 10,
+            "pixelMismatchCount": 32229
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 12,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 14,
+            "pixelMismatchCount": 32230
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 8,
+            "pixelMismatchCount": 32231
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 10,
+            "pixelMismatchCount": 32231
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 12,
+            "pixelMismatchCount": 32231
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 14,
+            "pixelMismatchCount": 32231
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 9,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 11,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 13,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 15,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 9,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 11,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 13,
+            "pixelMismatchCount": 32253
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 15,
+            "pixelMismatchCount": 32253
+          }
+        ]
+      },
+      "vertical": {
+        "legalPairCount": 64,
+        "pairMismatchCount": 64,
+        "pixelMismatchCount": 2063113,
+        "comparisonDepth": 64,
+        "mismatchedPairs": [
+          {
+            "lowerMask": 0,
+            "upperMask": 0,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 1,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 2,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 3,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 8,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 9,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 10,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 11,
+            "pixelMismatchCount": 32238
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 4,
+            "pixelMismatchCount": 32233
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 5,
+            "pixelMismatchCount": 32233
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 6,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 7,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 12,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 13,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 14,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 15,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 0,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 1,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 2,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 3,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 8,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 9,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 10,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 11,
+            "pixelMismatchCount": 32238
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 4,
+            "pixelMismatchCount": 32234
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 5,
+            "pixelMismatchCount": 32234
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 6,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 7,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 12,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 13,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 14,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 15,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 0,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 1,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 2,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 3,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 8,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 9,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 10,
+            "pixelMismatchCount": 32236
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 11,
+            "pixelMismatchCount": 32238
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 4,
+            "pixelMismatchCount": 32233
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 5,
+            "pixelMismatchCount": 32233
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 6,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 7,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 12,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 13,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 14,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 15,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 0,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 1,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 2,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 3,
+            "pixelMismatchCount": 32220
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 8,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 9,
+            "pixelMismatchCount": 32238
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 10,
+            "pixelMismatchCount": 32238
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 11,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 4,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 5,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 6,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 7,
+            "pixelMismatchCount": 32237
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 12,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 13,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 14,
+            "pixelMismatchCount": 32252
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 15,
+            "pixelMismatchCount": 32252
+          }
+        ]
+      }
+    },
+    "Runtime32": {
+      "horizontal": {
+        "legalPairCount": 64,
+        "pairMismatchCount": 64,
+        "pixelMismatchCount": 8164,
+        "comparisonDepth": 4,
+        "mismatchedPairs": [
+          {
+            "leftMask": 0,
+            "rightMask": 0,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 2,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 4,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 0,
+            "rightMask": 6,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 0,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 2,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 4,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 1,
+            "rightMask": 6,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 1,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 3,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 5,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 2,
+            "rightMask": 7,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 1,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 3,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 5,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 3,
+            "rightMask": 7,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 4,
+            "rightMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 5,
+            "rightMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 6,
+            "rightMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 7,
+            "rightMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 0,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 2,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 4,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 8,
+            "rightMask": 6,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 0,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 2,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 4,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 9,
+            "rightMask": 6,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 1,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 3,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 5,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 10,
+            "rightMask": 7,
+            "pixelMismatchCount": 127
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 1,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 3,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 5,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 11,
+            "rightMask": 7,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 12,
+            "rightMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 13,
+            "rightMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 14,
+            "rightMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "leftMask": 15,
+            "rightMask": 15,
+            "pixelMismatchCount": 128
+          }
+        ]
+      },
+      "vertical": {
+        "legalPairCount": 64,
+        "pairMismatchCount": 64,
+        "pixelMismatchCount": 8192,
+        "comparisonDepth": 4,
+        "mismatchedPairs": [
+          {
+            "lowerMask": 0,
+            "upperMask": 0,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 1,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 2,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 0,
+            "upperMask": 3,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 1,
+            "upperMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 4,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 5,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 6,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 2,
+            "upperMask": 7,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 3,
+            "upperMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 0,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 1,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 2,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 4,
+            "upperMask": 3,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 5,
+            "upperMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 4,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 5,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 6,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 6,
+            "upperMask": 7,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 7,
+            "upperMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 0,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 1,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 2,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 8,
+            "upperMask": 3,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 9,
+            "upperMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 4,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 5,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 6,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 10,
+            "upperMask": 7,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 11,
+            "upperMask": 15,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 0,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 1,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 2,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 12,
+            "upperMask": 3,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 8,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 9,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 10,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 13,
+            "upperMask": 11,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 4,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 5,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 6,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 14,
+            "upperMask": 7,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 12,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 13,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 14,
+            "pixelMismatchCount": 128
+          },
+          {
+            "lowerMask": 15,
+            "upperMask": 15,
+            "pixelMismatchCount": 128
+          }
+        ]
+      }
+    }
+  },
+  "atlasReconstructionVerified": true,
+  "runtimePointVerified": true,
+  "generatedPngFiles": [
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-00.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-00.png",
+      "sha256": "1d0ecdc1cfd00a754af3eb4cc8450c9efe9eaa228edc983ad77ec56f09ce45a5",
+      "decodedRgbaSha256": "207e02a01764251d4f30774e1817f0cbdefa47189f31ab037026a23bab401be5",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-01.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-01.png",
+      "sha256": "d054c9c7b352fc80f01f8f271e8b8c88ea09af309ed0b57f8dff2464a8ae7264",
+      "decodedRgbaSha256": "fde996916b077969ed218acf2241b08d4ba6b9e162748c15fb228b6cd8cfa43d",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-02.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-02.png",
+      "sha256": "baf3c1d3cd1271931c94737c440112a87564157c4bb948046863a0ea7364c7a6",
+      "decodedRgbaSha256": "25e892c6d2d8b5656e3c7485220d06954626d48d011d3cf0301f58d9a84f8f7f",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-03.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-03.png",
+      "sha256": "b6fde36359fa050a1f5d3de18fcf9db66f7d9016292bc5c5879123e5525f4230",
+      "decodedRgbaSha256": "cda1f5f5d17feac400d6eed3916422b913a48569fc826e776231008d6457bd36",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-04.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-04.png",
+      "sha256": "f5fc0a4b8a4bb467f973b1003d29782ab149a1091ce3b7400c585de19f7e7a64",
+      "decodedRgbaSha256": "092fc8141260d04a05e00a34758f9faea983f23c6e7169e469b0b88dbefd20a8",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-05.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-05.png",
+      "sha256": "38ba581471c8e6d58f828b8d42c70a14608b5b1f4ca974ea84728707c454fc5b",
+      "decodedRgbaSha256": "2310ec496f4dbf5bb62bb63ba220212f01572625855e823c6e8e1b555fad18d2",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-06.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-06.png",
+      "sha256": "37d4b5a9d71061a21986f74dfe5d45d553ad39591a39873b1bce09b9fedd96fe",
+      "decodedRgbaSha256": "1318f9f18460aade20e11d5b0ef363a0fa45f9af63f2ee01c992b0116aa0bcdc",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-07.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-07.png",
+      "sha256": "667de9acc0acd06aa034a90cf90a692c7857a638fd7137e82a0754413f310cbb",
+      "decodedRgbaSha256": "496b4e1c195bd480be87e0e4ef0aef667529d0871a465033a120ca4b41e7ee25",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-08.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-08.png",
+      "sha256": "9317d5e1289c569410b16a97aa3372345949cafdd5ccb50173fe0caa31bbed4b",
+      "decodedRgbaSha256": "769ad9d18944e300f1af517a683f6e3e2cf3a117fc203b013bae814d7d3c65a5",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-09.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-09.png",
+      "sha256": "4115145b283191a1d8c81524f31b3626a78ca4ddbef7101653181759d4523cb8",
+      "decodedRgbaSha256": "5200e681494348cd9b3d24e18670ad6bddbd26f0783d6c3b9ce46843f8ed3818",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-10.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-10.png",
+      "sha256": "70ade52ce4a8af5e13438db4e78a88850d394b9e096e6e28440b60d146fcb6a8",
+      "decodedRgbaSha256": "483d54519e5b575099bd3f05697186bd265131689cc0c48f23708a2ab8df9ffb",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-11.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-11.png",
+      "sha256": "83682d0e17efab6a97471ec7ca3c97f6b0ba0cfe14f5005b1196edab4aea5031",
+      "decodedRgbaSha256": "0caaaa963d871bb1166723a894ecb2bafbf8975f79d02b953c82d23f157dba5a",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-12.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-12.png",
+      "sha256": "2f8349883bc8f2a858f67182b3a629424bd42b734c8f9fcd43607932afbbd0a1",
+      "decodedRgbaSha256": "49b670b6908b3f4a29bd85860df3799c4ff0c1b7c1fe49daba21e838d34925c3",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-13.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-13.png",
+      "sha256": "1cb4e4f87b8ce2921da48ce7aa000c1437872b28a23507175ad26859e7b8ba75",
+      "decodedRgbaSha256": "177590d92998ca40e6f6fff9374d88b2c2e1c67bc9064c484380161ca1f6cb14",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-14.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-14.png",
+      "sha256": "012d85133f48f4f3eac754c8b16e0e965bc5a126f78b433f50a1c248b534e43e",
+      "decodedRgbaSha256": "fe09094a8210b6da5cea467431853ee24406c5c9da0dacdd35be00b47b6cfe71",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Review512\\Mask-15.png",
+      "relativePath": "candidates/ProtectedHybrid/Review512/Mask-15.png",
+      "sha256": "474c9a302b20e08467a8911714baa6ff1995efd45e6185800a525e21a51707a3",
+      "decodedRgbaSha256": "18eef1cc3de2acbbdfd301f253975d5fb1e6972fd2182e881c6c3f3a48b0bffa",
+      "width": 512,
+      "height": 512,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\ReviewAtlas-2048.png",
+      "relativePath": "candidates/ProtectedHybrid/ReviewAtlas-2048.png",
+      "sha256": "af8f68825cf896ba11d4a47b42e0b820558e7cfdc43e120330f56a1b43b51775",
+      "decodedRgbaSha256": "07028697c6adff641533edc26d564d524a136c1f6469b11667d23f70694b6934",
+      "width": 2048,
+      "height": 2048,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-00.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-00.png",
+      "sha256": "01623d6f15ae792fa09ada91039601e790c1fe9a3f976d526f6d387818ce5924",
+      "decodedRgbaSha256": "9a61ac5a59a9af9652d092474dd65935790f4108a69264e7cdf6aacaf0ef6d61",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-01.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-01.png",
+      "sha256": "ce0acb815f3cb465e2124bcb4b07aff888f67d6649b14d906b773bd7eaf84a89",
+      "decodedRgbaSha256": "7c52a49114036715f0e05c20a3bc2bdaa371636280e69d4fe590ee19c5a776be",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-02.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-02.png",
+      "sha256": "a8abba4261f75f2aad16e63550d41aaf89d8a671b5eb5cbdfcfbdeeae407dc62",
+      "decodedRgbaSha256": "37a19ce1a07e6201a559e09cb12316386d16a827285fd8803f15850909b0631b",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-03.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-03.png",
+      "sha256": "d785a871d6c6669eaa6c13b498228bec9a5be5a6210050bdee4f795fb39c9766",
+      "decodedRgbaSha256": "91a49fcdc02fe5cb878ccd75710b8f19223ec454933c1669b1e1e180506e9924",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-04.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-04.png",
+      "sha256": "81b6c135219c08772777aa3c5f79ec79874608562cc4595425e8fb89eeb667a9",
+      "decodedRgbaSha256": "4c52d16540118bcd7725cc4bac63ce984a2a4488598656f25eac3575c7ab8518",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-05.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-05.png",
+      "sha256": "4b23622058f8c722741a35cba936a0c6478654f97afe29137682403ee82b9314",
+      "decodedRgbaSha256": "bfb3aedb77af2fcd4ce97f8f9e7566cd08f8b66ef74db54c336bf7d6664c41f2",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-06.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-06.png",
+      "sha256": "3f62b581e02969fe06b9f00b59ce59cb19ceef8ed6394059c0d3512e86df2a11",
+      "decodedRgbaSha256": "7149885d5a353e8a66b2f28c037ffed74b6c1250f36279f14d65c5ab9af84cb1",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-07.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-07.png",
+      "sha256": "1d211cf879f253357db61a1c5d166706db1239babcd2767054d5daba1edc06cc",
+      "decodedRgbaSha256": "e7c290010f5279120b8a6c3f735944e5ed0dfa06c49131d4255ece178a85337e",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-08.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-08.png",
+      "sha256": "89c70a60be659a1c904c008b43aff39e5a1058377deeb45045007cb6e720f99c",
+      "decodedRgbaSha256": "c200f17d13439084e1253da06f2b84c604b522260ab1c5c72586d5a3381ecd4f",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-09.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-09.png",
+      "sha256": "186bc58a122c77fbcf0adbae43072c2d77b74e33f10a32a9fed419200bc6386b",
+      "decodedRgbaSha256": "8fab40a1ee2bb1be8902b0df13d52b82dedb3dcd4da6c5162ea61bff368f4589",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-10.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-10.png",
+      "sha256": "0dfbf8ba15120442111700eb37da07f1ad0fd4ad6dded19ec8b278d5ba2ee638",
+      "decodedRgbaSha256": "c6ac17998add5bd0c7a57bf08a49267a94a648c5b6efdb441c6299f943f6fe7d",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-11.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-11.png",
+      "sha256": "65e805624d21bad4283be773667f399d278219ef6493c8170a4dbf3cd68c02be",
+      "decodedRgbaSha256": "1a6af316758f724ddf379893b9074cee2ec4301ed1bef51d7cc94e0448d9e717",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-12.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-12.png",
+      "sha256": "9c1b35e93d4363dbca8cf46e9df58c3cc93f59118135a18ab19bf860b669a561",
+      "decodedRgbaSha256": "99492e56d556e850428ac26d4c110fc65a48987f465c24cba679a26336ffbc0c",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-13.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-13.png",
+      "sha256": "aad1821c1f5906d1f2c48c3807a2ac9b21e32c1d965d186582f639de707fe264",
+      "decodedRgbaSha256": "c05d5e7c725d9e7c1619dd214734d2595e36186792f333134d1fd3ba59d4b903",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-14.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-14.png",
+      "sha256": "bd10cda1c1815c22cab943e069a7e2d952c99c8d991e1e33e9ab536d70a3f717",
+      "decodedRgbaSha256": "d6b28eec6316ad971b655db699967b7116bcad27c0dcf523bf40e2c98d4b084e",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Runtime32\\Mask-15.png",
+      "relativePath": "candidates/ProtectedHybrid/Runtime32/Mask-15.png",
+      "sha256": "3bca34752cb1c1d880ac9e7c3cbc9d25e88ad83caef10bd95797488d90dbe82c",
+      "decodedRgbaSha256": "7697e32f0cd67d82c6188da69b2557b2cad058b1e4b4eb040cb9d0ab75576a32",
+      "width": 32,
+      "height": 32,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\RuntimeAtlas-128.png",
+      "relativePath": "candidates/ProtectedHybrid/RuntimeAtlas-128.png",
+      "sha256": "74b45d7681d62c6c2b0b56322201d74ba7e34a932eb445b3f236b516c347c98f",
+      "decodedRgbaSha256": "9b026d14fd1b412734675985dc670026f13e6e73310786b9ce24553e8366754a",
+      "width": 128,
+      "height": 128,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\RuntimeAtlas-Upscaled2048.png",
+      "relativePath": "candidates/ProtectedHybrid/RuntimeAtlas-Upscaled2048.png",
+      "sha256": "0055c37f45d1d445f1e0beb3d8fc8276dd39646cbf983b2a3019740650eeda9a",
+      "decodedRgbaSha256": "dd59770c6ff753c02eea9909d4487d9783b5129c3b773d3a557d29b075dbda98",
+      "width": 2048,
+      "height": 2048,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\DiagonalMixed-1024.png",
+      "relativePath": "candidates/ProtectedHybrid/Stress1024/DiagonalMixed-1024.png",
+      "sha256": "8f03740468add6073a2f94b1c56dd93b4a6e266413091308d374100932792610",
+      "decodedRgbaSha256": "6862fe361b7b71cf09a762aa3bb47387dbb7e8df8fdb3df0944f89d9456f36ee",
+      "width": 1024,
+      "height": 1024,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\GrassWithCentralSoilHole-1024.png",
+      "relativePath": "candidates/ProtectedHybrid/Stress1024/GrassWithCentralSoilHole-1024.png",
+      "sha256": "6bfca118821d9fa7fb28792e295fc1c305d1a89d9ba4e0af6c31b8dd8ea75891",
+      "decodedRgbaSha256": "937c367a6928ee68ac4a278f4af255b06ba9ae8cbce5626855f7c820af2ff399",
+      "width": 1024,
+      "height": 1024,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\PureGrassRepeat-1024.png",
+      "relativePath": "candidates/ProtectedHybrid/Stress1024/PureGrassRepeat-1024.png",
+      "sha256": "8d2cff5aa6736c37c2468422bc9b02d00ba126e0213c4f2190c7e82d37782e97",
+      "decodedRgbaSha256": "62fbb7f51c17fe86b437cc13ff0377bbded13f0ca33a522a2dde08163325db8d",
+      "width": 1024,
+      "height": 1024,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\Stress1024\\SoilWithCentralGrassIsland-1024.png",
+      "relativePath": "candidates/ProtectedHybrid/Stress1024/SoilWithCentralGrassIsland-1024.png",
+      "sha256": "c296445fd17d0db7fa159fb1abe092904e7b5e016fcf3eaba75a548a137936d7",
+      "decodedRgbaSha256": "4eff7993e5e423a84419dbb03bc34bdca67b35e1dc05eb1a66ee247828c3fec1",
+      "width": 1024,
+      "height": 1024,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\combined-workflow-trial-20260730-155939-derived-composite\\candidates\\ProtectedHybrid\\SwastikaLayout-2048.png",
+      "relativePath": "candidates/ProtectedHybrid/SwastikaLayout-2048.png",
+      "sha256": "ac896dade5c9cdbcc37e2ad60a35874ae903e73310e698687453cc80fb11d841",
+      "decodedRgbaSha256": "18adc4f76bcde90e9912ee42915c45681296e1647f11bd10cac5aa03a8c4df5f",
+      "width": 2048,
+      "height": 2048,
+      "sourceMode": "RGBA",
+      "alphaMin": 255,
+      "alphaMax": 255,
+      "nonOpaquePixelCount": 0,
+      "opaque": true
+    }
+  ]
+}

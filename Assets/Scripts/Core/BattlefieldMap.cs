@@ -96,6 +96,7 @@ namespace FruitDefense.Core
         public CompiledBattlefieldMap LayeredMap { get { return _layeredMap; } }
         public string PrimaryRouteId { get { return _layeredMap == null ? string.Empty : _layeredMap.PrimaryRouteId; } }
         public string GameplayFingerprint { get { return _layeredMap == null ? string.Empty : _layeredMap.GameplayFingerprint; } }
+        public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
         public IReadOnlyList<BattlefieldGameplayCell> GameplayCells { get; private set; }
         public IReadOnlyList<BattlefieldRouteDefinition> Routes { get; private set; }
@@ -132,6 +133,7 @@ namespace FruitDefense.Core
             GridWidth = layeredMap.GridWidth;
             GridHeight = layeredMap.GridHeight;
             MapUnitsPerCell = layeredMap.MapUnitsPerCell;
+            VisualCells = layeredMap.VisualCells;
             VisualSurfaceIds = layeredMap.VisualSurfaceIds;
             GameplayCells = layeredMap.GameplayCells;
             Routes = layeredMap.RoutesInSourceOrder;
@@ -269,6 +271,26 @@ namespace FruitDefense.Core
             return _layeredMap == null ? string.Empty : _layeredMap.SurfaceAt(cell);
         }
 
+        public string BaseSurfaceAt(Vector2Int cell)
+        {
+            return _layeredMap == null ? string.Empty : _layeredMap.BaseSurfaceAt(cell);
+        }
+
+        public string LandformSurfaceAt(Vector2Int cell)
+        {
+            return _layeredMap == null ? string.Empty : _layeredMap.LandformSurfaceAt(cell);
+        }
+
+        public string ContourStyleAt(Vector2Int cell)
+        {
+            return _layeredMap == null ? string.Empty : _layeredMap.ContourStyleAt(cell);
+        }
+
+        public string EdgeStyleAt(Vector2Int cell)
+        {
+            return _layeredMap == null ? string.Empty : _layeredMap.EdgeStyleAt(cell);
+        }
+
         public BattlefieldGameplayCell GameplayCellAt(Vector2Int cell)
         {
             return _layeredMap == null ? default(BattlefieldGameplayCell) : _layeredMap.GameplayCellAt(cell);
@@ -350,6 +372,7 @@ namespace FruitDefense.Core
 
         private void SetLegacyLayerViews()
         {
+            VisualCells = Array.AsReadOnly(Array.Empty<BattlefieldVisualCellSource>());
             VisualSurfaceIds = Array.AsReadOnly(Array.Empty<string>());
             GameplayCells = Array.AsReadOnly(Array.Empty<BattlefieldGameplayCell>());
             Routes = Array.AsReadOnly(Array.Empty<BattlefieldRouteDefinition>());

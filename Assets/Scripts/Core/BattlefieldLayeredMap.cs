@@ -10,7 +10,7 @@ namespace FruitDefense.Core
 {
     public static class BattlefieldLayerIds
     {
-        public const int SchemaVersion = 1;
+        public const int SchemaVersion = 3;
         public const string PrimaryRoute = "route.main";
 
         public static class Surfaces
@@ -18,6 +18,18 @@ namespace FruitDefense.Core
             public const string Soil = "surface.soil";
             public const string Grass = "surface.grass";
             public const string StoneRoad = "surface.stone-road";
+            public const string Water = "surface.water";
+        }
+
+        public static class EdgeStyles
+        {
+            public const string Refined = "edge.refined";
+        }
+
+        public static class ContourStyles
+        {
+            public const string Square = "contour.square";
+            public const string Organic = "contour.organic";
         }
 
         public static class Capabilities
@@ -76,6 +88,39 @@ namespace FruitDefense.Core
         {
             CapabilityIds = Array.AsReadOnly((capabilityIds ?? Enumerable.Empty<string>()).ToArray());
             CollisionIds = Array.AsReadOnly((collisionIds ?? Enumerable.Empty<string>()).ToArray());
+        }
+    }
+
+    public sealed class BattlefieldVisualCellSource
+    {
+        public string BaseSurfaceId { get; private set; }
+        public string LandformSurfaceId { get; private set; }
+        public string ContourStyleId { get; private set; }
+        public string EdgeStyleId { get; private set; }
+
+        // Legacy construction keeps the original organic silhouette. Canonical authored maps
+        // use the explicit four-identity overload below.
+        public BattlefieldVisualCellSource(string baseSurfaceId, string landformSurfaceId = null,
+            string edgeStyleId = null)
+            : this(baseSurfaceId, landformSurfaceId,
+                string.IsNullOrEmpty(landformSurfaceId)
+                    ? string.Empty : BattlefieldLayerIds.ContourStyles.Organic,
+                edgeStyleId)
+        {
+        }
+
+        public BattlefieldVisualCellSource(string baseSurfaceId, string landformSurfaceId,
+            string contourStyleId, string edgeStyleId)
+        {
+            BaseSurfaceId = baseSurfaceId ?? string.Empty;
+            LandformSurfaceId = landformSurfaceId ?? string.Empty;
+            ContourStyleId = contourStyleId ?? string.Empty;
+            EdgeStyleId = edgeStyleId ?? string.Empty;
+        }
+
+        public string EffectiveSurfaceId
+        {
+            get { return string.IsNullOrEmpty(LandformSurfaceId) ? BaseSurfaceId : LandformSurfaceId; }
         }
     }
 
@@ -161,6 +206,7 @@ namespace FruitDefense.Core
         public int GridHeight { get; private set; }
         public float MapUnitsPerCell { get; private set; }
         public string PrimaryRouteId { get; private set; }
+        public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
         public IReadOnlyList<BattlefieldGameplayCellSource> GameplayCells { get; private set; }
         public IReadOnlyList<BattlefieldRouteDefinition> Routes { get; private set; }
@@ -169,7 +215,7 @@ namespace FruitDefense.Core
 
         public BattlefieldLayeredMapSource(int schemaVersion, string mapId, int gridWidth,
             int gridHeight, float mapUnitsPerCell, string primaryRouteId,
-            IEnumerable<string> visualSurfaceIds,
+            IEnumerable<BattlefieldVisualCellSource> visualCells,
             IEnumerable<BattlefieldGameplayCellSource> gameplayCells,
             IEnumerable<BattlefieldRouteDefinition> routes,
             IEnumerable<BattlefieldMarkerGroupDefinition> markerGroups,
@@ -181,13 +227,38 @@ namespace FruitDefense.Core
             GridHeight = gridHeight;
             MapUnitsPerCell = mapUnitsPerCell;
             PrimaryRouteId = primaryRouteId ?? string.Empty;
-            VisualSurfaceIds = Array.AsReadOnly((visualSurfaceIds ?? Enumerable.Empty<string>()).ToArray());
+            var authoredVisualCells = (visualCells
+                ?? Enumerable.Empty<BattlefieldVisualCellSource>()).ToArray();
+            VisualCells = Array.AsReadOnly(authoredVisualCells);
+            VisualSurfaceIds = Array.AsReadOnly(authoredVisualCells.Select(cell =>
+                cell == null ? string.Empty : cell.EffectiveSurfaceId).ToArray());
             GameplayCells = Array.AsReadOnly((gameplayCells
                 ?? Enumerable.Empty<BattlefieldGameplayCellSource>()).ToArray());
             Routes = Array.AsReadOnly((routes ?? Enumerable.Empty<BattlefieldRouteDefinition>()).ToArray());
             MarkerGroups = Array.AsReadOnly((markerGroups
                 ?? Enumerable.Empty<BattlefieldMarkerGroupDefinition>()).ToArray());
             Markers = Array.AsReadOnly((markers ?? Enumerable.Empty<BattlefieldMarkerDefinition>()).ToArray());
+        }
+
+        public BattlefieldLayeredMapSource(int schemaVersion, string mapId, int gridWidth,
+            int gridHeight, float mapUnitsPerCell, string primaryRouteId,
+            IEnumerable<string> visualSurfaceIds,
+            IEnumerable<BattlefieldGameplayCellSource> gameplayCells,
+            IEnumerable<BattlefieldRouteDefinition> routes,
+            IEnumerable<BattlefieldMarkerGroupDefinition> markerGroups,
+            IEnumerable<BattlefieldMarkerDefinition> markers)
+            : this(schemaVersion, mapId, gridWidth, gridHeight, mapUnitsPerCell, primaryRouteId,
+                ToVisualCells(visualSurfaceIds), gameplayCells, routes, markerGroups, markers)
+        {
+        }
+
+        private static IEnumerable<BattlefieldVisualCellSource> ToVisualCells(
+            IEnumerable<string> visualSurfaceIds)
+        {
+            return (visualSurfaceIds ?? Enumerable.Empty<string>()).Select(surfaceId =>
+                string.Equals(surfaceId, BattlefieldLayerIds.Surfaces.Soil, StringComparison.Ordinal)
+                    ? new BattlefieldVisualCellSource(BattlefieldLayerIds.Surfaces.Soil)
+                    : new BattlefieldVisualCellSource(BattlefieldLayerIds.Surfaces.Soil, surfaceId));
         }
     }
 
@@ -241,6 +312,7 @@ namespace FruitDefense.Core
         public int GridHeight { get; private set; }
         public float MapUnitsPerCell { get; private set; }
         public string PrimaryRouteId { get; private set; }
+        public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
         public IReadOnlyList<BattlefieldGameplayCell> GameplayCells { get; private set; }
         public IReadOnlyList<BattlefieldRouteDefinition> RoutesInSourceOrder { get; private set; }
@@ -265,6 +337,7 @@ namespace FruitDefense.Core
             GridHeight = source.GridHeight;
             MapUnitsPerCell = source.MapUnitsPerCell;
             PrimaryRouteId = source.PrimaryRouteId;
+            VisualCells = Array.AsReadOnly(source.VisualCells.ToArray());
             VisualSurfaceIds = Array.AsReadOnly(source.VisualSurfaceIds.ToArray());
             GameplayCells = Array.AsReadOnly(gameplayCells.ToArray());
             RoutesInSourceOrder = Array.AsReadOnly(source.Routes.ToArray());
@@ -288,6 +361,34 @@ namespace FruitDefense.Core
         {
             if (!IsInBounds(cell)) return string.Empty;
             return VisualSurfaceIds[CellIndex(cell)];
+        }
+
+        public string BaseSurfaceAt(Vector2Int cell)
+        {
+            if (!IsInBounds(cell)) return string.Empty;
+            var visual = VisualCells[CellIndex(cell)];
+            return visual == null ? string.Empty : visual.BaseSurfaceId;
+        }
+
+        public string LandformSurfaceAt(Vector2Int cell)
+        {
+            if (!IsInBounds(cell)) return string.Empty;
+            var visual = VisualCells[CellIndex(cell)];
+            return visual == null ? string.Empty : visual.LandformSurfaceId;
+        }
+
+        public string ContourStyleAt(Vector2Int cell)
+        {
+            if (!IsInBounds(cell)) return string.Empty;
+            var visual = VisualCells[CellIndex(cell)];
+            return visual == null ? string.Empty : visual.ContourStyleId;
+        }
+
+        public string EdgeStyleAt(Vector2Int cell)
+        {
+            if (!IsInBounds(cell)) return string.Empty;
+            var visual = VisualCells[CellIndex(cell)];
+            return visual == null ? string.Empty : visual.EdgeStyleId;
         }
 
         public BattlefieldGameplayCell GameplayCellAt(Vector2Int cell)
@@ -328,7 +429,20 @@ namespace FruitDefense.Core
             BattlefieldLayerIds.Surfaces.Soil,
             BattlefieldLayerIds.Surfaces.Grass,
             BattlefieldLayerIds.Surfaces.StoneRoad,
+            BattlefieldLayerIds.Surfaces.Water,
         };
+
+        private static readonly HashSet<string> EdgeStyleIds = new HashSet<string>(StringComparer.Ordinal)
+        {
+            BattlefieldLayerIds.EdgeStyles.Refined,
+        };
+
+        private static readonly HashSet<string> ContourStyleIds =
+            new HashSet<string>(StringComparer.Ordinal)
+            {
+                BattlefieldLayerIds.ContourStyles.Square,
+                BattlefieldLayerIds.ContourStyles.Organic,
+            };
 
         public static bool TryCompile(BattlefieldLayeredMapSource source,
             out CompiledBattlefieldMap compiled, out BattlefieldLayeredMapValidationResult validation)
@@ -344,14 +458,14 @@ namespace FruitDefense.Core
             ValidateHeader(source, validation);
             var expectedCells = source.GridWidth > 0 && source.GridHeight > 0
                 ? source.GridWidth * source.GridHeight : 0;
-            if (source.VisualSurfaceIds.Count != expectedCells)
+            if (source.VisualCells.Count != expectedCells)
                 validation.Add("map.surface-count", "visualSurfaceIds",
-                    "Expected " + expectedCells + " visual surfaces but found " + source.VisualSurfaceIds.Count + ".");
+                    "Expected " + expectedCells + " visual cells but found " + source.VisualCells.Count + ".");
             if (source.GameplayCells.Count != expectedCells)
                 validation.Add("map.gameplay-cell-count", "gameplayCells",
                     "Expected " + expectedCells + " gameplay cells but found " + source.GameplayCells.Count + ".");
 
-            ValidateSurfaces(source, validation);
+            ValidateVisualCells(source, validation);
             var gameplayCells = CompileGameplayCells(source, validation);
             var routes = IndexRoutes(source, gameplayCells, validation);
             var groups = IndexGroups(source, validation);
@@ -378,7 +492,9 @@ namespace FruitDefense.Core
         {
             if (source.SchemaVersion != BattlefieldLayerIds.SchemaVersion)
                 validation.Add("map.schema-version", "schemaVersion",
-                    "Unsupported layered map schema version " + source.SchemaVersion + ".");
+                    "Unsupported layered map schema version " + source.SchemaVersion
+                    + ". Expected " + BattlefieldLayerIds.SchemaVersion
+                    + "; migrate the authoring asset before compilation.");
             if (string.IsNullOrWhiteSpace(source.MapId))
                 validation.Add("map.id", "mapId", "Map identity is required.");
             if (source.GridWidth <= 0 || source.GridHeight <= 0)
@@ -390,16 +506,145 @@ namespace FruitDefense.Core
                 validation.Add("route.primary-id", "primaryRouteId", "Primary route identity is required.");
         }
 
-        private static void ValidateSurfaces(BattlefieldLayeredMapSource source,
+        private static void ValidateVisualCells(BattlefieldLayeredMapSource source,
             BattlefieldLayeredMapValidationResult validation)
         {
-            for (var index = 0; index < source.VisualSurfaceIds.Count; index++)
+            for (var index = 0; index < source.VisualCells.Count; index++)
             {
-                var surfaceId = source.VisualSurfaceIds[index] ?? string.Empty;
-                if (SurfaceIds.Contains(surfaceId)) continue;
-                validation.Add("surface.unknown", "visualSurfaceIds[" + index + "]",
-                    "Unknown semantic surface identity '" + surfaceId + "'.");
+                var cell = source.VisualCells[index];
+                var field = "visualCells[" + index + "]";
+                if (cell == null)
+                {
+                    validation.Add("visual-cell.null", field, "Visual cell is required.");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(cell.BaseSurfaceId))
+                    validation.Add("surface.base-required", field + ".baseSurfaceId",
+                        "Visual cell requires one base surface identity.");
+                else if (!SurfaceIds.Contains(cell.BaseSurfaceId))
+                    validation.Add("surface.unknown", field + ".baseSurfaceId",
+                        "Unknown base surface identity '" + cell.BaseSurfaceId + "'.");
+
+                if (!string.IsNullOrEmpty(cell.LandformSurfaceId)
+                    && !SurfaceIds.Contains(cell.LandformSurfaceId))
+                    validation.Add("surface.unknown", field + ".landformSurfaceId",
+                        "Unknown landform surface identity '" + cell.LandformSurfaceId + "'.");
+                if (!string.IsNullOrEmpty(cell.LandformSurfaceId)
+                    && string.Equals(cell.BaseSurfaceId, cell.LandformSurfaceId, StringComparison.Ordinal))
+                    validation.Add("surface.same-layer", field + ".landformSurfaceId",
+                        "Base and landform surfaces must be different.");
+                if (string.IsNullOrEmpty(cell.LandformSurfaceId))
+                {
+                    if (!string.IsNullOrEmpty(cell.ContourStyleId))
+                        validation.Add("contour.without-landform", field + ".contourStyleId",
+                            "A base-only visual cell must not declare a contour style.");
+                }
+                else if (string.IsNullOrWhiteSpace(cell.ContourStyleId))
+                    validation.Add("contour.required", field + ".contourStyleId",
+                        "Landform '" + cell.LandformSurfaceId
+                        + "' requires an explicit contour style identity.");
+                else if (!ContourStyleIds.Contains(cell.ContourStyleId))
+                    validation.Add("contour.unknown-style", field + ".contourStyleId",
+                        "Unknown contour style identity '" + cell.ContourStyleId + "'.");
+                if (!string.IsNullOrEmpty(cell.EdgeStyleId)
+                    && string.IsNullOrEmpty(cell.LandformSurfaceId))
+                    validation.Add("edge.without-landform", field + ".edgeStyleId",
+                        "An edge style requires a landform surface.");
+                else if (!string.IsNullOrEmpty(cell.EdgeStyleId)
+                    && !EdgeStyleIds.Contains(cell.EdgeStyleId))
+                    validation.Add("edge.unknown-style", field + ".edgeStyleId",
+                        "Unknown edge style identity '" + cell.EdgeStyleId + "'.");
             }
+
+            ValidateContourCompatibility(source, validation);
+            ValidateEdgeStyleCompatibility(source, validation);
+        }
+
+        private static void ValidateContourCompatibility(BattlefieldLayeredMapSource source,
+            BattlefieldLayeredMapValidationResult validation)
+        {
+            if (source.GridWidth <= 0 || source.GridHeight <= 0
+                || source.VisualCells.Count != source.GridWidth * source.GridHeight) return;
+            var forwardNeighbors = new[]
+            {
+                Vector2Int.right,
+                Vector2Int.down,
+                new Vector2Int(1, 1),
+                new Vector2Int(-1, 1),
+            };
+            for (var index = 0; index < source.VisualCells.Count; index++)
+            {
+                var cell = source.VisualCells[index];
+                if (cell == null || string.IsNullOrEmpty(cell.LandformSurfaceId)
+                    || string.IsNullOrEmpty(cell.ContourStyleId)) continue;
+                var coordinate = new Vector2Int(index % source.GridWidth, index / source.GridWidth);
+                foreach (var offset in forwardNeighbors)
+                {
+                    var neighbor = coordinate + offset;
+                    if (!InBounds(source, neighbor)) continue;
+                    var neighborIndex = neighbor.y * source.GridWidth + neighbor.x;
+                    var other = source.VisualCells[neighborIndex];
+                    if (other == null || string.IsNullOrEmpty(other.LandformSurfaceId)
+                        || string.IsNullOrEmpty(other.ContourStyleId)
+                        || string.Equals(cell.ContourStyleId, other.ContourStyleId,
+                            StringComparison.Ordinal)) continue;
+                    validation.Add("contour.shared-vertex-mix",
+                        "visualCells[" + neighborIndex + "].contourStyleId",
+                        "Landform cells " + coordinate + " ('" + cell.ContourStyleId
+                        + "') and " + neighbor + " ('" + other.ContourStyleId
+                        + "') share an edge or vertex without a contour transition binding.");
+                }
+            }
+        }
+
+        private static void ValidateEdgeStyleCompatibility(BattlefieldLayeredMapSource source,
+            BattlefieldLayeredMapValidationResult validation)
+        {
+            if (source.GridWidth <= 0 || source.GridHeight <= 0
+                || source.VisualCells.Count != source.GridWidth * source.GridHeight) return;
+            var forwardNeighbors = new[]
+            {
+                Vector2Int.right,
+                Vector2Int.down,
+                new Vector2Int(1, 1),
+                new Vector2Int(-1, 1),
+            };
+            for (var index = 0; index < source.VisualCells.Count; index++)
+            {
+                var cell = source.VisualCells[index];
+                if (cell == null || string.IsNullOrEmpty(cell.LandformSurfaceId)
+                    || string.IsNullOrEmpty(cell.ContourStyleId)) continue;
+                var coordinate = new Vector2Int(index % source.GridWidth, index / source.GridWidth);
+                foreach (var offset in forwardNeighbors)
+                {
+                    var neighbor = coordinate + offset;
+                    if (!InBounds(source, neighbor)) continue;
+                    var neighborIndex = neighbor.y * source.GridWidth + neighbor.x;
+                    var other = source.VisualCells[neighborIndex];
+                    if (!HasSameExactTerrainRegionIdentity(cell, other)
+                        || string.Equals(cell.EdgeStyleId, other.EdgeStyleId,
+                            StringComparison.Ordinal)) continue;
+                    validation.Add("edge.shared-region-mix",
+                        "visualCells[" + neighborIndex + "].edgeStyleId",
+                        "Landform cells " + coordinate + " and " + neighbor
+                        + " share one exact foreground/background/contour region but use edge styles '"
+                        + cell.EdgeStyleId + "' and '" + other.EdgeStyleId
+                        + "'. One connected exact region must use one optional edge style.");
+                }
+            }
+        }
+
+        private static bool HasSameExactTerrainRegionIdentity(BattlefieldVisualCellSource first,
+            BattlefieldVisualCellSource second)
+        {
+            return first != null && second != null
+                && !string.IsNullOrEmpty(first.LandformSurfaceId)
+                && string.Equals(first.LandformSurfaceId, second.LandformSurfaceId,
+                    StringComparison.Ordinal)
+                && string.Equals(first.BaseSurfaceId, second.BaseSurfaceId,
+                    StringComparison.Ordinal)
+                && string.Equals(first.ContourStyleId, second.ContourStyleId,
+                    StringComparison.Ordinal);
         }
 
         private static BattlefieldGameplayCell[] CompileGameplayCells(BattlefieldLayeredMapSource source,
@@ -807,25 +1052,31 @@ namespace FruitDefense.Core
             var route = (orderedRoute ?? Enumerable.Empty<Vector2Int>()).ToArray();
             var routeLookup = new HashSet<Vector2Int>(route);
             var groups = (initialPotGroups ?? Enumerable.Empty<InitialPotGroup>()).ToArray();
-            var surfaces = new string[Math.Max(0, width * height)];
-            var gameplay = new BattlefieldGameplayCellSource[surfaces.Length];
-            for (var index = 0; index < surfaces.Length; index++)
+            var visuals = new BattlefieldVisualCellSource[Math.Max(0, width * height)];
+            var gameplay = new BattlefieldGameplayCellSource[visuals.Length];
+            for (var index = 0; index < visuals.Length; index++)
             {
                 var cell = new Vector2Int(index % width, index / width);
                 if (routeLookup.Contains(cell))
                 {
-                    surfaces[index] = BattlefieldLayerIds.Surfaces.StoneRoad;
+                    visuals[index] = new BattlefieldVisualCellSource(
+                        BattlefieldLayerIds.Surfaces.Soil,
+                        BattlefieldLayerIds.Surfaces.StoneRoad,
+                        BattlefieldLayerIds.ContourStyles.Square, string.Empty);
                     gameplay[index] = new BattlefieldGameplayCellSource(
                         new[] { BattlefieldLayerIds.Capabilities.EnemyTraversable });
                 }
                 else if (cell == core)
                 {
-                    surfaces[index] = BattlefieldLayerIds.Surfaces.Soil;
+                    visuals[index] = new BattlefieldVisualCellSource(BattlefieldLayerIds.Surfaces.Soil);
                     gameplay[index] = new BattlefieldGameplayCellSource();
                 }
                 else
                 {
-                    surfaces[index] = BattlefieldLayerIds.Surfaces.Grass;
+                    visuals[index] = new BattlefieldVisualCellSource(
+                        BattlefieldLayerIds.Surfaces.Soil,
+                        BattlefieldLayerIds.Surfaces.Grass,
+                        BattlefieldLayerIds.ContourStyles.Square, string.Empty);
                     gameplay[index] = new BattlefieldGameplayCellSource(
                         new[] { BattlefieldLayerIds.Capabilities.Plantable });
                 }
@@ -850,7 +1101,7 @@ namespace FruitDefense.Core
 
             return new BattlefieldLayeredMapSource(BattlefieldLayerIds.SchemaVersion,
                 mapId, width, height, mapUnitsPerCell, BattlefieldLayerIds.PrimaryRoute,
-                surfaces, gameplay,
+                visuals, gameplay,
                 new[] { new BattlefieldRouteDefinition(BattlefieldLayerIds.PrimaryRoute, route) },
                 markerGroups, markers);
         }

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f327d04879ed71c4fbfc1cb4ebf14d14, type: 3}
+  m_Name: StoneWaterCompositeTileSet
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.DualGridTileSet
+  maskTiles:
+  - {fileID: 11400000, guid: 5d97f45b8c076c54788611217a51fa26, type: 2}
+  - {fileID: 11400000, guid: 6fda586ad1721dd4eb00fc59e4a193f8, type: 2}
+  - {fileID: 11400000, guid: 14ba059c5e62e9c47b8dd937d58e0d77, type: 2}
+  - {fileID: 11400000, guid: 5210aedad4220114e86a458604dee4e4, type: 2}
+  - {fileID: 11400000, guid: d5e3488ae50ae9340821968cb5fae546, type: 2}
+  - {fileID: 11400000, guid: 694f5db1300fccc4b81b7f5daf5dfbe6, type: 2}
+  - {fileID: 11400000, guid: 74469ef33ea5ff04496bb245320bfc9b, type: 2}
+  - {fileID: 11400000, guid: f41038a7af5eb5248a3f577f8dbc2925, type: 2}
+  - {fileID: 11400000, guid: 2b807cb15df8e3647b7f334cc9a1ecff, type: 2}
+  - {fileID: 11400000, guid: 038b0e41b2f00474f9042622405b8ff0, type: 2}
+  - {fileID: 11400000, guid: 6f30c29e2db1a9d47b4bc97217a4af97, type: 2}
+  - {fileID: 11400000, guid: 758ba831d80a5b644951fcfb9f843c7a, type: 2}
+  - {fileID: 11400000, guid: 61d024decd426d246bd810dbbd0c1b3d, type: 2}
+  - {fileID: 11400000, guid: 66ff2c5316e902b47871d47a8d1afce8, type: 2}
+  - {fileID: 11400000, guid: 2aa4037294a07f44d93fcec8ae2bc84b, type: 2}
+  - {fileID: 11400000, guid: 015e728561b74634c814fb8f6f56953f, type: 2}

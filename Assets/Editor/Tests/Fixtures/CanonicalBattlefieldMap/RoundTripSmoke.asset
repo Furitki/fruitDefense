@@ -1,0 +1,136 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 764553165324c5c4ea2212169fd214b5, type: 3}
+  m_Name: RoundTripSmoke
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Content.BattlefieldMapAuthoringAsset
+  schemaVersion: 3
+  mapId: map.smoke.roundtrip
+  gridWidth: 4
+  gridHeight: 3
+  mapUnitsPerCell: 1
+  visualCells:
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  - baseSurfaceId: surface.soil
+    landformSurfaceId: 
+    contourStyleId: 
+    edgeStyleId: 
+  gameplayCells:
+  - capabilityIds:
+    - capability.enemy-traversable
+    collisionIds: []
+  - capabilityIds:
+    - capability.enemy-traversable
+    collisionIds: []
+  - capabilityIds:
+    - capability.enemy-traversable
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds:
+    - capability.plantable
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  - capabilityIds: []
+    collisionIds: []
+  primaryRoute:
+    routeId: route.main
+    cells:
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    - {x: 2, y: 0}
+  markerGroups:
+  - groupId: pots.smoke
+    markerKind: 3
+    selectionCount: 1
+  markers:
+  - markerId: marker.enemy-spawn.main
+    kind: 0
+    cell: {x: 0, y: 0}
+    routeId: route.main
+    groupId: 
+    contentId: 
+    facing: 0
+  - markerId: marker.route-goal.main
+    kind: 1
+    cell: {x: 2, y: 0}
+    routeId: route.main
+    groupId: 
+    contentId: 
+    facing: 0
+  - markerId: marker.core.main
+    kind: 2
+    cell: {x: 3, y: 0}
+    routeId: 
+    groupId: 
+    contentId: 
+    facing: 0
+  - markerId: marker.initial-pot.pots-smoke.x0-y1
+    kind: 3
+    cell: {x: 0, y: 1}
+    routeId: 
+    groupId: pots.smoke
+    contentId: 
+    facing: 0

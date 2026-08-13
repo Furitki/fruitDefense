@@ -1,0 +1,112 @@
+{
+  "schema": "fruit-defense.square-terrain-continuous-ribbon-provenance.v7",
+  "date": "2026-07-26",
+  "styleReference": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png",
+    "sha256": "be554e857249aa294b5152059962561448e545c2da4764eddd10105866e119e4",
+    "width": 685,
+    "height": 352,
+    "colorMode": "RGB"
+  },
+  "rejectedVisualReference": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareSemanticSamplingRejected.png",
+    "sha256": "05b86f450d28f969738f2dc6246e9413ac9b152c8bcf390c170544074728387e",
+    "width": 936,
+    "height": 648,
+    "colorMode": "RGBA"
+  },
+  "machineTopology": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+    "sha256": "646e32b5929bb39e13ce3ffd2583a4990410302de5e878aa01ccb682dd194c15",
+    "width": 1024,
+    "height": 1024,
+    "colorMode": "RGBA"
+  },
+  "baseSoilMaterial": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Base/Soil.png",
+    "sha256": "54de95aea887fb5e853d069f5d9f5186f8fa13a2ef985c3f1fb0c483b3c24019",
+    "width": 32,
+    "height": 32,
+    "colorMode": "RGBA"
+  },
+  "baseGrassMaterial": {
+    "path": "Assets/LayeredTerrain/GrassSoil/Base/Grass.png",
+    "sha256": "e730d59a009b5037658c2960b0079ce5efd04197158a88d15cbbed23f134fc34",
+    "width": 32,
+    "height": 32,
+    "colorMode": "RGBA"
+  },
+  "generation": {
+    "toolName": "image_gen__imagegen",
+    "promptPath": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilContinuousRibbon-v1.prompt.txt",
+    "promptSha256": "7246177094f3c62bcf8ac24f7b5f78f064a11dbee03379c3413c4a6ed5847dd2",
+    "toolArguments": {
+      "referenced_image_paths": [
+        "C:/Users/18163/AppData/Local/Temp/codex-clipboard-3ed40819-8aab-4462-be2b-1288e8999535.png",
+        "E:/project/unity/furitDefense/Builds/Evidence/terrain-contours/square-contour-board.png"
+      ]
+    },
+    "retainedReferencedImages": [
+      "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png",
+      "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareSemanticSamplingRejected.png"
+    ],
+    "toolOutputPath": "C:/Users/18163/.codex/generated_images/019f8df4-c04f-7911-866f-d09f5b56cd35/exec-88149249-ad1c-4276-a34b-93d9c8c14073.png",
+    "retainedOutput": {
+      "path": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilContinuousRibbon-v1.png",
+      "sha256": "9594f3aef2c04de548246dd5ef8f5290e51e84a0d7db45bf8bdfbe7bceeba07a",
+      "width": 2172,
+      "height": 724,
+      "colorMode": "RGB"
+    },
+    "decision": "accepted-as-continuous-paint-material-only",
+    "paintMaterialAccepted": true,
+    "atlasTopologyAcceptedDirectly": false,
+    "reason": "Accepted only as a long low-frequency grass, soil and shadow paint ribbon. The deterministic guide remains the sole mask topology authority."
+  },
+  "previousAttemptsProvenancePath": "Assets/LayeredTerrain/GrassSoil/Square/Sources/GrassOnSoilSquareCandidate.provenance.json",
+  "previousAttemptsProvenanceSha256": "77c2e68b217cd6a2850b4ea12aa4b040875f85c0f0f3bd54811e6fe2eb3f5836",
+  "review": {
+    "continuousRibbonAcceptedAsPaintMaterial": true,
+    "continuousRibbonAcceptedAsLipProfile": true,
+    "runtimeRibbonRgbAccepted": false,
+    "atlasTopologyAcceptedDirectly": false,
+    "rejectedSemanticSamplingBoardRetained": true,
+    "notes": "The retained imagegen source remains the reviewed provenance and irregular lip-profile authority only. Runtime masks use exact Grass.png RGB, apply one deterministic outward alpha feather, and deliberately reject the ribbon's side-view soil wall, contact paint and lower shadow so the join reads as top-down ground."
+  },
+  "packaging": {
+    "tileSize": 256,
+    "transitionBandPixels": 16,
+    "grassBlendInsidePixels": 8,
+    "grassFeatherBasePixels": 4,
+    "grassFeatherVariationPixels": 3,
+    "grassFeatherOutsideMaxPixels": 7,
+    "paintOutsideDepthPixels": 7,
+    "protectedSocketPixels": 2,
+    "guideOwnsTopology": true,
+    "diagonalMasksRemainDisconnected": true,
+    "removeDetachedPaint": true,
+    "exactBaseGrassRgbOnly": true,
+    "deterministicAlphaModulationOnly": true,
+    "grassFeatherAlphaNear": 224,
+    "grassFeatherAlphaFar": 24,
+    "importsDirectionalSoilOrShadow": false,
+    "mipmapsRequired": true,
+    "interpolationAllowed": false,
+    "perPixelRandomSampling": false,
+    "semanticColorListSampling": false,
+    "tileableGrassSurface": true,
+    "tangentPhaseMode": "endpoint-locked-ping-pong",
+    "grassLipDetectedPerSourceColumn": true,
+    "grassLipOffsetMinPixels": 0,
+    "grassLipOffsetMaxPixels": 8,
+    "grassDripMaxDepthPixels": 3,
+    "maximumTransparentLipGapPixels": 0,
+    "grassDripEvents": "source-derived-per-column-smoothed-with-12px-socket-taper",
+    "grassSurfaceMode": "exact-tiled-base-grass-texture",
+    "lipProfileMode": "continuous-source-derived-irregular-lip",
+    "lipEndpointZeroPixels": 12,
+    "lipEventsPerTile": 0,
+    "allowedIntegerTransforms": "identity-rotate90-rotate180-rotate270-mirror",
+    "paintSampling": "connected-boundary-source-lip-profile-plus-base-grass-feather-v7"
+  }
+}

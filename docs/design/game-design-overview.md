@@ -9,6 +9,11 @@ status: active
 
 本文描述 FruitDefense 要做成什么，以及各系统之间长期稳定的设计关系。它不记录构建哈希、SDK 安装状态、逐项验收日志或某次实现的任务进度。
 
+## 0. 首要实现约束
+
+- **已定**：面向策划、美术日常使用的 Unity 编辑器工具、自动化验收代码和一次性诊断工具必须明确分层。实际工具只暴露稳定工作流；自动化验收放在独立测试目录和统一验证入口；一次性 runner、临时导入器与任务专用调试菜单在验收完成后必须删除，不得长期混入实际工具。
+- **已定**：测试夹具、验收关卡和诊断生成物不得进入生产 `Resources`、正式关卡目录、发布清单或 release scene。测试只能从 Editor 测试目录显式加载或注入，且不得改变 Lobby 的正式可玩内容、运行时回退规则或发布结果。
+
 ## 文档状态标记
 
 - **已定**：已经形成明确方向，后续需求默认遵守。
@@ -86,6 +91,8 @@ status: active
 - **已定**：地块玩法能力允许有限、可验证的组合，不再用一个互斥角色同时表达种植、通行、碰撞和特殊地点；碰撞是确定性的格子规则，不以 Unity 物理、Tilemap 图形或地表图片作为战斗权威。
 - **已定**：地图路线以具有稳定 ID 的连续有序格子定义，入口和出口由路线首尾得到；刷怪点、路线目标和核心使用具有稳定 ID 的类型化点位表达。路线、点位、核心、花盆和单位都按同一方格投影，不能使用一张长路线图随屏幕拉伸，也不能维护第二套独立坐标。
 - **已定**：地图表现保存草地、泥土、石板等语义地表，表现主题再把语义地表解析为具体 Dual-Grid 图块与底图；表现变化不改变种植合法性、怪物路线、碰撞或确定性结果，具体图块掩码由地表布局自动推导。
+- **已定**：可玩地图必须通过正式关卡地图编辑器维护同一个有界、版本化地图聚合；玩法拓扑、路线与点位、地貌表现虽然分工作区编辑，但共享同一格子坐标和 `mapId`，不能由地貌素材、Tilemap 图形或独立演示板代替可玩地图数据。
+- **已定**：地图制作采用“玩法拓扑 → 路线与点位 → 地貌表现 → 完整校验 → 实战预览 → 发布”的顺序。表现层可以显式读取玩法拓扑生成可撤销的推荐外观，但表现结果不得反向成为玩法授权。
 - **当前基线**：首批三张地图各使用一条主怪物路线、一个刷怪点、一个路线目标和一个核心；可种植区域显示草地、怪物路线显示石板、其余区域显示泥土。多路线执行、运行时道具刷新和触发器行为仍需独立变更授权，不能因为点位层能够描述它们就视为已实现。
 
 - 一局的目标时长与每波目标时长。
@@ -112,7 +119,16 @@ status: active
 - 远程内容可以在后续版本替换目录或资源包，但不能成为任意运行时代码热替换通道。
 - 编辑器版本、SDK 版本、构建哈希和当前产物大小属于发布证据，不属于策划总纲。
 
-具体内容契约见 `openspec/changes/establish-versioned-battle-content-catalog/design.md`、`openspec/changes/introduce-composable-battle-skills/design.md`、`openspec/changes/archive/2026-07-16-refactor-battlefield-route-to-tile-grid/design.md`、`openspec/changes/archive/2026-07-16-introduce-level-map-catalog/design.md` 和 `openspec/changes/separate-battlefield-visual-topology-and-markers/design.md`。
+### 6.1 地图制作与发布流程
+
+- **已定**：地图制作拆分为两个边界明确的工具。地貌素材实验室只维护底图、透明地貌、定向精修边缘和 Dual-Grid Mask 等美术与渲染素材，不生成可玩关卡，也不作为地图可发布的证据；关卡地图编辑器是制作可玩地图的正式入口。
+- **已定**：关卡地图编辑器在同一有界俯视画布上提供玩法格、路线与类型化点位、地貌表现、校验与发布工作区。日常制作只暴露有限且已审核的能力、碰撞、语义地表、边缘样式和点位类型，不要求策划直接操作原始 TileSet、Mask 或第二套坐标。
+- **已定**：允许保存校验未通过的地图草稿，以便继续编辑；但网格覆盖不完整、数据越界、路线不连续、必需点位缺失、同格组合冲突、稳定 ID 重复、模板引用无效或正式地貌材质缺失时，必须阻止发布和正式实战预览，并把问题定位到具体格子、点位或引用。
+- **已定**：正式发布集合由独立发布清单统一授权，清单负责发布顺序、稳定 `levelId`、模板关卡和地图之间的绑定。运行时目录只能由发布清单全量、确定性重建，不允许手工编辑生成物，也不允许从生成物反向恢复或覆盖创作数据。
+- **已定**：正式 Playtest 必须先完成发布清单重建、资源保存与重新加载，再按稳定 `levelId` 进入正常 `Bootstrap → Battle → Settlement` 流程。临时内存预览、地貌验收板或绕过关卡目录的演示场景不能替代正式实战验收。
+- **已定**：编辑器预览与 Battle 使用同一地图编译结果、方格投影和正式地貌材质解析规则；无需修改代码即可完成一张新地图的创建、校验、发布和实战，是关卡地图编辑能力的最低完成标准。
+
+具体内容契约见 `openspec/changes/archive/2026-07-20-establish-versioned-battle-content-catalog/design.md`、`openspec/changes/archive/2026-07-20-introduce-composable-battle-skills/design.md`、`openspec/changes/archive/2026-07-16-refactor-battlefield-route-to-tile-grid/design.md`、`openspec/changes/archive/2026-07-16-introduce-level-map-catalog/design.md`、`openspec/changes/archive/2026-07-23-separate-battlefield-visual-topology-and-markers/design.md` 和 `openspec/changes/build-canonical-battlefield-map-editor/design.md`。
 
 ## 7. 版本方向
 

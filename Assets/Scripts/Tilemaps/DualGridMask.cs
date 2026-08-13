@@ -19,6 +19,29 @@ namespace FruitDefense.Tilemaps
     {
         public const int MaskCount = 16;
 
+        public static DualGridMask Complement(DualGridMask mask)
+        {
+            var numeric = (int)mask;
+            if ((numeric & ~(int)DualGridMask.Full) != 0)
+                throw new ArgumentOutOfRangeException(nameof(mask), mask,
+                    "Dual-Grid masks range from 0 to 15.");
+            return (DualGridMask)((int)DualGridMask.Full ^ numeric);
+        }
+
+        public static bool TryResolveSharedEdgeMask(DualGridMask sourceMask,
+            bool complementMask, out DualGridMask tileMask)
+        {
+            var numeric = (int)sourceMask;
+            if ((numeric & ~(int)DualGridMask.Full) != 0)
+                throw new ArgumentOutOfRangeException(nameof(sourceMask), sourceMask,
+                    "Dual-Grid masks range from 0 to 15.");
+
+            tileMask = sourceMask;
+            if (sourceMask == DualGridMask.Empty) return false;
+            if (complementMask) tileMask = Complement(sourceMask);
+            return true;
+        }
+
         public static DualGridMask Resolve(Tilemap logicalTilemap, Vector3Int vertex)
         {
             if (logicalTilemap == null) throw new ArgumentNullException(nameof(logicalTilemap));

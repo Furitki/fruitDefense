@@ -1,0 +1,1110 @@
+{
+  "schema": "fruit-defense.dual-grid-art-pipeline.v3",
+  "status": "ready-for-user-visual-review",
+  "profileId": "B-stone-water",
+  "route": "B",
+  "outputRoot": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water",
+  "sourceTopologyPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water\\source\\Source-B-OverscanTopology-1536.png",
+  "sourceTopologySha256": "177c81b2bcf936b5210c679e0d0e343af6d46ca8270e30898502ffadfa3cc448",
+  "promptPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water\\request\\pipeline-prompt.txt",
+  "promptSha256": "c2c0da56697e647954895278110105d59288aa013fe26db72b0cd1953f823dbd",
+  "modelProvenance": {
+    "status": "legacy-regression-explicitly-allowed",
+    "enforced": false,
+    "modelCallCount": null,
+    "retryCount": null,
+    "fallbackUsed": null
+  },
+  "rawPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water\\model\\Raw.png",
+  "rawSha256": "e175618d854b262d62ec225b67eafd1d8a20aeb6e7556e67669f68480325facc",
+  "rawSize": [
+    1254,
+    1254
+  ],
+  "routeDetails": {
+    "normalizedPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water\\model\\ModelOnly-Normalized-1536.png",
+    "normalizationFormula": "source=min(sourceSize-1,floor(((2*target+1)*sourceSize)/(2*targetSize)))",
+    "cropPath": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water\\model\\CentralCrop-1024.png",
+    "cropRect": [
+      256,
+      256,
+      1024,
+      1024
+    ],
+    "overscanMaskMatrix": [
+      [
+        0,
+        0,
+        4,
+        8,
+        0,
+        0
+      ],
+      [
+        4,
+        8,
+        6,
+        13,
+        12,
+        8
+      ],
+      [
+        2,
+        5,
+        14,
+        15,
+        11,
+        1
+      ],
+      [
+        0,
+        2,
+        3,
+        7,
+        9,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        10,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        1,
+        0,
+        0
+      ]
+    ],
+    "centralMaskMatrix": [
+      [
+        8,
+        6,
+        13,
+        12
+      ],
+      [
+        5,
+        14,
+        15,
+        11
+      ],
+      [
+        2,
+        3,
+        7,
+        9
+      ],
+      [
+        0,
+        4,
+        10,
+        1
+      ]
+    ]
+  },
+  "candidateMode": "pure-model",
+  "protectedReviewWidth": 0,
+  "crossoverWidth": 0,
+  "pixelOwnershipByMask": [
+    {
+      "mask": 0,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 1,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 2,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 3,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 4,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 5,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 6,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 7,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 8,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 9,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 10,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 11,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 12,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 13,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 14,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    },
+    {
+      "mask": 15,
+      "routeDerivedPixels": 65536,
+      "historicalPixels": 0,
+      "fallbackPixels": 0
+    }
+  ],
+  "canonicalSwastika": [
+    [
+      8,
+      6,
+      13,
+      12
+    ],
+    [
+      5,
+      14,
+      15,
+      11
+    ],
+    [
+      2,
+      3,
+      7,
+      9
+    ],
+    [
+      0,
+      4,
+      10,
+      1
+    ]
+  ],
+  "reviewMaskCount": 16,
+  "runtimeMaskCount": 16,
+  "runtimeSamplingUnityBottomOrigin": "Runtime[x,y] = Review[8*x+4,8*y+4]",
+  "runtimeSamplingPngTopOrigin": "Runtime[x,y] = Review[8*x+4,8*y+3]",
+  "stressAtlas": {
+    "schema": "fruit-defense.dual-grid-stress-atlas.v2",
+    "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Stress-All-1024.png",
+    "relativePath": "candidate/Stress-All-1024.png",
+    "width": 1024,
+    "height": 1024,
+    "panelSize": 512,
+    "tileGridSize": [
+      16,
+      16
+    ],
+    "logicalVertexSize": [
+      17,
+      17
+    ],
+    "runtimeTileSize": [
+      32,
+      32
+    ],
+    "coordinateOrigin": "PNG top-left",
+    "layout": "2x2-row-major-no-gutter",
+    "decodedRgbaSha256": "bf50add09293f67ef5b513ebc10b824c844375da3eb646647683a72b3944bcb8",
+    "opaque": true,
+    "panels": [
+      {
+        "id": "pureLandform",
+        "rect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "formula": "true",
+        "decodedRgbaSha256": "bbb4023b834232f73e7ffd8bbded89e8d40d5f73d29a88b3b210b1ae245856ff",
+        "opaque": true
+      },
+      {
+        "id": "landformWithCentralBaseHole",
+        "rect": [
+          512,
+          0,
+          512,
+          512
+        ],
+        "formula": "x < 5 or x > 11 or y < 5 or y > 11",
+        "decodedRgbaSha256": "b7b056a26d8c6e23a632595a13d0427d1ec7136725e703247f25cdf719703d93",
+        "opaque": true
+      },
+      {
+        "id": "baseWithCentralLandformIsland",
+        "rect": [
+          0,
+          512,
+          512,
+          512
+        ],
+        "formula": "5 <= x <= 11 and 5 <= y <= 11",
+        "decodedRgbaSha256": "9cf40a2394054de85b0eaaf88941a3c5261882a0c6f4e54ac541e4b6e3fb4de9",
+        "opaque": true
+      },
+      {
+        "id": "diagonalMixed",
+        "rect": [
+          512,
+          512,
+          512,
+          512
+        ],
+        "formula": "(((floor(x/2)+floor(y/2))&1)==0) XOR ((6<=x<=10) or (6<=y<=10))",
+        "decodedRgbaSha256": "586fbfe0eed5d1842d9467b9953f92a599f3d09bf1c75266b5b0c74e94f5515a",
+        "opaque": true
+      }
+    ]
+  },
+  "reviewAdjacency": {
+    "horizontal": {
+      "legalPairCount": 64,
+      "pairMismatchCount": 64,
+      "pixelMismatchCount": 15978
+    },
+    "vertical": {
+      "legalPairCount": 64,
+      "pairMismatchCount": 64,
+      "pixelMismatchCount": 16016
+    }
+  },
+  "runtimeAdjacency": {
+    "horizontal": {
+      "legalPairCount": 64,
+      "pairMismatchCount": 64,
+      "pixelMismatchCount": 4000
+    },
+    "vertical": {
+      "legalPairCount": 64,
+      "pairMismatchCount": 64,
+      "pixelMismatchCount": 4023
+    }
+  },
+  "seamSafetyClaimed": false,
+  "internalTopologyVisualReviewPending": true,
+  "visualInspectionPerformed": false,
+  "mechanicalQaStatus": "passed-mechanical-qa",
+  "generatedPngFiles": [
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-00.png",
+      "relativePath": "candidate/Review256/Mask-00.png",
+      "sha256": "5bd09cd345f552c72791ad47a78c978c6c0b754efda722f517768882c94c5416",
+      "decodedRgbaSha256": "2e938b561a3c0083fdce89fbef17f6a4f6d4f93b43a56d8f506f667fbf6deb3b",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-01.png",
+      "relativePath": "candidate/Review256/Mask-01.png",
+      "sha256": "7b31b3747d4b9145b00e38632590da88e377a0f4845f4ce48b26d8ce67c3f0c6",
+      "decodedRgbaSha256": "265167e4e5a576aae668f7dc8ab6c433851668640afdf6e86833a13ccf54c32a",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-02.png",
+      "relativePath": "candidate/Review256/Mask-02.png",
+      "sha256": "31776966c66fd6156930b38d33b2dc56baa8c259dc659685782adcd9b30c7c3e",
+      "decodedRgbaSha256": "c22956e6dc14a28e25bfb71e1481bd1cf364c2da070b3687e289f7937075ef4c",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-03.png",
+      "relativePath": "candidate/Review256/Mask-03.png",
+      "sha256": "1470ac413d6554a63f3d328b23e7884fc044b88b047907ee15613f11e040aa3a",
+      "decodedRgbaSha256": "a2fea7527b0904bc13006b81055f52e7642c2ff92facc51078109277b6b6c832",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-04.png",
+      "relativePath": "candidate/Review256/Mask-04.png",
+      "sha256": "f39dbcdf605526e65ef7a3127beb3e977da77065ec26546ac0e90d6487e7666b",
+      "decodedRgbaSha256": "eb54ab03217ea985206b881c52501b297e461bbd97ab141aa485e0db58969a07",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-05.png",
+      "relativePath": "candidate/Review256/Mask-05.png",
+      "sha256": "483218d6407fce7b4df021f38515b28d115303392e86500b0017ee95536eef9f",
+      "decodedRgbaSha256": "682e116cdf6d41c33490d2fa50d4795e2e6f4551235b65db32b393f71e197a17",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-06.png",
+      "relativePath": "candidate/Review256/Mask-06.png",
+      "sha256": "864c63292b1866ff422658d979a3bf79277df97e3da3c8cd103be5c36162206e",
+      "decodedRgbaSha256": "ecc8568aa1081c342d678a6f9449f7756e3baa64f4fec382bc3ad1c8977608ca",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-07.png",
+      "relativePath": "candidate/Review256/Mask-07.png",
+      "sha256": "2efb3488ff0cfe32589cec8996318f1211d3200e4e1ab06c83a8cca3c0f69ded",
+      "decodedRgbaSha256": "e1cdb9ba7c7048abddac28ba51421eef2a41eaae2338b38e923373924dc5733f",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-08.png",
+      "relativePath": "candidate/Review256/Mask-08.png",
+      "sha256": "1481978143215df35c9954fd7bbdc5566d7f62cd92458ed285061d1c0e048629",
+      "decodedRgbaSha256": "724b495d820f60eaeabf0ba01e97c14a578ec273b14a8bf1db83400addce89ab",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-09.png",
+      "relativePath": "candidate/Review256/Mask-09.png",
+      "sha256": "4e1d153121f59a9866a9adfa43a8219c0292eb36b86eced569f3400e95810283",
+      "decodedRgbaSha256": "bb0a93c541a022c2eb42d088bbaaaed1f658ec2daa0de82c8c469a27db35d044",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-10.png",
+      "relativePath": "candidate/Review256/Mask-10.png",
+      "sha256": "bacda5523f6f57283944f3d7a81183978b7976b74d41f24d6ceec6b7276ccefc",
+      "decodedRgbaSha256": "31fd8d25c8752da076f75035c5ce7db44cbb1df074b58412ab3d6dc6482ef244",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-11.png",
+      "relativePath": "candidate/Review256/Mask-11.png",
+      "sha256": "790c4fd41274fc6be27047e74f11b4ce11369bd53cb1c6258a0894f0968de6cf",
+      "decodedRgbaSha256": "1f8a8d73563f5f537eb70fcbdf19d22c06151eb87789d9fee477ee4ddbe07ba8",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-12.png",
+      "relativePath": "candidate/Review256/Mask-12.png",
+      "sha256": "08c4b61c4f731c92d1f64c1dd1381a8d99ae2cf6fe968966c21b62ad034a554f",
+      "decodedRgbaSha256": "c55f8e105bfaf8bd2d0c86bf06d0fe5dea3154fa0f0eb49d6a4ad0ba140fce98",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-13.png",
+      "relativePath": "candidate/Review256/Mask-13.png",
+      "sha256": "0c27b9f9b914dc37cb90110759366e85b78b56fc11187856ef1297d42d912d79",
+      "decodedRgbaSha256": "0072ae6050f2dde4af1a2195667a9ddbaa6fb6af05a89061a4b06ee35d11148b",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-14.png",
+      "relativePath": "candidate/Review256/Mask-14.png",
+      "sha256": "81297832fb47f6f21f4724fc1a35f0acab930c94f1ba618b11ffea530800050a",
+      "decodedRgbaSha256": "b54ed46efb716ffbe06aee33b92c875fb3e3e4b0b168babbbdcae5cd08694ab0",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Review256\\Mask-15.png",
+      "relativePath": "candidate/Review256/Mask-15.png",
+      "sha256": "e7e81ef4c4ad8f2046bac3631a7994ca57639a2bd1f90f9928c6e798dbd385b3",
+      "decodedRgbaSha256": "20436eb674c8b1b23cd8ba508defe7308cf38bf7fa132d85519ed5b6ab96ac0e",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\ReviewAtlas-1024.png",
+      "relativePath": "candidate/ReviewAtlas-1024.png",
+      "sha256": "e488a4fa1dd5f97daf577c75669694f8996dd6f6b903d3a60ccef7c082dced7d",
+      "decodedRgbaSha256": "a3c4043cbb4b5324cd6b45ef8ca86ae195123314c6097b07726331b8cbefc2a0",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-00.png",
+      "relativePath": "candidate/Runtime32/Mask-00.png",
+      "sha256": "6124233813105b7608dd55ed88377ac950c5020b133ca43523fed0e0d48e6c3a",
+      "decodedRgbaSha256": "4b1b7950d4d3318f33267ef698ae3cb84b1d0a24f05469c6e19465caa2367212",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-01.png",
+      "relativePath": "candidate/Runtime32/Mask-01.png",
+      "sha256": "ff3bfbee53b90ae8a1169f167dabbb83ec5425124a9e5594d7d449144f0c8de6",
+      "decodedRgbaSha256": "c3e0be328edcaf6a5036b2dff3412070a19f6cc63442069bee705838bce3e9b9",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-02.png",
+      "relativePath": "candidate/Runtime32/Mask-02.png",
+      "sha256": "d86f6d5bdc1aef9a3e4a70acd2764d88e36fb852c0d98c056d8ea585b2fddfb8",
+      "decodedRgbaSha256": "20b4f73f36f7e62de73be45f38b8b95b5472bedb1b28f6e5a20b470b658b033c",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-03.png",
+      "relativePath": "candidate/Runtime32/Mask-03.png",
+      "sha256": "b3b67622f3c01550fdb5fe884d97aa4c649fe48db22bd869b6fd88aea60cde43",
+      "decodedRgbaSha256": "de1ac01569d1b8fd4c68c79a52048701df148188603a4226056cf04ce18e1084",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-04.png",
+      "relativePath": "candidate/Runtime32/Mask-04.png",
+      "sha256": "253e497e0a54a50d56fefb542b4c061525b575aa1a6e1643e83581451d630691",
+      "decodedRgbaSha256": "b5d10b035c00d4093fc193ff9a293efd8ee0d05a6d626898fe852e7bfad3dc11",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-05.png",
+      "relativePath": "candidate/Runtime32/Mask-05.png",
+      "sha256": "5e6a40f79ff4636ea6e4477970bb22a5209581a173ff9cbcc3a984349fed5f72",
+      "decodedRgbaSha256": "d17ebd54d928edaeb72011456ee3f9ed096643bd2885d8049ba542acea42d096",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-06.png",
+      "relativePath": "candidate/Runtime32/Mask-06.png",
+      "sha256": "eca6e5cbbf9cbcad322f18a4cce5de787c58b1a8c62c16fea2f1d661b8a5d99b",
+      "decodedRgbaSha256": "21c8e668991550d70da5de647f7e8b4d89901669689abd577054c361a9b82e9a",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-07.png",
+      "relativePath": "candidate/Runtime32/Mask-07.png",
+      "sha256": "df25f26706cbffaf8e75ffd76edde1705e9571d6d202c08bf0eac25cfccd9ab5",
+      "decodedRgbaSha256": "e875fdc8f6350614ed0cd68ea9bc695900a2dff30fcf2862007bb7baa712bbbe",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-08.png",
+      "relativePath": "candidate/Runtime32/Mask-08.png",
+      "sha256": "f1ef32de7669860342a9b54c75f4b63640ce47b9c9339d335c41174e75dc9415",
+      "decodedRgbaSha256": "7acfc4ca1e1cc29d73e1c254c715b4d6934c677a173d4696efdfe9906a695a7e",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-09.png",
+      "relativePath": "candidate/Runtime32/Mask-09.png",
+      "sha256": "ab776299fceba13ed60562044c20f4de78d39a1d790fb854f993c5d56479f188",
+      "decodedRgbaSha256": "77ab1c554d1af69a59aefe9cdbe683964b2063bb4ddaaa60bab9541271e57e45",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-10.png",
+      "relativePath": "candidate/Runtime32/Mask-10.png",
+      "sha256": "d63220c2a4fc4ecb9d7e6f86f161279ff44510f0cd153f39852ff521e786c00f",
+      "decodedRgbaSha256": "a7c9a2fb1ca7327fbb6b639517853ff16cc3385e22c05af9e1d735146f4685ad",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-11.png",
+      "relativePath": "candidate/Runtime32/Mask-11.png",
+      "sha256": "e025383f61d399b2c8c3687ac52693b0e9409d000fd555c4b3683821c3f52b88",
+      "decodedRgbaSha256": "ea5d2e1b42646fc82d235394ed4b5d1cdcf294fefe15d10669dbf3da7776c885",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-12.png",
+      "relativePath": "candidate/Runtime32/Mask-12.png",
+      "sha256": "4d8cde5b703d1a920b66df5c5e9cbb0d61e14255a7ebec274ba371a586a8258d",
+      "decodedRgbaSha256": "3fea35da9c9c1cc35501711008abdb410f81824d16171b5849f23000c5521b79",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-13.png",
+      "relativePath": "candidate/Runtime32/Mask-13.png",
+      "sha256": "de71bbfffb3174705a767042d62cee6e4bd28da0c31a929b569f4fc8cc558c15",
+      "decodedRgbaSha256": "9a94290fe949ef442dc3459d621aa28c59278a6f203355e2b084ba88f4f1f41d",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-14.png",
+      "relativePath": "candidate/Runtime32/Mask-14.png",
+      "sha256": "4300e06ea88200abbc39ff89aefba323b2a35ffb51fa91d7088cca0d7499b605",
+      "decodedRgbaSha256": "88c804d3c7d6d32b5cf14de91f48b6c8770899e2781b506b1648558e12b60b66",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime32\\Mask-15.png",
+      "relativePath": "candidate/Runtime32/Mask-15.png",
+      "sha256": "b2ac193614f42ef1bb2f2fcee91eb83c83fa20b11fafd080a44d3bf9f0bc3744",
+      "decodedRgbaSha256": "1614bffb992bf8326ee7e24b11fdc21237c4243701a70b9fbda07016c4405b8f",
+      "width": 32,
+      "height": 32,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-00.png",
+      "relativePath": "candidate/Runtime64/Mask-00.png",
+      "sha256": "07b51c05bddb912645bc91de8a2b2efa1f8c87c818299778358a5219a5d6005e",
+      "decodedRgbaSha256": "3a7c4ee041bd3f6e99d75bd390f8e59fba55158deac694201e1a992c239a5fcb",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-01.png",
+      "relativePath": "candidate/Runtime64/Mask-01.png",
+      "sha256": "27e3404cac1eda4fd19810887097b897b4591f1ca82f8d2c9f44248e611e1265",
+      "decodedRgbaSha256": "f5cc7632e8996e3b0be18a2f5043d80326569f9d82c93649076d0953cfb7f251",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-02.png",
+      "relativePath": "candidate/Runtime64/Mask-02.png",
+      "sha256": "99ab9ac4bc1fc997448cb71cae3f22d27f9ec91d33990b98e08b4e46abe13a34",
+      "decodedRgbaSha256": "03f2550e0c7ff6067e7d259f136d6813d9ab2916599e969617ff59d83fe04bc0",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-03.png",
+      "relativePath": "candidate/Runtime64/Mask-03.png",
+      "sha256": "006e7dd5b9c50564dd1d00c0d3437f3bd4050a93d66dd5482211fc0acf3ca123",
+      "decodedRgbaSha256": "7c6ea2c38af0e93aa8ec86789aef26617cf6896e5cdc412796c6b2f37f89d551",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-04.png",
+      "relativePath": "candidate/Runtime64/Mask-04.png",
+      "sha256": "765dd947fccf088211fd9f73511749a63f5c2688508b5fd0cb5bc7927176afa2",
+      "decodedRgbaSha256": "63a3c24bee9d917d9e89fe87dd3c40a4582906dcabfc57019630c1287eb8ad6e",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-05.png",
+      "relativePath": "candidate/Runtime64/Mask-05.png",
+      "sha256": "034eda5b41b08be33a1ee567ab39a834fddd11faa660fcd6ba6d3297c906d46f",
+      "decodedRgbaSha256": "a09d800a020393c3b31b7bf3dfaff4b53ba82a0ef9d906fcce40cb9ab89ee252",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-06.png",
+      "relativePath": "candidate/Runtime64/Mask-06.png",
+      "sha256": "ba21b9ab35eb6bb22f5e66ed6c154db795af476326b4f66780db6d5a1c76664b",
+      "decodedRgbaSha256": "cd2161a32f45a951b0cf14b11fdef29b71071c62aa99fd8d3d5ba443a8c1e38d",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-07.png",
+      "relativePath": "candidate/Runtime64/Mask-07.png",
+      "sha256": "6322231745c651366cc3007daf0ed1bc30059a38660d81f0c35fe5cc435215b1",
+      "decodedRgbaSha256": "a388d2b4c25824f85cfbfae845cbfaad8e58c88177b7a6827de42ebed5b82eea",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-08.png",
+      "relativePath": "candidate/Runtime64/Mask-08.png",
+      "sha256": "ba7c954a69541f1e9f670c2bf1506dae68749e3fbc4825a819d7590b1cf8a3ef",
+      "decodedRgbaSha256": "286c8c3cfbdf66ed9db07c093ae69e67474ba5201c99181e2c5857bd93a5febe",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-09.png",
+      "relativePath": "candidate/Runtime64/Mask-09.png",
+      "sha256": "c6a5d54056706c56e8cec889577521c5894982d31c65a3c362e69f7d5a41ddee",
+      "decodedRgbaSha256": "acf4780e9a92bb06e2db91cf15e06b36b70e00692443b9b88e87d61b390aab48",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-10.png",
+      "relativePath": "candidate/Runtime64/Mask-10.png",
+      "sha256": "9b76189dd7c2ac2c6bfd7b7d244b095ebb053ad3e28033aad9a8c2d797935f7c",
+      "decodedRgbaSha256": "dd46dc378a70c645e313f3c8857fde6fa77bb6747b5e6a3b5b72ebf8c41768a0",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-11.png",
+      "relativePath": "candidate/Runtime64/Mask-11.png",
+      "sha256": "8fc3b103ab53cf653f22f50f4229d8951d6c6a34c5700ea0b49de6a430d2cc9b",
+      "decodedRgbaSha256": "29b53da050ea6e9ca677702fba6f599c7ea3db80200fcd1842ed61331d0c53dd",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-12.png",
+      "relativePath": "candidate/Runtime64/Mask-12.png",
+      "sha256": "ed0579f544abcc0b2529e345cb459013ef849d15dfd3abdf8b7ad3113dc9d090",
+      "decodedRgbaSha256": "cdb0ceed7f181b59dc72a5ef8d8cfd09b3b79740a8b2db8666f84a350848971f",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-13.png",
+      "relativePath": "candidate/Runtime64/Mask-13.png",
+      "sha256": "eab2d2bb09fb8a2dc7ca3fb4524afa307d904d9e6f976b4fc10dd6438751fc60",
+      "decodedRgbaSha256": "0f6c842cb19d5d17e2f7ac14d247b398557d43b2a8940e4f555292470b9f8674",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-14.png",
+      "relativePath": "candidate/Runtime64/Mask-14.png",
+      "sha256": "86d2bae53d51912265c46084bb658908a9d8b6e2d567289a5cf19d3126812db2",
+      "decodedRgbaSha256": "15af11131508641b3a355a29b2bfe19c806020f7fec4641a9969ba46bb28b13e",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Runtime64\\Mask-15.png",
+      "relativePath": "candidate/Runtime64/Mask-15.png",
+      "sha256": "ec46c2a346108b7ad54c1623139f9602bc76a0faf43d0065f30c7eaa3ced2465",
+      "decodedRgbaSha256": "492fd31c2be70c38ad1b9e63430c7f6a104b3af8f41efcc05ebbae6578ff1796",
+      "width": 64,
+      "height": 64,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\RuntimeAtlas-128.png",
+      "relativePath": "candidate/RuntimeAtlas-128.png",
+      "sha256": "e38ed022bf7d0af9975482e2ad6d192013d79b2b293f98ed1347c69f4b32e940",
+      "decodedRgbaSha256": "71ff7b2cc5ad676438e94373faa27181821aafb9488897ccae9424c985757eff",
+      "width": 128,
+      "height": 128,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\RuntimeAtlas-256.png",
+      "relativePath": "candidate/RuntimeAtlas-256.png",
+      "sha256": "fa94b1b9ec9f42197cb5cfb675a9da4d82f5e675faa335b211799a45f924f679",
+      "decodedRgbaSha256": "1f41ae79544fcf2f40d3113a7fa00e7f3856def0bba1286eb20d85a28e5bebf8",
+      "width": 256,
+      "height": 256,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\RuntimeAtlas-Upscaled1024.png",
+      "relativePath": "candidate/RuntimeAtlas-Upscaled1024.png",
+      "sha256": "2547472ee48e11299ca21dd7aa43cfd8650090f00861e4af6cd37247d912b1d3",
+      "decodedRgbaSha256": "0b81a36459f25445989c2f70b2092c861dd99d03f45edd3057d2bd7e94bfefb6",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\Stress-All-1024.png",
+      "relativePath": "candidate/Stress-All-1024.png",
+      "sha256": "748bd8b476a36d7b7cdab090c3e8bb052a54d76ab6213bc4eef31d8f57ab1fd8",
+      "decodedRgbaSha256": "bf50add09293f67ef5b513ebc10b824c844375da3eb646647683a72b3944bcb8",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\candidate\\SwastikaLayout-1024.png",
+      "relativePath": "candidate/SwastikaLayout-1024.png",
+      "sha256": "b79d65a5f92fe325c3014b89e9804fe52745776739284eca80cc8157a9e0cf54",
+      "decodedRgbaSha256": "745656f22be20a3231a8de977a2b4c38aeaba179aaca426e4ed7a223b68f4390",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\model\\CentralCrop-1024.png",
+      "relativePath": "model/CentralCrop-1024.png",
+      "sha256": "b79d65a5f92fe325c3014b89e9804fe52745776739284eca80cc8157a9e0cf54",
+      "decodedRgbaSha256": "745656f22be20a3231a8de977a2b4c38aeaba179aaca426e4ed7a223b68f4390",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\model\\ModelOnly-Normalized-1536.png",
+      "relativePath": "model/ModelOnly-Normalized-1536.png",
+      "sha256": "72cb83c4d3d308e47874631378ece0e66a0a8a524a9f451c76b347d31246a211",
+      "decodedRgbaSha256": "a600caaea97246183d555ae76acec9ff2199e7b08675370facbd18ab03756f55",
+      "width": 1536,
+      "height": 1536,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\model\\Raw.png",
+      "relativePath": "model/Raw.png",
+      "sha256": "e175618d854b262d62ec225b67eafd1d8a20aeb6e7556e67669f68480325facc",
+      "decodedRgbaSha256": "2d79156627d5bf6b0c76c7842547810f91d65cce4b7ea4809ff65ea0e64fd21a",
+      "width": 1254,
+      "height": 1254,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    },
+    {
+      "path": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-runtime64-20260731\\B-stone-water\\source\\Source-B-OverscanTopology-1536.png",
+      "relativePath": "source/Source-B-OverscanTopology-1536.png",
+      "sha256": "177c81b2bcf936b5210c679e0d0e343af6d46ca8270e30898502ffadfa3cc448",
+      "decodedRgbaSha256": "be6764aa5a11fdcbf6a8243ad6d1cda3d4fdd105ad682aa5c386b80110a15f06",
+      "width": 1536,
+      "height": 1536,
+      "opaque": true,
+      "alphaExtrema": [
+        255,
+        255
+      ]
+    }
+  ],
+  "completedAt": "2026-07-30T16:43:24.688390+00:00",
+  "runtimeTileSize": 64,
+  "runtimeMaskDirectory": "Runtime64",
+  "runtimeSamplingMethod": "lanczos",
+  "stressRuntimeTileSize": 32,
+  "repackagedFrom": {
+    "outputRoot": "E:\\project\\unity\\furitDefense\\Builds\\Evidence\\dual-grid-stress-atlas-16x16-regression-20260730\\B-stone-water",
+    "manifestSha256": "854236c77619026dcf70b45f86ca7b70eee1ada1569fa820296c1c0b2871213d",
+    "reviewMasksUnchanged": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "fruit-defense.terrain-brush-import.v2",
+  "profileId": "B-stone-water",
+  "brushId": "terrain-brush.stone-on-water",
+  "assetFolderName": "StoneWater",
+  "displayName": "石头 + 水",
+  "landformDisplayName": "石头",
+  "baseDisplayName": "水",
+  "landformSurfaceId": "surface.stone-road",
+  "baseSurfaceId": "surface.water",
+  "contourStyleId": "contour.square",
+  "edgeStyleId": "edge.refined",
+  "foregroundMask": 15,
+  "backgroundMask": 0,
+  "runtimeTileSize": 64,
+  "runtimeMaskDirectory": "Runtime64",
+  "sourceManifest": "manifest.json"
+}

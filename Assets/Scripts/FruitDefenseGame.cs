@@ -134,6 +134,8 @@ namespace FruitDefense
         private int _returnPulsePlantId = -1;
         private float _returnPulseUntil;
         private float _nurseryRollDisplayUntil;
+        private string _terrainPresentationError = string.Empty;
+        private string _lastLoggedTerrainPresentationError = string.Empty;
 
         public GameSimulation Simulation { get { return _game; } }
         public ResolvedLevelDefinition ActiveLevel { get { return _game == null ? null : _game.ActiveLevel; } }
@@ -151,11 +153,17 @@ namespace FruitDefense
             get { return BattlefieldTerrainPalettes.Count == 0 ? null : BattlefieldTerrainPalettes[0].SoilBaseTexture; }
         }
         public string LastResultSubmissionError { get; private set; } = string.Empty;
+        public string TerrainPresentationError { get { return _terrainPresentationError; } }
+        public bool IsTerrainPresentationAvailable
+        {
+            get { return string.IsNullOrEmpty(_terrainPresentationError); }
+        }
         public static int ActiveSessionHostCount { get; private set; }
 
         public void ConfigureBattlefieldTerrain(IEnumerable<BattlefieldTerrainPalette> palettes)
         {
             battlefieldTerrainPalettes = (palettes ?? Enumerable.Empty<BattlefieldTerrainPalette>()).ToArray();
+            if (_isInitialized) RefreshTerrainPresentationStatus();
         }
 
         public bool ValidateBattlefieldTerrain(out string reason)
@@ -176,6 +184,28 @@ namespace FruitDefense
                 reason = "A bundled level theme references an unregistered battlefield terrain palette.";
                 return false;
             }
+            var catalog = BundledLevelCatalogFactory.CreateSource();
+            foreach (var level in catalog.Levels)
+            {
+                var map = catalog.Maps.FirstOrDefault(value => value != null
+                    && string.Equals(value.MapId, level.MapId, StringComparison.Ordinal));
+                var theme = catalog.Themes.FirstOrDefault(value => value != null
+                    && string.Equals(value.ThemeId, level.ThemeId, StringComparison.Ordinal));
+                var palette = theme == null ? null : BattlefieldTerrainPalettes.FirstOrDefault(value =>
+                    value != null && string.Equals(value.PaletteId, theme.TerrainPaletteId,
+                        StringComparison.Ordinal));
+                if (map == null)
+                {
+                    reason = "A bundled level references an unavailable battlefield map.";
+                    return false;
+                }
+                if (palette == null)
+                {
+                    reason = "A bundled level theme references an unavailable battlefield terrain palette.";
+                    return false;
+                }
+                if (!BattlefieldDualGridTerrain.Validate(map, palette, out reason)) return false;
+            }
             reason = "ok";
             return true;
         }
@@ -193,11 +223,31 @@ namespace FruitDefense
             return BattlefieldDualGridTerrain.Validate(palette, out reason);
         }
 
+        public bool ValidateActiveTerrainPresentation(out string reason)
+        {
+            if (_game == null || _game.Map == null)
+            {
+                reason = "The active battle map is unavailable for terrain presentation.";
+                return false;
+            }
+            var theme = _game.Theme;
+            if (theme == null)
+            {
+                reason = "The active battle theme has no terrain palette identity.";
+                return false;
+            }
+            BattlefieldTerrainPalette palette;
+            if (!TryResolveBattlefieldTerrainPalette(
+                    theme.TerrainPaletteId, out palette, out reason)) return false;
+            return BattlefieldDualGridTerrain.Validate(_game.Map, palette, out reason);
+        }
+
         private DualGridTileSet DefaultTerrainTileSet(string surfaceId)
         {
             if (BattlefieldTerrainPalettes.Count == 0 || BattlefieldTerrainPalettes[0] == null) return null;
             DualGridTileSet tileSet;
-            return BattlefieldTerrainPalettes[0].TryGetTileSet(surfaceId, out tileSet) ? tileSet : null;
+            return BattlefieldTerrainPalettes[0].TryGetLandformTileSet(surfaceId,
+                BattlefieldLayerIds.ContourStyles.Square, out tileSet) ? tileSet : null;
         }
 
         public static bool ValidateInspectionOnlyInteraction(out string reason)
@@ -544,6 +594,7 @@ namespace FruitDefense
         private static void InstallStandaloneCompatibilityHost()
         {
             if (AppBootstrap.Instance != null) return;
+            if (FindAnyObjectByType<LayeredTerrainAcceptancePresenter>() != null) return;
 
             var host = FindAnyObjectByType<FruitDefenseGame>();
             if (host == null)
@@ -708,6 +759,7 @@ namespace FruitDefense
             _navigator = navigator;
             _resultSink = resultSink;
             _game = simulation;
+            RefreshTerrainPresentationStatus();
             _presentation.Clear();
             _projection = new BattlefieldProjection(_game.Map, BoardRect);
             _hasEnteredBattleRoute = navigator.CurrentRoute == AppRoute.Battle;
@@ -1419,9 +1471,8 @@ namespace FruitDefense
             DrawPanel(BattleSurfaceRect, Color.Lerp(ground, Color.black, .18f));
             var texturedTerrain = DrawBattlefieldTerrain();
             if (!texturedTerrain)
-                DrawRect(new Rect(BoardRect.x + 6f, BoardRect.y + 6f,
-                    BoardRect.width - 12f, BoardRect.height - 12f), ground);
-            DrawRouteTiles(texturedTerrain);
+                DrawTerrainPresentationFailure();
+            DrawRouteTiles();
             DrawCore();
             DrawPlantingCells(texturedTerrain);
             DrawInspectedAttackRange();
@@ -1437,41 +1488,131 @@ namespace FruitDefense
         private bool DrawBattlefieldTerrain()
         {
             string reason;
-            var theme = _game == null ? null : _game.Theme;
+            if (!ValidateActiveTerrainPresentation(out reason))
+            {
+                SetTerrainPresentationError(reason);
+                return false;
+            }
+            SetTerrainPresentationError(string.Empty);
+            var theme = _game.Theme;
             BattlefieldTerrainPalette palette;
-            if (theme == null || !TryResolveBattlefieldTerrainPalette(
-                    theme.TerrainPaletteId, out palette, out reason)) return false;
-
+            if (!TryResolveBattlefieldTerrainPalette(theme.TerrainPaletteId,
+                    out palette, out reason))
+            {
+                SetTerrainPresentationError(reason);
+                return false;
+            }
             var map = _game.Map;
             var grid = Projection.GridRect;
             GUI.BeginGroup(grid);
             var previous = GUI.color;
             GUI.color = Color.white;
-            GUI.DrawTextureWithTexCoords(
-                new Rect(0f, 0f, grid.width, grid.height),
-                palette.SoilBaseTexture,
-                BattlefieldDualGridTerrain.BaseTextureUv(
-                    map, palette.ReferenceTileSet, palette.SoilBaseTexture),
-                true);
+            DrawBattlefieldBaseLayer(map, grid, palette);
 
-            foreach (var binding in palette.SurfaceBindings)
-                DrawBattlefieldTerrainLayer(map, grid, binding.TileSet, binding.SurfaceId);
+            foreach (var binding in palette.LandformBindings)
+                if (binding != null && binding.TileSet != null)
+                    DrawBattlefieldTerrainLayer(map, grid, binding.TileSet, binding.SurfaceId,
+                        binding.ContourStyleId);
+
+            foreach (var binding in palette.EdgeBindings)
+                if (binding != null && binding.TileSet != null)
+                {
+                    DrawBattlefieldTerrainEdgeLayer(map, grid, binding.TileSet,
+                        binding.LandformSurfaceId, binding.BaseSurfaceId,
+                        binding.ContourStyleId, binding.EdgeStyleId, false);
+                    if (!palette.HasExactEdgeBinding(binding.BaseSurfaceId,
+                            binding.LandformSurfaceId, binding.ContourStyleId,
+                            binding.EdgeStyleId))
+                        DrawBattlefieldTerrainEdgeLayer(map, grid, binding.TileSet,
+                            binding.BaseSurfaceId, binding.LandformSurfaceId,
+                            binding.ContourStyleId, binding.EdgeStyleId, true);
+                }
 
             GUI.color = previous;
             GUI.EndGroup();
             return true;
         }
 
+        private void RefreshTerrainPresentationStatus()
+        {
+            string reason;
+            SetTerrainPresentationError(ValidateActiveTerrainPresentation(out reason)
+                ? string.Empty : reason);
+        }
+
+        private void SetTerrainPresentationError(string reason)
+        {
+            _terrainPresentationError = reason ?? string.Empty;
+            if (string.IsNullOrEmpty(_terrainPresentationError)
+                || string.Equals(_lastLoggedTerrainPresentationError,
+                    _terrainPresentationError, StringComparison.Ordinal)) return;
+            _lastLoggedTerrainPresentationError = _terrainPresentationError;
+            Debug.LogWarning("Battlefield terrain presentation stopped: "
+                + _terrainPresentationError, this);
+        }
+
+        private void DrawTerrainPresentationFailure()
+        {
+            var panel = new Rect(BoardRect.x + 6f, BoardRect.y + 6f,
+                BoardRect.width - 12f, BoardRect.height - 12f);
+            DrawRect(panel, new Color(.24f, .10f, .10f, 1f));
+            var style = new GUIStyle(_body)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = true,
+            };
+            style.normal.textColor = new Color(1f, .82f, .72f, 1f);
+            GUI.Label(Grow(panel, -12f),
+                "Terrain presentation unavailable\n" + _terrainPresentationError, style);
+        }
+
+        private void DrawBattlefieldBaseLayer(BattlefieldMapDefinition map, Rect grid,
+            BattlefieldTerrainPalette palette)
+        {
+            for (var cellY = 0; cellY < map.GridHeight; cellY++)
+            for (var cellX = 0; cellX < map.GridWidth; cellX++)
+            {
+                var cell = new Vector2Int(cellX, cellY);
+                Texture2D texture;
+                if (!palette.TryGetBaseTexture(map.BaseSurfaceAt(cell), out texture)) continue;
+                var rect = Projection.CellRect(cell);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(rect, texture,
+                    BattlefieldDualGridTerrain.BaseCellUv(map, texture, cellX, cellY), true);
+            }
+        }
+
         private void DrawBattlefieldTerrainLayer(BattlefieldMapDefinition map, Rect grid,
-            DualGridTileSet tileSet, string surfaceId)
+            DualGridTileSet tileSet, string surfaceId, string contourStyleId)
         {
             for (var vertexY = 0; vertexY <= map.GridHeight; vertexY++)
             for (var vertexX = 0; vertexX <= map.GridWidth; vertexX++)
             {
-                var mask = BattlefieldDualGridTerrain.ResolveMask(
-                    map, vertexX, vertexY, surfaceId);
+                var mask = BattlefieldDualGridTerrain.ResolveLandformMask(
+                    map, vertexX, vertexY, surfaceId, contourStyleId);
                 Sprite sprite;
                 if (mask == DualGridMask.Empty || !tileSet.TryGetSprite(mask, out sprite)) continue;
+                var rect = BattlefieldDualGridTerrain.VisualTileRect(
+                    Projection, vertexX, vertexY);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(rect, sprite.texture,
+                    BattlefieldDualGridTerrain.SpriteUv(sprite), true);
+            }
+        }
+
+        private void DrawBattlefieldTerrainEdgeLayer(BattlefieldMapDefinition map, Rect grid,
+            DualGridTileSet tileSet, string landformSurfaceId, string baseSurfaceId,
+            string contourStyleId, string edgeStyleId, bool complementMask)
+        {
+            for (var vertexY = 0; vertexY <= map.GridHeight; vertexY++)
+            for (var vertexX = 0; vertexX <= map.GridWidth; vertexX++)
+            {
+                var mask = BattlefieldDualGridTerrain.ResolveEdgeMask(map, vertexX, vertexY,
+                    landformSurfaceId, baseSurfaceId, contourStyleId, edgeStyleId);
+                if (!DualGridMaskUtility.TryResolveSharedEdgeMask(mask,
+                        complementMask, out mask)) continue;
+                Sprite sprite;
+                if (!tileSet.TryGetSprite(mask, out sprite)) continue;
                 var rect = BattlefieldDualGridTerrain.VisualTileRect(
                     Projection, vertexX, vertexY);
                 rect.position -= grid.position;
@@ -1489,20 +1630,14 @@ namespace FruitDefense
             GUI.Label(new Rect(rect.x, rect.center.y + rect.height * .08f, rect.width, 18f), "核心", _tiny);
         }
 
-        private void DrawRouteTiles(bool texturedRoute)
+        private void DrawRouteTiles()
         {
-            var routeEdge = ThemeColor(theme => theme.RouteEdgeColor, new Color(.41f, .43f, .24f));
-            var route = ThemeColor(theme => theme.RouteColor, new Color(.88f, .73f, .43f));
             var accent = ThemeColor(theme => theme.AccentColor, new Color(.9f, .38f, .24f));
             foreach (var descriptor in _game.Map.RouteTileDescriptors)
             {
                 var rect = Projection.RouteTileRect(descriptor.Cell);
-                if (!texturedRoute)
-                {
-                    DrawRect(rect, Color.Lerp(routeEdge, Color.black, .12f));
-                    DrawRouteTileLayer(rect, descriptor.Connections, .62f, routeEdge);
-                    DrawRouteTileLayer(rect, descriptor.Connections, .43f, route);
-                }
+                // When canonical terrain presentation is unavailable, keep simulation and
+                // endpoint markers alive but never substitute the legacy route paint.
                 if (descriptor.Kind != BattlefieldRouteTileKind.Entry
                     && descriptor.Kind != BattlefieldRouteTileKind.Exit) continue;
                 var markerSize = rect.width * .28f;
@@ -1514,25 +1649,11 @@ namespace FruitDefense
             }
         }
 
-        private static void DrawRouteTileLayer(
-            Rect tile, BattlefieldRouteConnections connections, float widthRatio, Color color)
-        {
-            var width = tile.width * widthRatio;
-            var half = width * .5f;
-            var center = tile.center;
-            DrawRect(new Rect(center.x - half, center.y - half, width, width), color);
-            if ((connections & BattlefieldRouteConnections.North) != 0)
-                DrawRect(new Rect(center.x - half, tile.yMin, width, center.y - tile.yMin), color);
-            if ((connections & BattlefieldRouteConnections.East) != 0)
-                DrawRect(new Rect(center.x, center.y - half, tile.xMax - center.x, width), color);
-            if ((connections & BattlefieldRouteConnections.South) != 0)
-                DrawRect(new Rect(center.x - half, center.y, width, tile.yMax - center.y), color);
-            if ((connections & BattlefieldRouteConnections.West) != 0)
-                DrawRect(new Rect(tile.xMin, center.y - half, center.x - tile.xMin, width), color);
-        }
-
         private void DrawPlantingCells(bool texturedTerrain)
         {
+            // Missing contour or pair assets are a presentation failure. Do not disguise it
+            // by reverting to the legacy plantable-cell terrain treatment.
+            if (!texturedTerrain) return;
             var expansionActive = _potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot);
             var plantable = ThemeColor(theme => theme.PlantableColor, new Color(.58f, .72f, .36f));
             foreach (var cell in _game.Map.PlantableCells)
@@ -2202,7 +2323,11 @@ namespace FruitDefense
         private void DrawAnimatedPlant(Rect rect, Plant plant)
         {
             rect = ApplyPlantVisualHeight(rect, PlantVisualHeightOffset(plant));
-            var angle = 0f;
+            var idlePhase = _game.State.Elapsed * 2.2f + plant.Id * .73f;
+            var idlePulse = Mathf.Sin(idlePhase);
+            rect.y -= idlePulse * .65f;
+            rect = ScaleAroundCenter(rect, 1f + idlePulse * .012f, 1f - idlePulse * .008f);
+            var angle = Mathf.Sin(idlePhase * .67f) * 1.25f;
             if (plant.ActionUntil > _game.State.Elapsed && plant.ActionUntil > plant.ActionStartedAt)
             {
                 var progress = Mathf.Clamp01((_game.State.Elapsed - plant.ActionStartedAt) / (plant.ActionUntil - plant.ActionStartedAt));

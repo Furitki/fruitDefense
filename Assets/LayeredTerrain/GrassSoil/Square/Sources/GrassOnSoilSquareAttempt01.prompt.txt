@@ -1,0 +1,21 @@
+Use Image 1 as the exact topology/layout guide and Image 2 only as the hand-painted style reference. Create a production source atlas for a portrait Unity tower-defense terrain system.
+
+OUTPUT CONTRACT — most important:
+- exactly one seamless 4 by 4 atlas, tiles read left-to-right then top-to-bottom as masks 0 through 15
+- no gutters, no labels, no numbers, no grid lines, no borders, no padding, no UI, no text
+- square canvas; each tile exactly one quarter of canvas width and height
+- preserve Image 1's green-versus-transparent topology exactly at every tile boundary; NW=1, NE=2, SE=4, SW=8
+- mask 0 completely transparent; mask 15 completely filled grass
+- masks 5 and 10 must remain two disconnected grass pieces with a clear transparent gap through the center; never bridge diagonal components
+- all corresponding edge sockets must match exactly across compatible tiles
+- background outside grass must be fully transparent if supported; otherwise use only flat solid #FF00FF with hard clean separation
+
+ART DIRECTION:
+- painterly mobile-game terrain like Image 2, soft hand-painted shapes rather than photographic texture or pixel art
+- lush medium/light green grass top with subtle broad brush variation
+- along every exposed grass boundary paint a clearly visible broad grass-over-soil transition: small irregular grass overhangs, a dark olive-brown contact line, warm sandy-brown exposed earth/cliff beneath it, and a restrained soft shadow
+- transition should be visually substantial at gameplay scale, roughly 35–55 pixels wide in a 256px tile, not a 1–3 pixel outline
+- preserve the square, cell-aligned footprint with rounded corners of the guide; mild natural waviness may decorate within the boundary band but must not turn the geometry into diamonds or circles
+- no objects, plants, stones, flowers, characters, paths, icons, gradients outside the painted terrain, or baked lighting direction inconsistent between tiles
+
+Treat this as an atlas texture, not a presentation sheet. Exact topology and socket continuity outrank decorative detail.

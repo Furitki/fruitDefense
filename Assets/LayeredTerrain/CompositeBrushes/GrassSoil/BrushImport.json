@@ -1,0 +1,18 @@
+{
+  "schema": "fruit-defense.terrain-brush-import.v2",
+  "profileId": "A-grass-soil",
+  "brushId": "terrain-brush.grass-on-soil",
+  "assetFolderName": "GrassSoil",
+  "displayName": "草地 + 泥土",
+  "landformDisplayName": "草地",
+  "baseDisplayName": "泥土",
+  "landformSurfaceId": "surface.grass",
+  "baseSurfaceId": "surface.soil",
+  "contourStyleId": "contour.square",
+  "edgeStyleId": "edge.refined",
+  "foregroundMask": 15,
+  "backgroundMask": 0,
+  "runtimeTileSize": 64,
+  "runtimeMaskDirectory": "Runtime64",
+  "sourceManifest": "manifest.json"
+}

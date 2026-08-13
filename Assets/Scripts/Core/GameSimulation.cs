@@ -365,6 +365,7 @@ namespace FruitDefense.Core
                 plant.PotId = potId;
                 plant.NurseryIndex = -1;
                 plant.AttackCooldown = 0f;
+                plant.SkillRuntimes.Clear();
                 if (wasPlanted && State.Phase == GamePhase.Playing) plant.MoveCooldown = 2f;
                 reason = wasPlanted ? "水果已移动" : "水果已种下";
                 AddFeedback(reason, PotPoint(pot), new Color(.25f, .62f, .24f));
@@ -373,6 +374,7 @@ namespace FruitDefense.Core
             if (plant.Weapon != WeaponKind.None) State.Inventory.Add(plant.Weapon, 1);
             target.Star++;
             target.AttackCooldown = 0f;
+            target.SkillRuntimes.Clear();
             target.ProductionProgress = 0f;
             State.Plants.Remove(plant);
             reason = GameConfig.Plant(target.Kind).Name + "升至 " + target.Star + " 星";
@@ -392,12 +394,15 @@ namespace FruitDefense.Core
                 plant.PotId = -1;
                 plant.NurseryIndex = slot;
                 plant.AttackCooldown = 0f;
+                plant.SkillRuntimes.Clear();
                 if (returningDuringBattle) plant.MoveCooldown = 2f;
                 reason = status.Reason == "可放回苗圃" ? "水果已放回刷新栏" : "水果已移动到新槽位";
                 return true;
             }
             if (plant.Weapon != WeaponKind.None) State.Inventory.Add(plant.Weapon, 1);
             target.Star++;
+            target.AttackCooldown = 0f;
+            target.SkillRuntimes.Clear();
             State.Plants.Remove(plant);
             reason = GameConfig.Plant(target.Kind).Name + "升至 " + target.Star + " 星";
             return true;
@@ -600,8 +605,6 @@ namespace FruitDefense.Core
                         continue;
                     }
                     if (skill.Trigger != BattleTriggerKind.CooldownReady) continue;
-                    var legacyCooldownTicks = BattleSkillTiming.SecondsToTicks(plant.AttackCooldown);
-                    if (legacyCooldownTicks > runtime.CooldownTicks) runtime.CooldownTicks = legacyCooldownTicks;
                     if (runtime.CooldownTicks > 0) runtime.CooldownTicks--;
                     if (runtime.BurstIntervalTicks > 0) runtime.BurstIntervalTicks--;
                     if (runtime.BurstShotsRemaining > 0)
@@ -641,9 +644,18 @@ namespace FruitDefense.Core
         {
             var ids = new HashSet<string>(skills.Select(value => value.Id), StringComparer.Ordinal);
             plant.SkillRuntimes.RemoveAll(value => !ids.Contains(value.SkillId));
+            var initialCooldownTicks = plant.SkillRuntimes.Count == 0
+                ? BattleSkillTiming.SecondsToTicks(plant.AttackCooldown)
+                : 0;
             foreach (var skill in skills.OrderBy(value => value.Id, StringComparer.Ordinal))
                 if (plant.SkillRuntimes.All(value => value.SkillId != skill.Id))
-                    plant.SkillRuntimes.Add(new SkillRuntimeState { SkillId = skill.Id });
+                    plant.SkillRuntimes.Add(new SkillRuntimeState
+                    {
+                        SkillId = skill.Id,
+                        CooldownTicks = skill.Trigger == BattleTriggerKind.CooldownReady
+                            ? initialCooldownTicks
+                            : 0,
+                    });
             plant.SkillRuntimes.Sort((left, right) => StringComparer.Ordinal.Compare(left.SkillId, right.SkillId));
         }
 
