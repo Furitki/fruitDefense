@@ -26,7 +26,7 @@ Existing acceptance validates cold and warm loads of one release. It does not se
 
 ### Suppress Unity's per-build unique identifier
 
-`WebBuild` will use `BuildOptions.NoUniqueIdentifier`. Unity documents this option as forcing the build GUID to zero, removing the known random `boot.config` input while leaving source-derived output intact. The local Web pipeline will run the production entry twice and compare the SHA-256 digest and byte length of all four advertised payloads. The second build remains the publish candidate.
+`WebBuild` will use `BuildOptions.NoUniqueIdentifier`. Unity documents this option as forcing the build GUID to zero, removing the known random `boot.config` input while leaving source-derived output intact. Every automated Unity process will also start with `-buildTarget WebGL`; otherwise a fresh Library can switch from the default target during its first build and produce a different scripting-assembly list than later WebGL-native processes. The local Web pipeline will run the production entry twice and compare the SHA-256 digest and byte length of all four advertised payloads. The second build remains the publish candidate.
 
 Only setting an externally supplied cache version was rejected because immutable URLs must continue to identify actual bytes. Patching compressed output after the build was rejected because it would make Unity packaging harder to validate and maintain.
 

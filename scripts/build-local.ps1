@@ -55,6 +55,7 @@ try {
       $webArgs = @(
         '-batchmode', '-nographics', '-quit',
         '-projectPath', $projectRoot,
+        '-buildTarget', 'WebGL',
         '-executeMethod', 'FruitDefense.Editor.WebBuild.Build',
         '-logFile', $webFirstLog
       )

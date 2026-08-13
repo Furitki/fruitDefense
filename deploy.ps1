@@ -59,6 +59,7 @@ if (-not $SkipBuild) {
   $buildLog = Join-Path $projectDir 'Logs\build-webgl.log'
   $buildArgs = @(
     '-batchmode', '-quit', '-nographics', '-projectPath', $projectDir,
+    '-buildTarget', 'WebGL',
     '-executeMethod', 'FruitDefense.Editor.WebBuild.Build', '-logFile', $buildLog
   )
   $build = Start-Process -FilePath $UnityPath -ArgumentList $buildArgs -PassThru -Wait
