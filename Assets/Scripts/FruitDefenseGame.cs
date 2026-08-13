@@ -98,6 +98,7 @@ namespace FruitDefense
         private const float MergeHintMaxWidth = 160f;
         private const float MergeHintHeight = 24f;
         private const float TerrainTileSeamOverlap = .75f;
+        public static int AttackRangeTextureSize => 1024;
 
         private GameSimulation _game;
         private readonly BattlePresentationBuffer _presentation = new BattlePresentationBuffer();
@@ -333,6 +334,39 @@ namespace FruitDefense
             {
                 reason = "shared projection does not separate deterministic in-range and out-of-range points";
                 return false;
+            }
+
+            reason = "ok";
+            return true;
+        }
+
+        public static bool ValidatePlantPresentationResources(out string reason)
+        {
+            if (AttackRangeTextureSize < 1024)
+            {
+                reason = "attack range texture is below the portrait clarity baseline";
+                return false;
+            }
+
+            foreach (PlantKind kind in Enum.GetValues(typeof(PlantKind)))
+            {
+                var plant = new Plant { Kind = kind, Weapon = WeaponKind.None };
+                if (PlantSprite(plant) == PlantSprite(kind)) continue;
+                reason = "unequipped plant does not resolve its base resource: " + kind;
+                return false;
+            }
+
+            var evolutionSprites = new HashSet<TempSprite>();
+            foreach (WeaponKind weapon in Enum.GetValues(typeof(WeaponKind)))
+            {
+                if (weapon == WeaponKind.None) continue;
+                var plant = new Plant { Kind = PlantKind.Pea, Weapon = weapon };
+                var resolved = PlantSprite(plant);
+                if (resolved != WeaponSprite(weapon) || !evolutionSprites.Add(resolved))
+                {
+                    reason = "equipment evolution resource mapping is missing or duplicated: " + weapon;
+                    return false;
+                }
             }
 
             reason = "ok";
@@ -1258,7 +1292,9 @@ namespace FruitDefense
                     var status = _game.GetPlantDropStatus(session.PlantId, target.Id);
                     if (!status.Legal) { CancelDrag(status.Reason); return; }
                     var targetPlant = _game.PlantAtPot(target.Id);
-                    var selectedAfterDrop = targetPlant != null ? targetPlant.Id : session.PlantId;
+                    var selectedAfterDrop = status.Action == PlantDropAction.Merge && targetPlant != null
+                        ? targetPlant.Id
+                        : session.PlantId;
                     var success = _game.MoveOrMergePlant(session.PlantId, target.Id, out var reason);
                     if (success) _inspectedPlantId = selectedAfterDrop;
                     SetStatus(success, reason);
@@ -1676,11 +1712,15 @@ namespace FruitDefense
             // by reverting to the legacy plantable-cell terrain treatment.
             if (!texturedTerrain) return;
             var expansionActive = _potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot);
-            if (!expansionActive) return;
             var plantable = ThemeColor(theme => theme.PlantableColor, new Color(.58f, .72f, .36f));
             foreach (var cell in _game.Map.PlantableCells)
             {
                 var rect = ExpansionRect(cell);
+                if (!expansionActive)
+                {
+                    DrawOutline(Grow(rect, .5f), 1f, new Color(.2f, .24f, .16f, .28f));
+                    continue;
+                }
                 var active = _game.State.Pots.Any(pot => pot.Active && pot.Cell == cell);
                 var legal = !active && _game.CanExpand(cell);
                 var border = active
@@ -1761,8 +1801,6 @@ namespace FruitDefense
                 if (GUI.Button(hitRect, GUIContent.none, GUIStyle.none)) HandlePlantClick(plant);
                 DrawAnimatedPlant(Grow(rect, 1f), plant);
                 GUI.Label(new Rect(rect.x - 4f, rect.yMax - 1f, rect.width + 8f, 10f), new string('★', plant.Star), _tiny);
-                if (plant.Weapon != WeaponKind.None)
-                    DrawTempSprite(new Rect(rect.xMax - 10f, rect.y - 4f, 11f, 11f), WeaponSprite(plant.Weapon));
                 if (plant.MoveCooldown > 0f)
                     GUI.Label(rect, plant.MoveCooldown.ToString("0.0"), _tiny);
             }
@@ -1871,8 +1909,6 @@ namespace FruitDefense
                 var point = ToBoard(projectile.Position);
                 if (projectile.Kind == PlantKind.Pea)
                 {
-                    var origin = ToBoard(projectile.Origin);
-                    DrawLine(origin, point, Mathf.Max(1f, Projection.LegacyVisualSize(3f)), new Color(.56f, .95f, .29f, .42f));
                     DrawVfxSprite(CenteredRect(point, 26f), CombatSprite.PeaProjectile);
                 }
                 else if (projectile.Kind == PlantKind.Watermelon)
@@ -2063,7 +2099,7 @@ namespace FruitDefense
                     outline = Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f));
                 }
                 if (showOutline) DrawOutline(Grow(rect, -1f), 2f, outline);
-                DrawTempSprite(FramelessSlotIconRect(rect), PlantSprite(plant.Kind));
+                DrawTempSprite(FramelessSlotIconRect(rect), PlantSprite(plant));
                 GUI.Label(new Rect(rect.x + 2f, rect.yMax - 18f,
                     rect.width - 4f, 16f), new string('★', plant.Star), _tiny);
                 if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
@@ -2128,6 +2164,7 @@ namespace FruitDefense
             {
                 var status = PlantDragTargetStatus(_drag, target);
                 if (status.Action == PlantDropAction.Merge && status.Legal) return new Color(1f, .74f, .08f);
+                if (status.Action == PlantDropAction.Swap && status.Legal) return new Color(.2f, .68f, .92f);
                 if (status.Legal) return new Color(.28f, .85f, .28f);
                 if (status.Action == PlantDropAction.Cancel) return new Color(.75f, .72f, .62f);
                 return new Color(.94f, .25f, .2f);
@@ -2154,7 +2191,7 @@ namespace FruitDefense
             if (_drag.Type == DragPayloadType.Plant)
             {
                 var plant = _game.PlantById(_drag.PlantId);
-                if (plant != null) DrawTempSprite(rect, PlantSprite(plant.Kind));
+                if (plant != null) DrawTempSprite(rect, PlantSprite(plant));
             }
             else if (_drag.Type == DragPayloadType.Weapon)
                 DrawTempSprite(rect, WeaponSprite(_drag.Weapon));
@@ -2286,7 +2323,7 @@ namespace FruitDefense
 
         private static Texture2D CreateAttackRangeTexture()
         {
-            const int size = 128;
+            var size = AttackRangeTextureSize;
             var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
             {
                 name = "PlantAttackRange",
@@ -2383,7 +2420,7 @@ namespace FruitDefense
             }
             var previousMatrix = GUI.matrix;
             if (Mathf.Abs(angle) > .01f) GUIUtility.RotateAroundPivot(angle, rect.center);
-            DrawTempSprite(rect, PlantSprite(plant.Kind));
+            DrawTempSprite(rect, PlantSprite(plant));
             GUI.matrix = previousMatrix;
         }
 
@@ -2440,6 +2477,13 @@ namespace FruitDefense
                 case PlantKind.Sunflower: return TempSprite.Sunflower;
                 default: return TempSprite.Pea;
             }
+        }
+
+        private static TempSprite PlantSprite(Plant plant)
+        {
+            return plant != null && plant.Weapon != WeaponKind.None
+                ? WeaponSprite(plant.Weapon)
+                : PlantSprite(plant == null ? PlantKind.Pea : plant.Kind);
         }
 
         private static TempSprite ZombieSprite(ZombieKind kind)
@@ -2514,16 +2558,5 @@ namespace FruitDefense
             return clicked;
         }
 
-        private static void DrawLine(Vector2 start, Vector2 end, float width, Color color)
-        {
-            if (Event.current.type != EventType.Repaint) return;
-            var angle = Vector2.SignedAngle(Vector2.right, end - start);
-            var length = Vector2.Distance(start, end);
-            var pivot = (start + end) * .5f;
-            var previousMatrix = GUI.matrix;
-            GUIUtility.RotateAroundPivot(angle, pivot);
-            DrawRect(new Rect(pivot.x - length * .5f, pivot.y - width * .5f, length, width), color);
-            GUI.matrix = previousMatrix;
-        }
     }
 }

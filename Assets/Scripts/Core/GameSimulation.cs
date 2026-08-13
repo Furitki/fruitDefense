@@ -326,11 +326,12 @@ namespace FruitDefense.Core
                 var action = plant.NurseryIndex >= 0 ? PlantDropAction.Plant : PlantDropAction.Move;
                 return new PlantDropStatus(true, action, action == PlantDropAction.Plant ? "可种植" : "可移动");
             }
-            if (target.Kind != plant.Kind || target.Star != plant.Star)
-                return new PlantDropStatus(false, PlantDropAction.Invalid, "只能合成同种类、同星级植物");
-            if (target.Star >= 4)
-                return new PlantDropStatus(false, PlantDropAction.Invalid, "植物已达到四星");
-            return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
+            if (target.Kind == plant.Kind && target.Star == plant.Star && target.Star < 4)
+                return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
+            if (State.Phase == GamePhase.Playing && target.MoveCooldown > 0f)
+                return new PlantDropStatus(false, PlantDropAction.Invalid,
+                    "目标植物移动冷却 " + target.MoveCooldown.ToString("0.0") + " 秒");
+            return new PlantDropStatus(true, PlantDropAction.Swap, "可交换位置");
         }
 
         public PlantDropStatus GetNurseryDropStatus(int plantId, int slot)
@@ -345,11 +346,12 @@ namespace FruitDefense.Core
             var target = PlantAtNursery(slot);
             if (target == null)
                 return new PlantDropStatus(true, PlantDropAction.Move, plant.PotId >= 0 ? "可放回苗圃" : "可移动到此槽位");
-            if (target.Kind != plant.Kind || target.Star != plant.Star)
-                return new PlantDropStatus(false, PlantDropAction.Invalid, "只能合成同种类、同星级植物");
-            if (target.Star >= 4)
-                return new PlantDropStatus(false, PlantDropAction.Invalid, "植物已达到四星");
-            return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
+            if (target.Kind == plant.Kind && target.Star == plant.Star && target.Star < 4)
+                return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
+            if (State.Phase == GamePhase.Playing && target.MoveCooldown > 0f)
+                return new PlantDropStatus(false, PlantDropAction.Invalid,
+                    "目标植物移动冷却 " + target.MoveCooldown.ToString("0.0") + " 秒");
+            return new PlantDropStatus(true, PlantDropAction.Swap, "可交换位置");
         }
 
         public bool MoveOrMergePlant(int plantId, int potId, out string reason)
@@ -369,6 +371,13 @@ namespace FruitDefense.Core
                 if (wasPlanted && State.Phase == GamePhase.Playing) plant.MoveCooldown = 2f;
                 reason = wasPlanted ? "水果已移动" : "水果已种下";
                 AddFeedback(reason, PotPoint(pot), new Color(.25f, .62f, .24f));
+                return true;
+            }
+            if (status.Action == PlantDropAction.Swap)
+            {
+                SwapPlantLocations(plant, target);
+                reason = "植物已交换位置";
+                AddFeedback(reason, PotPoint(pot), new Color(.25f, .58f, .84f));
                 return true;
             }
             if (plant.Weapon != WeaponKind.None) State.Inventory.Add(plant.Weapon, 1);
@@ -399,6 +408,12 @@ namespace FruitDefense.Core
                 reason = status.Reason == "可放回苗圃" ? "水果已放回刷新栏" : "水果已移动到新槽位";
                 return true;
             }
+            if (status.Action == PlantDropAction.Swap)
+            {
+                SwapPlantLocations(plant, target);
+                reason = "植物已交换位置";
+                return true;
+            }
             if (plant.Weapon != WeaponKind.None) State.Inventory.Add(plant.Weapon, 1);
             target.Star++;
             target.AttackCooldown = 0f;
@@ -406,6 +421,29 @@ namespace FruitDefense.Core
             State.Plants.Remove(plant);
             reason = GameConfig.Plant(target.Kind).Name + "升至 " + target.Star + " 星";
             return true;
+        }
+
+        private void SwapPlantLocations(Plant first, Plant second)
+        {
+            var firstPotId = first.PotId;
+            var firstNurseryIndex = first.NurseryIndex;
+            var secondPotId = second.PotId;
+            var secondNurseryIndex = second.NurseryIndex;
+
+            first.PotId = secondPotId;
+            first.NurseryIndex = secondNurseryIndex;
+            second.PotId = firstPotId;
+            second.NurseryIndex = firstNurseryIndex;
+
+            ResetAfterRelocation(first, firstPotId >= 0);
+            ResetAfterRelocation(second, secondPotId >= 0);
+        }
+
+        private void ResetAfterRelocation(Plant plant, bool movedFromBoard)
+        {
+            plant.AttackCooldown = 0f;
+            plant.SkillRuntimes.Clear();
+            if (movedFromBoard && State.Phase == GamePhase.Playing) plant.MoveCooldown = 2f;
         }
 
         public bool InstallWeapon(int plantId, WeaponKind weapon, out string reason)

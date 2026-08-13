@@ -9,7 +9,7 @@ namespace FruitDefense.Core
     public enum WeaponKind { None, Gatling, Ice, Chili }
     public enum ZombieKind { Normal, Runner, Armored, Boss }
     public enum GamePhase { Ready, Playing, BetweenWaves, Victory, Defeat }
-    public enum PlantDropAction { Invalid, Cancel, Plant, Move, Merge }
+    public enum PlantDropAction { Invalid, Cancel, Plant, Move, Swap, Merge }
     public enum CombatEffectKind { PeaImpact, WatermelonBlast, DurianDrop, SunBurst, GatlingMuzzle, IceImpact, ChiliImpact, HitSpark }
 
     public struct InteractionStatus

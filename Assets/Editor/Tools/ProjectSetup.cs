@@ -125,6 +125,7 @@ namespace FruitDefense.Editor
             LayeredTerrainPainterSmoke.Validate();
             TerrainBrushRegistrySmoke.Validate();
             BattlefieldDualGridTerrainSmoke.Validate();
+            PlantInteractionPresentationSmoke.Run();
             var simulation = new GameSimulation(12345);
             Assert(simulation.State.Pots.Count == 8, "initial pot count");
             foreach (var group in simulation.Map.InitialPotGroups.Values)
@@ -962,10 +963,11 @@ namespace FruitDefense.Editor
                 NurseryIndex = -1,
             };
             simulation.State.Plants.Add(invalidSource);
-            var invalid = simulation.GetPlantDropStatus(invalidSource.Id, secondPot.Id);
-            Assert(!invalid.Legal && invalid.Action == PlantDropAction.Invalid
-                && invalidSource.PotId == firstPot.Id && mergeTarget.PotId == secondPot.Id,
-                "invalid drag target leaves both plants in place");
+            var swap = simulation.GetPlantDropStatus(invalidSource.Id, secondPot.Id);
+            Assert(swap.Legal && swap.Action == PlantDropAction.Swap
+                && simulation.MoveOrMergePlant(invalidSource.Id, secondPot.Id, out _)
+                && invalidSource.PotId == secondPot.Id && mergeTarget.PotId == firstPot.Id,
+                "different occupied plants swap through drag");
 
             simulation.State.Inventory.Ice = 1;
             var weaponStatus = simulation.GetWeaponInstallStatus(invalidSource.Id, WeaponKind.Ice);
