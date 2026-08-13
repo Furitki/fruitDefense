@@ -12,4 +12,4 @@
 - [x] 2.3 Publish through the approved online pipeline and pass remote health, header, and portrait acceptance checks
 - [x] 2.4 Run the upgraded focused combat regression
 - [x] 2.5 Pass the unified P0 Unity release gate with the current 64x64 battlefield base-texture baseline
-- [ ] 2.6 Build and publish the authoritative cooldown fix through the approved online WebGL pipeline from a reviewed clean release revision
+- [x] 2.6 Build and publish the authoritative cooldown fix through the approved online WebGL pipeline from a reviewed clean release revision
