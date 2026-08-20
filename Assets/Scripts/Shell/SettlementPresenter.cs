@@ -21,6 +21,9 @@ namespace FruitDefense.Shell
         private RuntimeUiFeedbackPulse _pressPulse;
         private RuntimeUiFeedbackPulse _transitionPulse;
         private RuntimeUiFeedbackPulse _statusPulse;
+        private RuntimeUiFeedbackPulse _routeRevealPulse;
+        private RuntimeUiFeedbackPulse _resultEmphasisPulse;
+        private RuntimeUiPressTracker _pressTracker;
         private string _focusTarget = string.Empty;
         private string _pressTarget = string.Empty;
         private string _transitionTarget = string.Empty;
@@ -29,6 +32,8 @@ namespace FruitDefense.Shell
 
         private const string RetryFeedbackTarget = "retry";
         private const string ReturnFeedbackTarget = "return";
+        private const int RetryControlId = 2101;
+        private const int ReturnControlId = 2102;
 
         public SettlementViewData ViewData { get; private set; }
         public bool HasViewData { get; private set; }
@@ -53,6 +58,9 @@ namespace FruitDefense.Shell
             _pressPulse = default;
             _transitionPulse = default;
             _statusPulse = default;
+            _routeRevealPulse = default;
+            _resultEmphasisPulse = default;
+            _pressTracker.Cancel();
             _focusTarget = string.Empty;
             _pressTarget = string.Empty;
             _transitionTarget = string.Empty;
@@ -60,6 +68,21 @@ namespace FruitDefense.Shell
             _wasTransitioning = context?.Navigator == null
                 || context.Navigator.TransitionState != AppTransitionState.Idle;
             BindResultOrRecover();
+            _routeRevealPulse = RuntimeUiMotion.BeginReveal(Time.unscaledTime,
+                runtimeUiTheme.Feedback, 5);
+            if (HasViewData)
+            {
+                _resultEmphasisPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                    runtimeUiTheme.Feedback.UnscaledTransitionSeconds
+                    + runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
+            }
+        }
+
+        private void OnDisable()
+        {
+            _pressTracker.Cancel();
+            _routeRevealPulse = default;
+            _resultEmphasisPulse = default;
         }
 
         public bool TryReturn()
@@ -143,6 +166,7 @@ namespace FruitDefense.Shell
         {
             if (_runtimeUiTheme == null) return;
             var unscaledTime = Time.unscaledTime;
+            var pointer = RuntimeUiPointerSample.FromEvent(Event.current);
             var layout = PortraitShellLayout.CreateSettlement(
                 Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent());
             _drawContext = RuntimeUiGui.RequireContext(
@@ -152,101 +176,175 @@ namespace FruitDefense.Shell
                 new Rect(0f, 0f, Screen.width, Screen.height));
             RuntimeUiGui.DrawSafeArea(_drawContext, layout.Frame.SafeArea);
             RuntimeUiGui.DrawScreenCorners(_drawContext, layout.Frame.SafeArea);
-            RuntimeUiGui.DrawSectionRibbon(_drawContext, layout.Title);
+            var titleMotion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 0);
+            var titleRect = titleMotion.Transform(layout.Title);
+            var previousTitleColor = GUI.color;
+            GUI.color = new Color(previousTitleColor.r, previousTitleColor.g,
+                previousTitleColor.b, previousTitleColor.a * titleMotion.Alpha);
+            RuntimeUiGui.DrawSectionRibbon(_drawContext, titleRect);
             var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.SettlementTitle);
-            RuntimeUiGui.DrawSingleLineText(_drawContext, layout.Title, titleCopy.Text,
+            RuntimeUiGui.DrawSingleLineText(_drawContext, titleRect, titleCopy.Text,
                 titleCopy.Role, titleCopy.Tone, titleCopy.Alignment);
+            GUI.color = previousTitleColor;
 
             var transitioning = _context?.Navigator == null
                 || _context.Navigator.TransitionState != AppTransitionState.Idle;
             RefreshTransitionFeedback(transitioning, unscaledTime);
             RefreshStatusFeedback(unscaledTime);
+            if (transitioning) _pressTracker.Cancel();
             var resultState = ResolveResultState(HasViewData,
                 HasViewData && ViewData.Victory);
-            RuntimeUiGui.DrawResultCard(_drawContext, layout.ResultCard,
+            var resultReveal = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 1);
+            var resultPop = RuntimeUiMotion.Evaluate(_resultEmphasisPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.StrongPop);
+            var resultMotion = RuntimeUiMotionSample.Combine(resultReveal, resultPop);
+            var resultCardRect = resultMotion.Transform(layout.ResultCard);
+            var previousResultColor = GUI.color;
+            GUI.color = new Color(previousResultColor.r, previousResultColor.g,
+                previousResultColor.b, previousResultColor.a * resultMotion.Alpha);
+            RuntimeUiGui.DrawResultCard(_drawContext, resultCardRect,
                 RuntimeUiInteractionState.Normal);
-            RuntimeUiGui.DrawResultBanner(_drawContext, layout.ResultBanner);
-            RuntimeUiGui.DrawOrchardVista(_drawContext, layout.OrchardVista);
+            RuntimeUiGui.DrawResultBanner(_drawContext,
+                TransformInside(layout.ResultBanner, layout.ResultCard, resultCardRect));
+            RuntimeUiGui.DrawOrchardVista(_drawContext,
+                TransformInside(layout.OrchardVista, layout.ResultCard, resultCardRect));
+            GUI.color = previousResultColor;
 
             if (HasViewData)
             {
                 var outcomeCopy = RuntimeUiCopyCatalog.Get(ViewData.Victory
                     ? RuntimeUiCopyId.SettlementVictory
                     : RuntimeUiCopyId.SettlementDefeat);
-                RuntimeUiGui.DrawSingleLineText(_drawContext, layout.Outcome,
-                    outcomeCopy.Text, outcomeCopy.Role, outcomeCopy.Tone,
-                    outcomeCopy.Alignment, resultState);
+                var outcomeRect = TransformInside(
+                    layout.Outcome, layout.ResultCard, resultCardRect);
+                var previousOutcomeColor = GUI.color;
+                GUI.color = new Color(previousOutcomeColor.r, previousOutcomeColor.g,
+                    previousOutcomeColor.b,
+                    previousOutcomeColor.a * resultMotion.Alpha);
+                try
+                {
+                    RuntimeUiGui.DrawSingleLineText(_drawContext, outcomeRect,
+                        outcomeCopy.Text, outcomeCopy.Role, outcomeCopy.Tone,
+                        outcomeCopy.Alignment, resultState);
+                }
+                finally
+                {
+                    GUI.color = previousOutcomeColor;
+                }
                 DrawResultMetric(layout.CompletedLevel, RuntimeUiArtSlot.IconResourceSun,
                     RuntimeUiCopyCatalog.Get(
                         RuntimeUiCopyId.SettlementCompletedLevel).Text,
-                    RuntimeUiCopyCatalog.LevelDisplayName(ViewData.LevelId));
+                    RuntimeUiCopyCatalog.LevelDisplayName(ViewData.LevelId), 2, unscaledTime);
                 DrawResultMetric(layout.ReachedWave, RuntimeUiArtSlot.IconResourceWave,
                     RuntimeUiCopyCatalog.Get(
                         RuntimeUiCopyId.SettlementReachedWave).Text,
-                    ViewData.ReachedWave.ToString());
+                    ViewData.ReachedWave.ToString(), 3, unscaledTime);
                 DrawResultMetric(layout.RemainingLives, RuntimeUiArtSlot.IconResourceCore,
                     RuntimeUiCopyCatalog.Get(
                         RuntimeUiCopyId.SettlementRemainingLives).Text,
-                    ViewData.RemainingLives.ToString());
+                    ViewData.RemainingLives.ToString(), 4, unscaledTime);
             }
             else
             {
                 var returningCopy = RuntimeUiCopyCatalog.Get(
                     RuntimeUiCopyId.SettlementReturning);
-                RuntimeUiGui.DrawSingleLineText(_drawContext, layout.Outcome,
-                    returningCopy.Text,
-                    returningCopy.Role, returningCopy.Tone,
-                    returningCopy.Alignment, resultState);
+                var returningRect = TransformInside(
+                    layout.Outcome, layout.ResultCard, resultCardRect);
+                var previousReturningColor = GUI.color;
+                GUI.color = new Color(previousReturningColor.r,
+                    previousReturningColor.g, previousReturningColor.b,
+                    previousReturningColor.a * resultMotion.Alpha);
+                try
+                {
+                    RuntimeUiGui.DrawSingleLineText(_drawContext, returningRect,
+                        returningCopy.Text,
+                        returningCopy.Role, returningCopy.Tone,
+                        returningCopy.Alignment, resultState);
+                }
+                finally
+                {
+                    GUI.color = previousReturningColor;
+                }
             }
-            RuntimeUiGui.DrawIndicator(_drawContext, layout.ResultIndicator,
-                !HasViewData
-                    ? RuntimeUiIndicatorKind.Loading
-                    : ViewData.Victory
-                        ? RuntimeUiIndicatorKind.Success
-                        : RuntimeUiIndicatorKind.Error);
+            var indicatorRect = TransformInside(
+                layout.ResultIndicator, layout.ResultCard, resultCardRect);
+            var previousIndicatorColor = GUI.color;
+            GUI.color = new Color(previousIndicatorColor.r, previousIndicatorColor.g,
+                previousIndicatorColor.b,
+                previousIndicatorColor.a * resultMotion.Alpha);
+            try
+            {
+                RuntimeUiGui.DrawIndicator(_drawContext, indicatorRect,
+                    !HasViewData
+                        ? RuntimeUiIndicatorKind.Loading
+                        : ViewData.Victory
+                            ? RuntimeUiIndicatorKind.Success
+                            : RuntimeUiIndicatorKind.Error);
+            }
+            finally
+            {
+                GUI.color = previousIndicatorColor;
+            }
 
-            var retryHovered = ContainsPointer(layout.RetryButton);
+            var retryPress = _pressTracker.Update(RetryControlId, layout.RetryButton,
+                !transitioning && HasViewData, pointer,
+                _runtimeUiTheme.Feedback.DragCancelDistance);
+            var retryHovered = retryPress.Hovered;
             if (retryHovered)
                 BeginFocus(RetryFeedbackTarget, unscaledTime);
             var retryState = ResolveActionState(transitioning, HasViewData,
                 retryHovered || IsFeedbackActive(_focusPulse, _focusTarget,
                     RetryFeedbackTarget, unscaledTime),
-                IsPointerPress(layout.RetryButton)
-                    || IsFeedbackActive(_pressPulse, _pressTarget,
-                        RetryFeedbackTarget, unscaledTime));
+                retryPress.Pressed);
             var retryCopy = RuntimeUiCopyCatalog.Get(transitioning
                 ? RuntimeUiCopyId.SettlementTransitioning
                 : RuntimeUiCopyId.SettlementRetry);
-            if (RuntimeUiGui.DrawAction(_drawContext, layout.RetryButton,
-                    retryCopy.Text,
-                    RuntimeUiActionKind.Primary, retryState,
-                    RuntimeUiArtSlot.IconControlRetry,
-                    retryCopy.Role,
-                    IsTransitionEmphasized(RetryFeedbackTarget, unscaledTime)))
+            var retryReveal = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 5);
+            var retryMotion = IsFeedbackActive(_pressPulse, _pressTarget,
+                    RetryFeedbackTarget, unscaledTime)
+                ? RuntimeUiMotion.Evaluate(_pressPulse, unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press)
+                : RuntimeUiMotionSample.Rest;
+            RuntimeUiGui.DrawActionVisual(_drawContext, layout.RetryButton,
+                retryCopy.Text, RuntimeUiActionKind.Primary, retryState,
+                RuntimeUiArtSlot.IconControlRetry, retryCopy.Role,
+                IsTransitionEmphasized(RetryFeedbackTarget, unscaledTime),
+                RuntimeUiMotionSample.Combine(retryReveal, retryMotion));
+            if (retryPress.Activated)
             {
                 BeginPress(RetryFeedbackTarget, unscaledTime);
                 if (TryRetry())
                     BeginTransition(RetryFeedbackTarget, unscaledTime);
             }
 
-            var returnHovered = ContainsPointer(layout.ReturnButton);
+            var returnPress = _pressTracker.Update(ReturnControlId, layout.ReturnButton,
+                !transitioning, pointer, _runtimeUiTheme.Feedback.DragCancelDistance);
+            var returnHovered = returnPress.Hovered;
             if (returnHovered)
                 BeginFocus(ReturnFeedbackTarget, unscaledTime);
             var returnState = ResolveActionState(transitioning, true,
                 returnHovered || IsFeedbackActive(_focusPulse, _focusTarget,
                     ReturnFeedbackTarget, unscaledTime),
-                IsPointerPress(layout.ReturnButton)
-                    || IsFeedbackActive(_pressPulse, _pressTarget,
-                        ReturnFeedbackTarget, unscaledTime));
+                returnPress.Pressed);
             var returnCopy = RuntimeUiCopyCatalog.Get(transitioning
                 ? RuntimeUiCopyId.SettlementTransitioning
                 : RuntimeUiCopyId.SettlementReturn);
-            if (RuntimeUiGui.DrawAction(_drawContext, layout.ReturnButton,
-                    returnCopy.Text,
-                    RuntimeUiActionKind.Quiet, returnState,
-                    RuntimeUiArtSlot.IconControlReturn,
-                    returnCopy.Role,
-                    IsTransitionEmphasized(ReturnFeedbackTarget, unscaledTime)))
+            var returnReveal = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 5);
+            var returnMotion = IsFeedbackActive(_pressPulse, _pressTarget,
+                    ReturnFeedbackTarget, unscaledTime)
+                ? RuntimeUiMotion.Evaluate(_pressPulse, unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press)
+                : RuntimeUiMotionSample.Rest;
+            RuntimeUiGui.DrawActionVisual(_drawContext, layout.ReturnButton,
+                returnCopy.Text, RuntimeUiActionKind.Quiet, returnState,
+                RuntimeUiArtSlot.IconControlReturn, returnCopy.Role,
+                IsTransitionEmphasized(ReturnFeedbackTarget, unscaledTime),
+                RuntimeUiMotionSample.Combine(returnReveal, returnMotion));
+            if (returnPress.Activated)
             {
                 BeginPress(ReturnFeedbackTarget, unscaledTime);
                 if (TryReturn())
@@ -327,10 +425,12 @@ namespace FruitDefense.Shell
         }
 
         private void DrawResultMetric(Rect rect, RuntimeUiArtSlot icon,
-            string label, string value)
+            string label, string value, int revealIndex, float unscaledTime)
         {
+            var motion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, revealIndex);
             RuntimeUiGui.DrawMetric(_drawContext, rect, icon, label, value,
-                compactInline: true);
+                compactInline: true, motion: motion);
         }
 
         internal static RuntimeUiInteractionState ResolveResultState(bool hasViewData,
@@ -353,16 +453,17 @@ namespace FruitDefense.Shell
                 : RuntimeUiInteractionState.Normal;
         }
 
-        private static bool ContainsPointer(Rect rect)
+        private static Rect TransformInside(Rect child, Rect sourceParent,
+            Rect visualParent)
         {
-            return Event.current != null && rect.Contains(Event.current.mousePosition);
-        }
-
-        private static bool IsPointerPress(Rect rect)
-        {
-            return ContainsPointer(rect) && Event.current.button == 0
-                && (Event.current.rawType == EventType.MouseDown
-                    || Event.current.rawType == EventType.MouseDrag);
+            if (sourceParent.width <= 0f || sourceParent.height <= 0f) return child;
+            var scaleX = visualParent.width / sourceParent.width;
+            var scaleY = visualParent.height / sourceParent.height;
+            return new Rect(
+                visualParent.x + (child.x - sourceParent.x) * scaleX,
+                visualParent.y + (child.y - sourceParent.y) * scaleY,
+                child.width * scaleX,
+                child.height * scaleY);
         }
 
         private bool Fail(ShellFlowError error)

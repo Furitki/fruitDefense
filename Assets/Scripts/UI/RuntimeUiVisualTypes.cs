@@ -616,6 +616,14 @@ namespace FruitDefense.UI
         [SerializeField, Min(0f)] private float unscaledSelectionSeconds;
         [SerializeField, Min(0f)] private float unscaledTransitionSeconds;
         [SerializeField, Min(0f)] private float unscaledStatusSeconds;
+        [SerializeField, Range(.8f, 1f)] private float pressScale;
+        [SerializeField, Range(1f, 1.5f)] private float popScale;
+        [SerializeField, Range(1f, 1.5f)] private float strongPopScale;
+        [SerializeField, Range(0f, 64f)] private float revealOffset;
+        [SerializeField, Min(0f)] private float unscaledRevealSeconds;
+        [SerializeField, Min(0f)] private float unscaledStaggerSeconds;
+        [SerializeField, Range(0f, 44f)] private float dragCancelDistance;
+        [SerializeField] private bool reducedMotion;
 
         public float NormalOpacity => normalOpacity;
         public float FocusedOpacity => focusedOpacity;
@@ -629,6 +637,14 @@ namespace FruitDefense.UI
         public float UnscaledSelectionSeconds => unscaledSelectionSeconds;
         public float UnscaledTransitionSeconds => unscaledTransitionSeconds;
         public float UnscaledStatusSeconds => unscaledStatusSeconds;
+        public float PressScale => pressScale;
+        public float PopScale => popScale;
+        public float StrongPopScale => strongPopScale;
+        public float RevealOffset => revealOffset;
+        public float UnscaledRevealSeconds => unscaledRevealSeconds;
+        public float UnscaledStaggerSeconds => unscaledStaggerSeconds;
+        public float DragCancelDistance => dragCancelDistance;
+        public bool ReducedMotion => reducedMotion;
 
         public static RuntimeUiFeedbackTokens SunnyOrchardDefault()
         {
@@ -646,6 +662,14 @@ namespace FruitDefense.UI
                 unscaledSelectionSeconds = .12f,
                 unscaledTransitionSeconds = .18f,
                 unscaledStatusSeconds = 2.6f,
+                pressScale = .96f,
+                popScale = 1.12f,
+                strongPopScale = 1.16f,
+                revealOffset = 12f,
+                unscaledRevealSeconds = .34f,
+                unscaledStaggerSeconds = .055f,
+                dragCancelDistance = 10f,
+                reducedMotion = false,
             };
         }
 
@@ -663,6 +687,33 @@ namespace FruitDefense.UI
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledSelectionSeconds", unscaledSelectionSeconds);
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledTransitionSeconds", unscaledTransitionSeconds);
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledStatusSeconds", unscaledStatusSeconds);
+            ValidateScale(result, field + ".pressScale", pressScale, .8f, 1f);
+            ValidateScale(result, field + ".popScale", popScale, 1f, 1.5f);
+            ValidateScale(result, field + ".strongPopScale", strongPopScale,
+                popScale, 1.5f);
+            ValidateRange(result, field + ".revealOffset", revealOffset, 0f, 64f);
+            RuntimeUiNumbers.ValidateDuration(result,
+                field + ".unscaledRevealSeconds", unscaledRevealSeconds);
+            RuntimeUiNumbers.ValidateDuration(result,
+                field + ".unscaledStaggerSeconds", unscaledStaggerSeconds);
+            ValidateRange(result, field + ".dragCancelDistance",
+                dragCancelDistance, 0f, 44f);
+        }
+
+        private static void ValidateScale(RuntimeUiValidationResult result,
+            string field, float value, float minimum, float maximum)
+        {
+            ValidateRange(result, field, value, minimum, maximum);
+        }
+
+        private static void ValidateRange(RuntimeUiValidationResult result,
+            string field, float value, float minimum, float maximum)
+        {
+            if (!RuntimeUiNumbers.IsFinite(value) || value < minimum || value > maximum)
+            {
+                result.Add("theme.feedback.range", field,
+                    "Motion value must be finite and inside its authored range.");
+            }
         }
     }
 
@@ -680,6 +731,7 @@ namespace FruitDefense.UI
         public bool IsScheduled => deadline > startedAt;
         public float StartedAt => startedAt;
         public float Deadline => deadline;
+        public float Duration => IsScheduled ? deadline - startedAt : 0f;
 
         public static RuntimeUiFeedbackPulse Begin(float unscaledTime, float duration)
         {
@@ -705,6 +757,14 @@ namespace FruitDefense.UI
                 && RuntimeUiNumbers.IsFinite(unscaledTime)
                 && unscaledTime >= startedAt
                 && unscaledTime < deadline;
+        }
+
+        public float Progress(float unscaledTime)
+        {
+            if (!IsScheduled || !RuntimeUiNumbers.IsFinite(unscaledTime)) return 1f;
+            if (unscaledTime <= startedAt) return 0f;
+            if (unscaledTime >= deadline) return 1f;
+            return Mathf.Clamp01((unscaledTime - startedAt) / Duration);
         }
     }
 

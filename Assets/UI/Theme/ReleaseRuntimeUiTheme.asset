@@ -89,4 +89,12 @@ MonoBehaviour:
     unscaledSelectionSeconds: 0.12
     unscaledTransitionSeconds: 0.18
     unscaledStatusSeconds: 2.6
+    pressScale: 0.96
+    popScale: 1.12
+    strongPopScale: 1.16
+    revealOffset: 12
+    unscaledRevealSeconds: 0.34
+    unscaledStaggerSeconds: 0.055
+    dragCancelDistance: 10
+    reducedMotion: 0
   activeArtSet: {fileID: 11400000, guid: 91aa538ae02449cba8c971ffe4d427eb, type: 2}

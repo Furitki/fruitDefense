@@ -133,8 +133,25 @@ namespace FruitDefense
         private RuntimeUiFeedbackPulse _nurseryRollDisplayPulse;
         private int _selectionPulseTarget;
         private RuntimeUiFeedbackPulse _selectionPulse;
+        private int _actionPressTarget;
+        private RuntimeUiFeedbackPulse _actionPressPulse;
+        private RuntimeUiPressTracker _actionPressTracker;
+        private int _observedSun;
+        private int _observedLives;
+        private int _observedWave;
+        private RuntimeUiFeedbackPulse _sunPulse;
+        private RuntimeUiFeedbackPulse _livesPulse;
+        private RuntimeUiFeedbackPulse _wavePulse;
         private string _terrainPresentationError = string.Empty;
         private string _lastLoggedTerrainPresentationError = string.Empty;
+
+        private const int PauseActionFeedbackTarget = 3101;
+        private const int SpeedActionFeedbackTarget = 3102;
+        private const int WaveActionFeedbackTarget = 3103;
+        private const int RefreshActionFeedbackTarget = 3104;
+        private const int ModalPrimaryFeedbackTarget = 3105;
+        private const int ModalSecondaryFeedbackTarget = 3106;
+        private const int DetailCloseFeedbackTarget = 3107;
 
         public GameSimulation Simulation { get { return _game; } }
         public ResolvedLevelDefinition ActiveLevel { get { return _game == null ? null : _game.ActiveLevel; } }
@@ -785,6 +802,15 @@ namespace FruitDefense
             _runtimeUiTheme = runtimeUiTheme;
             BuildWorldRenderingStyles(runtimeUiTheme.PackagedChineseFont);
             _game = simulation;
+            _observedSun = simulation.State.Sun;
+            _observedLives = simulation.State.Lives;
+            _observedWave = simulation.State.WaveIndex;
+            _sunPulse = default;
+            _livesPulse = default;
+            _wavePulse = default;
+            _actionPressTarget = 0;
+            _actionPressPulse = default;
+            _actionPressTracker.Cancel();
             RefreshTerrainPresentationStatus();
             _presentation.Clear();
             _battleUiLayout = new BattleUiLayout(_game.Map);
@@ -1521,6 +1547,19 @@ namespace FruitDefense
             return new Rect(rect.x - amount, rect.y - amount, rect.width + amount * 2f, rect.height + amount * 2f);
         }
 
+        private static Rect TransformChild(Rect child, Rect sourceParent,
+            Rect visualParent)
+        {
+            if (sourceParent.width <= 0f || sourceParent.height <= 0f) return child;
+            var scaleX = visualParent.width / sourceParent.width;
+            var scaleY = visualParent.height / sourceParent.height;
+            return new Rect(
+                visualParent.x + (child.x - sourceParent.x) * scaleX,
+                visualParent.y + (child.y - sourceParent.y) * scaleY,
+                child.width * scaleX,
+                child.height * scaleY);
+        }
+
         private static bool ContainsRect(Rect outer, Rect inner)
         {
             return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin
@@ -1537,6 +1576,29 @@ namespace FruitDefense
             return ContainsPointer(rect) && Event.current.button == 0
                 && (Event.current.rawType == EventType.MouseDown
                     || Event.current.rawType == EventType.MouseDrag);
+        }
+
+        private void BeginBattleActionPress(int target)
+        {
+            _actionPressTarget = target;
+            _actionPressPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledPressSeconds);
+        }
+
+        private RuntimeUiMotionSample BattleActionMotion(int target)
+        {
+            if (_actionPressTarget != target)
+                return RuntimeUiMotionSample.Rest;
+            return RuntimeUiMotion.Evaluate(_actionPressPulse, Time.unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press);
+        }
+
+        private RuntimeUiPressResult TrackBattleAction(int target, Rect rect,
+            bool enabled = true)
+        {
+            return _actionPressTracker.Update(target, rect, enabled,
+                RuntimeUiPointerSample.FromEvent(Event.current),
+                _runtimeUiTheme.Feedback.DragCancelDistance);
         }
 
         private static bool DrawSharedHitTarget(RuntimeUiDrawContext drawContext,
@@ -1559,6 +1621,7 @@ namespace FruitDefense
         {
             var viewState = BattleUiPresentationState.Create(
                 _game.State.Phase, _game.State.Paused);
+            RefreshHeaderMetricMotion();
             RuntimeUiGui.DrawRaisedPanel(drawContext, layout.Header);
             var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleTitle);
             RuntimeUiGui.DrawSingleLineText(drawContext, layout.HeaderTitle,
@@ -1568,37 +1631,75 @@ namespace FruitDefense
                 RuntimeUiArtSlot.IconResourceSun,
                 RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleSun).Text,
                 _game.State.Sun.ToString(), compactInline: true,
-                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize,
+                motion: RuntimeUiMotion.Evaluate(_sunPulse, Time.unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop));
             RuntimeUiGui.DrawMetric(drawContext, layout.LivesMetric,
                 RuntimeUiArtSlot.IconResourceCore,
                 RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleCore).Text,
                 _game.State.Lives.ToString(), compactInline: true,
-                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize,
+                motion: RuntimeUiMotion.Evaluate(_livesPulse, Time.unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.StrongPop));
             RuntimeUiGui.DrawMetric(drawContext, layout.WaveMetric,
                 RuntimeUiArtSlot.IconResourceWave,
                 RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleWave).Text,
                 _game.State.WaveIndex.ToString(),
                 compactInline: true,
-                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize,
+                motion: RuntimeUiMotion.Evaluate(_wavePulse, Time.unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop));
             RuntimeUiGui.DrawMetricDivider(drawContext, layout.FirstMetricDivider);
             RuntimeUiGui.DrawMetricDivider(drawContext, layout.SecondMetricDivider);
 
+            var pausePress = TrackBattleAction(
+                PauseActionFeedbackTarget, layout.PauseAction);
             var pauseState = BattleUiPresentationState.ResolveActionState(
-                viewState.IsPaused, ContainsPointer(layout.PauseAction),
-                IsPointerPress(layout.PauseAction));
-            if (RuntimeUiGui.DrawAction(drawContext, layout.PauseAction, string.Empty,
-                    RuntimeUiActionKind.Quiet, pauseState, viewState.PauseActionIcon))
+                viewState.IsPaused, pausePress.Hovered, pausePress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, layout.PauseAction, string.Empty,
+                RuntimeUiActionKind.Quiet, pauseState, viewState.PauseActionIcon,
+                motion: BattleActionMotion(PauseActionFeedbackTarget));
+            if (pausePress.Activated)
+            {
+                BeginBattleActionPress(PauseActionFeedbackTarget);
                 _game.TogglePause();
+            }
 
+            var speedPress = TrackBattleAction(
+                SpeedActionFeedbackTarget, layout.SpeedAction);
             var speedState = BattleUiPresentationState.ResolveActionState(
-                _game.State.Speed != 1, ContainsPointer(layout.SpeedAction),
-                IsPointerPress(layout.SpeedAction));
-            var speedClicked = RuntimeUiGui.DrawAction(drawContext, layout.SpeedAction,
+                _game.State.Speed != 1, speedPress.Hovered, speedPress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, layout.SpeedAction,
                 _game.State.Speed + "×", RuntimeUiActionKind.Quiet, speedState,
                 RuntimeUiArtSlot.IconControlSpeed,
-                RuntimeUiTypographyRole.Supplemental);
-            if (speedClicked)
+                RuntimeUiTypographyRole.Supplemental,
+                motion: BattleActionMotion(SpeedActionFeedbackTarget));
+            if (speedPress.Activated)
+            {
+                BeginBattleActionPress(SpeedActionFeedbackTarget);
                 _game.SetSpeed(_game.State.Speed == 1 ? 2 : 1);
+            }
+        }
+
+        private void RefreshHeaderMetricMotion()
+        {
+            var duration = _runtimeUiTheme.Feedback.UnscaledTransitionSeconds
+                + _runtimeUiTheme.Feedback.UnscaledSelectionSeconds;
+            if (_observedSun != _game.State.Sun)
+            {
+                _observedSun = _game.State.Sun;
+                _sunPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime, duration);
+            }
+            if (_observedLives != _game.State.Lives)
+            {
+                _observedLives = _game.State.Lives;
+                _livesPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime, duration);
+            }
+            if (_observedWave != _game.State.WaveIndex)
+            {
+                _observedWave = _game.State.WaveIndex;
+                _wavePulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime, duration);
+            }
         }
 
         private void DrawBoard(BattleUiLayout layout, RuntimeUiDrawContext drawContext,
@@ -2127,10 +2228,13 @@ namespace FruitDefense
                 : layout.BoardStatus;
             if (transientVisible)
             {
+                var statusMotion = RuntimeUiMotion.Evaluate(_statusPulse,
+                    Time.unscaledTime, _runtimeUiTheme.Feedback,
+                    RuntimeUiMotionPattern.Pop);
                 PrepareTransientStatusText(drawContext, statusRect, text, statusState);
                 RuntimeUiGui.DrawStatus(drawContext, statusRect, _preparedStatusTextLines,
                     statusState, RuntimeUiTypographyRole.Supplemental,
-                    _preparedStatusTextMode);
+                    _preparedStatusTextMode, motion: statusMotion);
             }
             else
             {
@@ -2142,14 +2246,24 @@ namespace FruitDefense
                 DrawDropCue(drawContext, statusRect, currentDropCue);
             if (viewState.ShowsWaveAction)
             {
+                var wavePress = TrackBattleAction(
+                    WaveActionFeedbackTarget, layout.WaveAction);
                 var actionState = BattleUiPresentationState.ResolveActionState(
-                    false, ContainsPointer(layout.WaveAction),
-                    IsPointerPress(layout.WaveAction));
-                if (RuntimeUiGui.DrawAction(drawContext, layout.WaveAction,
-                        viewState.WaveActionLabel, RuntimeUiActionKind.Primary,
-                        actionState, RuntimeUiArtSlot.IconControlStartWave,
-                        RuntimeUiTypographyRole.Supplemental))
+                    false, wavePress.Hovered, wavePress.Pressed);
+                RuntimeUiGui.DrawActionVisual(drawContext, layout.WaveAction,
+                    viewState.WaveActionLabel, RuntimeUiActionKind.Primary,
+                    actionState, RuntimeUiArtSlot.IconControlStartWave,
+                    RuntimeUiTypographyRole.Supplemental,
+                    motion: BattleActionMotion(WaveActionFeedbackTarget));
+                if (wavePress.Activated)
+                {
+                    BeginBattleActionPress(WaveActionFeedbackTarget);
                     SetStatus(_game.StartWave(out var reason), reason);
+                }
+            }
+            else if (_actionPressTracker.ActiveControlId == WaveActionFeedbackTarget)
+            {
+                _actionPressTracker.Cancel();
             }
         }
 
@@ -2189,15 +2303,22 @@ namespace FruitDefense
                 IsPointerPress(potRect));
             var selectionEmphasized = _potToolSelected && _selectionPulseTarget == -1
                 && _selectionPulse.IsActive(Time.unscaledTime);
-            RuntimeUiGui.DrawSlot(drawContext, potRect, RuntimeUiSlotKind.Tool, state,
+            var potMotion = selectionEmphasized
+                ? RuntimeUiMotion.Evaluate(_selectionPulse, Time.unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
+                : RuntimeUiMotionSample.Rest;
+            var potVisualRect = potMotion.Transform(potRect);
+            RuntimeUiGui.DrawSlot(drawContext, potVisualRect, RuntimeUiSlotKind.Tool, state,
                 selectionEmphasized);
-            RuntimeUiGui.DrawIcon(drawContext, layout.PotToolIcon,
+            RuntimeUiGui.DrawIcon(drawContext,
+                TransformChild(layout.PotToolIcon, potRect, potVisualRect),
                 RuntimeUiArtSlot.IconToolPot, state);
-            RuntimeUiGui.DrawText(drawContext, layout.PotToolLabel,
+            RuntimeUiGui.DrawText(drawContext,
+                TransformChild(layout.PotToolLabel, potRect, potVisualRect),
                 "花盆\n×" + _game.State.Inventory.Pots,
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
                 TextAnchor.MiddleCenter, state);
-            RuntimeUiGui.DrawStateIndicator(drawContext, potRect, state);
+            RuntimeUiGui.DrawStateIndicator(drawContext, potVisualRect, state);
             if (DrawSharedHitTarget(drawContext, potRect, state) && available)
                 TogglePotTool();
         }
@@ -2212,14 +2333,19 @@ namespace FruitDefense
                 selected || dragging, ContainsPointer(rect), IsPointerPress(rect));
             var selectionEmphasized = selected && _selectionPulseTarget == (int)weapon
                 && _selectionPulse.IsActive(Time.unscaledTime);
-            RuntimeUiGui.DrawSlot(drawContext, rect, RuntimeUiSlotKind.Tool, state,
+            var motion = selectionEmphasized
+                ? RuntimeUiMotion.Evaluate(_selectionPulse, Time.unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
+                : RuntimeUiMotionSample.Rest;
+            var visualRect = motion.Transform(rect);
+            RuntimeUiGui.DrawSlot(drawContext, visualRect, RuntimeUiSlotKind.Tool, state,
                 selectionEmphasized);
             DrawStatefulTempSprite(
-                drawContext, layout.ToolIcon(rect), WeaponSprite(weapon), state);
-            RuntimeUiGui.DrawText(drawContext, layout.ToolCountLabel(rect), "×" + count,
+                drawContext, layout.ToolIcon(visualRect), WeaponSprite(weapon), state);
+            RuntimeUiGui.DrawText(drawContext, layout.ToolCountLabel(visualRect), "×" + count,
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
                 TextAnchor.MiddleCenter, state);
-            RuntimeUiGui.DrawStateIndicator(drawContext, rect, state);
+            RuntimeUiGui.DrawStateIndicator(drawContext, visualRect, state);
             if (!DrawSharedHitTarget(drawContext, rect, state) || count <= 0) return;
             ToggleWeaponSelection(weapon);
         }
@@ -2249,27 +2375,33 @@ namespace FruitDefense
                             ? RuntimeUiInteractionState.Success
                             : BattleUiPresentationState.ResolveSlotState(true, false,
                                 ContainsPointer(rect), IsPointerPress(rect));
+                    var rewardMotion = showingPotReward
+                        ? RuntimeUiMotion.Evaluate(_nurseryRollDisplayPulse,
+                            Time.unscaledTime, _runtimeUiTheme.Feedback,
+                            RuntimeUiMotionPattern.Pop)
+                        : RuntimeUiMotionSample.Rest;
+                    var visualRect = rewardMotion.Transform(rect);
                     RuntimeUiGui.DrawSlot(
-                        drawContext, rect, RuntimeUiSlotKind.Nursery, state);
+                        drawContext, visualRect, RuntimeUiSlotKind.Nursery, state);
                     if (showingPotReward)
                     {
                         RuntimeUiGui.DrawIcon(drawContext,
-                            BattleUiLayout.FramelessSlotIcon(rect),
+                            BattleUiLayout.FramelessSlotIcon(visualRect),
                             RuntimeUiArtSlot.IconToolPot, state);
                         RuntimeUiGui.DrawSingleLineText(drawContext,
-                            BattleUiLayout.NurserySlotLabel(rect),
+                            BattleUiLayout.NurserySlotLabel(visualRect),
                             RuntimeUiCopyCatalog.Get(
                                 RuntimeUiCopyId.BattleNurseryPotStored).Text,
                             RuntimeUiTypographyRole.Supplemental,
                             RuntimeUiTextTone.State, TextAnchor.MiddleCenter, state);
                     }
                     else
-                        RuntimeUiGui.DrawSingleLineText(drawContext, rect,
+                        RuntimeUiGui.DrawSingleLineText(drawContext, visualRect,
                             RuntimeUiCopyCatalog.Get(
                                 RuntimeUiCopyId.BattleNurseryEmpty).Text,
                             RuntimeUiTypographyRole.Supplemental,
                             RuntimeUiTextTone.Secondary, TextAnchor.MiddleCenter, state);
-                    RuntimeUiGui.DrawStateIndicator(drawContext, rect, state);
+                    RuntimeUiGui.DrawStateIndicator(drawContext, visualRect, state);
                     DrawDropCue(drawContext, rect, cue);
                     if (DrawSharedHitTarget(drawContext, rect, state))
                         SetStatus(false, DestinationDragGuidance(_game.PlantById(_inspectedPlantId), true));
@@ -2284,25 +2416,38 @@ namespace FruitDefense
                         ? RuntimeUiInteractionState.Warning
                         : BattleUiPresentationState.ResolveSlotState(true, selected,
                             ContainsPointer(rect), IsPointerPress(rect));
+                var returnMotion = returning
+                    ? RuntimeUiMotion.Evaluate(_returnPulse, Time.unscaledTime,
+                        _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
+                    : RuntimeUiMotionSample.Rest;
+                var occupiedVisualRect = returnMotion.Transform(rect);
                 RuntimeUiGui.DrawSlot(
-                    drawContext, rect, RuntimeUiSlotKind.Nursery, occupiedState);
-                DrawTempSprite(BattleUiLayout.FramelessSlotIcon(rect), PlantSprite(plant));
-                RuntimeUiGui.DrawText(drawContext, BattleUiLayout.NurserySlotLabel(rect),
+                    drawContext, occupiedVisualRect, RuntimeUiSlotKind.Nursery, occupiedState);
+                DrawTempSprite(BattleUiLayout.FramelessSlotIcon(occupiedVisualRect), PlantSprite(plant));
+                RuntimeUiGui.DrawText(drawContext,
+                    BattleUiLayout.NurserySlotLabel(occupiedVisualRect),
                     new string('★', plant.Star), RuntimeUiTypographyRole.Supplemental,
                     RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, occupiedState);
-                RuntimeUiGui.DrawStateIndicator(drawContext, rect, occupiedState);
+                RuntimeUiGui.DrawStateIndicator(drawContext, occupiedVisualRect, occupiedState);
                 DrawDropCue(drawContext, rect, cue);
                 if (DrawSharedHitTarget(drawContext, rect, occupiedState))
                     HandlePlantClick(plant);
             }
             var cost = GameConfig.RefreshCost(_game.State.RefreshCount);
-            var refreshState = BattleUiPresentationState.ResolveActionState(false,
-                ContainsPointer(layout.RefreshAction), IsPointerPress(layout.RefreshAction));
-            if (RuntimeUiGui.DrawAction(drawContext, layout.RefreshAction,
-                    RuntimeUiCopyCatalog.FormatRefreshAction(cost),
-                    RuntimeUiActionKind.Primary, refreshState,
-                    RuntimeUiArtSlot.IconControlRefresh))
+            var refreshPress = TrackBattleAction(
+                RefreshActionFeedbackTarget, layout.RefreshAction);
+            var refreshState = BattleUiPresentationState.ResolveActionState(
+                false, refreshPress.Hovered, refreshPress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, layout.RefreshAction,
+                RuntimeUiCopyCatalog.FormatRefreshAction(cost),
+                RuntimeUiActionKind.Primary, refreshState,
+                RuntimeUiArtSlot.IconControlRefresh,
+                motion: BattleActionMotion(RefreshActionFeedbackTarget));
+            if (refreshPress.Activated)
+            {
+                BeginBattleActionPress(RefreshActionFeedbackTarget);
                 RefreshNurseryFromUi();
+            }
         }
 
         private void RefreshNurseryFromUi()
@@ -2340,13 +2485,19 @@ namespace FruitDefense
                 + " · 装备 " + GameConfig.WeaponName(plant.Weapon),
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Secondary,
                 TextAnchor.MiddleLeft, detailState);
-            var closeState = BattleUiPresentationState.ResolveActionState(false,
-                ContainsPointer(layout.DetailCloseAction),
-                IsPointerPress(layout.DetailCloseAction));
-            if (RuntimeUiGui.DrawAction(drawContext, layout.DetailCloseAction,
-                    string.Empty, RuntimeUiActionKind.Quiet, closeState,
-                    RuntimeUiArtSlot.IconControlClose))
+            var closePress = TrackBattleAction(
+                DetailCloseFeedbackTarget, layout.DetailCloseAction);
+            var closeState = BattleUiPresentationState.ResolveActionState(
+                false, closePress.Hovered, closePress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, layout.DetailCloseAction,
+                string.Empty, RuntimeUiActionKind.Quiet, closeState,
+                RuntimeUiArtSlot.IconControlClose,
+                motion: BattleActionMotion(DetailCloseFeedbackTarget));
+            if (closePress.Activated)
+            {
+                BeginBattleActionPress(DetailCloseFeedbackTarget);
                 _inspectedPlantId = -1;
+            }
         }
 
         private void DrawDragGhost(BattleUiLayout layout,
@@ -2467,21 +2618,35 @@ namespace FruitDefense
             }
             var actionCount = content.ActionCount;
             var primaryRect = layout.ModalAction(0, actionCount);
-            var primaryState = BattleUiPresentationState.ResolveActionState(false,
-                ContainsPointer(primaryRect), IsPointerPress(primaryRect));
-            if (RuntimeUiGui.DrawAction(drawContext, primaryRect,
-                    content.PrimaryAction, content.PrimaryActionKind,
-                    primaryState, content.PrimaryActionIcon))
+            var primaryPress = TrackBattleAction(
+                ModalPrimaryFeedbackTarget, primaryRect);
+            var primaryState = BattleUiPresentationState.ResolveActionState(
+                false, primaryPress.Hovered, primaryPress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, primaryRect,
+                content.PrimaryAction, content.PrimaryActionKind,
+                primaryState, content.PrimaryActionIcon,
+                motion: BattleActionMotion(ModalPrimaryFeedbackTarget));
+            if (primaryPress.Activated)
+            {
+                BeginBattleActionPress(ModalPrimaryFeedbackTarget);
                 primaryCallback();
+            }
 
             if (actionCount != 2) return;
             var secondaryRect = layout.ModalAction(1, actionCount);
-            var secondaryState = BattleUiPresentationState.ResolveActionState(false,
-                ContainsPointer(secondaryRect), IsPointerPress(secondaryRect));
-            if (RuntimeUiGui.DrawAction(drawContext, secondaryRect,
-                    content.SecondaryAction, content.SecondaryActionKind,
-                    secondaryState, content.SecondaryActionIcon))
+            var secondaryPress = TrackBattleAction(
+                ModalSecondaryFeedbackTarget, secondaryRect);
+            var secondaryState = BattleUiPresentationState.ResolveActionState(
+                false, secondaryPress.Hovered, secondaryPress.Pressed);
+            RuntimeUiGui.DrawActionVisual(drawContext, secondaryRect,
+                content.SecondaryAction, content.SecondaryActionKind,
+                secondaryState, content.SecondaryActionIcon,
+                motion: BattleActionMotion(ModalSecondaryFeedbackTarget));
+            if (secondaryPress.Activated)
+            {
+                BeginBattleActionPress(ModalSecondaryFeedbackTarget);
                 secondaryCallback();
+            }
         }
 
         private void RestartRun()
@@ -2493,6 +2658,9 @@ namespace FruitDefense
         private void ResetInteractionState()
         {
             ApplyRestartPresentation(new RestartPresentationState());
+            _actionPressTarget = 0;
+            _actionPressPulse = default;
+            _actionPressTracker.Cancel();
         }
 
         private RestartPresentationState CaptureRestartPresentation()

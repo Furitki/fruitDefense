@@ -1150,10 +1150,12 @@ namespace FruitDefense.Editor
                     "public static void DrawResultCard(", "DrawStateIndicator("),
                 "modal/result surfaces do not auto-own a duplicate state badge");
             Assert(CountOccurrences(settlement,
-                       "RuntimeUiGui.DrawIndicator(_drawContext, layout.ResultIndicator") == 1
+                       "RuntimeUiGui.DrawIndicator(_drawContext, indicatorRect") == 1
+                && CountOccurrences(settlement,
+                       "layout.ResultIndicator, layout.ResultCard, resultCardRect") == 1
                 && CountOccurrences(battle,
                        "RuntimeUiGui.DrawIndicator(drawContext, layout.ModalResultIndicator") == 1,
-                "Settlement and Battle each own exactly one explicit terminal/result badge");
+                "Settlement and Battle each own one explicit terminal/result badge in their visual parent");
             Assert(bootstrap.Contains(
                     "layout.Screen, layout.Modal, RuntimeUiInteractionState.Normal")
                 && bootstrap.Contains("RuntimeUiGui.DrawStatus(_runtimeUiDrawContext"),

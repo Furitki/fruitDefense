@@ -1,10 +1,17 @@
+---
+id: ui-visual-system
+parent: design-kb-home
+order: 45
+status: active
+---
+
 # Fruit Defense 运行时 UI 视觉系统
 
 ## 1. 文档目的与批准方向
 
 本文是 Bootstrap、Lobby、Battle 应用层界面、阻塞浮层和 Settlement 的稳定视觉规范。它定义跨页面应长期保持的语义、组件 anatomy、状态语言、美术生产规则和审查标准，不记录某次构建、截图、平台状态或验收结论。
 
-发布视觉方向为已批准的 A「阳光果园」：温暖浅色表面、泥土棕文字与线条、叶绿主操作、阳光色强调与选中、克制果红危险提示、圆润可读轮廓和浅层次。批准风格板只用于方向与密度参考，不能直接裁切为生产资源；准确中文文案也不能从生成图中转录。参考说明见 [`style-board-notes.md`](../../openspec/changes/unify-runtime-ui-visual-system/evidence/style-board/style-board-notes.md)。
+发布视觉方向为已批准的 A「阳光果园」：温暖浅色表面、泥土棕文字与线条、叶绿主操作、阳光色强调与选中、克制果红危险提示、圆润可读轮廓和浅层次。批准风格板只用于方向与密度参考，不能直接裁切为生产资源；准确中文文案也不能从生成图中转录。参考说明见 `openspec/changes/unify-runtime-ui-visual-system/evidence/style-board/style-board-notes.md`。
 
 当前 production registry 只保留已批准的 A。第二套 treatment 已在审查后被用户拒绝，其 production source、runtime export 与 ArtSet 定义均已删除；OpenSpec 中保留的历史审查证据不是可激活资源。
 
@@ -152,6 +159,16 @@ Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/
 状态优先级为：`loading/transitioning` 或 blocking 状态优先于 `disabled`，`disabled` 优先于 `pressed`，`pressed` 优先于 `focused`，其余回到 `normal`。`selected` 是持久选择标记，可与 focus 并存；进入 disabled/loading 后仍可保留选择身份，但不可呈现为可操作。success/warning/error 属于结果或反馈语义，不能任意覆盖 action family 的优先级。
 
 所有动效使用 theme 的 restrained、unscaled-time feedback token，并尊重降低视觉噪声；精确时长不写入 Presenter 或本文。
+
+### 6.3 共享动效与 Press 生命周期
+
+- 运行时只使用 `press`、`pop`、`strong-pop`、`fade-slide`、`stagger` 这组有限语义模式；精确时长、幅度、位移、错峰和降低动态效果策略由 release theme 持有。
+- Motion evaluator 只消费显式传入的 unscaled time，返回 scale、alpha、offset 的纯值样本；Presenter 不创建 Coroutine、延迟命令或页面私有 Tween 类型。
+- 每个反馈目标只拥有一个当前 pulse。重复触发以新 pulse 替换旧 pulse；Hide、Disable、导航开始和交互取消必须清除 owner，不能留下延迟回调或残余透明度。
+- 动效只改变 visual rect。layout authority 产生的 draw/hit 基准矩形、safe-area 投影、BattlefieldProjection 和拖拽目标不随动画缩放或位移。
+- Shell action 使用一个明确的 `down → pressed → release/cancel` 生命周期；移动超过阈值后抑制 click，释放到原目标之外、目标禁用或路线切换都不会执行命令。
+- reduced-motion 下移除 travel、stagger 和 overshoot，直接呈现静态终态；selected/loading/success/warning/error/disabled 仍依靠图标、文字、轮廓和表面状态表达。
+- Lobby 只对路线进入、关卡选择和 Start 使用反馈；Battle 只对局部资源、状态、选择、波次与模态操作使用反馈；Settlement 按结果、指标、操作的阅读顺序短暂揭示。禁止给整屏 chrome 添加永久呼吸、循环闪光或无业务含义的漂浮。
 
 ### 6.2 组件覆盖矩阵
 
@@ -303,6 +320,14 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - master 使用同一 semantic stem 与可编辑格式；revision 记录在 ArtSet，不写 `v2`、`final`、日期或人员名。
 - 文件重命名或移动必须保留 `.meta`；替换资源优先原位更新，以保持 GUID 和所有 semantic binding。
 
+### 8.7 外部参考资源与临时替换
+
+- 外部 APK、素材包或参考项目中的候选资源在进入 runtime export 前，必须记录来源文件哈希、包内路径、提取方法、许可/授权依据、输出格式、像素尺寸、alpha/color-space/import 设置、目标 semantic slot 和 `provisional` 状态。
+- 仍受保护、不能完整解码、不能视觉复核或不能建立授权依据的字节不得进入 production ArtSet；不能按文件名猜图、截取损坏 payload 或用运行时 fallback 掩盖缺失。
+- 可用候选先进入 editable-source hierarchy，成为无损、工具中立且可继续处理的临时 master，再通过现有确定性 exporter 和 importer validator 进入 runtime hierarchy。scene、Presenter 和 release theme 不直接引用 APK 路径、临时目录或原始 bundle。
+- 临时使用也必须满足同一 alpha、透明边、九宫格、光学盒、中文、对比度和 WebGL 门禁，不因“后续会替换”降低 production 标准。
+- runtime 只绑定既有 semantic slot；后续自有资源原位替换候选时保留路径、`.meta` GUID、Sprite border 和 slot identity，不增加兼容层、旧资源 fallback 或页面分支。
+
 ## 9. Unity importer 规则
 
 以下是 production UI raster 的默认合同；任何例外必须由 ArtSet metadata 明确声明并被 editor validator 接受，不能成为手工记忆：
@@ -407,7 +432,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 ## 13. 质量标准与权威工作流
 
 本视觉系统的可读性、对齐、资源光学盒和真实画布验收由
-[`runtime-ui-quality-checklist.md`](../../openspec/changes/archive/2026-08-20-polish-runtime-ui-quality-standard/evidence/runtime-ui-quality-checklist.md)
+`openspec/changes/archive/2026-08-20-polish-runtime-ui-quality-standard/evidence/runtime-ui-quality-checklist.md`
 定义；机器阈值由同一变更中的
 [`runtime-ui-quality-profile.json`](../../openspec/changes/archive/2026-08-20-polish-runtime-ui-quality-standard/evidence/runtime-ui-quality-profile.json)
 持有。Presenter 不得复制这些阈值，也不得为了通过单个画面而加入局部例外。

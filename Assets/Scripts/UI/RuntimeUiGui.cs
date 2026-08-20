@@ -665,16 +665,26 @@ namespace FruitDefense.UI
 
         public static void DrawSelectableCard(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiInteractionState state, bool emphasized = false,
-            bool drawStateIndicator = true)
+            bool drawStateIndicator = true,
+            RuntimeUiMotionSample motion = default)
         {
             context = Require(context);
-            DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceCardSelectable,
-                emphasized
-                    && state != RuntimeUiInteractionState.Disabled
-                    ? RuntimeUiInteractionState.Pressed
-                    : ResolveSurfaceVisualState(state));
-            if (drawStateIndicator)
-                DrawStateIndicator(context, rect, state);
+            var visualRect = motion.Transform(rect);
+            var previousColor = ApplyMotionAlpha(motion);
+            try
+            {
+                DrawSlotArt(context, visualRect, RuntimeUiArtSlot.SurfaceCardSelectable,
+                    emphasized
+                        && state != RuntimeUiInteractionState.Disabled
+                        ? RuntimeUiInteractionState.Pressed
+                        : ResolveSurfaceVisualState(state));
+                if (drawStateIndicator)
+                    DrawStateIndicator(context, visualRect, state);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
         }
 
         public static void DrawSlot(RuntimeUiDrawContext context, Rect rect,
@@ -698,31 +708,12 @@ namespace FruitDefense.UI
             RuntimeUiActionKind kind, RuntimeUiInteractionState state,
             RuntimeUiArtSlot? iconSlot = null,
             RuntimeUiTypographyRole labelRole = RuntimeUiTypographyRole.ControlLabel,
-            bool emphasized = false)
+            bool emphasized = false,
+            RuntimeUiMotionSample motion = default)
         {
             context = Require(context);
-            var artSlot = ActionSlot(kind);
-            var visualState = ResolveActionDrawState(kind, state, emphasized);
-            DrawSlotArt(context, rect, artSlot, visualState);
-
-            var contentLayout = ResolveActionContentLayout(context, rect, label,
-                kind, state, iconSlot, labelRole, emphasized);
-            if (iconSlot.HasValue && contentLayout.HasIcon)
-            {
-                RequireIconSlot(iconSlot.Value);
-                DrawSlotArt(context, contentLayout.IconRect,
-                    iconSlot.Value, visualState);
-            }
-
-            if (contentLayout.HasLabel)
-            {
-                var tone = ResolveActionTextTone(kind, state);
-                DrawTextCore(context, contentLayout.LabelRect, label, labelRole,
-                    tone, TextAnchor.MiddleCenter, visualState, true,
-                    context.Styles.SingleLineText(labelRole, TextAnchor.MiddleCenter));
-            }
-
-            DrawStateIndicator(context, rect, state);
+            DrawActionVisual(context, rect, label, kind, state, iconSlot,
+                labelRole, emphasized, motion);
 
             var enabled = GUI.enabled;
             GUI.enabled = enabled && state != RuntimeUiInteractionState.Disabled
@@ -734,6 +725,53 @@ namespace FruitDefense.UI
             finally
             {
                 GUI.enabled = enabled;
+            }
+        }
+
+        public static void DrawActionVisual(RuntimeUiDrawContext context, Rect rect,
+            string label, RuntimeUiActionKind kind, RuntimeUiInteractionState state,
+            RuntimeUiArtSlot? iconSlot = null,
+            RuntimeUiTypographyRole labelRole = RuntimeUiTypographyRole.ControlLabel,
+            bool emphasized = false,
+            RuntimeUiMotionSample motion = default)
+        {
+            context = Require(context);
+            var heldMotion = state == RuntimeUiInteractionState.Pressed
+                ? RuntimeUiMotion.HeldPress(context.Theme.Feedback)
+                : RuntimeUiMotionSample.Rest;
+            var visualMotion = RuntimeUiMotionSample.Combine(motion, heldMotion);
+            var visualRect = visualMotion.Transform(rect);
+            var artSlot = ActionSlot(kind);
+            var visualState = ResolveActionDrawState(kind, state, emphasized);
+            var previousColor = GUI.color;
+            GUI.color = new Color(previousColor.r, previousColor.g, previousColor.b,
+                previousColor.a * visualMotion.Alpha);
+            try
+            {
+                DrawSlotArt(context, visualRect, artSlot, visualState);
+
+                var contentLayout = ResolveActionContentLayout(context, visualRect, label,
+                    kind, state, iconSlot, labelRole, emphasized);
+                if (iconSlot.HasValue && contentLayout.HasIcon)
+                {
+                    RequireIconSlot(iconSlot.Value);
+                    DrawSlotArt(context, contentLayout.IconRect,
+                        iconSlot.Value, visualState);
+                }
+
+                if (contentLayout.HasLabel)
+                {
+                    var tone = ResolveActionTextTone(kind, state);
+                    DrawTextCore(context, contentLayout.LabelRect, label, labelRole,
+                        tone, TextAnchor.MiddleCenter, visualState, true,
+                        context.Styles.SingleLineText(labelRole, TextAnchor.MiddleCenter));
+                }
+
+                DrawStateIndicator(context, visualRect, state);
+            }
+            finally
+            {
+                GUI.color = previousColor;
             }
         }
 
@@ -829,38 +867,48 @@ namespace FruitDefense.UI
         public static void DrawMetric(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiArtSlot resourceIcon, string label, string value,
             RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal,
-            bool compactInline = false, float compactIconSize = 24f)
+            bool compactInline = false, float compactIconSize = 24f,
+            RuntimeUiMotionSample motion = default)
         {
             context = Require(context);
             RequireMetricIcon(resourceIcon);
-            DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric, state);
-
-            if (compactInline)
+            rect = motion.Transform(rect);
+            var previousColor = ApplyMotionAlpha(motion);
+            try
             {
-                var compactLayout = ResolveCompactInlineMetricContentLayout(
-                    context, rect, resourceIcon, label, value,
-                    state, compactIconSize);
-                DrawSlotArt(context, compactLayout.IconRect, resourceIcon, state);
-                DrawTextCore(context, compactLayout.LabelRect, label,
-                    RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Secondary,
-                    TextAnchor.MiddleLeft, state, true);
-                DrawTextCore(context, compactLayout.ValueRect, value,
-                    RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
-                    TextAnchor.MiddleLeft, state, true);
-                DrawStateIndicator(context, rect, state);
-                return;
-            }
+                DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric, state);
 
-            var metricLayout = ResolveMetricContentLayout(
-                context, rect, resourceIcon, label, value, state);
-            DrawSlotArt(context, metricLayout.IconRect, resourceIcon, state);
-            DrawTextCore(context, metricLayout.ValueRect, value,
-                RuntimeUiTypographyRole.Metric, RuntimeUiTextTone.Primary,
-                TextAnchor.MiddleLeft, state, true);
-            DrawTextCore(context, metricLayout.LabelRect,
-                label, RuntimeUiTypographyRole.Supplemental,
-                RuntimeUiTextTone.Secondary, TextAnchor.MiddleLeft, state, true);
-            DrawStateIndicator(context, rect, state);
+                if (compactInline)
+                {
+                    var compactLayout = ResolveCompactInlineMetricContentLayout(
+                        context, rect, resourceIcon, label, value,
+                        state, compactIconSize);
+                    DrawSlotArt(context, compactLayout.IconRect, resourceIcon, state);
+                    DrawTextCore(context, compactLayout.LabelRect, label,
+                        RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Secondary,
+                        TextAnchor.MiddleLeft, state, true);
+                    DrawTextCore(context, compactLayout.ValueRect, value,
+                        RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
+                        TextAnchor.MiddleLeft, state, true);
+                    DrawStateIndicator(context, rect, state);
+                    return;
+                }
+
+                var metricLayout = ResolveMetricContentLayout(
+                    context, rect, resourceIcon, label, value, state);
+                DrawSlotArt(context, metricLayout.IconRect, resourceIcon, state);
+                DrawTextCore(context, metricLayout.ValueRect, value,
+                    RuntimeUiTypographyRole.Metric, RuntimeUiTextTone.Primary,
+                    TextAnchor.MiddleLeft, state, true);
+                DrawTextCore(context, metricLayout.LabelRect,
+                    label, RuntimeUiTypographyRole.Supplemental,
+                    RuntimeUiTextTone.Secondary, TextAnchor.MiddleLeft, state, true);
+                DrawStateIndicator(context, rect, state);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
         }
 
         public static RuntimeUiMetricContentLayout ResolveCompactInlineMetricContentLayout(
@@ -951,30 +999,59 @@ namespace FruitDefense.UI
         public static void DrawStatus(RuntimeUiDrawContext context, Rect rect, string message,
             RuntimeUiInteractionState state,
             RuntimeUiTypographyRole textRole = RuntimeUiTypographyRole.Body,
-            bool singleLine = false, bool emphasized = false)
+            bool singleLine = false, bool emphasized = false,
+            RuntimeUiMotionSample motion = default)
         {
-            DrawStatusCore(context, rect, new RuntimeUiStatusTextLines(message), state, textRole,
-                singleLine ? RuntimeUiStatusTextMode.SingleLine
-                    : RuntimeUiStatusTextMode.Standard,
-                emphasized);
+            rect = motion.Transform(rect);
+            var previousColor = ApplyMotionAlpha(motion);
+            try
+            {
+                DrawStatusCore(context, rect, new RuntimeUiStatusTextLines(message), state,
+                    textRole, singleLine ? RuntimeUiStatusTextMode.SingleLine
+                        : RuntimeUiStatusTextMode.Standard, emphasized);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
         }
 
         public static void DrawStatus(RuntimeUiDrawContext context, Rect rect, string message,
             RuntimeUiInteractionState state, RuntimeUiTypographyRole textRole,
-            RuntimeUiStatusTextMode textMode, bool emphasized = false)
+            RuntimeUiStatusTextMode textMode, bool emphasized = false,
+            RuntimeUiMotionSample motion = default)
         {
+            rect = motion.Transform(rect);
             var layout = ResolveStatusTextLayout(
                 context, rect, state, textRole, textMode, emphasized);
-            DrawStatusCore(context, rect,
-                ResolveStatusTextLines(layout, message), state, textRole, textMode, emphasized);
+            var previousColor = ApplyMotionAlpha(motion);
+            try
+            {
+                DrawStatusCore(context, rect,
+                    ResolveStatusTextLines(layout, message), state, textRole, textMode,
+                    emphasized);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
         }
 
         public static void DrawStatus(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiStatusTextLines lines, RuntimeUiInteractionState state,
             RuntimeUiTypographyRole textRole, RuntimeUiStatusTextMode textMode,
-            bool emphasized = false)
+            bool emphasized = false, RuntimeUiMotionSample motion = default)
         {
-            DrawStatusCore(context, rect, lines, state, textRole, textMode, emphasized);
+            rect = motion.Transform(rect);
+            var previousColor = ApplyMotionAlpha(motion);
+            try
+            {
+                DrawStatusCore(context, rect, lines, state, textRole, textMode, emphasized);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
         }
 
         public static RuntimeUiStatusTextMode ResolveStatusTextMode(
@@ -1717,6 +1794,14 @@ namespace FruitDefense.UI
                 throw new ArgumentException("Metric components require a resource icon slot.",
                     nameof(slot));
             }
+        }
+
+        private static Color ApplyMotionAlpha(RuntimeUiMotionSample motion)
+        {
+            var previous = GUI.color;
+            GUI.color = new Color(previous.r, previous.g, previous.b,
+                previous.a * motion.Alpha);
+            return previous;
         }
     }
 }

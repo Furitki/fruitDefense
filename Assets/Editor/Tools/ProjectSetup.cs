@@ -334,6 +334,7 @@ namespace FruitDefense.Editor
             BattleUiLayoutSmoke.Run();
             RuntimeUiQualitySmoke.Run();
             RuntimeUiFeedbackTimingSmoke.Run();
+            RuntimeUiInteractionPolishSmoke.Run();
             RuntimeUiGlyphCoverageSmoke.Run();
             RuntimeUiPerformanceSmoke.Run();
             RuntimeUiVisualSystemValidator.ValidateReleaseOrThrow();

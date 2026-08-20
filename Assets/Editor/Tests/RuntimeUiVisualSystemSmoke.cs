@@ -171,7 +171,9 @@ namespace FruitDefense.Editor
                 && lobby.Contains("RuntimeUiGui.DrawLobbyThumbnail")
                 && lobby.Contains("RuntimeUiGui.DrawIllustrationFrame")
                 && lobby.Contains("RuntimeUiIndicatorKind.Selected")
-                && lobby.Contains("GUI.Button(rect, GUIContent.none"),
+                && lobby.Contains("_pressTracker.Update(LevelControlId(levelId), rect")
+                && lobby.Contains("RuntimeUiGui.DrawActionVisual")
+                && !lobby.Contains("GUI.Button(rect, GUIContent.none"),
                 "Lobby hierarchy keeps art/copy inside the original finite card and action hits");
             var settlement = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/Shell/SettlementPresenter.cs"));

@@ -29,12 +29,16 @@ namespace FruitDefense.Editor
                 && feedback.UnscaledPressSeconds > 0f
                 && feedback.UnscaledSelectionSeconds > 0f
                 && feedback.UnscaledTransitionSeconds > 0f
-                && feedback.UnscaledStatusSeconds > 0f,
+                && feedback.UnscaledStatusSeconds > 0f
+                && feedback.UnscaledRevealSeconds > 0f
+                && feedback.UnscaledStaggerSeconds > 0f,
                 "all authored unscaled feedback durations are positive");
             Assert(feedback.UnscaledFocusSeconds <= .5f
                 && feedback.UnscaledPressSeconds <= .5f
                 && feedback.UnscaledSelectionSeconds <= .5f
                 && feedback.UnscaledTransitionSeconds <= .5f
+                && feedback.UnscaledRevealSeconds <= .5f
+                && feedback.UnscaledStaggerSeconds <= .1f
                 && feedback.UnscaledStatusSeconds <= 5f,
                 "feedback durations remain restrained");
         }
@@ -153,11 +157,13 @@ namespace FruitDefense.Editor
             var action = Slice(sharedGui,
                 "public static bool DrawAction(", "public static void DrawMetric(");
             Assert(action.Contains("bool emphasized = false")
-                && action.Contains("DrawStateIndicator(context, rect, state)")
+                && action.Contains("DrawStateIndicator(context, visualRect, state)")
                 && action.Contains("state != RuntimeUiInteractionState.Disabled")
                 && action.Contains("state != RuntimeUiInteractionState.Loading")
-                && action.Contains("GUI.Button(rect, GUIContent.none"),
-                "action emphasis preserves semantic state, disabled/loading priority, and hit rect");
+                && action.Contains("GUI.Button(rect, GUIContent.none")
+                && action.Contains("RuntimeUiMotion.HeldPress(context.Theme.Feedback)")
+                && action.Contains("visualMotion.Transform(rect)"),
+                "action emphasis preserves semantic state, held press scale, disabled/loading priority, and hit rect");
 
             var appFlow = ReadSource("Scripts/App/AppFlowCoordinator.cs");
             AssertConsumes(appFlow, "AppFlow", "UnscaledFocusSeconds",

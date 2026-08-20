@@ -26,6 +26,8 @@ namespace FruitDefense.Shell
         private RuntimeUiFeedbackPulse _selectionPulse;
         private RuntimeUiFeedbackPulse _transitionPulse;
         private RuntimeUiFeedbackPulse _statusPulse;
+        private RuntimeUiFeedbackPulse _routeRevealPulse;
+        private RuntimeUiPressTracker _pressTracker;
         private string _focusTarget = string.Empty;
         private string _pressTarget = string.Empty;
         private string _selectionTarget = string.Empty;
@@ -34,6 +36,10 @@ namespace FruitDefense.Shell
         private bool _wasTransitioning;
 
         private const string StartFeedbackTarget = "start";
+        private const int Orchard01ControlId = 1101;
+        private const int Orchard02ControlId = 1102;
+        private const int Orchard03ControlId = 1103;
+        private const int StartControlId = 1104;
 
         public ShellFlowError LastError { get; private set; }
         public string LastSessionId { get; private set; } = string.Empty;
@@ -64,6 +70,9 @@ namespace FruitDefense.Shell
             _selectionPulse = default;
             _transitionPulse = default;
             _statusPulse = default;
+            _routeRevealPulse = RuntimeUiMotion.BeginReveal(Time.unscaledTime,
+                runtimeUiTheme.Feedback, 4);
+            _pressTracker.Cancel();
             _focusTarget = string.Empty;
             _pressTarget = string.Empty;
             _selectionTarget = string.Empty;
@@ -71,6 +80,12 @@ namespace FruitDefense.Shell
             _observedErrorCode = string.Empty;
             _wasTransitioning = context.Navigator == null
                 || context.Navigator.TransitionState != AppTransitionState.Idle;
+        }
+
+        private void OnDisable()
+        {
+            _pressTracker.Cancel();
+            _routeRevealPulse = default;
         }
 
         public bool TrySelectLevel(string levelId)
@@ -149,6 +164,7 @@ namespace FruitDefense.Shell
         {
             if (_runtimeUiTheme == null) return;
             var unscaledTime = Time.unscaledTime;
+            var pointer = RuntimeUiPointerSample.FromEvent(Event.current);
             var layout = PortraitShellLayout.CreateLobby(
                 Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent());
             _drawContext = RuntimeUiGui.RequireContext(
@@ -158,35 +174,48 @@ namespace FruitDefense.Shell
                 new Rect(0f, 0f, Screen.width, Screen.height));
             RuntimeUiGui.DrawSafeArea(_drawContext, layout.Frame.SafeArea);
             RuntimeUiGui.DrawScreenCorners(_drawContext, layout.Frame.SafeArea);
-            RuntimeUiGui.DrawSectionRibbon(_drawContext, layout.Title);
+            var titleMotion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 0);
+            var titleRect = titleMotion.Transform(layout.Title);
+            var previousTitleColor = GUI.color;
+            GUI.color = new Color(previousTitleColor.r, previousTitleColor.g,
+                previousTitleColor.b, previousTitleColor.a * titleMotion.Alpha);
+            RuntimeUiGui.DrawSectionRibbon(_drawContext, titleRect);
             var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.LobbyTitle);
-            RuntimeUiGui.DrawSingleLineText(_drawContext, layout.Title, titleCopy.Text,
+            RuntimeUiGui.DrawSingleLineText(_drawContext, titleRect, titleCopy.Text,
                 titleCopy.Role, titleCopy.Tone, titleCopy.Alignment);
+            GUI.color = previousTitleColor;
 
             var transitioning = _context?.Navigator == null
                 || _context.Navigator.TransitionState != AppTransitionState.Idle;
             RefreshTransitionFeedback(transitioning, unscaledTime);
             RefreshStatusFeedback(unscaledTime);
+            if (transitioning) _pressTracker.Cancel();
             var transitionEmphasized = _transitionPulse.IsActive(unscaledTime);
             DrawLevelCard(layout.Orchard01Card, Orchard01LevelId,
                 RuntimeUiCopyId.LobbyOrchard01Title,
                 RuntimeUiCopyId.LobbyOrchard01Body, transitioning,
-                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard01);
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard01,
+                1, pointer);
             DrawLevelCard(layout.Orchard02Card, Orchard02LevelId,
                 RuntimeUiCopyId.LobbyOrchard02Title,
                 RuntimeUiCopyId.LobbyOrchard02Body, transitioning,
-                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard02);
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard02,
+                2, pointer);
             DrawLevelCard(layout.Orchard03Card, Orchard03LevelId,
                 RuntimeUiCopyId.LobbyOrchard03Title,
                 RuntimeUiCopyId.LobbyOrchard03Body, transitioning,
-                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard03);
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard03,
+                3, pointer);
 
-            var startHovered = ContainsPointer(layout.StartButton);
+            var startAvailable = !transitioning
+                && !string.IsNullOrWhiteSpace(_visibleSelectedLevelId);
+            var startPress = _pressTracker.Update(StartControlId, layout.StartButton,
+                startAvailable, pointer, _runtimeUiTheme.Feedback.DragCancelDistance);
+            var startHovered = startPress.Hovered;
             if (startHovered)
                 BeginFocus(StartFeedbackTarget, unscaledTime);
-            var startPressed = IsPointerPress(layout.StartButton)
-                || IsFeedbackActive(_pressPulse, _pressTarget,
-                    StartFeedbackTarget, unscaledTime);
+            var startPressed = startPress.Pressed;
             var startState = ResolveActionState(transitioning,
                 !string.IsNullOrWhiteSpace(_visibleSelectedLevelId),
                 startHovered || IsFeedbackActive(_focusPulse, _focusTarget,
@@ -194,15 +223,24 @@ namespace FruitDefense.Shell
             var startCopy = RuntimeUiCopyCatalog.Get(transitioning
                 ? RuntimeUiCopyId.LobbyTransitioning
                 : RuntimeUiCopyId.LobbyStart);
-            if (RuntimeUiGui.DrawAction(_drawContext, layout.StartButton,
-                    transitioning ? startCopy.Text
-                        : RuntimeUiCopyCatalog.FormatLobbyStart(_visibleSelectedLevelId),
-                    RuntimeUiActionKind.Primary, startState,
-                    RuntimeUiArtSlot.IconControlStart,
-                    startCopy.Role,
-                    transitionEmphasized
-                        && string.Equals(_transitionTarget, StartFeedbackTarget,
-                            StringComparison.Ordinal)))
+            var startReveal = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 4);
+            var startPressMotion = string.Equals(_pressTarget, StartFeedbackTarget,
+                    StringComparison.Ordinal)
+                ? RuntimeUiMotion.Evaluate(_pressPulse, unscaledTime,
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press)
+                : RuntimeUiMotionSample.Rest;
+            RuntimeUiGui.DrawActionVisual(_drawContext, layout.StartButton,
+                transitioning ? startCopy.Text
+                    : RuntimeUiCopyCatalog.FormatLobbyStart(_visibleSelectedLevelId),
+                RuntimeUiActionKind.Primary, startState,
+                RuntimeUiArtSlot.IconControlStart,
+                startCopy.Role,
+                transitionEmphasized
+                    && string.Equals(_transitionTarget, StartFeedbackTarget,
+                        StringComparison.Ordinal),
+                RuntimeUiMotionSample.Combine(startReveal, startPressMotion));
+            if (startPress.Activated)
             {
                 BeginPress(StartFeedbackTarget, unscaledTime);
                 if (TryStart())
@@ -226,26 +264,48 @@ namespace FruitDefense.Shell
         private void DrawLevelCard(Rect rect, string levelId,
             RuntimeUiCopyId titleCopyId, RuntimeUiCopyId bodyCopyId,
             bool transitioning, bool transitionEmphasized, float unscaledTime,
-            RuntimeUiLobbyThumbnail thumbnail)
+            RuntimeUiLobbyThumbnail thumbnail, int revealIndex,
+            RuntimeUiPointerSample pointer)
         {
             var selected = string.Equals(_visibleSelectedLevelId, levelId, StringComparison.Ordinal);
             var available = IsPlayable((ILevelSelectionFlowContext)_context, levelId);
-            var pointerInside = ContainsPointer(rect);
+            var press = _pressTracker.Update(LevelControlId(levelId), rect,
+                !transitioning && available, pointer,
+                _runtimeUiTheme.Feedback.DragCancelDistance);
+            var pointerInside = press.Hovered;
             if (pointerInside)
                 BeginFocus(levelId, unscaledTime);
-            var pointerPressed = IsPointerPress(rect)
-                || IsFeedbackActive(_pressPulse, _pressTarget, levelId, unscaledTime);
+            var pointerPressed = press.Pressed;
             var state = ResolveCardState(transitioning, available, selected,
                 pointerInside || IsFeedbackActive(
                     _focusPulse, _focusTarget, levelId, unscaledTime), pointerPressed);
             var selectionEmphasized = selected && IsFeedbackActive(
                 _selectionPulse, _selectionTarget, levelId, unscaledTime);
+            var revealMotion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, revealIndex);
+            var selectionMotion = RuntimeUiMotion.Evaluate(_selectionPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop);
+            var pressMotion = RuntimeUiMotion.Evaluate(_pressPulse, unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press);
+            var feedbackMotion = string.Equals(_selectionTarget, levelId,
+                    StringComparison.Ordinal) ? selectionMotion
+                : string.Equals(_pressTarget, levelId, StringComparison.Ordinal)
+                    ? pressMotion : RuntimeUiMotionSample.Rest;
+            var heldMotion = press.Pressed
+                ? RuntimeUiMotion.HeldPress(_runtimeUiTheme.Feedback)
+                : RuntimeUiMotionSample.Rest;
+            var motion = RuntimeUiMotionSample.Combine(revealMotion,
+                RuntimeUiMotionSample.Combine(feedbackMotion, heldMotion));
+            var visualRect = motion.Transform(rect);
             RuntimeUiGui.DrawSelectableCard(_drawContext, rect, state,
                 selectionEmphasized || transitionEmphasized,
-                drawStateIndicator: false);
+                drawStateIndicator: false, motion: motion);
+            var previousColor = GUI.color;
+            GUI.color = new Color(previousColor.r, previousColor.g, previousColor.b,
+                previousColor.a * motion.Alpha);
 
             var cardLayout = PortraitShellLayout.CreateLobbyLevelCard(
-                rect, _drawContext.Scale);
+                visualRect, _drawContext.Scale);
             RuntimeUiGui.DrawLobbyThumbnail(_drawContext, cardLayout.Thumbnail,
                 thumbnail);
             RuntimeUiGui.DrawIllustrationFrame(_drawContext, cardLayout.Frame);
@@ -269,10 +329,9 @@ namespace FruitDefense.Shell
             else if (state == RuntimeUiInteractionState.Loading)
                 RuntimeUiGui.DrawIndicator(_drawContext, cardLayout.TransientIndicator,
                     RuntimeUiIndicatorKind.Loading);
+            GUI.color = previousColor;
 
-            var previousEnabled = GUI.enabled;
-            GUI.enabled = !transitioning && available;
-            if (GUI.Button(rect, GUIContent.none, _drawContext.Styles.HitTarget))
+            if (press.Activated)
             {
                 BeginPress(levelId, unscaledTime);
                 if (TrySelectLevel(levelId))
@@ -282,7 +341,6 @@ namespace FruitDefense.Shell
                         _runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
                 }
             }
-            GUI.enabled = previousEnabled;
         }
 
         private void BeginFocus(string target, float unscaledTime)
@@ -369,16 +427,16 @@ namespace FruitDefense.Shell
             return false;
         }
 
-        private static bool ContainsPointer(Rect rect)
+        private static int LevelControlId(string levelId)
         {
-            return Event.current != null && rect.Contains(Event.current.mousePosition);
-        }
-
-        private static bool IsPointerPress(Rect rect)
-        {
-            return ContainsPointer(rect) && Event.current.button == 0
-                && (Event.current.rawType == EventType.MouseDown
-                    || Event.current.rawType == EventType.MouseDrag);
+            if (string.Equals(levelId, Orchard01LevelId, StringComparison.Ordinal))
+                return Orchard01ControlId;
+            if (string.Equals(levelId, Orchard02LevelId, StringComparison.Ordinal))
+                return Orchard02ControlId;
+            if (string.Equals(levelId, Orchard03LevelId, StringComparison.Ordinal))
+                return Orchard03ControlId;
+            throw new ArgumentOutOfRangeException(nameof(levelId), levelId,
+                "Lobby level has no stable press control ID.");
         }
 
         private bool Fail(ShellFlowError error)

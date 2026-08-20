@@ -21,6 +21,7 @@ param(
   [ValidateSet('victory', 'defeat')]
   [string]$BattleTerminalOutcome = 'victory',
   [switch]$ShellVisual,
+  [switch]$InteractionPolishEvidence,
   [switch]$ShellError,
   [string]$ErrorLevelId = '__missing-ui-acceptance__',
   [ValidateRange(1, 20)]
@@ -94,6 +95,9 @@ if ((@($Flow, $ShellVisual, $ShellError) | Where-Object { $_ }).Count -gt 1) {
 }
 if ($ShellVisual -and $LevelId -eq 'orchard-01') {
   throw '-ShellVisual requires -LevelId orchard-02 or orchard-03 for alternate-selection evidence.'
+}
+if ($InteractionPolishEvidence -and $ShellError) {
+  throw '-InteractionPolishEvidence is not available with -ShellError.'
 }
 if ($ShellError -and [string]::IsNullOrWhiteSpace($ErrorLevelId)) {
   throw '-ShellError requires a non-empty -ErrorLevelId.'
@@ -196,6 +200,7 @@ $lobbyStartRect = [ordered]@{
 }
 $headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
 $formerActionRegion = Convert-ReferenceRect -X 8 -Y 760 -Width 386 -Height 50
+$waveActionRect = Convert-ReferenceRect -X 210 -Y 526 -Width 184 -Height 44
 $hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
 $hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
 $formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
@@ -662,10 +667,29 @@ function Invoke-CanvasClickImmediate {
   } | Out-Null
 }
 
-function Move-CanvasPointerOut {
+function Start-CanvasPress {
+  param([double]$X, [double]$Y)
   Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
-    type = 'mouseMoved'; x = 1; y = 1; button = 'none'; buttons = 0
+    type = 'mousePressed'; x = $X; y = $Y; button = 'left'; buttons = 1; clickCount = 1
   } | Out-Null
+}
+
+function Stop-CanvasPress {
+  param([double]$X, [double]$Y)
+  Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
+    type = 'mouseReleased'; x = $X; y = $Y; button = 'left'; buttons = 0; clickCount = 1
+  } | Out-Null
+}
+
+function Move-CanvasPointer {
+  param([double]$X, [double]$Y)
+  Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
+    type = 'mouseMoved'; x = $X; y = $Y; button = 'none'; buttons = 0
+  } | Out-Null
+}
+
+function Move-CanvasPointerOut {
+  Move-CanvasPointer -X 1 -Y 1
 }
 
 function Start-CanvasDrag {
@@ -941,6 +965,149 @@ function Test-StableFrameMetrics {
   return $Metrics.invalidFraction -lt .05 -and
     $Metrics.blackFraction -lt $maxBlackFraction -and
     $Metrics.nearBlackFraction -lt $maxNearBlackFraction
+}
+
+function Get-ImageDifferenceMetrics {
+  param(
+    [string]$ReferencePath,
+    [string]$CandidatePath,
+    [object]$Region,
+    [int]$ChannelThreshold = 8
+  )
+  Add-Type -AssemblyName System.Drawing
+  $reference = [Drawing.Bitmap]::FromFile($ReferencePath)
+  $candidate = [Drawing.Bitmap]::FromFile($CandidatePath)
+  try {
+    if ($reference.Width -ne $candidate.Width -or
+        $reference.Height -ne $candidate.Height) {
+      throw "Image difference dimensions do not match: $ReferencePath / $CandidatePath"
+    }
+    $xMin = [Math]::Max(0, [int]$Region.xMin)
+    $yMin = [Math]::Max(0, [int]$Region.yMin)
+    $xMax = [Math]::Min($reference.Width, [int]$Region.xMax)
+    $yMax = [Math]::Min($reference.Height, [int]$Region.yMax)
+    if ($xMax -le $xMin -or $yMax -le $yMin) {
+      throw "Image difference region is empty: $($Region | ConvertTo-Json -Compress)"
+    }
+    $edgeBand = [Math]::Max(1, [Math]::Ceiling(3 * $referenceScale))
+    $changedPixels = 0
+    $changedEdgePixels = 0
+    $edgePixels = 0
+    $changedXMin = [int]::MaxValue
+    $changedYMin = [int]::MaxValue
+    $changedXMax = [int]::MinValue
+    $changedYMax = [int]::MinValue
+    for ($y = $yMin; $y -lt $yMax; $y++) {
+      for ($x = $xMin; $x -lt $xMax; $x++) {
+        $isEdge = $x -lt $xMin + $edgeBand -or $x -ge $xMax - $edgeBand -or
+          $y -lt $yMin + $edgeBand -or $y -ge $yMax - $edgeBand
+        if ($isEdge) { $edgePixels++ }
+        $left = $reference.GetPixel($x, $y)
+        $right = $candidate.GetPixel($x, $y)
+        $delta = [Math]::Max([Math]::Abs([int]$left.R - [int]$right.R),
+          [Math]::Max([Math]::Abs([int]$left.G - [int]$right.G),
+            [Math]::Abs([int]$left.B - [int]$right.B)))
+        if ($delta -le $ChannelThreshold) { continue }
+        $changedPixels++
+        if ($isEdge) { $changedEdgePixels++ }
+        $changedXMin = [Math]::Min($changedXMin, $x)
+        $changedYMin = [Math]::Min($changedYMin, $y)
+        $changedXMax = [Math]::Max($changedXMax, $x)
+        $changedYMax = [Math]::Max($changedYMax, $y)
+      }
+    }
+    $regionPixels = ($xMax - $xMin) * ($yMax - $yMin)
+    $bounds = if ($changedPixels -eq 0) { $null } else {
+      [ordered]@{
+        xMin = $changedXMin; yMin = $changedYMin
+        xMax = $changedXMax + 1; yMax = $changedYMax + 1
+      }
+    }
+    return [ordered]@{
+      channelThreshold = $ChannelThreshold
+      region = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
+      regionPixels = $regionPixels
+      changedPixels = $changedPixels
+      changedFraction = $changedPixels / [double]$regionPixels
+      edgeBandPixels = $edgeBand
+      edgePixels = $edgePixels
+      changedEdgePixels = $changedEdgePixels
+      changedBounds = $bounds
+    }
+  }
+  finally {
+    $reference.Dispose()
+    $candidate.Dispose()
+  }
+}
+
+function Get-ImageInsetEvidence {
+  param(
+    [string]$ReferencePath,
+    [string]$CandidatePath,
+    [object]$Region,
+    [int]$DistanceMargin = 8
+  )
+  Add-Type -AssemblyName System.Drawing
+  $reference = [Drawing.Bitmap]::FromFile($ReferencePath)
+  $candidate = [Drawing.Bitmap]::FromFile($CandidatePath)
+  try {
+    if ($reference.Width -ne $candidate.Width -or
+        $reference.Height -ne $candidate.Height) {
+      throw "Image inset dimensions do not match: $ReferencePath / $CandidatePath"
+    }
+    $xMin = [Math]::Max(1, [int]$Region.xMin)
+    $yMin = [Math]::Max(0, [int]$Region.yMin)
+    $xMax = [Math]::Min($reference.Width - 1, [int]$Region.xMax)
+    $yMax = [Math]::Min($reference.Height, [int]$Region.yMax)
+    $edgeBand = [Math]::Max(2, [Math]::Ceiling(3 * $referenceScale))
+    $sampleYMin = $yMin + $edgeBand
+    $sampleYMax = $yMax - $edgeBand
+    if ($xMax - $xMin -lt $edgeBand * 2 -or $sampleYMax -le $sampleYMin) {
+      throw "Image inset region is too small: $($Region | ConvertTo-Json -Compress)"
+    }
+    $samples = 0
+    $retreatedPixels = 0
+    for ($y = $sampleYMin; $y -lt $sampleYMax; $y++) {
+      $leftBackground = $candidate.GetPixel($xMin - 1, $y)
+      $rightBackground = $candidate.GetPixel($xMax, $y)
+      for ($offset = 0; $offset -lt $edgeBand; $offset++) {
+        foreach ($probe in @(
+          [ordered]@{ x = $xMin + $offset; background = $leftBackground },
+          [ordered]@{ x = $xMax - 1 - $offset; background = $rightBackground })) {
+          $referencePixel = $reference.GetPixel($probe.x, $y)
+          $candidatePixel = $candidate.GetPixel($probe.x, $y)
+          $background = $probe.background
+          $referenceDistance = [Math]::Max(
+            [Math]::Abs([int]$referencePixel.R - [int]$background.R),
+            [Math]::Max([Math]::Abs([int]$referencePixel.G - [int]$background.G),
+              [Math]::Abs([int]$referencePixel.B - [int]$background.B)))
+          $candidateDistance = [Math]::Max(
+            [Math]::Abs([int]$candidatePixel.R - [int]$background.R),
+            [Math]::Max([Math]::Abs([int]$candidatePixel.G - [int]$background.G),
+              [Math]::Abs([int]$candidatePixel.B - [int]$background.B)))
+          $samples++
+          if ($candidateDistance + $DistanceMargin -lt $referenceDistance) {
+            $retreatedPixels++
+          }
+        }
+      }
+    }
+    return [ordered]@{
+      region = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
+      edgeBandPixels = $edgeBand
+      distanceMargin = $DistanceMargin
+      samples = $samples
+      retreatedPixels = $retreatedPixels
+      retreatedFraction = if ($samples -eq 0) { 0.0 } else {
+        $retreatedPixels / [double]$samples
+      }
+    }
+  }
+  finally {
+    $reference.Dispose()
+    $candidate.Dispose()
+  }
 }
 
 function Get-ImagePixelSample {
@@ -1761,7 +1928,19 @@ try {
     $shellScreenshots.defaultLobby = $defaultCapture.Path
     $shellMetrics.defaultLobby = $defaultCapture.Metrics
 
-    Invoke-CanvasClick -X $controls[$levelCardControlName].x -Y $controls[$levelCardControlName].y
+    if ($InteractionPolishEvidence) {
+      Invoke-CanvasClickImmediate `
+        -X $controls[$levelCardControlName].x -Y $controls[$levelCardControlName].y
+      Start-Sleep -Milliseconds 45
+      $selectionMotionPath = Save-Screenshot -Name '02a-lobby-selection-motion'
+      $selectionMotionMetrics = Get-ImageMetrics -Path $selectionMotionPath
+      $selectionMotionHash = (Get-FileHash -LiteralPath $selectionMotionPath -Algorithm SHA256).Hash
+      $shellScreenshots.selectionMotion = $selectionMotionPath
+      $shellMetrics.selectionMotion = $selectionMotionMetrics
+    }
+    else {
+      Invoke-CanvasClick -X $controls[$levelCardControlName].x -Y $controls[$levelCardControlName].y
+    }
     $shellIdentities.alternateLobby = Wait-AcceptanceIdentity `
       -Route 0 -Stage 'alternate-selected-lobby' -SessionMode Cleared
     Move-CanvasPointerOut
@@ -1769,11 +1948,51 @@ try {
     $shellScreenshots.alternateSelection = $alternateCapture.Path
     $shellMetrics.alternateSelection = $alternateCapture.Metrics
     $alternateHash = (Get-FileHash -LiteralPath $alternateCapture.Path -Algorithm SHA256).Hash
+    $selectionMotionDifference = $null
+    if ($InteractionPolishEvidence) {
+      $selectionMotionDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $alternateCapture.Path -CandidatePath $selectionMotionPath `
+        -Region ([ordered]@{ xMin = 0; yMin = 0; xMax = $Width; yMax = $Height })
+      if ($selectionMotionHash -ceq $alternateHash -or
+          $selectionMotionDifference.changedPixels -lt 1000) {
+        throw 'Lobby selection motion checkpoint has no material visual difference from rest.'
+      }
+    }
 
     $transitionCapture = $null
     $transitionAttempts = 0
     $transitionDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 10))
-    try {
+    if ($InteractionPolishEvidence) {
+      Start-CanvasPress -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+      Start-Sleep -Milliseconds 45
+      $startPressPath = Save-Screenshot -Name '03-lobby-start-pressed'
+      $startPressMetrics = Get-ImageMetrics -Path $startPressPath
+      $startPressHash = (Get-FileHash -LiteralPath $startPressPath -Algorithm SHA256).Hash
+      $startPressDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $alternateCapture.Path -CandidatePath $startPressPath `
+        -Region $lobbyStartRect
+      $startPressInset = Get-ImageInsetEvidence `
+        -ReferencePath $alternateCapture.Path -CandidatePath $startPressPath `
+        -Region $lobbyStartRect
+      if ($startPressHash -ceq $alternateHash -or
+          $startPressDifference.changedPixels -lt 200 -or
+          $startPressDifference.changedEdgePixels -lt 20 -or
+          $startPressInset.retreatedPixels -lt 20) {
+        Stop-CanvasPress -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+        throw (
+          'Lobby Start press checkpoint lacks a material action-region/edge difference: ' +
+          ($startPressDifference | ConvertTo-Json -Compress))
+      }
+      $transitionCapture = [pscustomobject]@{
+        Path = $startPressPath
+        Metrics = $startPressMetrics
+        Sha256 = $startPressHash
+      }
+      $transitionAttempts = 1
+      Stop-CanvasPress -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+    }
+    else {
+      try {
       Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{
         rate = $BootstrapCpuThrottlingRate
       } | Out-Null
@@ -1801,10 +2020,11 @@ try {
         }
         Start-Sleep -Milliseconds 35
       } while ((Get-Date) -lt $transitionDeadline)
-    }
-    finally {
-      Move-CanvasPointerOut
-      Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{ rate = 1 } | Out-Null
+      }
+      finally {
+        Move-CanvasPointerOut
+        Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{ rate = 1 } | Out-Null
+      }
     }
     if ($null -eq $transitionCapture) {
       throw "Lobby transition frame was not captured before route change after $transitionAttempts attempts."
@@ -1823,8 +2043,9 @@ try {
     }
     $transitionCapture.Metrics['surfaceSamples'] = $transitionSurfaceSamples
     $transitionCapture.Metrics['actionContrast'] = $transitionActionContrast
-    $shellScreenshots.transition = $transitionCapture.Path
-    $shellMetrics.transition = $transitionCapture.Metrics
+    $transitionEvidenceKey = if ($InteractionPolishEvidence) { 'startPress' } else { 'transition' }
+    $shellScreenshots[$transitionEvidenceKey] = $transitionCapture.Path
+    $shellMetrics[$transitionEvidenceKey] = $transitionCapture.Metrics
 
     Wait-AppRoute -Route 1
     $shellIdentities.battleAfterTransition = Wait-AcceptanceIdentity `
@@ -1838,10 +2059,7 @@ try {
         'not add a runtime hook, loader failure, or scene mutation.')
       screenshot = $null
     }
-    $allCapturedMetrics = @(
-      $shellMetrics.defaultLobby,
-      $shellMetrics.alternateSelection,
-      $shellMetrics.transition)
+    $allCapturedMetrics = @($shellMetrics.Values)
     foreach ($metrics in $allCapturedMetrics) {
       if ($metrics.width -ne $Width -or $metrics.height -ne $Height -or
           -not (Test-StableFrameMetrics -Metrics $metrics)) {
@@ -1868,7 +2086,9 @@ try {
         bootstrapInitializing = if ($bootstrapCapture.state -eq 'captured') { 'pass' } else { 'not-captured' }
         lobbyDefault = 'pass'
         lobbyAlternateSelection = 'pass'
-        lobbyTransition = 'pass'
+        lobbyTransition = if ($InteractionPolishEvidence) { 'release-route-pass' } else { 'pass' }
+        lobbySelectionMotion = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
+        lobbyStartPress = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
         lobbyActionContrast = 'pass'
         bootstrapOrLobbyError = 'separate-formal-capture-required'
         selectedLevelInputMapping = 'pass'
@@ -1892,10 +2112,21 @@ try {
         start = $referenceControls.lobbyStart
       }
       transition = [ordered]@{
+        evidenceKind = if ($InteractionPolishEvidence) { 'pressed-input-checkpoint' } else { 'route-transition-frame' }
         attempts = $transitionAttempts
         cpuThrottlingRate = $BootstrapCpuThrottlingRate
         alternateSha256 = $alternateHash
         transitionSha256 = $transitionCapture.Sha256
+      }
+      interactionPolishEvidence = if ($InteractionPolishEvidence) {
+        [ordered]@{
+          selectionMotionDifference = $selectionMotionDifference
+          startPressDifference = $startPressDifference
+          startPressInset = $startPressInset
+          releaseNavigation = 'Lobby-to-Battle-pass'
+        }
+      } else {
+        [ordered]@{ state = 'not-requested' }
       }
     }
     $shellManifestPath = Join-Path $outputDir 'shell-visual-evidence.json'
@@ -1928,6 +2159,11 @@ try {
     Assert-SameSession -Expected $flowIdentities.battle `
       -Actual $flowIdentities.settlement -Stage 'settlement'
     Move-CanvasPointerOut
+    if ($InteractionPolishEvidence) {
+      Start-Sleep -Milliseconds 45
+      $flowScreenshots.settlementMotion = Save-Screenshot `
+        -Name "03a-settlement-motion-$SettlementOutcome"
+    }
     $flowScreenshots.settlement = (Save-StableScreenshot `
       -Name "03-settlement-$SettlementOutcome" -RequireHud $false).Path
 
@@ -1971,6 +2207,18 @@ try {
           "invalid=$($flowMetrics[$state].invalidFraction)")
       }
     }
+    $settlementMotionDifference = $null
+    if ($InteractionPolishEvidence) {
+      $settlementMotionDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $flowScreenshots.settlement `
+        -CandidatePath $flowScreenshots.settlementMotion `
+        -Region ([ordered]@{ xMin = 0; yMin = 0; xMax = $Width; yMax = $Height })
+      if ($settlementMotionDifference.changedPixels -lt 1000) {
+        throw (
+          'Settlement motion checkpoint lacks a material difference from rest: ' +
+          ($settlementMotionDifference | ConvertTo-Json -Compress))
+      }
+    }
 
     $flowManifest = [ordered]@{
       accepted = $true
@@ -1994,6 +2242,7 @@ try {
         settlementSessionPreserved = 'pass'
         returnSelectionPreserved = 'pass'
         retryFreshSessionAndSeed = 'pass'
+        settlementMotionCheckpoint = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
         requestedViewportAndCanvas = 'pass'
         safeAreaQueryApplied = 'pass'
         noBlackOrTransparentFrames = 'pass'
@@ -2007,6 +2256,11 @@ try {
       routeIdentities = $flowIdentities
       screenshots = $flowScreenshots
       imageMetrics = $flowMetrics
+      interactionPolishEvidence = if ($InteractionPolishEvidence) {
+        [ordered]@{ settlementMotionDifference = $settlementMotionDifference }
+      } else {
+        [ordered]@{ state = 'not-requested' }
+      }
       pixelThresholds = [ordered]@{
         framePixels = $framePixelThresholds
         hudDarkPixels = $hudDarkPixelThreshold
@@ -2028,7 +2282,38 @@ try {
   $readyCapture = Save-StableScreenshot -Name '01-ready'
   $screenshots.ready = $readyCapture.Path
 
-  Invoke-CanvasClick -X $controls.waveAction.x -Y $controls.waveAction.y
+  $waveActionPressDifference = $null
+  if ($InteractionPolishEvidence) {
+    Move-CanvasPointer -X $controls.waveAction.x -Y $controls.waveAction.y
+    Start-Sleep -Milliseconds 45
+    $screenshots.waveActionHover = Save-Screenshot -Name '01a-wave-action-hover'
+    Start-CanvasPress -X $controls.waveAction.x -Y $controls.waveAction.y
+    try {
+      Start-Sleep -Milliseconds 45
+      $screenshots.waveActionPressed = Save-Screenshot -Name '02a-wave-action-pressed'
+      $waveActionPressDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $screenshots.waveActionHover `
+        -CandidatePath $screenshots.waveActionPressed `
+        -Region $waveActionRect
+      $waveActionPressInset = Get-ImageInsetEvidence `
+        -ReferencePath $screenshots.waveActionHover `
+        -CandidatePath $screenshots.waveActionPressed `
+        -Region $waveActionRect
+      if ($waveActionPressDifference.changedPixels -lt 200 -or
+          $waveActionPressDifference.changedEdgePixels -lt 20 -or
+          $waveActionPressInset.retreatedPixels -lt 20) {
+        throw (
+          'Battle Wave press checkpoint lacks a material action-region/edge difference: ' +
+          ($waveActionPressDifference | ConvertTo-Json -Compress))
+      }
+    }
+    finally {
+      Stop-CanvasPress -X $controls.waveAction.x -Y $controls.waveAction.y
+    }
+  }
+  else {
+    Invoke-CanvasClick -X $controls.waveAction.x -Y $controls.waveAction.y
+  }
   $screenshots.activeWave = (Save-StableScreenshot -Name '02-active-wave').Path
 
   Set-AcceptanceState -State 'between-wave'
@@ -2182,6 +2467,7 @@ try {
       screenshotDimensions = 'pass'
       requiredStates = 'pass'
       contextualWaveLabels = 'pass'
+      waveActionPressedBeforeRelease = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
       oldBottomActionRowAbsent = 'pass'
       noLargeNearBlackRegions = 'pass'
       pauseContinuePreservesRun = 'pass'
@@ -2200,6 +2486,16 @@ try {
     routeIdentities = [ordered]@{ battle = $directBattleIdentity }
     screenshots = $screenshots
     imageMetrics = $metrics
+    interactionPolishEvidence = if ($InteractionPolishEvidence) {
+      [ordered]@{
+        waveActionRect = $waveActionRect
+        waveActionPressDifference = $waveActionPressDifference
+        waveActionPressInset = $waveActionPressInset
+        releaseAction = 'StartWave-pass'
+      }
+    } else {
+      [ordered]@{ state = 'not-requested' }
+    }
     controls = $controls
     referenceControls = $referenceControls
     pixelThresholds = [ordered]@{
