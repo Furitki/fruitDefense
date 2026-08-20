@@ -1,5 +1,5 @@
 {
-  "schema": "fruit-defense.runtime-ui-art-manifest.v1",
+  "schema": "fruit-defense.runtime-ui-art-manifest.v2",
   "setId": "sunny-orchard-painted",
   "revision": "1",
   "approvedDirection": "Sunny Orchard Painted v2",
@@ -28,6 +28,12 @@
       "guid": "5fb878b839d12d1f37a65b2679a46488",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 0
     },
@@ -45,6 +51,12 @@
       "guid": "82f763a9fcef976d97dbd5f1934a9c9d",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 9,
+        "top": 14,
+        "right": 9,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 1
     },
@@ -62,6 +74,12 @@
       "guid": "4b7cae1cf3370e8ef6224428d92c471e",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 8,
+        "top": 14,
+        "right": 12,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 2
     },
@@ -79,6 +97,12 @@
       "guid": "ca6d054466a7f7e47e9d08f61f3c1fc8",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 6,
+        "top": 14,
+        "right": 13,
+        "bottom": 3
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 3
     },
@@ -96,6 +120,12 @@
       "guid": "bb8b22a7c34fae3ac4757a58c64b776f",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 12,
+        "top": 13,
+        "right": 7,
+        "bottom": 7
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 4
     },
@@ -113,6 +143,12 @@
       "guid": "115def71075d5a3d3e3ab7727835dae6",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 10,
+        "top": 13,
+        "right": 11,
+        "bottom": 7
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 5
     },
@@ -130,6 +166,12 @@
       "guid": "fe716352f6e5480af889aaecf98b5df8",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 8,
+        "top": 13,
+        "right": 12,
+        "bottom": 7
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 6
     },
@@ -147,6 +189,12 @@
       "guid": "d462939c7b376f58b8d8dd4aedb7c28d",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 7,
+        "top": 11,
+        "right": 7,
+        "bottom": 11
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 7
     },
@@ -164,6 +212,12 @@
       "guid": "ac2b1ee48d947c66d89c7f1d0efce993",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 12,
+        "top": 10,
+        "right": 8,
+        "bottom": 14
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 8
     },
@@ -181,6 +235,12 @@
       "guid": "9c09f2250803ee7a8a0533b475df6c32",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 7,
+        "top": 11,
+        "right": 7,
+        "bottom": 11
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 9
     },
@@ -198,6 +258,12 @@
       "guid": "5caaa4a48fae43875e333f0c92a00d96",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 10
     },
@@ -211,10 +277,16 @@
       "source": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-primary.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/action-primary.png",
       "sourceSha256": "186C3BB10FEC589177F353316634219C720BB2B5BAB1D0376CF5BC05336B8A9D",
-      "runtimeSha256": "B6AC0C5713DC21EA78AB2AC5D209D7DAC8FBD3786481D81D7CE26F67E2691157",
+      "runtimeSha256": "F9371E6A4030D874C7CCFB94A2E831871E479A134634B71B999FC102D4CD114C",
       "guid": "f3a4968a2afcfb59d13ed53ec5977f60",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 11
     },
@@ -228,10 +300,16 @@
       "source": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-secondary.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/action-secondary.png",
       "sourceSha256": "E03FD9EBE275C9A85B3D580016632607F90CFB5B42BD2CCBF7590099EE553D71",
-      "runtimeSha256": "4BD538ED19993160F30E839A343F28E9A5E5BB73815C4027C11A217994C121CE",
+      "runtimeSha256": "539C19BF19A3CA53C783672BC60F9E89DE3CE194558A467215105BDB1CFC8D55",
       "guid": "248c291ce629562b508210a448a9834a",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 12
     },
@@ -245,10 +323,16 @@
       "source": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-quiet.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/action-quiet.png",
       "sourceSha256": "9A7F0C7367DACA640BDDB1FCA0714B7C8D9E99F14B6A58B97D26DC59A3C307C9",
-      "runtimeSha256": "9050FD15391B89DBB9AB6D1545D21E61BC5FA04A1AE3E4537F939DE2488154D1",
+      "runtimeSha256": "C833EB4DBA7AD7F17DC8A0B2DD1A71D3356AF604E07DAEB92DE9FFCB07840EBC",
       "guid": "5f69d95b0cb4c6769fdf02de793731da",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 13
     },
@@ -262,10 +346,16 @@
       "source": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-danger.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/action-danger.png",
       "sourceSha256": "C341C14610217C60481E92DF9D30E544904E4558BB08C6091336560DEC1A1C2C",
-      "runtimeSha256": "28D55E11E0E672ADA64F136E89984C308632C06A82F1411C1F4AA279793D5CCE",
+      "runtimeSha256": "69330A6620E12DB9695CA09370604B08F922C17006DE54B60FB4ED0DB04B287F",
       "guid": "1fc23fa236f1a4ed0dce0fe174f6a1a3",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 14
     },
@@ -283,6 +373,12 @@
       "guid": "d622e8316c6b878ee9b1c57cfcb737e2",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 8,
+        "top": 4,
+        "right": 12,
+        "bottom": 17
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 15
     },
@@ -300,6 +396,12 @@
       "guid": "e1dc825dd016d7387ea066f85be08ab3",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 7,
+        "top": 11,
+        "right": 7,
+        "bottom": 11
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 16
     },
@@ -317,6 +419,12 @@
       "guid": "cdb99773905648e7f2a7432cb509135e",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 18,
+        "right": 16,
+        "bottom": 19
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 17
     },
@@ -334,6 +442,12 @@
       "guid": "3b98294cee2ccd99674b8d6922128c86",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 21,
+        "right": 16,
+        "bottom": 22
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 18
     },
@@ -351,6 +465,12 @@
       "guid": "eaf59d86d571f66b1e8c75d86a58a802",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 16,
+        "top": 15,
+        "right": 16,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 19
     },
@@ -368,6 +488,12 @@
       "guid": "852d929e2aebb50c6997cae92bcd85a9",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 19,
+        "right": 15,
+        "bottom": 19
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 20
     },
@@ -385,6 +511,12 @@
       "guid": "d8f02eaa7df58c0be17ba66cc6ca5002",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 19,
+        "right": 15,
+        "bottom": 21
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 21
     },
@@ -402,6 +534,12 @@
       "guid": "459ce6468dfd1a7d1428715e18f2aff8",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 17,
+        "right": 15,
+        "bottom": 18
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 22
     },
@@ -419,6 +557,12 @@
       "guid": "45f3778aa93c2ed717f563223da0418c",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 18,
+        "top": 15,
+        "right": 17,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 23
     },
@@ -436,6 +580,12 @@
       "guid": "e97f65bce38252808c830dad91974fdb",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 15,
+        "right": 16,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 24
     },
@@ -453,6 +603,12 @@
       "guid": "9a35a20c7614a793ce9cd7a9c8149a7e",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 17,
+        "right": 15,
+        "bottom": 17
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 25
     },
@@ -470,6 +626,12 @@
       "guid": "c0aa6cbe9037902afe21cc1d0aadc829",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 22,
+        "right": 15,
+        "bottom": 22
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 26
     },
@@ -487,6 +649,12 @@
       "guid": "a31e27a660a3a70ce0514fc9a7bfe2dd",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 15,
+        "right": 15,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 27
     },
@@ -504,6 +672,12 @@
       "guid": "2fbcc2322b2774cd5f9d15249d946952",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 16,
+        "top": 15,
+        "right": 16,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 28
     },
@@ -521,6 +695,12 @@
       "guid": "e0514cd902427d2b589227cb9e8db0f0",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 16,
+        "right": 15,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 29
     },
@@ -538,6 +718,12 @@
       "guid": "b5ce2b12365fc6ef269cbf31420bc514",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 17,
+        "top": 15,
+        "right": 17,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 30
     },
@@ -555,6 +741,12 @@
       "guid": "e1c7d4470e9a8f06add0e800bd1e23bb",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 16,
+        "right": 15,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 31
     },
@@ -572,6 +764,12 @@
       "guid": "fb4c422d6646ae4aba60104a1c9d5305",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 16,
+        "top": 29,
+        "right": 14,
+        "bottom": 29
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 32
     },
@@ -589,6 +787,12 @@
       "guid": "e1c7d4470e9a8f06add0e800bd1e23bb",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 16,
+        "right": 15,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 33
     },
@@ -606,6 +810,12 @@
       "guid": "904369e03566f44f56bdbfe64002a620",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 18,
+        "top": 15,
+        "right": 18,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 34
     },
@@ -623,6 +833,12 @@
       "guid": "7ed6fffab755e14d6e9bab3ec87299dc",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 16,
+        "top": 15,
+        "right": 16,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 35
     },
@@ -640,6 +856,12 @@
       "guid": "92c98d40a864bdd506dd4109e2c041ee",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 16,
+        "right": 15,
+        "bottom": 17
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 36
     },
@@ -657,6 +879,12 @@
       "guid": "f9d06a6a23be886792d5e023ee84294e",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 18,
+        "right": 15,
+        "bottom": 18
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 37
     },
@@ -674,6 +902,12 @@
       "guid": "e1c7d4470e9a8f06add0e800bd1e23bb",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 15,
+        "top": 16,
+        "right": 15,
+        "bottom": 16
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 38
     },
@@ -691,6 +925,12 @@
       "guid": "769dbb3d6263bbb2c65bad050acf6cc9",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 19,
+        "top": 15,
+        "right": 19,
+        "bottom": 15
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 39
     },
@@ -708,6 +948,12 @@
       "guid": "8b29f204b254f88d5ff6a91bc1997cc1",
       "slice_border": 0,
       "safe_inset": 12,
+      "optical_inset": {
+        "left": 24,
+        "top": 26,
+        "right": 24,
+        "bottom": 26
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 40
     },
@@ -725,6 +971,12 @@
       "guid": "22afc06bbb1b2476b565d5ddeb029bfa",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 41
     },
@@ -742,6 +994,12 @@
       "guid": "24a137e3a7f3cbeccb0db0b0294c4c2b",
       "slice_border": 32,
       "safe_inset": 20,
+      "optical_inset": {
+        "left": 3,
+        "top": 3,
+        "right": 3,
+        "bottom": 3
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 42
     },
@@ -759,6 +1017,12 @@
       "guid": "02af40a798a6746b98d0280ccca18543",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 8,
+        "top": 4,
+        "right": 9,
+        "bottom": 4
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 43
     },
@@ -776,6 +1040,12 @@
       "guid": "16feca0f7c9657fbe51d94571bd62948",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 8,
+        "top": 20,
+        "right": 8,
+        "bottom": 20
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 44
     },
@@ -793,6 +1063,12 @@
       "guid": "bfae69afc310f82c7ecaefd52d47032e",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 45
     },
@@ -810,6 +1086,12 @@
       "guid": "58809df3ea6ed298b68d75b342dba31c",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 46
     },
@@ -827,6 +1109,12 @@
       "guid": "a6ef738fd26cca9fb049c749def123b9",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 47
     },
@@ -844,6 +1132,12 @@
       "guid": "9b87167019fe5829f79df476ff29f3ef",
       "slice_border": 0,
       "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
       "pixels_per_logical_unit": 2.0,
       "slot": 48
     }

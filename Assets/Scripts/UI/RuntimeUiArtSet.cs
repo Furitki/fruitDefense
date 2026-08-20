@@ -94,6 +94,7 @@ namespace FruitDefense.UI
             }
 
             AppendMissingSlots(result, occurrences);
+            AppendActionSurfaceOpticalConsistency(result);
             return result;
         }
 
@@ -207,6 +208,39 @@ namespace FruitDefense.UI
             }
         }
 
+        private void AppendActionSurfaceOpticalConsistency(RuntimeUiValidationResult result)
+        {
+            RuntimeUiPixelInsets? reference = null;
+            foreach (var slot in new[]
+                     {
+                         RuntimeUiArtSlot.ActionPrimary,
+                         RuntimeUiArtSlot.ActionSecondary,
+                         RuntimeUiArtSlot.ActionQuiet,
+                         RuntimeUiArtSlot.ActionDanger,
+                     })
+            {
+                if (!TryGetBinding(slot, out var binding))
+                    return;
+                if (!reference.HasValue)
+                {
+                    reference = binding.OpticalInset;
+                    continue;
+                }
+                if (SameInsets(reference.Value, binding.OpticalInset))
+                    continue;
+                result.Add("art-set.action.optical-envelope", "bindings",
+                    "Every action surface in one art set must use the same visible optical envelope.");
+                return;
+            }
+        }
+
+        private static bool SameInsets(RuntimeUiPixelInsets left,
+            RuntimeUiPixelInsets right)
+        {
+            return left.Left == right.Left && left.Top == right.Top
+                && left.Right == right.Right && left.Bottom == right.Bottom;
+        }
+
         private static bool NearlyEqual(float left, float right)
         {
             return Mathf.Abs(left - right) <= .001f;
@@ -221,6 +255,7 @@ namespace FruitDefense.UI
         [SerializeField] private Sprite sprite;
         [SerializeField] private RuntimeUiPixelInsets sliceBorder;
         [SerializeField] private RuntimeUiPixelInsets safeInset;
+        [SerializeField] private RuntimeUiPixelInsets opticalInset;
         [SerializeField, Min(.01f)] private float pixelsPerLogicalUnit = 1f;
 
         public RuntimeUiArtSlot Slot => slot;
@@ -228,6 +263,7 @@ namespace FruitDefense.UI
         public Sprite Sprite => sprite;
         public RuntimeUiPixelInsets SliceBorder => sliceBorder;
         public RuntimeUiPixelInsets SafeInset => safeInset;
+        public RuntimeUiPixelInsets OpticalInset => opticalInset;
         public float PixelsPerLogicalUnit => pixelsPerLogicalUnit;
         public RuntimeUiArtGeometry Geometry => RuntimeUiArtSlots.Geometry(slot);
 
@@ -251,6 +287,9 @@ namespace FruitDefense.UI
             if (safeInset.HasNegativeValue)
                 result.Add("art-set.safe-inset.negative", field + ".safeInset",
                     "Safe insets cannot contain negative values.");
+            if (opticalInset.HasNegativeValue)
+                result.Add("art-set.optical-inset.negative", field + ".opticalInset",
+                    "Optical insets cannot contain negative values.");
 
             if (texture != null && (texture.width <= 0 || texture.height <= 0))
             {
@@ -286,6 +325,12 @@ namespace FruitDefense.UI
             {
                 result.Add("art-set.safe-inset.bounds", field + ".safeInset",
                     "Safe insets must leave a positive content region inside the sprite rect.");
+            }
+
+            if (opticalInset.Horizontal >= rect.width || opticalInset.Vertical >= rect.height)
+            {
+                result.Add("art-set.optical-inset.bounds", field + ".opticalInset",
+                    "Optical insets must leave a positive visible region inside the sprite rect.");
             }
 
             var geometry = RuntimeUiArtSlots.Geometry(slot);

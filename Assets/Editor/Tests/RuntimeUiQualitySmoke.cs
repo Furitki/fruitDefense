@@ -268,6 +268,16 @@ namespace FruitDefense.Editor
                         geometry.Style.CalcSize(new GUIContent(copy.Text)).y),
                 caseName + " provides a valid semantic line box");
 
+            if (expectedLineCount == 1 && IsMiddleAnchor(copy.Alignment))
+            {
+                var textOwner = RuntimeUiGui.ResolveTextContentRect(
+                    geometry.Context, geometry.ComponentRect, inspection.State);
+                Assert(Mathf.Abs(geometry.FirstLineRect.center.y
+                        - textOwner.center.y)
+                        <= RuntimeUiQualityProfile.GeometryTolerance,
+                    caseName + " centers its finite single-line box inside the owner");
+            }
+
             if (geometry.HasIcon && geometry.FirstLineRect.width > 0f)
             {
                 var gap = geometry.FirstLineRect.xMin - geometry.IconRect.xMax;
@@ -280,7 +290,7 @@ namespace FruitDefense.Editor
                     caseName + " icon/copy gap meets the quality profile");
             }
 
-            if (IsActionTarget(inspection.Target))
+            if (IsVisualGroupTarget(inspection.Target))
             {
                 Assert(Mathf.Abs(geometry.GroupRect.center.x
                         - geometry.ComponentRect.center.x)
@@ -293,6 +303,10 @@ namespace FruitDefense.Editor
                             * geometry.Context.Scale
                             + RuntimeUiQualityProfile.GeometryTolerance,
                     caseName + " centers icon and label as one visual group");
+            }
+
+            if (IsActionTarget(inspection.Target))
+            {
                 var borderGap = RuntimeUiQualityProfile.MinimumTextToBorderGap
                     * geometry.Context.Scale;
                 Assert(geometry.IconRect.xMin >= geometry.ComponentRect.xMin + borderGap
@@ -313,6 +327,17 @@ namespace FruitDefense.Editor
             var copy = inspection.Copy;
             var component = ResolveComponentRect(bundle, inspection);
             var context = ResolveContext(bundle, inspection.Target);
+
+            if (inspection.Target == RuntimeUiTextInspectionTarget.BattleModalMessage)
+            {
+                var inline = RuntimeUiGui.ResolveInlineContentLayout(
+                    context, component, RuntimeUiArtSlot.IndicatorWarning,
+                    copy.Text, copy.Role, inspection.State);
+                return new TextGeometry(context, component, inline.LabelRect,
+                    default, inline.IconVisualRect, inline.GroupRect,
+                    context.Styles.SingleLineText(copy.Role, TextAnchor.MiddleCenter),
+                    1, true);
+            }
 
             if (IsActionTarget(inspection.Target))
             {
@@ -359,8 +384,8 @@ namespace FruitDefense.Editor
                     false, twoLine, true);
             }
 
-            var textRect = RuntimeUiGui.ResolveTextContentRect(
-                context, component, inspection.State);
+            var textRect = RuntimeUiGui.ResolveSingleLineTextRect(
+                context, component, copy.Role, copy.Alignment, inspection.State);
             return new TextGeometry(context, component, textRect, default,
                 default, default,
                 context.Styles.SingleLineText(copy.Role, copy.Alignment),
@@ -447,7 +472,7 @@ namespace FruitDefense.Editor
                         ? bundle.Battle.ModalTerminalTitle
                         : bundle.Battle.ModalTitle;
                 case RuntimeUiTextInspectionTarget.BattleModalMessage:
-                    return bundle.Battle.ModalMessage;
+                    return bundle.Battle.ModalPauseHint;
                 case RuntimeUiTextInspectionTarget.BattleModalResultBanner:
                     return bundle.Battle.ModalResultBannerText;
                 case RuntimeUiTextInspectionTarget.BattleModalTerminalMessage:
@@ -490,6 +515,19 @@ namespace FruitDefense.Editor
                 || target == RuntimeUiTextInspectionTarget.BattleModalTerminalAction
                 || target == RuntimeUiTextInspectionTarget.SettlementRetry
                 || target == RuntimeUiTextInspectionTarget.SettlementReturn;
+        }
+
+        private static bool IsVisualGroupTarget(RuntimeUiTextInspectionTarget target)
+        {
+            return IsActionTarget(target)
+                || target == RuntimeUiTextInspectionTarget.BattleModalMessage;
+        }
+
+        private static bool IsMiddleAnchor(TextAnchor anchor)
+        {
+            return anchor == TextAnchor.MiddleLeft
+                || anchor == TextAnchor.MiddleCenter
+                || anchor == TextAnchor.MiddleRight;
         }
 
         private static bool IsStatusTarget(RuntimeUiTextInspectionTarget target)
@@ -742,13 +780,22 @@ namespace FruitDefense.Editor
             Assert(Contains(bundle.Battle.ModalResultBanner,
                     bundle.Battle.ModalResultBannerText),
                 suffix + " Battle terminal outcome copy remains inside its semantic banner");
-            Assert(!Overlaps(bundle.Battle.ModalPauseIndicator,
-                    bundle.Battle.ModalMessage)
-                && bundle.Battle.ModalMessage.xMin
-                    - bundle.Battle.ModalPauseIndicator.xMax
-                    + RuntimeUiQualityProfile.GeometryTolerance
-                    >= RuntimeUiQualityProfile.MinimumContentGap,
-                suffix + " Battle pause owns one intentional warning badge with an 8-point gap");
+            var pauseHint = RuntimeUiGui.ResolveInlineContentLayout(
+                bundle.BattleContext, bundle.Battle.ModalPauseHint,
+                RuntimeUiArtSlot.IndicatorWarning,
+                RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattlePausedMessage).Text,
+                RuntimeUiTypographyRole.Body, RuntimeUiInteractionState.Warning);
+            Assert(Contains(bundle.Battle.ModalPauseHint, pauseHint.IconVisualRect)
+                && Contains(bundle.Battle.ModalPauseHint, pauseHint.LabelRect)
+                && Mathf.Abs(pauseHint.GroupRect.center.x
+                    - bundle.Battle.ModalPauseHint.center.x)
+                    <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
+                        * bundle.BattleContext.Scale
+                && Mathf.Abs(pauseHint.GroupRect.center.y
+                    - bundle.Battle.ModalPauseHint.center.y)
+                    <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
+                        * bundle.BattleContext.Scale,
+                suffix + " Battle pause centers warning and copy as one optical group");
             var victoryContent = BattleUiPresentationState.Create(
                 GamePhase.Victory, false).ModalContent(15, 15);
             var terminalText = RuntimeUiGui.ResolveControlledTwoLineTextLayout(

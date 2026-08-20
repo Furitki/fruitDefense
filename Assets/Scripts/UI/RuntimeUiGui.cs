@@ -99,6 +99,25 @@ namespace FruitDefense.UI
         public bool HasLabel { get; }
     }
 
+    public readonly struct RuntimeUiInlineContentLayout
+    {
+        internal RuntimeUiInlineContentLayout(Rect contentRect, Rect iconRect,
+            Rect iconVisualRect, Rect labelRect, Rect groupRect)
+        {
+            ContentRect = contentRect;
+            IconRect = iconRect;
+            IconVisualRect = iconVisualRect;
+            LabelRect = labelRect;
+            GroupRect = groupRect;
+        }
+
+        public Rect ContentRect { get; }
+        public Rect IconRect { get; }
+        public Rect IconVisualRect { get; }
+        public Rect LabelRect { get; }
+        public Rect GroupRect { get; }
+    }
+
     public readonly struct RuntimeUiMetricContentLayout
     {
         internal RuntimeUiMetricContentLayout(Rect contentRect, Rect iconRect,
@@ -316,6 +335,8 @@ namespace FruitDefense.UI
                 fontSize = Mathf.Max(1, Mathf.RoundToInt(token.FontSize * scale)),
                 fontStyle = token.FontStyle,
                 alignment = alignment,
+                contentOffset = new Vector2(0f,
+                    Mathf.Round(token.OpticalOffsetY * scale)),
                 imagePosition = ImagePosition.TextOnly,
                 clipping = TextClipping.Clip,
                 richText = false,
@@ -810,7 +831,7 @@ namespace FruitDefense.UI
             if (!hasLabel)
             {
                 var centeredIcon = CenterSquare(contentRect, desiredIconSize);
-                var iconOnlyVisual = ResolveIconVisualRect(
+                var iconOnlyVisual = ResolveOpticalVisualRect(
                     context, iconSlot.Value, centeredIcon);
                 return new RuntimeUiActionContentLayout(contentRect, centeredIcon,
                     iconOnlyVisual, default, iconOnlyVisual, true, false);
@@ -818,7 +839,7 @@ namespace FruitDefense.UI
 
             var gap = context.Scaled(context.Theme.Metrics.SpacingXs);
             var desiredProbeIcon = CenterSquare(contentRect, desiredIconSize);
-            var desiredProbeVisual = ResolveIconVisualRect(
+            var desiredProbeVisual = ResolveOpticalVisualRect(
                 context, iconSlot.Value, desiredProbeIcon);
             var visualRatio = desiredIconSize <= 0f ? 1f
                 : desiredProbeVisual.width / desiredIconSize;
@@ -831,20 +852,73 @@ namespace FruitDefense.UI
             var iconSize = Mathf.Min(desiredIconSize, Mathf.Max(0f,
                 contentRect.width - gap - labelWidth) / visualRatio);
             var probeIcon = CenterSquare(contentRect, iconSize);
-            var probeVisual = ResolveIconVisualRect(
+            var probeVisual = ResolveOpticalVisualRect(
                 context, iconSlot.Value, probeIcon);
             var groupWidth = probeVisual.width + gap + labelWidth;
             var groupX = contentRect.center.x - groupWidth * .5f;
             var iconRect = new Rect(
                 groupX - (probeVisual.xMin - probeIcon.xMin),
-                contentRect.center.y - iconSize * .5f, iconSize, iconSize);
-            var iconVisual = ResolveIconVisualRect(context, iconSlot.Value, iconRect);
+                contentRect.center.y - iconSize * .5f
+                    - (probeVisual.center.y - probeIcon.center.y),
+                iconSize, iconSize);
+            var iconVisual = ResolveOpticalVisualRect(context, iconSlot.Value, iconRect);
             var labelRectWithIcon = new Rect(iconVisual.xMax + gap,
                 contentRect.center.y - labelHeight * .5f,
                 labelWidth, labelHeight);
             return new RuntimeUiActionContentLayout(contentRect, iconRect,
                 iconVisual, labelRectWithIcon,
                 Union(iconVisual, labelRectWithIcon), true, true);
+        }
+
+        public static RuntimeUiInlineContentLayout ResolveInlineContentLayout(
+            RuntimeUiDrawContext context, Rect rect, RuntimeUiArtSlot iconSlot,
+            string label, RuntimeUiTypographyRole labelRole,
+            RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal,
+            float iconSizeLogical = 24f)
+        {
+            context = Require(context);
+            RequireIconSlot(iconSlot);
+            var contentRect = context.ContentRect(rect, state);
+            var labelSize = MeasureSingleLine(context, labelRole, label,
+                TextAnchor.MiddleCenter, ActionMeasurementContent);
+            var labelWidth = Mathf.Min(contentRect.width, labelSize.x);
+            var labelHeight = Mathf.Min(contentRect.height, labelSize.y);
+            var gap = context.Scaled(context.Theme.Metrics.SpacingSm);
+            var iconSize = Mathf.Min(contentRect.height,
+                context.Scaled(iconSizeLogical));
+            var probeIcon = CenterSquare(contentRect, iconSize);
+            var probeVisual = ResolveOpticalVisualRect(context, iconSlot, probeIcon);
+            var maximumLabelWidth = Mathf.Max(0f,
+                contentRect.width - probeVisual.width - gap);
+            labelWidth = Mathf.Min(labelWidth, maximumLabelWidth);
+            var groupWidth = probeVisual.width + gap + labelWidth;
+            var groupX = contentRect.center.x - groupWidth * .5f;
+            var iconRect = new Rect(
+                groupX - (probeVisual.xMin - probeIcon.xMin),
+                contentRect.center.y - iconSize * .5f
+                    - (probeVisual.center.y - probeIcon.center.y),
+                iconSize, iconSize);
+            var iconVisual = ResolveOpticalVisualRect(context, iconSlot, iconRect);
+            var labelRect = new Rect(iconVisual.xMax + gap,
+                contentRect.center.y - labelHeight * .5f,
+                labelWidth, labelHeight);
+            return new RuntimeUiInlineContentLayout(contentRect, iconRect,
+                iconVisual, labelRect, Union(iconVisual, labelRect));
+        }
+
+        public static void DrawInlineIconLabel(RuntimeUiDrawContext context, Rect rect,
+            RuntimeUiArtSlot iconSlot, string label, RuntimeUiTypographyRole labelRole,
+            RuntimeUiTextTone tone,
+            RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal,
+            float iconSizeLogical = 24f)
+        {
+            context = Require(context);
+            var layout = ResolveInlineContentLayout(context, rect, iconSlot,
+                label, labelRole, state, iconSizeLogical);
+            DrawSlotArt(context, layout.IconRect, iconSlot,
+                RuntimeUiInteractionState.Normal);
+            DrawTextCore(context, layout.LabelRect, label, labelRole, tone,
+                TextAnchor.MiddleCenter, state, true);
         }
 
         public static RuntimeUiTextTone ResolveActionTextTone(
@@ -923,7 +997,7 @@ namespace FruitDefense.UI
             var iconSize = Mathf.Min(content.height,
                 context.Scaled(Mathf.Max(0f, compactIconSize)));
             var probeIcon = CenterSquare(content, iconSize);
-            var probeVisual = ResolveIconVisualRect(context, resourceIcon, probeIcon);
+            var probeVisual = ResolveOpticalVisualRect(context, resourceIcon, probeIcon);
             var iconGap = context.Scaled(context.Theme.Metrics.SpacingXs);
             var labelSize = MeasureSingleLine(context,
                 RuntimeUiTypographyRole.Supplemental, label,
@@ -933,7 +1007,7 @@ namespace FruitDefense.UI
                 TextAnchor.MiddleLeft, MetricMeasurementContent);
             var valueGap = context.Scaled(context.Theme.Metrics.SpacingXs);
             var availableTextWidth = Mathf.Max(0f,
-                content.width - iconSize - iconGap - valueGap);
+                content.width - probeVisual.width - iconGap - valueGap);
             var valueWidth = Mathf.Min(valueSize.x, availableTextWidth);
             var labelWidth = Mathf.Min(labelSize.x,
                 Mathf.Max(0f, availableTextWidth - valueWidth));
@@ -942,8 +1016,10 @@ namespace FruitDefense.UI
             var groupX = content.center.x - groupWidth * .5f;
             var iconRect = new Rect(
                 groupX - (probeVisual.xMin - probeIcon.xMin),
-                content.center.y - iconSize * .5f, iconSize, iconSize);
-            var iconVisual = ResolveIconVisualRect(context, resourceIcon, iconRect);
+                content.center.y - iconSize * .5f
+                    - (probeVisual.center.y - probeIcon.center.y),
+                iconSize, iconSize);
+            var iconVisual = ResolveOpticalVisualRect(context, resourceIcon, iconRect);
             var lineHeight = Mathf.Min(content.height,
                 Mathf.Max(labelSize.y, valueSize.y));
             var labelRect = new Rect(iconVisual.xMax + iconGap,
@@ -967,7 +1043,7 @@ namespace FruitDefense.UI
             var iconSize = Mathf.Min(content.height,
                 context.Scaled(context.Theme.Metrics.TouchTargetMinimum));
             var probeIcon = CenterSquare(content, iconSize);
-            var probeVisual = ResolveIconVisualRect(context, resourceIcon, probeIcon);
+            var probeVisual = ResolveOpticalVisualRect(context, resourceIcon, probeIcon);
             var gap = context.Scaled(context.Theme.Metrics.SpacingXs);
             var valueSize = MeasureSingleLine(context,
                 RuntimeUiTypographyRole.Metric, value,
@@ -976,14 +1052,16 @@ namespace FruitDefense.UI
                 RuntimeUiTypographyRole.Supplemental, label,
                 TextAnchor.MiddleLeft, MetricMeasurementContent);
             var textWidth = Mathf.Min(Mathf.Max(valueSize.x, labelSize.x),
-                Mathf.Max(0f, content.width - iconSize - gap));
+                Mathf.Max(0f, content.width - probeVisual.width - gap));
             var textHeight = Mathf.Min(content.height, valueSize.y + labelSize.y);
             var groupWidth = probeVisual.width + gap + textWidth;
             var groupX = content.center.x - groupWidth * .5f;
             var iconRect = new Rect(
                 groupX - (probeVisual.xMin - probeIcon.xMin),
-                content.center.y - iconSize * .5f, iconSize, iconSize);
-            var iconVisual = ResolveIconVisualRect(context, resourceIcon, iconRect);
+                content.center.y - iconSize * .5f
+                    - (probeVisual.center.y - probeIcon.center.y),
+                iconSize, iconSize);
+            var iconVisual = ResolveOpticalVisualRect(context, resourceIcon, iconRect);
             var textY = content.center.y - textHeight * .5f;
             var valueHeight = Mathf.Min(valueSize.y, textHeight);
             var labelHeight = Mathf.Max(0f, textHeight - valueHeight);
@@ -1277,6 +1355,16 @@ namespace FruitDefense.UI
             return Require(context).ContentRect(rect, state);
         }
 
+        public static Rect ResolveSingleLineTextRect(RuntimeUiDrawContext context,
+            Rect rect, RuntimeUiTypographyRole role, TextAnchor alignment,
+            RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal)
+        {
+            context = Require(context);
+            var content = context.ContentRect(rect, state);
+            return ResolveSingleLineDrawRect(content,
+                context.Styles.SingleLineText(role, alignment), alignment);
+        }
+
         public static float ResolveTextOpacity(RuntimeUiDrawContext context,
             RuntimeUiInteractionState state)
         {
@@ -1339,6 +1427,8 @@ namespace FruitDefense.UI
                 var style = explicitStyle ?? (singleLine
                     ? context.Styles.SingleLineText(role, alignment)
                     : context.Styles.Text(role, alignment));
+                if (singleLine)
+                    rect = ResolveSingleLineDrawRect(rect, style, alignment);
                 GUI.Label(rect, text ?? string.Empty, style);
             }
             finally
@@ -1615,6 +1705,37 @@ namespace FruitDefense.UI
                 Mathf.Max(0f, rect.height - vertical * 2f));
         }
 
+        private static Rect ResolveSingleLineDrawRect(Rect owner, GUIStyle style,
+            TextAnchor alignment)
+        {
+            var requestedHeight = style == null || style.fixedHeight <= 0f
+                ? owner.height : style.fixedHeight;
+            var height = Mathf.Min(Mathf.Max(0f, owner.height),
+                Mathf.Max(0f, requestedHeight));
+            float y;
+            switch (alignment)
+            {
+                case TextAnchor.UpperLeft:
+                case TextAnchor.UpperCenter:
+                case TextAnchor.UpperRight:
+                    y = owner.yMin;
+                    break;
+                case TextAnchor.MiddleLeft:
+                case TextAnchor.MiddleCenter:
+                case TextAnchor.MiddleRight:
+                    y = owner.center.y - height * .5f;
+                    break;
+                case TextAnchor.LowerLeft:
+                case TextAnchor.LowerCenter:
+                case TextAnchor.LowerRight:
+                    y = owner.yMax - height;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
+            }
+            return new Rect(owner.x, y, owner.width, height);
+        }
+
         private static RuntimeUiInteractionState ResolveStatusVisualState(
             RuntimeUiInteractionState state, bool emphasized)
         {
@@ -1647,18 +1768,18 @@ namespace FruitDefense.UI
             }
         }
 
-        private static Rect ResolveIconVisualRect(RuntimeUiDrawContext context,
+        public static Rect ResolveOpticalVisualRect(RuntimeUiDrawContext context,
             RuntimeUiArtSlot slot, Rect iconRect)
         {
             var binding = context.RequiredBinding(slot);
             var source = binding.Sprite.rect;
             var sourceWidth = Mathf.Max(1f, source.width);
             var sourceHeight = Mathf.Max(1f, source.height);
-            var safe = binding.SafeInset;
-            var left = Mathf.Clamp01(safe.Left / sourceWidth);
-            var top = Mathf.Clamp01(safe.Top / sourceHeight);
-            var right = Mathf.Clamp01(safe.Right / sourceWidth);
-            var bottom = Mathf.Clamp01(safe.Bottom / sourceHeight);
+            var optical = binding.OpticalInset;
+            var left = Mathf.Clamp01(optical.Left / sourceWidth);
+            var top = Mathf.Clamp01(optical.Top / sourceHeight);
+            var right = Mathf.Clamp01(optical.Right / sourceWidth);
+            var bottom = Mathf.Clamp01(optical.Bottom / sourceHeight);
             return new Rect(
                 iconRect.x + iconRect.width * left,
                 iconRect.y + iconRect.height * top,

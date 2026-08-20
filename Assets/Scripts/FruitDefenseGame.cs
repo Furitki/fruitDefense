@@ -2588,21 +2588,30 @@ namespace FruitDefense
                 content.Title,
                 RuntimeUiTypographyRole.SectionTitle, RuntimeUiTextTone.State,
                 TextAnchor.MiddleCenter, content.SurfaceState);
-            var messageRect = content.UsesResultCard
-                ? layout.ModalTerminalMessage : layout.ModalMessage;
-            if (content.MessageLines.HasSecondLine)
+            if (!content.UsesResultCard)
             {
-                RuntimeUiGui.DrawControlledTwoLineText(drawContext, messageRect,
-                    content.MessageLines, RuntimeUiTypographyRole.Body,
-                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter,
-                    content.SurfaceState);
+                RuntimeUiGui.DrawInlineIconLabel(drawContext, layout.ModalPauseHint,
+                    RuntimeUiArtSlot.IndicatorWarning,
+                    content.MessageLines.FirstLine, RuntimeUiTypographyRole.Body,
+                    RuntimeUiTextTone.Primary, content.SurfaceState);
             }
             else
             {
-                RuntimeUiGui.DrawSingleLineText(drawContext, messageRect,
-                    content.MessageLines.FirstLine, RuntimeUiTypographyRole.Body,
-                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter,
-                    content.SurfaceState);
+                if (content.MessageLines.HasSecondLine)
+                {
+                    RuntimeUiGui.DrawControlledTwoLineText(drawContext,
+                        layout.ModalTerminalMessage, content.MessageLines,
+                        RuntimeUiTypographyRole.Body, RuntimeUiTextTone.Primary,
+                        TextAnchor.MiddleCenter, content.SurfaceState);
+                }
+                else
+                {
+                    RuntimeUiGui.DrawSingleLineText(drawContext,
+                        layout.ModalTerminalMessage,
+                        content.MessageLines.FirstLine, RuntimeUiTypographyRole.Body,
+                        RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter,
+                        content.SurfaceState);
+                }
             }
             if (content.UsesResultCard)
             {
@@ -2610,11 +2619,6 @@ namespace FruitDefense
                     content.SurfaceState == RuntimeUiInteractionState.Success
                         ? RuntimeUiIndicatorKind.Success
                         : RuntimeUiIndicatorKind.Error);
-            }
-            else
-            {
-                RuntimeUiGui.DrawIndicator(drawContext, layout.ModalPauseIndicator,
-                    RuntimeUiIndicatorKind.Warning);
             }
             var actionCount = content.ActionCount;
             var primaryRect = layout.ModalAction(0, actionCount);

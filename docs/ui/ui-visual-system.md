@@ -294,12 +294,13 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - 可见像素、抗锯齿、描边和阴影不得接触导出边界；透明区内保留合理 edge bleed，避免缩放或压缩产生浅/黑边。
 - importer 使用 Full Rect 保留安全边距；禁止 Tight mesh 或自动 trim 改变对齐。
 - 透明 padding 只供视觉溢出和抗锯齿使用。布局计算、content inset 和 hit rect 仍由组件/theme 明确给出，不能从透明像素猜测。
-- 九宫格 border、icon safe inset 和组件 optical offset 由 ArtSet metadata 保存，精确数值不散落在 Presenter 或本文。
+- 九宫格 border、icon safe inset、最终运行时 PNG 的 significant-alpha optical inset 和组件 optical offset 由 ArtSet metadata 保存，精确数值不散落在 Presenter 或本文。safe inset 只定义安全画布，不能代替实际可见像素边界参与 icon-label 组合居中。
+- 同一 action surface 家族在相同阈值下必须具有一致、居中且完全 contained 的可见外框；由确定性 exporter 从 owned master 归一化，Presenter 不得通过扩大 draw rect 补偿资源差异。
 
 ### 8.5 图标画布
 
 - 所有 common icon 使用同一方形逻辑 canvas、统一透明 safe inset 和统一 nominal scale；精确 canvas 与 inset 数值由 release theme/ArtSet contract 持有。
-- 主体在 safe inset 内做 optical centering；箭头、暂停条等窄形状可做视觉补偿，但外接 canvas 不变。
+- 主体在 safe inset 内做 optical centering；箭头、暂停条等窄形状可做视觉补偿，但外接 canvas 不变。共享排版使用 exporter 从最终运行时 PNG 生成的 optical inset 计算真实可见盒，仍绘制完整 canvas。
 - 控制图标优先使用清楚的泥土棕轮廓和有限填色；资源图标可保留可识别的果园色彩。两类都必须在最小使用尺寸下与文字同屏可辨。
 - 图标不得包含 baked label；pause、continue、retry、return、close、warning/error 等必须仅凭形状和相邻可访问名称识别。
 - outline weight、圆角语言和阴影方向在同一 ArtSet 内一致；不得混入科技线框、照片、emoji 或系统字体符号充当 production icon。
@@ -460,6 +461,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - 普通 WebGL host 必须按宽、高两轴可用空间的较小缩放比完整 contain 竖屏画布，并保持居中、等比、无页面滚动和正确指针映射；不能依赖裁切、滚动或全屏才能触达顶部/底部内容。
 - 本地发布服务对未版本化的 `index.html` 与 host 资源必须在文件原位替换后重新计算 ETag；`no-cache` 不能配合永久路径哈希缓存，否则普通刷新会继续显示旧布局。带内容哈希的 Build 文件才允许 immutable 缓存。
 - 含 icon 与 label 的 action 以实际 icon alpha ink 与字体 glyph ink 的并集作为一个视觉组；该组在 action 内两轴中心偏差均不超过 2 logical point，可见间距为 4–8，且 icon/字形距可见描边至少 4。
+- 单行标题、正文和 control label 必须先在 owner 内解析为按 typography line-height 居中的有限行盒，再应用 role-level optical offset；禁止把 fixed-height 字形盒顶锚到更高的 owner，或在页面 Presenter 中硬编码逐页 Y 补偿。
 - 可比较的 header/result metric 使用同一 anatomy；同组 icon center 与文字 baseline 差不超过 1 logical point，icon 可见 alpha 距 row/card 边至少 8。
 - Battle grid 的相对两侧视觉 gutter 差不超过 1 logical point；同一个 `BattlefieldProjection` 必须同时驱动绘制与 hit test，任何 chrome 调整都不得建立第二套格子或拖拽几何。
 - Lobby 与 Settlement 必须声明 intentional occupied-content bounds、重复节奏和必要留白；“全部 Rect 均 contained”不能替代页面视觉重心与下半屏完成度检查。

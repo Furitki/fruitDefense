@@ -81,7 +81,7 @@ namespace FruitDefense.Editor
 
     public static class RuntimeUiVisualSystemValidator
     {
-        private const string ManifestSchema = "fruit-defense.runtime-ui-art-manifest.v1";
+        private const string ManifestSchema = "fruit-defense.runtime-ui-art-manifest.v2";
         private const string ApprovedThemeId = "ui.sunny-orchard";
         private const string PaintedSetId = "sunny-orchard-painted";
         private const string SharedConsumerSetId = "sunny-orchard";
@@ -630,11 +630,12 @@ namespace FruitDefense.Editor
 
             var uniformSlice = UniformInset(binding.SliceBorder);
             var uniformSafe = UniformInset(binding.SafeInset);
-            if (uniformSlice != row.slice_border || uniformSafe != row.safe_inset)
+            if (uniformSlice != row.slice_border || uniformSafe != row.safe_inset
+                || !MatchesOpticalInset(binding.OpticalInset, row.optical_inset))
             {
                 report.Error("manifest.binding.insets", manifestPath,
                     semantic + " manifest insets differ from the serialized binding.",
-                    "Keep manifest and binding slice/safe inset metadata identical.");
+                    "Keep manifest and binding slice/safe/optical inset metadata identical.");
             }
 
             ValidateOwnedFile(report, source, row.sourceSha256, string.Empty, "source");
@@ -717,6 +718,7 @@ namespace FruitDefense.Editor
                 || ownerRow.height != row.height
                 || ownerRow.slice_border != row.slice_border
                 || ownerRow.safe_inset != row.safe_inset
+                || !SameManifestInsets(ownerRow.optical_inset, row.optical_inset)
                 || !Nearly(ownerRow.pixels_per_logical_unit,
                     row.pixels_per_logical_unit)
                 || RuntimeUiArtSetRegistry.Normalize(ownerRow.source)
@@ -886,6 +888,8 @@ namespace FruitDefense.Editor
             {
                 var pixels = texture.GetPixels32();
                 ValidateVisibleMagenta(report, assetPath, pixels, texture.width);
+                ValidateOpticalInset(report, assetPath, binding, pixels,
+                    texture.width, texture.height);
 
                 if (RequiresOpaquePixels(binding.Slot)
                     && !IsFullyOpaque(pixels, out var nonOpaqueCount, out var minimumAlpha))
@@ -1160,6 +1164,59 @@ namespace FruitDefense.Editor
             bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
             centroid = new Vector2((float)(weightedX / alphaSum),
                 (float)(weightedY / alphaSum));
+            return true;
+        }
+
+        private static void ValidateOpticalInset(RuntimeUiVisualValidationReport report,
+            string assetPath, RuntimeUiArtBinding binding, Color32[] pixels,
+            int width, int height)
+        {
+            if (!TrySignificantAlphaBounds(pixels, width, height,
+                    RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh,
+                    out var bounds))
+            {
+                report.Error("optical-inset.alpha-empty", assetPath,
+                    "Runtime art has no significant alpha for its optical contract.",
+                    "Restore visible runtime art and regenerate optical metadata.");
+                return;
+            }
+
+            var expected = new RuntimeUiPixelInsets(
+                bounds.xMin,
+                height - bounds.yMax,
+                width - bounds.xMax,
+                bounds.yMin);
+            if (SameInsets(expected, binding.OpticalInset))
+                return;
+            report.Error("optical-inset.stale", assetPath,
+                "Serialized optical inset does not match the final runtime PNG alpha bounds.",
+                "Regenerate the ArtSet from the owned exporter.");
+        }
+
+        private static bool TrySignificantAlphaBounds(Color32[] pixels,
+            int width, int height, byte minimumAlpha, out RectInt bounds)
+        {
+            var minX = width;
+            var minY = height;
+            var maxX = -1;
+            var maxY = -1;
+            for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
+            {
+                if (pixels[y * width + x].a < minimumAlpha)
+                    continue;
+                minX = Mathf.Min(minX, x);
+                minY = Mathf.Min(minY, y);
+                maxX = Mathf.Max(maxX, x);
+                maxY = Mathf.Max(maxY, y);
+            }
+            if (maxX < minX || maxY < minY)
+            {
+                bounds = default;
+                return false;
+            }
+            bounds = new RectInt(minX, minY,
+                maxX - minX + 1, maxY - minY + 1);
             return true;
         }
 
@@ -1548,6 +1605,29 @@ namespace FruitDefense.Editor
                 ? inset.Left : int.MinValue;
         }
 
+        private static bool MatchesOpticalInset(RuntimeUiPixelInsets inset,
+            ArtManifestInsets manifest)
+        {
+            return manifest != null && inset.Left == manifest.left
+                && inset.Top == manifest.top && inset.Right == manifest.right
+                && inset.Bottom == manifest.bottom;
+        }
+
+        private static bool SameManifestInsets(ArtManifestInsets left,
+            ArtManifestInsets right)
+        {
+            return left != null && right != null && left.left == right.left
+                && left.top == right.top && left.right == right.right
+                && left.bottom == right.bottom;
+        }
+
+        private static bool SameInsets(RuntimeUiPixelInsets left,
+            RuntimeUiPixelInsets right)
+        {
+            return left.Left == right.Left && left.Top == right.Top
+                && left.Right == right.Right && left.Bottom == right.Bottom;
+        }
+
         private static string GeometryName(RuntimeUiArtGeometry geometry)
         {
             switch (geometry)
@@ -1614,9 +1694,19 @@ namespace FruitDefense.Editor
             public string guid;
             public int slice_border;
             public int safe_inset;
+            public ArtManifestInsets optical_inset;
             public float pixels_per_logical_unit;
             public int slot;
             public string shared_from_set;
+        }
+
+        [Serializable]
+        private sealed class ArtManifestInsets
+        {
+            public int left;
+            public int top;
+            public int right;
+            public int bottom;
         }
 
         [Serializable]

@@ -35,30 +35,37 @@ MonoBehaviour:
       fontSize: 40
       lineHeight: 46
       fontStyle: 1
+      opticalOffsetY: 0
     screenTitle:
       fontSize: 32
       lineHeight: 38
       fontStyle: 1
+      opticalOffsetY: 0
     sectionTitle:
       fontSize: 28
       lineHeight: 34
       fontStyle: 1
+      opticalOffsetY: -1
     body:
       fontSize: 20
       lineHeight: 28
       fontStyle: 0
+      opticalOffsetY: 0
     controlLabel:
       fontSize: 20
       lineHeight: 24
       fontStyle: 1
+      opticalOffsetY: 0
     metric:
       fontSize: 24
       lineHeight: 28
       fontStyle: 1
+      opticalOffsetY: 0
     supplemental:
       fontSize: 16
       lineHeight: 22
       fontStyle: 0
+      opticalOffsetY: 0
   metrics:
     spacingXs: 4
     spacingSm: 8

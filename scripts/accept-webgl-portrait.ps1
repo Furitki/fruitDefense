@@ -217,6 +217,14 @@ $lobbyAlternateCardRect = [ordered]@{
 $headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
 $formerActionRegion = Convert-ReferenceRect -X 8 -Y 760 -Width 386 -Height 50
 $waveActionRect = Convert-ReferenceRect -X 210 -Y 526 -Width 184 -Height 44
+$pauseTitleRect = Convert-ReferenceRect -X 52 -Y 326 -Width 298 -Height 52
+$pauseTitleInkRegion = Convert-ReferenceRect -X 90 -Y 332 -Width 220 -Height 40
+$pauseHintRect = Convert-ReferenceRect -X 60 -Y 390 -Width 282 -Height 52
+$pauseHintIconRegion = Convert-ReferenceRect -X 102 -Y 398 -Width 26 -Height 36
+$pauseHintCopyRegion = Convert-ReferenceRect -X 130 -Y 398 -Width 176 -Height 36
+$pauseContinueRect = Convert-ReferenceRect -X 54 -Y 466 -Width 142 -Height 52
+$pauseRestartRect = Convert-ReferenceRect -X 206 -Y 466 -Width 142 -Height 52
+$pauseActionBandRect = Convert-ReferenceRect -X 36 -Y 454 -Width 330 -Height 70
 $hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
 $hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
 $formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
@@ -1124,6 +1132,183 @@ function Get-ImageInsetEvidence {
     $reference.Dispose()
     $candidate.Dispose()
   }
+}
+
+function Get-ColorMaskEvidence {
+  param(
+    [object]$Bitmap,
+    [object]$Region,
+    [ValidateSet('title-ink', 'hint-icon', 'hint-copy', 'primary-surface', 'danger-surface')]
+    [string]$Mask
+  )
+  $xMin = [Math]::Max(0, [int]$Region.xMin)
+  $yMin = [Math]::Max(0, [int]$Region.yMin)
+  $xMax = [Math]::Min($Bitmap.Width, [int]$Region.xMax)
+  $yMax = [Math]::Min($Bitmap.Height, [int]$Region.yMax)
+  $count = 0
+  [double]$sumX = 0
+  [double]$sumY = 0
+  $visibleXMin = [int]::MaxValue
+  $visibleYMin = [int]::MaxValue
+  $visibleXMax = [int]::MinValue
+  $visibleYMax = [int]::MinValue
+  for ($y = $yMin; $y -lt $yMax; $y++) {
+    for ($x = $xMin; $x -lt $xMax; $x++) {
+      $pixel = $Bitmap.GetPixel($x, $y)
+      $matches = switch ($Mask) {
+        'title-ink' {
+          [Math]::Abs([int]$pixel.R - 139) -le 18 -and
+            [Math]::Abs([int]$pixel.G - 94) -le 18 -and
+            [Math]::Abs([int]$pixel.B - 60) -le 18
+          break
+        }
+        'hint-icon' {
+          (($pixel.R - $pixel.G) -gt 30 -or ($pixel.G - $pixel.R) -gt 15) -and
+            ($pixel.R -lt 240 -or $pixel.G -lt 220) -and $pixel.B -lt 150
+          break
+        }
+        'hint-copy' {
+          $pixel.R -lt 235 -and $pixel.G -lt 215 -and $pixel.B -lt 185
+          break
+        }
+        'primary-surface' {
+          $pixel.G -gt ($pixel.R + 18) -and
+            $pixel.G -gt ($pixel.B + 35) -and $pixel.G -gt 65
+          break
+        }
+        'danger-surface' {
+          $pixel.R -gt ($pixel.G + 55) -and
+            $pixel.R -gt ($pixel.B + 55) -and $pixel.R -gt 145
+          break
+        }
+      }
+      if (-not $matches) { continue }
+      $count++
+      $sumX += $x + .5
+      $sumY += $y + .5
+      $visibleXMin = [Math]::Min($visibleXMin, $x)
+      $visibleYMin = [Math]::Min($visibleYMin, $y)
+      $visibleXMax = [Math]::Max($visibleXMax, $x + 1)
+      $visibleYMax = [Math]::Max($visibleYMax, $y + 1)
+    }
+  }
+  if ($count -eq 0) {
+    throw "Paused-modal optical mask '$Mask' found no final-raster pixels."
+  }
+  return [ordered]@{
+    mask = $Mask
+    sampleRegion = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
+    pixels = $count
+    bounds = [ordered]@{
+      xMin = $visibleXMin; yMin = $visibleYMin
+      xMax = $visibleXMax; yMax = $visibleYMax
+      width = $visibleXMax - $visibleXMin
+      height = $visibleYMax - $visibleYMin
+      centerX = ($visibleXMin + $visibleXMax) * .5
+      centerY = ($visibleYMin + $visibleYMax) * .5
+    }
+    centroid = [ordered]@{ x = $sumX / $count; y = $sumY / $count }
+  }
+}
+
+function Get-PausedModalOpticalEvidence {
+  param([string]$Path)
+  Add-Type -AssemblyName System.Drawing
+  $bitmap = [Drawing.Bitmap]::FromFile($Path)
+  try {
+    $title = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $pauseTitleInkRegion -Mask 'title-ink'
+    $hintIcon = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $pauseHintIconRegion -Mask 'hint-icon'
+    $hintCopy = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $pauseHintCopyRegion -Mask 'hint-copy'
+    $primary = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $pauseContinueRect -Mask 'primary-surface'
+    $danger = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $pauseRestartRect -Mask 'danger-surface'
+
+    $titleOwnerCenterY = ($pauseTitleRect.yMin + $pauseTitleRect.yMax) * .5
+    $titleCenterDeltaLogical = [Math]::Abs(
+      $title.centroid.y - $titleOwnerCenterY) / $referenceScale
+    $hintCenterDeltaLogical = [Math]::Abs(
+      $hintIcon.centroid.y - $hintCopy.centroid.y) / $referenceScale
+    $hintUnion = [ordered]@{
+      xMin = [Math]::Min($hintIcon.bounds.xMin, $hintCopy.bounds.xMin)
+      yMin = [Math]::Min($hintIcon.bounds.yMin, $hintCopy.bounds.yMin)
+      xMax = [Math]::Max($hintIcon.bounds.xMax, $hintCopy.bounds.xMax)
+      yMax = [Math]::Max($hintIcon.bounds.yMax, $hintCopy.bounds.yMax)
+    }
+    $hintOwnerCenterX = ($pauseHintRect.xMin + $pauseHintRect.xMax) * .5
+    $hintOwnerCenterY = ($pauseHintRect.yMin + $pauseHintRect.yMax) * .5
+    $hintGroupCenterDeltaLogical = [ordered]@{
+      x = [Math]::Abs((($hintUnion.xMin + $hintUnion.xMax) * .5) -
+        $hintOwnerCenterX) / $referenceScale
+      y = [Math]::Abs((($hintUnion.yMin + $hintUnion.yMax) * .5) -
+        $hintOwnerCenterY) / $referenceScale
+    }
+    $primaryLocal = [ordered]@{
+      left = $primary.bounds.xMin - $pauseContinueRect.xMin
+      top = $primary.bounds.yMin - $pauseContinueRect.yMin
+      right = $pauseContinueRect.xMax - $primary.bounds.xMax
+      bottom = $pauseContinueRect.yMax - $primary.bounds.yMax
+    }
+    $dangerLocal = [ordered]@{
+      left = $danger.bounds.xMin - $pauseRestartRect.xMin
+      top = $danger.bounds.yMin - $pauseRestartRect.yMin
+      right = $pauseRestartRect.xMax - $danger.bounds.xMax
+      bottom = $pauseRestartRect.yMax - $danger.bounds.yMax
+    }
+    $pairedMaximumEdgeDelta = @(
+      [Math]::Abs($primaryLocal.left - $dangerLocal.left),
+      [Math]::Abs($primaryLocal.top - $dangerLocal.top),
+      [Math]::Abs($primaryLocal.right - $dangerLocal.right),
+      [Math]::Abs($primaryLocal.bottom - $dangerLocal.bottom)
+    ) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+
+    if ($titleCenterDeltaLogical -gt 2.0) {
+      throw "Paused title final-raster center delta exceeds 2 logical points: $titleCenterDeltaLogical"
+    }
+    if ($hintCenterDeltaLogical -gt 2.0 -or
+        $hintGroupCenterDeltaLogical.x -gt 2.0 -or
+        $hintGroupCenterDeltaLogical.y -gt 2.0) {
+      throw (
+        'Paused hint final-raster optical alignment exceeds 2 logical points: ' +
+        "iconCopyY=$hintCenterDeltaLogical group=" +
+        ($hintGroupCenterDeltaLogical | ConvertTo-Json -Compress))
+    }
+    if ($pairedMaximumEdgeDelta -gt 1 -or
+        [Math]::Abs($primary.bounds.width - $danger.bounds.width) -gt 1 -or
+        [Math]::Abs($primary.bounds.height - $danger.bounds.height) -gt 1) {
+      throw (
+        'Paused paired action final-raster envelopes differ by more than one capture pixel: ' +
+        "edge=$pairedMaximumEdgeDelta primary=" +
+        ($primary.bounds | ConvertTo-Json -Compress) + ' danger=' +
+        ($danger.bounds | ConvertTo-Json -Compress))
+    }
+
+    return [ordered]@{
+      thresholds = [ordered]@{
+        titleCenterLogical = 2.0
+        hintCenterLogical = 2.0
+        pairedActionCapturePixels = 1
+      }
+      title = $title
+      titleOwner = $pauseTitleRect
+      titleCenterDeltaLogical = $titleCenterDeltaLogical
+      hintIcon = $hintIcon
+      hintCopy = $hintCopy
+      hintOwner = $pauseHintRect
+      hintUnion = $hintUnion
+      hintIconCopyCenterDeltaLogical = $hintCenterDeltaLogical
+      hintGroupCenterDeltaLogical = $hintGroupCenterDeltaLogical
+      primarySurface = $primary
+      dangerSurface = $danger
+      primaryLocalInsets = $primaryLocal
+      dangerLocalInsets = $dangerLocal
+      pairedMaximumEdgeDeltaCapturePixels = $pairedMaximumEdgeDelta
+    }
+  }
+  finally { $bitmap.Dispose() }
 }
 
 function Get-ImagePixelSample {
@@ -2307,6 +2492,10 @@ try {
   $screenshots.ready = $readyCapture.Path
 
   $waveActionPressDifference = $null
+  $pauseContinuePressDifference = $null
+  $pauseContinuePressInset = $null
+  $pauseRestartPressDifference = $null
+  $pauseRestartPressInset = $null
   if ($InteractionPolishEvidence) {
     Move-CanvasPointer -X $controls.waveAction.x -Y $controls.waveAction.y
     Start-Sleep -Milliseconds 45
@@ -2348,10 +2537,81 @@ try {
   Invoke-CanvasClick -X $controls.headerPause.x -Y $controls.headerPause.y
   # The modal intentionally dims the HUD, so this state uses frame/dimension checks without the unobscured-HUD ink threshold.
   $screenshots.paused = (Save-StableScreenshot -Name '05-paused' -RequireHud $false).Path
-  Invoke-CanvasClick -X $controls.pauseContinue.x -Y $controls.pauseContinue.y
+  $pausedModalOpticalEvidence = Get-PausedModalOpticalEvidence -Path $screenshots.paused
+  if ($InteractionPolishEvidence) {
+    Move-CanvasPointer -X $controls.pauseContinue.x -Y $controls.pauseContinue.y
+    Start-Sleep -Milliseconds 45
+    $screenshots.pauseContinueHover = Save-Screenshot -Name '05a-pause-continue-hover'
+    Start-CanvasPress -X $controls.pauseContinue.x -Y $controls.pauseContinue.y
+    try {
+      Start-Sleep -Milliseconds 45
+      $screenshots.pauseContinuePressed = Save-Screenshot -Name '05b-pause-continue-pressed'
+      $pauseContinuePressDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $screenshots.pauseContinueHover `
+        -CandidatePath $screenshots.pauseContinuePressed `
+        -Region $pauseActionBandRect
+      $pauseContinuePressInset = Get-ImageInsetEvidence `
+        -ReferencePath $screenshots.pauseContinueHover `
+        -CandidatePath $screenshots.pauseContinuePressed `
+        -Region $pauseContinueRect
+      $bounds = $pauseContinuePressDifference.changedBounds
+      if ($pauseContinuePressDifference.changedPixels -lt 100 -or
+          $pauseContinuePressInset.retreatedPixels -lt 20 -or
+          $null -eq $bounds -or
+          $bounds.xMin -lt $pauseContinueRect.xMin -or
+          $bounds.yMin -lt $pauseContinueRect.yMin -or
+          $bounds.xMax -gt $pauseContinueRect.xMax -or
+          $bounds.yMax -gt $pauseContinueRect.yMax) {
+        throw (
+          'Pause Continue press must materially contract inside its owner rect: ' +
+          ($pauseContinuePressDifference | ConvertTo-Json -Compress))
+      }
+    }
+    finally {
+      Stop-CanvasPress -X $controls.pauseContinue.x -Y $controls.pauseContinue.y
+    }
+  }
+  else {
+    Invoke-CanvasClick -X $controls.pauseContinue.x -Y $controls.pauseContinue.y
+  }
   $screenshots.continued = (Save-StableScreenshot -Name '06-continued').Path
   Invoke-CanvasClick -X $controls.headerPause.x -Y $controls.headerPause.y
-  Invoke-CanvasClick -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
+  if ($InteractionPolishEvidence) {
+    Move-CanvasPointer -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
+    Start-Sleep -Milliseconds 45
+    $screenshots.pauseRestartHover = Save-Screenshot -Name '06a-pause-restart-hover'
+    Start-CanvasPress -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
+    try {
+      Start-Sleep -Milliseconds 45
+      $screenshots.pauseRestartPressed = Save-Screenshot -Name '06b-pause-restart-pressed'
+      $pauseRestartPressDifference = Get-ImageDifferenceMetrics `
+        -ReferencePath $screenshots.pauseRestartHover `
+        -CandidatePath $screenshots.pauseRestartPressed `
+        -Region $pauseActionBandRect
+      $pauseRestartPressInset = Get-ImageInsetEvidence `
+        -ReferencePath $screenshots.pauseRestartHover `
+        -CandidatePath $screenshots.pauseRestartPressed `
+        -Region $pauseRestartRect
+      $bounds = $pauseRestartPressDifference.changedBounds
+      if ($pauseRestartPressDifference.changedPixels -lt 100 -or
+          $pauseRestartPressInset.retreatedPixels -lt 20 -or
+          $null -eq $bounds -or
+          $bounds.xMin -lt $pauseRestartRect.xMin -or
+          $bounds.yMin -lt $pauseRestartRect.yMin -or
+          $bounds.xMax -gt $pauseRestartRect.xMax -or
+          $bounds.yMax -gt $pauseRestartRect.yMax) {
+        throw (
+          'Pause Restart press must materially contract inside its owner rect: ' +
+          ($pauseRestartPressDifference | ConvertTo-Json -Compress))
+      }
+    }
+    finally {
+      Stop-CanvasPress -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
+    }
+  }
+  else {
+    Invoke-CanvasClick -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
+  }
   $screenshots.restarted = (Save-StableScreenshot -Name '07-restarted').Path
 
   Set-AcceptanceState -State 'selected-tool'
@@ -2492,6 +2752,8 @@ try {
       requiredStates = 'pass'
       contextualWaveLabels = 'pass'
       waveActionPressedBeforeRelease = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
+      pausedModalFinalRasterOpticalAlignment = 'pass'
+      pauseActionsPressedBeforeReleaseAndContained = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
       oldBottomActionRowAbsent = 'pass'
       noLargeNearBlackRegions = 'pass'
       pauseContinuePreservesRun = 'pass'
@@ -2510,11 +2772,19 @@ try {
     routeIdentities = [ordered]@{ battle = $directBattleIdentity }
     screenshots = $screenshots
     imageMetrics = $metrics
+    opticalMeasurements = [ordered]@{ pausedModal = $pausedModalOpticalEvidence }
     interactionPolishEvidence = if ($InteractionPolishEvidence) {
       [ordered]@{
         waveActionRect = $waveActionRect
         waveActionPressDifference = $waveActionPressDifference
         waveActionPressInset = $waveActionPressInset
+        pauseContinueRect = $pauseContinueRect
+        pauseActionBandRect = $pauseActionBandRect
+        pauseContinuePressDifference = $pauseContinuePressDifference
+        pauseContinuePressInset = $pauseContinuePressInset
+        pauseRestartRect = $pauseRestartRect
+        pauseRestartPressDifference = $pauseRestartPressDifference
+        pauseRestartPressInset = $pauseRestartPressInset
         releaseAction = 'StartWave-pass'
       }
     } else {

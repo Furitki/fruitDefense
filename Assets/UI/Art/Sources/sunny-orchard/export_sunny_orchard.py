@@ -18,6 +18,7 @@ from PIL import Image, ImageDraw, ImageFont
 SET_ID = "sunny-orchard"
 REVISION = "1"
 SOURCE_SCALE = 2.0
+OPTICAL_ALPHA_THRESHOLD = 48
 ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
 ART_SET_ASSET_GUID = "12cc0c638d174040bb0384d7bf17ea92"
 
@@ -58,6 +59,23 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest().upper()
+
+
+def optical_inset(path: Path) -> dict[str, int]:
+    """Measure significant visible padding from the final runtime PNG."""
+    with Image.open(path) as source:
+        rgba = source.convert("RGBA")
+        significant = rgba.getchannel("A").point(
+            lambda alpha: 255 if alpha >= OPTICAL_ALPHA_THRESHOLD else 0)
+        bbox = significant.getbbox()
+        if bbox is None:
+            raise RuntimeError(f"Runtime artwork has no alpha >= 48: {path}")
+        return {
+            "left": bbox[0],
+            "top": bbox[1],
+            "right": rgba.width - bbox[2],
+            "bottom": rgba.height - bbox[3],
+        }
 
 
 def rgba(value: str | tuple[int, int, int, int]) -> tuple[int, int, int, int]:
@@ -636,6 +654,7 @@ def build_art_set_asset(bindings: list[dict]) -> str:
     for item in bindings:
         border = item["slice_border"]
         inset = item["safe_inset"]
+        optical = item["optical_inset"]
         lines.extend([
             f"  - slot: {item['slot']}",
             f"    texture: {{fileID: 2800000, guid: {item['guid']}, type: 3}}",
@@ -650,6 +669,11 @@ def build_art_set_asset(bindings: list[dict]) -> str:
             f"      top: {inset}",
             f"      right: {inset}",
             f"      bottom: {inset}",
+            "    opticalInset:",
+            f"      left: {optical['left']}",
+            f"      top: {optical['top']}",
+            f"      right: {optical['right']}",
+            f"      bottom: {optical['bottom']}",
             f"    pixelsPerLogicalUnit: {SOURCE_SCALE:g}",
         ])
     return "\n".join(lines) + "\n"
@@ -780,6 +804,7 @@ def main():
                 "guid": runtime_guid,
                 "slice_border": border,
                 "safe_inset": inset,
+                "optical_inset": optical_inset(runtime_path),
                 "pixels_per_logical_unit": SOURCE_SCALE,
             }
         entry = dict(unique[stem])
@@ -799,10 +824,11 @@ def main():
             raise RuntimeError(f"Shared UI art owner is missing slot {slot}")
         shared = dict(owner_rows[slot])
         shared["shared_from_set"] = SHARED_OWNER_SET_ID
+        shared["optical_inset"] = optical_inset(ROOT / shared["runtime"])
         bindings.append(shared)
 
     manifest = {
-        "schema": "fruit-defense.runtime-ui-art-manifest.v1",
+        "schema": "fruit-defense.runtime-ui-art-manifest.v2",
         "setId": SET_ID,
         "revision": REVISION,
         "approvedDirection": "A - Sunny Orchard",

@@ -53,8 +53,7 @@ namespace FruitDefense.Presentation
             DetailCloseAction = new Rect(Detail.xMax - 48f, Detail.y + 4f, 44f, 44f);
 
             ModalTitle = new Rect(52f, 326f, 298f, 52f);
-            ModalMessage = new Rect(92f, 390f, 250f, 52f);
-            ModalPauseIndicator = new Rect(60f, 404f, 24f, 24f);
+            ModalPauseHint = new Rect(60f, 390f, 282f, 52f);
             ModalTerminalTitle = new Rect(48f, 292f, 306f, 56f);
             ModalResultBanner = new Rect(70f, 352f, 262f, 64f);
             ModalResultBannerText = new Rect(102f, 360f, 198f, 48f);
@@ -100,8 +99,7 @@ namespace FruitDefense.Presentation
         public Rect DetailBody { get; }
         public Rect DetailCloseAction { get; }
         public Rect ModalTitle { get; }
-        public Rect ModalMessage { get; }
-        public Rect ModalPauseIndicator { get; }
+        public Rect ModalPauseHint { get; }
         public Rect ModalTerminalTitle { get; }
         public Rect ModalResultBanner { get; }
         public Rect ModalResultBannerText { get; }

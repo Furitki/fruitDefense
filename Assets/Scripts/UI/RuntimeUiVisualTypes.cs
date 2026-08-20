@@ -341,17 +341,21 @@ namespace FruitDefense.UI
         [SerializeField, Min(1)] private int fontSize;
         [SerializeField, Min(1)] private int lineHeight;
         [SerializeField] private FontStyle fontStyle;
+        [SerializeField] private float opticalOffsetY;
 
-        public RuntimeUiTypographyStyle(int fontSize, int lineHeight, FontStyle fontStyle)
+        public RuntimeUiTypographyStyle(int fontSize, int lineHeight, FontStyle fontStyle,
+            float opticalOffsetY)
         {
             this.fontSize = fontSize;
             this.lineHeight = lineHeight;
             this.fontStyle = fontStyle;
+            this.opticalOffsetY = opticalOffsetY;
         }
 
         public int FontSize => fontSize;
         public int LineHeight => lineHeight;
         public FontStyle FontStyle => fontStyle;
+        public float OpticalOffsetY => opticalOffsetY;
 
         internal void AppendValidation(RuntimeUiValidationResult result, string field)
         {
@@ -364,6 +368,12 @@ namespace FruitDefense.UI
             if (!Enum.IsDefined(typeof(FontStyle), fontStyle))
                 result.Add("theme.typography.font-style", field + ".fontStyle",
                     "Font style is outside Unity's supported values.");
+            if (!RuntimeUiNumbers.IsFinite(opticalOffsetY)
+                || Mathf.Abs(opticalOffsetY) > 4f)
+            {
+                result.Add("theme.typography.optical-offset", field + ".opticalOffsetY",
+                    "Typography optical offset must be finite and remain within four logical points.");
+            }
         }
     }
 
@@ -405,13 +415,13 @@ namespace FruitDefense.UI
         {
             return new RuntimeUiTypographyTokens
             {
-                display = new RuntimeUiTypographyStyle(40, 46, FontStyle.Bold),
-                screenTitle = new RuntimeUiTypographyStyle(32, 38, FontStyle.Bold),
-                sectionTitle = new RuntimeUiTypographyStyle(28, 34, FontStyle.Bold),
-                body = new RuntimeUiTypographyStyle(20, 28, FontStyle.Normal),
-                controlLabel = new RuntimeUiTypographyStyle(20, 24, FontStyle.Bold),
-                metric = new RuntimeUiTypographyStyle(24, 28, FontStyle.Bold),
-                supplemental = new RuntimeUiTypographyStyle(16, 22, FontStyle.Normal),
+                display = new RuntimeUiTypographyStyle(40, 46, FontStyle.Bold, 0f),
+                screenTitle = new RuntimeUiTypographyStyle(32, 38, FontStyle.Bold, 0f),
+                sectionTitle = new RuntimeUiTypographyStyle(28, 34, FontStyle.Bold, -1f),
+                body = new RuntimeUiTypographyStyle(20, 28, FontStyle.Normal, 0f),
+                controlLabel = new RuntimeUiTypographyStyle(20, 24, FontStyle.Bold, 0f),
+                metric = new RuntimeUiTypographyStyle(24, 28, FontStyle.Bold, 0f),
+                supplemental = new RuntimeUiTypographyStyle(16, 22, FontStyle.Normal, 0f),
             };
         }
 

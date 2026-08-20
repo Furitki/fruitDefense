@@ -21,6 +21,7 @@ from PIL import Image, ImageChops, ImageDraw
 SET_ID = "sunny-orchard-painted"
 REVISION = "1"
 SOURCE_SCALE = 2.0
+OPTICAL_ALPHA_THRESHOLD = 48
 ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
 
 
@@ -169,6 +170,46 @@ def clear_low_alpha_fringe(image: Image.Image, threshold: int = 48) -> Image.Ima
     return rgba
 
 
+def significant_alpha_bbox(
+        image: Image.Image,
+        threshold: int = OPTICAL_ALPHA_THRESHOLD) -> tuple[int, int, int, int] | None:
+    """Return the half-open bbox of pixels that are visibly owned by the asset."""
+    significant = image.convert("RGBA").getchannel("A").point(
+        lambda alpha: 255 if alpha >= threshold else 0)
+    return significant.getbbox()
+
+
+def optical_inset(image: Image.Image) -> dict[str, int]:
+    """Measure transparent padding from the final runtime PNG, never its master."""
+    rgba = image.convert("RGBA")
+    bbox = significant_alpha_bbox(rgba)
+    if bbox is None:
+        raise RuntimeError("Runtime artwork has no alpha >= optical threshold")
+    return {
+        "left": bbox[0],
+        "top": bbox[1],
+        "right": rgba.width - bbox[2],
+        "bottom": rgba.height - bbox[3],
+    }
+
+
+def normalize_action_surface(image: Image.Image) -> Image.Image:
+    """Normalize reviewed action ink to a shared 120 px box on a 128 px canvas."""
+    rgba = image.convert("RGBA")
+    bbox = significant_alpha_bbox(rgba)
+    if bbox is None:
+        raise RuntimeError("Action master has no alpha >= optical threshold")
+    crop = rgba.crop(bbox)
+    fitted = clear_low_alpha_fringe(alpha_safe_resize(crop, (120, 120)))
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.alpha_composite(fitted, (4, 4))
+    normalized_bbox = significant_alpha_bbox(canvas)
+    if normalized_bbox != (4, 4, 124, 124):
+        raise RuntimeError(
+            f"Normalized action bbox must be [4,4,124,124), got {normalized_bbox}")
+    return canvas
+
+
 def clear_visible_key_magenta(image: Image.Image) -> Image.Image:
     """Remove only leaked background-key pixels; preserve ordinary painted antialiasing."""
     rgba = image.convert("RGBA")
@@ -227,6 +268,7 @@ def build_art_set_asset(bindings: list[dict]) -> str:
     for item in bindings:
         border = item["slice_border"]
         inset = item["safe_inset"]
+        optical = item["optical_inset"]
         lines.extend([
             f"  - slot: {item['slot']}",
             f"    texture: {{fileID: 2800000, guid: {item['guid']}, type: 3}}",
@@ -241,6 +283,11 @@ def build_art_set_asset(bindings: list[dict]) -> str:
             f"      top: {inset}",
             f"      right: {inset}",
             f"      bottom: {inset}",
+            "    opticalInset:",
+            f"      left: {optical['left']}",
+            f"      top: {optical['top']}",
+            f"      right: {optical['right']}",
+            f"      bottom: {optical['bottom']}",
             f"    pixelsPerLogicalUnit: {SOURCE_SCALE:g}",
         ])
     return "\n".join(lines) + "\n"
@@ -258,13 +305,15 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
     with Image.open(source_path) as source:
         rgba = source.convert("RGBA")
         size = target_size(slot)
-        if slot.index in (43, 44):
+        if 11 <= slot.index <= 14:
+            exported = normalize_action_surface(rgba)
+        elif slot.index in (43, 44):
             exported = fit_alpha_content(rgba, size, 4 if slot.index == 43 else 8)
         else:
             exported = (alpha_safe_resize(rgba, size)
-                        if slot.index == 11 or slot.index >= 40
+                        if slot.index >= 40
                         else rgba.resize(size, Image.Resampling.LANCZOS))
-        if slot.index == 11 or slot.index >= 40:
+        if slot.index >= 40:
             exported = clear_low_alpha_fringe(exported)
         if slot.geometry == "icon":
             bbox = alpha_bbox(exported)
@@ -309,6 +358,11 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             bbox = alpha_bbox(rgba)
             if bbox is None or bbox[0] < 12 or bbox[1] < 12 or bbox[2] > 84 or bbox[3] > 84:
                 raise RuntimeError(f"Icon exceeds 12 px safe inset: {runtime_path} {bbox}")
+        if 11 <= slot.index <= 14:
+            bbox = significant_alpha_bbox(rgba)
+            if bbox != (4, 4, 124, 124):
+                raise RuntimeError(
+                    f"Action bbox must be [4,4,124,124): {runtime_path} {bbox}")
         if any(alpha > 0 and (red, green, blue) == (255, 0, 255)
                for red, green, blue, alpha in rgba.get_flattened_data()):
             raise RuntimeError(f"Visible key-magenta fringe: {runtime_path}")
@@ -330,6 +384,8 @@ def main() -> None:
         folder = subdirectory(slot)
         source_path = source_root / folder / f"{slot.stem}.png"
         runtime_path = runtime_root / folder / f"{slot.stem}.png"
+        with Image.open(runtime_path) as runtime:
+            measured_optical_inset = optical_inset(runtime)
         bindings.append(
             {
                 "stem": slot.stem,
@@ -345,13 +401,14 @@ def main() -> None:
                 "guid": unity_guid(runtime_path.with_suffix(".png.meta")),
                 "slice_border": 32 if slot.geometry == "nine-slice" else 0,
                 "safe_inset": 20 if slot.geometry == "nine-slice" else (12 if slot.geometry == "icon" else 0),
+                "optical_inset": measured_optical_inset,
                 "pixels_per_logical_unit": SOURCE_SCALE,
                 "slot": slot.index,
             }
         )
 
     manifest = {
-        "schema": "fruit-defense.runtime-ui-art-manifest.v1",
+        "schema": "fruit-defense.runtime-ui-art-manifest.v2",
         "setId": SET_ID,
         "revision": REVISION,
         "approvedDirection": "Sunny Orchard Painted v2",

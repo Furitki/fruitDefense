@@ -1,5 +1,18 @@
 # sunny-orchard-painted icon alignment audit
 
+## Runtime optical-bound contract
+
+The production manifest and ArtSet measure each binding from the final runtime PNG at the significant-alpha threshold `alpha >= 48`. The manifest field is `optical_inset`; the matching Unity serialization field is `opticalInset`. Both store `{left, top, right, bottom}` canvas padding and are distinct from `safeInset`.
+
+Painted action slots 11-14 share a deterministic export-normalized visible box. Each reviewed master is left unchanged; its significant pixels are tight-cropped, premultiplied-alpha resized to `120x120`, then placed at `(4,4)` on the `128x128` runtime canvas.
+
+| Slot | Semantic binding | Significant bbox `[left,top,right,bottom)` | Optical inset |
+|---:|---|---:|---:|
+| 11 | `action.primary` | `[4,4,124,124)` | `4,4,4,4` |
+| 12 | `action.secondary` | `[4,4,124,124)` | `4,4,4,4` |
+| 13 | `action.quiet` | `[4,4,124,124)` | `4,4,4,4` |
+| 14 | `action.danger` | `[4,4,124,124)` | `4,4,4,4` |
+
 Audit target: 96×96 RGBA runtime canvas, content alpha threshold >3/255, 12px safe inset, 72×72 maximum export box, 36px logical visual box at 2× source scale. Area percentage is measured against the central 72×72 box. `Outside` counts alpha pixels outside `[12,84) × [12,84)`.
 
 | Asset | Alpha bbox `x,y,w,h` | Bbox center | Alpha-weighted centroid | Area px | Box fill | Outside |
