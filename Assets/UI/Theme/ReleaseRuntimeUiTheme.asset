@@ -90,8 +90,9 @@ MonoBehaviour:
     unscaledTransitionSeconds: 0.18
     unscaledStatusSeconds: 2.6
     pressScale: 0.96
-    popScale: 1.12
-    strongPopScale: 1.16
+    unscaledPopSeconds: 0.1
+    popInsetScale: 0.97
+    strongPopInsetScale: 0.94
     revealOffset: 12
     unscaledRevealSeconds: 0.34
     unscaledStaggerSeconds: 0.055

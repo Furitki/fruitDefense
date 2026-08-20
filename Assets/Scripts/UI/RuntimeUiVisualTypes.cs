@@ -617,8 +617,9 @@ namespace FruitDefense.UI
         [SerializeField, Min(0f)] private float unscaledTransitionSeconds;
         [SerializeField, Min(0f)] private float unscaledStatusSeconds;
         [SerializeField, Range(.8f, 1f)] private float pressScale;
-        [SerializeField, Range(1f, 1.5f)] private float popScale;
-        [SerializeField, Range(1f, 1.5f)] private float strongPopScale;
+        [SerializeField, Range(.04f, .14f)] private float unscaledPopSeconds;
+        [SerializeField, Range(.8f, 1f)] private float popInsetScale;
+        [SerializeField, Range(.8f, 1f)] private float strongPopInsetScale;
         [SerializeField, Range(0f, 64f)] private float revealOffset;
         [SerializeField, Min(0f)] private float unscaledRevealSeconds;
         [SerializeField, Min(0f)] private float unscaledStaggerSeconds;
@@ -638,8 +639,9 @@ namespace FruitDefense.UI
         public float UnscaledTransitionSeconds => unscaledTransitionSeconds;
         public float UnscaledStatusSeconds => unscaledStatusSeconds;
         public float PressScale => pressScale;
-        public float PopScale => popScale;
-        public float StrongPopScale => strongPopScale;
+        public float UnscaledPopSeconds => unscaledPopSeconds;
+        public float PopInsetScale => popInsetScale;
+        public float StrongPopInsetScale => strongPopInsetScale;
         public float RevealOffset => revealOffset;
         public float UnscaledRevealSeconds => unscaledRevealSeconds;
         public float UnscaledStaggerSeconds => unscaledStaggerSeconds;
@@ -663,8 +665,9 @@ namespace FruitDefense.UI
                 unscaledTransitionSeconds = .18f,
                 unscaledStatusSeconds = 2.6f,
                 pressScale = .96f,
-                popScale = 1.12f,
-                strongPopScale = 1.16f,
+                unscaledPopSeconds = .1f,
+                popInsetScale = .97f,
+                strongPopInsetScale = .94f,
                 revealOffset = 12f,
                 unscaledRevealSeconds = .34f,
                 unscaledStaggerSeconds = .055f,
@@ -687,10 +690,14 @@ namespace FruitDefense.UI
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledSelectionSeconds", unscaledSelectionSeconds);
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledTransitionSeconds", unscaledTransitionSeconds);
             RuntimeUiNumbers.ValidateDuration(result, field + ".unscaledStatusSeconds", unscaledStatusSeconds);
+            ValidateRange(result, field + ".unscaledPressSeconds",
+                unscaledPressSeconds, .04f, .1f);
+            ValidateRange(result, field + ".unscaledPopSeconds",
+                unscaledPopSeconds, .04f, .14f);
             ValidateScale(result, field + ".pressScale", pressScale, .8f, 1f);
-            ValidateScale(result, field + ".popScale", popScale, 1f, 1.5f);
-            ValidateScale(result, field + ".strongPopScale", strongPopScale,
-                popScale, 1.5f);
+            ValidateScale(result, field + ".popInsetScale", popInsetScale, .8f, 1f);
+            ValidateScale(result, field + ".strongPopInsetScale", strongPopInsetScale,
+                .8f, popInsetScale);
             ValidateRange(result, field + ".revealOffset", revealOffset, 0f, 64f);
             RuntimeUiNumbers.ValidateDuration(result,
                 field + ".unscaledRevealSeconds", unscaledRevealSeconds);

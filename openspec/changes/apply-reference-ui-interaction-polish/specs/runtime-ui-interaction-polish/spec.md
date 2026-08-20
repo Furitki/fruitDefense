@@ -7,6 +7,10 @@ The runtime UI SHALL express transient feedback through shared press, pop, fade-
 - **WHEN** an enabled action is pressed and released
 - **THEN** its visual response uses the shared short press pattern and returns exactly to its authoritative resting rectangle without leaving residual scale, offset, or opacity
 
+#### Scenario: Impulse duration is independent from feedback lifetime
+- **WHEN** a pop is driven by a status or reward pulse that remains visible for longer than the pop timing token
+- **THEN** the inward impulse completes within the short pop token, never enlarges past scale `1.0`, and the remaining visibility time does not stretch the rebound
+
 #### Scenario: Important value or result feedback
 - **WHEN** a resource, status, or settlement emphasis is triggered repeatedly
 - **THEN** the previous owned sample is replaced and the new pop begins from a deterministic state without stacking multiple animations
@@ -38,7 +42,7 @@ Lobby, Battle, and Settlement SHALL each apply the shared motion language to the
 - **THEN** result, metrics, and actions reveal in a short hierarchy and finish at the same authoritative rectangles used for static acceptance
 
 ### Requirement: Reduced-motion equivalence
-The interaction-polish system SHALL support a reduced-motion policy that removes travel, stagger, and overshoot while preserving content, state cues, command availability, and final layout.
+The interaction-polish system SHALL support a reduced-motion policy that removes travel, stagger, and transient impulse while preserving content, state cues, command availability, and final layout.
 
 #### Scenario: Reduced motion is active
 - **WHEN** a route or control requests a motion sample

@@ -2,7 +2,7 @@
 
 ## Outcome
 
-This iteration produces a measurable temporal improvement while deliberately preserving the approved resting layout and art. The strongest verified change is the Lobby selection response: the immediate post-selection frame changes 8.338% of viewport pixels relative to the pre-change build, while both default and selected resting frames remain pixel-identical. The new selection motion itself differs from its settled state across 18.821% of the viewport. The ordinary WebGL artifact is 9,465 bytes smaller than the isolated baseline, a 0.098% reduction.
+This iteration produces a measurable temporal improvement while deliberately preserving the approved resting layout and art. The Lobby selection response changes 4.120% of viewport pixels relative to the pre-change immediate frame, while both default and selected resting frames remain pixel-identical. Its new short inward impulse differs from rest across 15.808% of the viewport, and 658 of 1,020 sampled visible-outline pixels retreat inside the resting frame. The ordinary WebGL artifact is 11,216 bytes smaller than the isolated baseline, a 0.116% reduction.
 
 No reference-derived raster entered production. The existing Sunny Orchard ArtSet remains authoritative because the protected APK payload has not passed complete decode and visual verification.
 
@@ -20,18 +20,19 @@ No reference-derived raster entered production. The existing Sunny Orchard ArtSe
 | --- | ---: | --- |
 | Lobby default resting, before → after | 0 / 351,348 pixels; exact SHA-256 match | No resting layout or art regression. |
 | Lobby alternate-selected resting, before → after | 0 / 351,348 pixels; exact SHA-256 match | The approved selected end state remains exact. |
-| Lobby selection immediate frame, before → after | 29,296 / 351,348 pixels (8.338%) | The new selected-card overshoot is visibly distinct from the old immediate state. |
-| Lobby selection motion → new resting state | 66,127 / 351,348 pixels (18.821%) | A bounded card-scale response is visible across the selected card region. |
+| Lobby selection immediate frame, before → after | 14,477 / 351,348 pixels (4.120%) | The new short selected-card impulse is visibly distinct from the old immediate state. |
+| Lobby selection impulse → new resting state | 55,540 / 351,348 pixels (15.808%); 658 / 1,020 visible-outline samples retreat inward | The card contracts inside its authoritative frame and returns to rest without outward overshoot. |
 | Lobby Start pressed, before → after | 24,922 / 351,348 pixels (7.093%) | The shared press lifecycle produces a changed pressed checkpoint without moving the hit target. |
 | Lobby Start pressed → new resting state | 24,575 / 351,348 pixels (6.994%); 960 changed edge-band pixels | The held scale is locally contained to the action region, then release navigation enters Battle. |
 | Battle Wave hover → held press | 7,237 / 8,096 pixels (89.390%) in the exact `184×44` action rect; 478 changed edge-band pixels; 96 / 228 sampled edge pixels retreat inward | The comparison isolates the held press from hover color, proves geometric inset while the pointer remains down, and release then starts the wave. |
-| Settlement reveal → resting Settlement | 24,279 / 351,348 pixels (6.910%) | Result surface, outcome/indicator, metrics, and actions reveal as one owned hierarchy instead of producing floating children. |
+| Settlement reveal → resting Settlement | 23,172 / 351,348 pixels (6.595%) | Result surface, outcome/indicator, metrics, and actions reveal as one owned hierarchy instead of producing floating children. |
 
 The Battle proof first captures the Wave action under the stationary pointer, then captures the same action while the pointer remains down. Besides color-region change, the verifier samples the original edge against its surrounding background and requires inward retreat; an active-wave screenshot cannot satisfy this check.
 
 ## Capability gain
 
 - Added one pure value-only motion evaluator with five semantic patterns: press, pop, strong pop, fade-slide, and stagger.
+- Pop lifetime is independent from long-lived status/reward visibility: the geometric impulse completes in `0.10s`, and motion samples reject scale above `1.0`.
 - Added one Shell press owner with stable control IDs, valid-release activation, drag-distance suppression, cancellation, and disabled-target handling.
 - Applied route-owned reveal and local feedback to Lobby, Battle, and Settlement without creating a second layout or input authority.
 - Kept the authoritative hit rectangles fixed while transient scale, alpha, and offset affect only drawn geometry.
@@ -42,16 +43,16 @@ The Battle proof first captures the Wave action under the stationary pointer, th
 
 | Artifact | Before bytes | After bytes | Delta |
 | --- | ---: | ---: | ---: |
-| Complete WebGL output | 9,653,955 | 9,644,490 | -9,465 (-0.098%) |
-| `WebGL.data.unityweb` | 5,575,469 | 5,573,172 | -2,297 |
-| `WebGL.framework.js.unityweb` | 69,018 | 69,055 | +37 |
+| Complete WebGL output | 9,653,955 | 9,642,739 | -11,216 (-0.116%) |
+| `WebGL.data.unityweb` | 5,575,469 | 5,573,023 | -2,446 |
+| `WebGL.framework.js.unityweb` | 69,018 | 69,111 | +93 |
 | `WebGL.loader.js` | 117,893 | 117,893 | 0 |
-| `WebGL.wasm.unityweb` | 3,881,120 | 3,874,247 | -6,873 |
+| `WebGL.wasm.unityweb` | 3,881,120 | 3,872,589 | -8,531 |
 
 After-build identity:
 
 ```text
-FRUIT_DEFENSE_WEB_BUILD_OK path=E:\project\unity\furitDefense\Builds\WebGL compression=BrotliFallback stripping=High template=PROJECT:FruitDefensePortraitContain host=fruit-defense-portrait-contain-v1 size=9644490 payloads=[WebGL.data.unityweb:version=cb51ca25dd63:size=5573172, WebGL.framework.js.unityweb:version=3f3c89c2cc51:size=69055, WebGL.loader.js:version=2313e13a77b9:size=117893, WebGL.wasm.unityweb:version=cf9d1dbf9d5c:size=3874247]
+FRUIT_DEFENSE_WEB_BUILD_OK path=E:\project\unity\furitDefense\Builds\WebGL compression=BrotliFallback stripping=High template=PROJECT:FruitDefensePortraitContain host=fruit-defense-portrait-contain-v1 size=9642739 payloads=[WebGL.data.unityweb:version=d863a78c5ffc:size=5573023, WebGL.framework.js.unityweb:version=8e822251a31f:size=69111, WebGL.loader.js:version=3005677ef380:size=117893, WebGL.wasm.unityweb:version=682dd0091686:size=3872589]
 ```
 
 ## Acceptance evidence

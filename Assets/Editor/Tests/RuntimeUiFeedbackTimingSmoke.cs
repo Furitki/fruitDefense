@@ -30,11 +30,13 @@ namespace FruitDefense.Editor
                 && feedback.UnscaledSelectionSeconds > 0f
                 && feedback.UnscaledTransitionSeconds > 0f
                 && feedback.UnscaledStatusSeconds > 0f
+                && feedback.UnscaledPopSeconds > 0f
                 && feedback.UnscaledRevealSeconds > 0f
                 && feedback.UnscaledStaggerSeconds > 0f,
                 "all authored unscaled feedback durations are positive");
             Assert(feedback.UnscaledFocusSeconds <= .5f
-                && feedback.UnscaledPressSeconds <= .5f
+                && feedback.UnscaledPressSeconds <= .1f
+                && feedback.UnscaledPopSeconds <= .14f
                 && feedback.UnscaledSelectionSeconds <= .5f
                 && feedback.UnscaledTransitionSeconds <= .5f
                 && feedback.UnscaledRevealSeconds <= .5f

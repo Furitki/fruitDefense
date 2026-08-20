@@ -21,7 +21,7 @@ namespace FruitDefense.UI
 
         public RuntimeUiMotionSample(float scale, float alpha, float offsetY)
         {
-            if (!RuntimeUiNumbers.IsFinite(scale) || scale <= 0f)
+            if (!RuntimeUiNumbers.IsFinite(scale) || scale <= 0f || scale > 1f)
                 throw new ArgumentOutOfRangeException(nameof(scale));
             if (!RuntimeUiNumbers.IsFinite(alpha) || alpha < 0f || alpha > 1f)
                 throw new ArgumentOutOfRangeException(nameof(alpha));
@@ -75,11 +75,14 @@ namespace FruitDefense.UI
             switch (pattern)
             {
                 case RuntimeUiMotionPattern.Press:
-                    return Press(pulse.Progress(unscaledTime), tokens.PressScale);
+                    return Press(pulse, unscaledTime, tokens.UnscaledPressSeconds,
+                        tokens.PressScale);
                 case RuntimeUiMotionPattern.Pop:
-                    return Pop(pulse.Progress(unscaledTime), tokens.PopScale);
+                    return Pop(pulse, unscaledTime, tokens.UnscaledPopSeconds,
+                        tokens.PopInsetScale);
                 case RuntimeUiMotionPattern.StrongPop:
-                    return Pop(pulse.Progress(unscaledTime), tokens.StrongPopScale);
+                    return Pop(pulse, unscaledTime, tokens.UnscaledPopSeconds,
+                        tokens.StrongPopInsetScale);
                 case RuntimeUiMotionPattern.FadeSlide:
                     return Reveal(pulse.Progress(unscaledTime), tokens.RevealOffset);
                 case RuntimeUiMotionPattern.Stagger:
@@ -105,27 +108,44 @@ namespace FruitDefense.UI
                 : new RuntimeUiMotionSample(tokens.PressScale, 1f, 0f);
         }
 
-        private static RuntimeUiMotionSample Press(float progress, float pressedScale)
+        private static RuntimeUiMotionSample Press(RuntimeUiFeedbackPulse pulse,
+            float unscaledTime, float duration, float pressedScale)
         {
+            if (!TryGetBoundedProgress(pulse, unscaledTime, duration, out var progress))
+                return RuntimeUiMotionSample.Rest;
             return new RuntimeUiMotionSample(
                 Mathf.Lerp(pressedScale, 1f, EaseOutCubic(progress)), 1f, 0f);
         }
 
-        private static RuntimeUiMotionSample Pop(float progress, float peakScale)
+        private static RuntimeUiMotionSample Pop(RuntimeUiFeedbackPulse pulse,
+            float unscaledTime, float duration, float insetScale)
         {
-            const float risePortion = .42f;
+            if (!TryGetBoundedProgress(pulse, unscaledTime, duration, out var progress))
+                return RuntimeUiMotionSample.Rest;
+            const float risePortion = .32f;
             float scale;
             if (progress < risePortion)
             {
                 var rise = EaseOutCubic(progress / risePortion);
-                scale = Mathf.Lerp(1f, peakScale, rise);
+                scale = Mathf.Lerp(1f, insetScale, rise);
             }
             else
             {
                 var settle = Smooth((progress - risePortion) / (1f - risePortion));
-                scale = Mathf.Lerp(peakScale, 1f, settle);
+                scale = Mathf.Lerp(insetScale, 1f, settle);
             }
             return new RuntimeUiMotionSample(scale, 1f, 0f);
+        }
+
+        private static bool TryGetBoundedProgress(RuntimeUiFeedbackPulse pulse,
+            float unscaledTime, float duration, out float progress)
+        {
+            progress = 1f;
+            if (duration <= 0f || unscaledTime >= pulse.Deadline
+                || unscaledTime >= pulse.StartedAt + duration)
+                return false;
+            progress = Mathf.Clamp01((unscaledTime - pulse.StartedAt) / duration);
+            return true;
         }
 
         private static RuntimeUiMotionSample Reveal(float progress, float offset)

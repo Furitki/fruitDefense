@@ -163,11 +163,12 @@ Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/
 ### 6.3 共享动效与 Press 生命周期
 
 - 运行时只使用 `press`、`pop`、`strong-pop`、`fade-slide`、`stagger` 这组有限语义模式；精确时长、幅度、位移、错峰和降低动态效果策略由 release theme 持有。
+- `press`、`pop`、`strong-pop` 只允许向内收缩并快速恢复到 `1.0`；任何样本都不得大于 `1.0` 或越出组件静态外框。pop 使用独立短时长，不能被 status/reward 的长显示 pulse 拉成长回弹。
 - Motion evaluator 只消费显式传入的 unscaled time，返回 scale、alpha、offset 的纯值样本；Presenter 不创建 Coroutine、延迟命令或页面私有 Tween 类型。
 - 每个反馈目标只拥有一个当前 pulse。重复触发以新 pulse 替换旧 pulse；Hide、Disable、导航开始和交互取消必须清除 owner，不能留下延迟回调或残余透明度。
 - 动效只改变 visual rect。layout authority 产生的 draw/hit 基准矩形、safe-area 投影、BattlefieldProjection 和拖拽目标不随动画缩放或位移。
 - Shell action 使用一个明确的 `down → pressed → release/cancel` 生命周期；移动超过阈值后抑制 click，释放到原目标之外、目标禁用或路线切换都不会执行命令。
-- reduced-motion 下移除 travel、stagger 和 overshoot，直接呈现静态终态；selected/loading/success/warning/error/disabled 仍依靠图标、文字、轮廓和表面状态表达。
+- reduced-motion 下移除 travel、stagger 和 transient impulse，直接呈现静态终态；selected/loading/success/warning/error/disabled 仍依靠图标、文字、轮廓和表面状态表达。
 - Lobby 只对路线进入、关卡选择和 Start 使用反馈；Battle 只对局部资源、状态、选择、波次与模态操作使用反馈；Settlement 按结果、指标、操作的阅读顺序短暂揭示。禁止给整屏 chrome 添加永久呼吸、循环闪光或无业务含义的漂浮。
 
 ### 6.2 组件覆盖矩阵

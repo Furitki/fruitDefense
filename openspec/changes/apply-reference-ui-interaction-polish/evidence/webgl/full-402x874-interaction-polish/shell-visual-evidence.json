@@ -3,8 +3,8 @@
     "evidenceType":  "bootstrap-lobby-webgl-visual",
     "accepted":  true,
     "completion":  "complete-shell-visual-states",
-    "capturedAtUtc":  "2026-08-20T11:41:25.4997412+00:00",
-    "url":  "http://127.0.0.1:61905/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=0\u0026safeBottom=0",
+    "capturedAtUtc":  "2026-08-20T15:05:43.7412375+00:00",
+    "url":  "http://127.0.0.1:52026/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=0\u0026safeBottom=0",
     "viewport":  {
                      "width":  402,
                      "height":  874,
@@ -57,7 +57,7 @@
                     "launchMode":  "external-headless-chrome-cdp"
                 },
     "canvas":  {
-                   "href":  "http://127.0.0.1:61905/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=0\u0026safeBottom=0",
+                   "href":  "http://127.0.0.1:52026/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=0\u0026safeBottom=0",
                    "title":  "水果塔防",
                    "canvas":  true,
                    "width":  402,
@@ -67,7 +67,7 @@
                    "innerWidth":  402,
                    "innerHeight":  874,
                    "devicePixelRatio":  1,
-                   "timeOrigin":  1787226073800.5,
+                   "timeOrigin":  1787238332034.7,
                    "loading":  "none",
                    "warning":  "",
                    "acceptanceReady":  true,
@@ -105,52 +105,52 @@
                },
     "delivery":  {
                      "assetVersions":  {
-                                           "loader":  "2313e13a77b9",
-                                           "data":  "cb51ca25dd63",
-                                           "framework":  "3f3c89c2cc51",
-                                           "wasm":  "cf9d1dbf9d5c"
+                                           "loader":  "3005677ef380",
+                                           "data":  "d863a78c5ffc",
+                                           "framework":  "8e822251a31f",
+                                           "wasm":  "682dd0091686"
                                        },
                      "htmlCacheControl":  "no-cache",
                      "assets":  {
                                     "loader":  {
-                                                   "url":  "http://127.0.0.1:61905/Build/WebGL.loader.js?v=2313e13a77b9",
-                                                   "version":  "2313e13a77b9",
+                                                   "url":  "http://127.0.0.1:52026/Build/WebGL.loader.js?v=3005677ef380",
+                                                   "version":  "3005677ef380",
                                                    "contentType":  "text/javascript; charset=utf-8",
                                                    "contentEncoding":  "",
                                                    "cacheControl":  "public, max-age=31536000, immutable",
                                                    "contentLength":  117893,
-                                                   "etag":  "\"2313e13a77b92ab8d939e4e5805ff513d98a5b07b3908b4a511327b0cca38ed6\"",
-                                                   "contentSha256":  "2313e13a77b92ab8d939e4e5805ff513d98a5b07b3908b4a511327b0cca38ed6"
+                                                   "etag":  "\"3005677ef38075966c2a51294c429d8286dd25db91dc38b3d024b7a1cf3fd1c3\"",
+                                                   "contentSha256":  "3005677ef38075966c2a51294c429d8286dd25db91dc38b3d024b7a1cf3fd1c3"
                                                },
                                     "data":  {
-                                                 "url":  "http://127.0.0.1:61905/Build/WebGL.data.unityweb?v=cb51ca25dd63",
-                                                 "version":  "cb51ca25dd63",
+                                                 "url":  "http://127.0.0.1:52026/Build/WebGL.data.unityweb?v=d863a78c5ffc",
+                                                 "version":  "d863a78c5ffc",
                                                  "contentType":  "application/octet-stream",
                                                  "contentEncoding":  "",
                                                  "cacheControl":  "public, max-age=31536000, immutable",
-                                                 "contentLength":  5573172,
-                                                 "etag":  "\"cb51ca25dd63e1ac0145bd5646e68061861025ee87a3e8b710489923e3f0cfde\"",
-                                                 "contentSha256":  "cb51ca25dd63e1ac0145bd5646e68061861025ee87a3e8b710489923e3f0cfde"
+                                                 "contentLength":  5573023,
+                                                 "etag":  "\"d863a78c5ffc2ad875fcb369c437af1556283a1f1392822c5c4cc23a62bd7c4d\"",
+                                                 "contentSha256":  "d863a78c5ffc2ad875fcb369c437af1556283a1f1392822c5c4cc23a62bd7c4d"
                                              },
                                     "framework":  {
-                                                      "url":  "http://127.0.0.1:61905/Build/WebGL.framework.js.unityweb?v=3f3c89c2cc51",
-                                                      "version":  "3f3c89c2cc51",
+                                                      "url":  "http://127.0.0.1:52026/Build/WebGL.framework.js.unityweb?v=8e822251a31f",
+                                                      "version":  "8e822251a31f",
                                                       "contentType":  "application/octet-stream",
                                                       "contentEncoding":  "",
                                                       "cacheControl":  "public, max-age=31536000, immutable",
-                                                      "contentLength":  69055,
-                                                      "etag":  "\"3f3c89c2cc51410be412429206da2ec325a1c609ba8aff98674e53f7a5b6c630\"",
-                                                      "contentSha256":  "3f3c89c2cc51410be412429206da2ec325a1c609ba8aff98674e53f7a5b6c630"
+                                                      "contentLength":  69111,
+                                                      "etag":  "\"8e822251a31fe608aff3187b843252137d4d81f3c43524f0e5452890d34ed8a9\"",
+                                                      "contentSha256":  "8e822251a31fe608aff3187b843252137d4d81f3c43524f0e5452890d34ed8a9"
                                                   },
                                     "wasm":  {
-                                                 "url":  "http://127.0.0.1:61905/Build/WebGL.wasm.unityweb?v=cf9d1dbf9d5c",
-                                                 "version":  "cf9d1dbf9d5c",
+                                                 "url":  "http://127.0.0.1:52026/Build/WebGL.wasm.unityweb?v=682dd0091686",
+                                                 "version":  "682dd0091686",
                                                  "contentType":  "application/octet-stream",
                                                  "contentEncoding":  "",
                                                  "cacheControl":  "public, max-age=31536000, immutable",
-                                                 "contentLength":  3874247,
-                                                 "etag":  "\"cf9d1dbf9d5c0cface9ba19cb13769be614c0f3122614765e91e3538ca01c175\"",
-                                                 "contentSha256":  "cf9d1dbf9d5c0cface9ba19cb13769be614c0f3122614765e91e3538ca01c175"
+                                                 "contentLength":  3872589,
+                                                 "etag":  "\"682dd00916868faaa061f65f72101e1926eb27df9d32ffb9c821981da2eaba89\"",
+                                                 "contentSha256":  "682dd00916868faaa061f65f72101e1926eb27df9d32ffb9c821981da2eaba89"
                                              }
                                 },
                      "cacheLimits":  {
@@ -160,15 +160,15 @@
                      "cacheRuns":  {
                                        "cold":  {
                                                     "label":  "cold",
-                                                    "startedAtUtc":  "2026-08-20T11:41:06.9361835+00:00",
-                                                    "completedAtUtc":  "2026-08-20T11:41:13.7869375+00:00",
-                                                    "startupDurationMilliseconds":  6850.754,
-                                                    "totalPayloadTransferSize":  9635567,
+                                                    "startedAtUtc":  "2026-08-20T15:05:25.1028793+00:00",
+                                                    "completedAtUtc":  "2026-08-20T15:05:32.0200159+00:00",
+                                                    "startupDurationMilliseconds":  6917.137,
+                                                    "totalPayloadTransferSize":  9633816,
                                                     "assets":  {
                                                                    "loader":  {
-                                                                                  "url":  "http://127.0.0.1:61905/Build/WebGL.loader.js?v=2313e13a77b9",
-                                                                                  "startTimeMilliseconds":  86.3,
-                                                                                  "durationMilliseconds":  3.2,
+                                                                                  "url":  "http://127.0.0.1:52026/Build/WebGL.loader.js?v=3005677ef380",
+                                                                                  "startTimeMilliseconds":  78,
+                                                                                  "durationMilliseconds":  2.6,
                                                                                   "transferSize":  118193,
                                                                                   "encodedBodySize":  117893,
                                                                                   "decodedBodySize":  117893,
@@ -177,34 +177,34 @@
                                                                                   "nextHopProtocol":  "http/1.1"
                                                                               },
                                                                    "data":  {
-                                                                                "url":  "http://127.0.0.1:61905/Build/WebGL.data.unityweb?v=cb51ca25dd63",
-                                                                                "startTimeMilliseconds":  535.3,
-                                                                                "durationMilliseconds":  41.7,
-                                                                                "transferSize":  5573472,
-                                                                                "encodedBodySize":  5573172,
-                                                                                "decodedBodySize":  5573172,
+                                                                                "url":  "http://127.0.0.1:52026/Build/WebGL.data.unityweb?v=d863a78c5ffc",
+                                                                                "startTimeMilliseconds":  500,
+                                                                                "durationMilliseconds":  39.7,
+                                                                                "transferSize":  5573323,
+                                                                                "encodedBodySize":  5573023,
+                                                                                "decodedBodySize":  5573023,
                                                                                 "responseStatus":  200,
                                                                                 "deliveryType":  "",
                                                                                 "nextHopProtocol":  "http/1.1"
                                                                             },
                                                                    "framework":  {
-                                                                                     "url":  "http://127.0.0.1:61905/Build/WebGL.framework.js.unityweb?v=3f3c89c2cc51",
-                                                                                     "startTimeMilliseconds":  371.2,
-                                                                                     "durationMilliseconds":  2.7,
-                                                                                     "transferSize":  69355,
-                                                                                     "encodedBodySize":  69055,
-                                                                                     "decodedBodySize":  69055,
+                                                                                     "url":  "http://127.0.0.1:52026/Build/WebGL.framework.js.unityweb?v=8e822251a31f",
+                                                                                     "startTimeMilliseconds":  325.5,
+                                                                                     "durationMilliseconds":  11.3,
+                                                                                     "transferSize":  69411,
+                                                                                     "encodedBodySize":  69111,
+                                                                                     "decodedBodySize":  69111,
                                                                                      "responseStatus":  200,
                                                                                      "deliveryType":  "",
                                                                                      "nextHopProtocol":  "http/1.1"
                                                                                  },
                                                                    "wasm":  {
-                                                                                "url":  "http://127.0.0.1:61905/Build/WebGL.wasm.unityweb?v=cf9d1dbf9d5c",
-                                                                                "startTimeMilliseconds":  371.4,
-                                                                                "durationMilliseconds":  102,
-                                                                                "transferSize":  3874547,
-                                                                                "encodedBodySize":  3874247,
-                                                                                "decodedBodySize":  3874247,
+                                                                                "url":  "http://127.0.0.1:52026/Build/WebGL.wasm.unityweb?v=682dd0091686",
+                                                                                "startTimeMilliseconds":  326.5,
+                                                                                "durationMilliseconds":  89.7,
+                                                                                "transferSize":  3872889,
+                                                                                "encodedBodySize":  3872589,
+                                                                                "decodedBodySize":  3872589,
                                                                                 "responseStatus":  200,
                                                                                 "deliveryType":  "",
                                                                                 "nextHopProtocol":  "http/1.1"
@@ -213,14 +213,14 @@
                                                 },
                                        "warm":  {
                                                     "label":  "warm",
-                                                    "startedAtUtc":  "2026-08-20T11:41:13.7939391+00:00",
-                                                    "completedAtUtc":  "2026-08-20T11:41:16.8038020+00:00",
-                                                    "startupDurationMilliseconds":  3009.863,
+                                                    "startedAtUtc":  "2026-08-20T15:05:32.0270178+00:00",
+                                                    "completedAtUtc":  "2026-08-20T15:05:35.0188569+00:00",
+                                                    "startupDurationMilliseconds":  2991.839,
                                                     "totalPayloadTransferSize":  300,
                                                     "assets":  {
                                                                    "loader":  {
-                                                                                  "url":  "http://127.0.0.1:61905/Build/WebGL.loader.js?v=2313e13a77b9",
-                                                                                  "startTimeMilliseconds":  45.1,
+                                                                                  "url":  "http://127.0.0.1:52026/Build/WebGL.loader.js?v=3005677ef380",
+                                                                                  "startTimeMilliseconds":  39.6,
                                                                                   "durationMilliseconds":  0,
                                                                                   "transferSize":  0,
                                                                                   "encodedBodySize":  117893,
@@ -230,9 +230,9 @@
                                                                                   "nextHopProtocol":  "http/1.1"
                                                                               },
                                                                    "data":  {
-                                                                                "url":  "http://127.0.0.1:61905/Build/WebGL.data.unityweb?v=cb51ca25dd63",
-                                                                                "startTimeMilliseconds":  66.2,
-                                                                                "durationMilliseconds":  1.3,
+                                                                                "url":  "http://127.0.0.1:52026/Build/WebGL.data.unityweb?v=d863a78c5ffc",
+                                                                                "startTimeMilliseconds":  60.4,
+                                                                                "durationMilliseconds":  1.7,
                                                                                 "transferSize":  300,
                                                                                 "encodedBodySize":  0,
                                                                                 "decodedBodySize":  0,
@@ -241,23 +241,23 @@
                                                                                 "nextHopProtocol":  "http/1.1"
                                                                             },
                                                                    "framework":  {
-                                                                                     "url":  "http://127.0.0.1:61905/Build/WebGL.framework.js.unityweb?v=3f3c89c2cc51",
-                                                                                     "startTimeMilliseconds":  50.9,
-                                                                                     "durationMilliseconds":  2.7,
+                                                                                     "url":  "http://127.0.0.1:52026/Build/WebGL.framework.js.unityweb?v=8e822251a31f",
+                                                                                     "startTimeMilliseconds":  43.9,
+                                                                                     "durationMilliseconds":  1.6,
                                                                                      "transferSize":  0,
-                                                                                     "encodedBodySize":  69055,
-                                                                                     "decodedBodySize":  69055,
+                                                                                     "encodedBodySize":  69111,
+                                                                                     "decodedBodySize":  69111,
                                                                                      "responseStatus":  200,
                                                                                      "deliveryType":  "cache",
                                                                                      "nextHopProtocol":  ""
                                                                                  },
                                                                    "wasm":  {
-                                                                                "url":  "http://127.0.0.1:61905/Build/WebGL.wasm.unityweb?v=cf9d1dbf9d5c",
-                                                                                "startTimeMilliseconds":  50.9,
-                                                                                "durationMilliseconds":  9.1,
+                                                                                "url":  "http://127.0.0.1:52026/Build/WebGL.wasm.unityweb?v=682dd0091686",
+                                                                                "startTimeMilliseconds":  44,
+                                                                                "durationMilliseconds":  6.3,
                                                                                 "transferSize":  0,
-                                                                                "encodedBodySize":  3874247,
-                                                                                "decodedBodySize":  3874247,
+                                                                                "encodedBodySize":  3872589,
+                                                                                "decodedBodySize":  3872589,
                                                                                 "responseStatus":  200,
                                                                                 "deliveryType":  "cache",
                                                                                 "nextHopProtocol":  ""
@@ -295,8 +295,8 @@
                             "battleAfterTransition":  {
                                                           "route":  1,
                                                           "routeName":  "battle",
-                                                          "sessionId":  "b88cf1f976ca4949ab887a014b03ab06",
-                                                          "seed":  698940199,
+                                                          "sessionId":  "abf34010411e48768ee0dcbd39cb2f63",
+                                                          "seed":  1535575623,
                                                           "levelId":  "orchard-02",
                                                           "mapId":  "orchard-02",
                                                           "waveSetId":  "waves.orchard-02.coverage",
@@ -385,7 +385,7 @@
                                                  "nearBlackFraction":  0.0007233600072336,
                                                  "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
                                                  "invalidFraction":  0,
-                                                 "averageLuma":  0.80875384427722985,
+                                                 "averageLuma":  0.80718366894221194,
                                                  "formerActionColorPixels":  0,
                                                  "formerActionColorSpanPixels":  0,
                                                  "sampledRegions":  {
@@ -576,18 +576,31 @@
                                                                                        "yMax":  874
                                                                                    },
                                                                         "regionPixels":  351348,
-                                                                        "changedPixels":  66127,
-                                                                        "changedFraction":  0.18820941061283969,
+                                                                        "changedPixels":  55540,
+                                                                        "changedFraction":  0.15807689242574313,
                                                                         "edgeBandPixels":  3,
                                                                         "edgePixels":  7620,
                                                                         "changedEdgePixels":  0,
                                                                         "changedBounds":  {
-                                                                                              "xMin":  5,
-                                                                                              "yMin":  316,
-                                                                                              "xMax":  399,
-                                                                                              "yMax":  499
+                                                                                              "xMin":  21,
+                                                                                              "yMin":  324,
+                                                                                              "xMax":  383,
+                                                                                              "yMax":  491
                                                                                           }
                                                                     },
+                                      "selectionMotionInset":  {
+                                                                   "region":  {
+                                                                                  "xMin":  22,
+                                                                                  "yMin":  318,
+                                                                                  "xMax":  382,
+                                                                                  "yMax":  494
+                                                                              },
+                                                                   "edgeBandPixels":  3,
+                                                                   "distanceMargin":  8,
+                                                                   "samples":  1020,
+                                                                   "retreatedPixels":  658,
+                                                                   "retreatedFraction":  0.64509803921568631
+                                                               },
                                       "startPressDifference":  {
                                                                    "channelThreshold":  8,
                                                                    "region":  {

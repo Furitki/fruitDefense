@@ -22,3 +22,8 @@
 - [x] 4.2 Run `FruitDefense.Editor.ProjectSetup.SmokeValidate` and the focused UI/editor suites; fix all failures attributable to this change.
 - [x] 4.3 Build ordinary WebGL with `FruitDefense.Editor.WebBuild.Build` and capture live 402×874 Lobby, Battle, and Settlement motion/resting evidence plus a representative desktop host view.
 - [x] 4.4 Compare the canonical before/after evidence and record measurable improvements, remaining limits, build identity, and whether any reference-derived raster entered production.
+
+## 5. Containment defect correction
+
+- [x] 5.1 Replace outward pop overshoot with fast inset-only impulses, decouple pop duration from long-lived status/reward pulses, and enforce scale `<= 1.0` in tokens and motion samples.
+- [x] 5.2 Add containment/duration regression coverage, rebuild the design knowledge base and WebGL player, then recapture the affected live checkpoints.

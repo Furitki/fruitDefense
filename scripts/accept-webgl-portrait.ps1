@@ -198,6 +198,22 @@ $lobbyStartRect = [ordered]@{
   xMax = [Math]::Ceiling($shellContentX + $shellContentWidth)
   yMax = [Math]::Ceiling($shellContentY + (684.0 + 72.0) * $referenceScale)
 }
+$lobbyLevelCardOffset = switch ($LevelId) {
+  'orchard-01' { 112.0 }
+  'orchard-02' { 300.0 }
+  'orchard-03' { 488.0 }
+  default { throw "No Lobby card rect is defined for level '$LevelId'." }
+}
+$lobbyAlternateCardRect = [ordered]@{
+  # The approved selectable-card Sprite preserves transparent optical padding:
+  # visible left/right outline ink begins 6/4 logical points inside the layout rect.
+  xMin = [Math]::Floor($shellContentX + 6.0 * $referenceScale)
+  yMin = [Math]::Floor($shellContentY + $lobbyLevelCardOffset * $referenceScale)
+  xMax = [Math]::Ceiling(
+    $shellContentX + $shellContentWidth - 4.0 * $referenceScale)
+  yMax = [Math]::Ceiling(
+    $shellContentY + ($lobbyLevelCardOffset + 176.0) * $referenceScale)
+}
 $headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
 $formerActionRegion = Convert-ReferenceRect -X 8 -Y 760 -Width 386 -Height 50
 $waveActionRect = Convert-ReferenceRect -X 210 -Y 526 -Width 184 -Height 44
@@ -1949,13 +1965,20 @@ try {
     $shellMetrics.alternateSelection = $alternateCapture.Metrics
     $alternateHash = (Get-FileHash -LiteralPath $alternateCapture.Path -Algorithm SHA256).Hash
     $selectionMotionDifference = $null
+    $selectionMotionInset = $null
     if ($InteractionPolishEvidence) {
       $selectionMotionDifference = Get-ImageDifferenceMetrics `
         -ReferencePath $alternateCapture.Path -CandidatePath $selectionMotionPath `
         -Region ([ordered]@{ xMin = 0; yMin = 0; xMax = $Width; yMax = $Height })
+      $selectionMotionInset = Get-ImageInsetEvidence `
+        -ReferencePath $alternateCapture.Path -CandidatePath $selectionMotionPath `
+        -Region $lobbyAlternateCardRect
       if ($selectionMotionHash -ceq $alternateHash -or
-          $selectionMotionDifference.changedPixels -lt 1000) {
-        throw 'Lobby selection motion checkpoint has no material visual difference from rest.'
+          $selectionMotionDifference.changedPixels -lt 1000 -or
+          $selectionMotionInset.retreatedPixels -lt 20) {
+        throw (
+          'Lobby selection motion is not a material inset-only impulse: ' +
+          ($selectionMotionInset | ConvertTo-Json -Compress))
       }
     }
 
@@ -2121,6 +2144,7 @@ try {
       interactionPolishEvidence = if ($InteractionPolishEvidence) {
         [ordered]@{
           selectionMotionDifference = $selectionMotionDifference
+          selectionMotionInset = $selectionMotionInset
           startPressDifference = $startPressDifference
           startPressInset = $startPressInset
           releaseNavigation = 'Lobby-to-Battle-pass'

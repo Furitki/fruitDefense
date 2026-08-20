@@ -23,11 +23,16 @@ namespace FruitDefense.Editor
         {
             Assert(tokens.PressScale >= .8f && tokens.PressScale < 1f,
                 "press scale remains restrained and visible");
-            Assert(tokens.PopScale > 1f && tokens.PopScale <= 1.3f,
-                "routine pop remains restrained");
-            Assert(tokens.StrongPopScale >= tokens.PopScale
-                && tokens.StrongPopScale <= 1.3f,
-                "strong pop is ordered and restrained");
+            Assert(tokens.UnscaledPressSeconds >= .04f
+                && tokens.UnscaledPressSeconds <= .1f
+                && tokens.UnscaledPopSeconds >= .04f
+                && tokens.UnscaledPopSeconds <= .14f,
+                "press and pop impulses are explicitly short");
+            Assert(tokens.PopInsetScale >= .8f && tokens.PopInsetScale < 1f,
+                "routine pop remains inside its authoritative rect");
+            Assert(tokens.StrongPopInsetScale >= .8f
+                && tokens.StrongPopInsetScale < tokens.PopInsetScale,
+                "strong pop is a stronger inward impulse without overshoot");
             Assert(tokens.RevealOffset > 0f && tokens.RevealOffset <= 24f,
                 "route travel remains bounded");
             Assert(tokens.UnscaledRevealSeconds >= .1f
@@ -60,13 +65,24 @@ namespace FruitDefense.Editor
                     tokens, RuntimeUiMotionPattern.Press).IsResting,
                 "press resolves to the exact resting sample");
 
-            var popDuration = tokens.UnscaledSelectionSeconds
-                + tokens.UnscaledTransitionSeconds;
+            var popDuration = tokens.UnscaledStatusSeconds;
             var pop = RuntimeUiFeedbackPulse.Begin(start, popDuration);
-            var popMid = RuntimeUiMotion.Evaluate(pop, start + popDuration * .35f,
+            var popMid = RuntimeUiMotion.Evaluate(pop,
+                start + tokens.UnscaledPopSeconds * .25f,
                 tokens, RuntimeUiMotionPattern.Pop);
-            Assert(popMid.Scale > 1f && Mathf.Approximately(popMid.Alpha, 1f),
-                "pop sample reaches a visible overshoot");
+            var strongPopMid = RuntimeUiMotion.Evaluate(pop,
+                start + tokens.UnscaledPopSeconds * .25f,
+                tokens, RuntimeUiMotionPattern.StrongPop);
+            Assert(popMid.Scale < 1f
+                && strongPopMid.Scale < popMid.Scale
+                && Mathf.Approximately(popMid.Alpha, 1f),
+                "pop samples produce a visible inward impulse without enlargement");
+            Assert(RuntimeUiMotion.Evaluate(pop,
+                    start + tokens.UnscaledPopSeconds,
+                    tokens, RuntimeUiMotionPattern.Pop).IsResting,
+                "long-lived status feedback cannot stretch the short pop duration");
+            AssertThrows(() => new RuntimeUiMotionSample(1.001f, 1f, 0f),
+                "motion samples reject any scale above the authoritative frame");
 
             var reveal = RuntimeUiMotion.BeginReveal(start, tokens, 3);
             var revealStart = RuntimeUiMotion.Evaluate(reveal, start,
@@ -161,18 +177,21 @@ namespace FruitDefense.Editor
             var layout = PortraitShellLayout.CreateLobby(402f, 874f, safeArea);
             var original = layout.StartButton;
             var pulse = RuntimeUiFeedbackPulse.Begin(0f,
-                tokens.UnscaledSelectionSeconds + tokens.UnscaledTransitionSeconds);
-            var visual = RuntimeUiMotion.Evaluate(pulse, pulse.Deadline * .35f,
+                tokens.UnscaledSelectionSeconds);
+            var visual = RuntimeUiMotion.Evaluate(pulse,
+                tokens.UnscaledPopSeconds * .25f,
                 tokens, RuntimeUiMotionPattern.Pop).Transform(original);
-            var visualOnlyPoint = new Vector2(original.xMin - 1f, original.center.y);
+            var hitOnlyPoint = new Vector2(original.xMin + 1f, original.center.y);
             Assert(!Approximately(visual, original)
                 && PortraitShellLayout.HitTest(layout, original.center, false)
                     == ShellHitTarget.Start
-                && visual.Contains(visualOnlyPoint)
-                && !original.Contains(visualOnlyPoint)
-                && PortraitShellLayout.HitTest(layout, visualOnlyPoint, false)
-                    == ShellHitTarget.None,
-                "motion-only overflow remains outside the authoritative hit layout");
+                && original.Contains(hitOnlyPoint)
+                && !visual.Contains(hitOnlyPoint)
+                && visual.xMin >= original.xMin && visual.xMax <= original.xMax
+                && visual.yMin >= original.yMin && visual.yMax <= original.yMax
+                && PortraitShellLayout.HitTest(layout, hitOnlyPoint, false)
+                    == ShellHitTarget.Start,
+                "inset-only motion stays contained while hit geometry remains authoritative");
         }
 
         private static void ValidateAllocationShape()
@@ -194,6 +213,20 @@ namespace FruitDefense.Editor
                 Assert(fields[index].FieldType.IsValueType,
                     type.Name + " owns no allocating reference field: " + fields[index].Name);
             }
+        }
+
+        private static void AssertThrows(Action action, string message)
+        {
+            try
+            {
+                action();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return;
+            }
+            throw new InvalidOperationException(
+                "Runtime UI interaction polish validation failed: " + message);
         }
 
         private static bool Approximately(Rect left, Rect right)
