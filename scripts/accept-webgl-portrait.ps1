@@ -16,6 +16,15 @@ param(
   [string]$LevelId = 'orchard-01',
   [int]$TimeoutSeconds = 45,
   [switch]$Flow,
+  [ValidateSet('victory', 'defeat')]
+  [string]$SettlementOutcome = 'victory',
+  [ValidateSet('victory', 'defeat')]
+  [string]$BattleTerminalOutcome = 'victory',
+  [switch]$ShellVisual,
+  [switch]$ShellError,
+  [string]$ErrorLevelId = '__missing-ui-acceptance__',
+  [ValidateRange(1, 20)]
+  [int]$BootstrapCpuThrottlingRate = 8,
   [string]$ProfilePath,
   [switch]$CacheSeedOnly,
   [string]$CacheSeedManifestPath,
@@ -80,6 +89,15 @@ if (-not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath) -and $ownsProfile)
 if ($CacheSeedOnly -and -not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath)) {
   throw 'Cache seed mode cannot consume another cache seed manifest.'
 }
+if ((@($Flow, $ShellVisual, $ShellError) | Where-Object { $_ }).Count -gt 1) {
+  throw '-Flow, -ShellVisual, and -ShellError are distinct acceptance modes and cannot be combined.'
+}
+if ($ShellVisual -and $LevelId -eq 'orchard-01') {
+  throw '-ShellVisual requires -LevelId orchard-02 or orchard-03 for alternate-selection evidence.'
+}
+if ($ShellError -and [string]::IsNullOrWhiteSpace($ErrorLevelId)) {
+  throw '-ShellError requires a non-empty -ErrorLevelId.'
+}
 
 function Set-UrlQueryParameter {
   param([string]$TargetUrl, [string]$Name, [string]$Value)
@@ -100,10 +118,11 @@ function Set-UrlQueryParameter {
 function Set-AcceptanceQuery {
   param([string]$TargetUrl)
   $result = Set-UrlQueryParameter -TargetUrl $TargetUrl -Name 'acceptance' -Value '1'
-  if (-not $Flow) {
+  if ($ShellError -or (-not $Flow -and -not $ShellVisual)) {
     $result = Set-UrlQueryParameter -TargetUrl $result -Name 'route' -Value 'battle'
   }
-  $result = Set-UrlQueryParameter -TargetUrl $result -Name 'levelId' -Value $LevelId
+  $queryLevelId = if ($ShellError) { $ErrorLevelId } else { $LevelId }
+  $result = Set-UrlQueryParameter -TargetUrl $result -Name 'levelId' -Value $queryLevelId
   $result = Set-UrlQueryParameter -TargetUrl $result -Name 'safeTop' -Value ([string]$SafeTop)
   $result = Set-UrlQueryParameter -TargetUrl $result -Name 'safeBottom' -Value ([string]$SafeBottom)
   return $result
@@ -139,17 +158,19 @@ function Convert-ShellReferencePoint {
 }
 
 $referenceControls = [ordered]@{
-  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 151 }
-  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 249 }
-  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 347 }
-  lobbyStart = [ordered]@{ x = 201; y = 446 }
-  settlementRetry = [ordered]@{ x = 201; y = 449 }
-  settlementReturn = [ordered]@{ x = 201; y = 528 }
+  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 218 }
+  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 406 }
+  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 594 }
+  lobbyStart = [ordered]@{ x = 201; y = 738 }
+  settlementRetry = [ordered]@{ x = 201; y = 660 }
+  settlementReturn = [ordered]@{ x = 201; y = 744 }
   headerPause = [ordered]@{ x = 300; y = 38 }
   waveAction = [ordered]@{ x = 302; y = 548 }
   pauseContinue = [ordered]@{ x = 125; y = 492 }
   pauseRestart = [ordered]@{ x = 277; y = 492 }
-  nurserySlot0 = [ordered]@{ x = 51; y = 703 }
+  terminalRestart = [ordered]@{ x = 201; y = 536 }
+  weaponGatling = [ordered]@{ x = 60; y = 624 }
+  nurserySlot0 = [ordered]@{ x = 51; y = 705 }
   acceptanceCell0 = [ordered]@{ x = 32; y = 195 }
   acceptanceCell1 = [ordered]@{ x = 80; y = 195 }
 }
@@ -167,11 +188,19 @@ $levelCardControlName = 'lobbyLevel' + ($LevelId -replace '-', '').Replace('orch
 if (-not $controls.Contains($levelCardControlName)) {
   throw "No Lobby control is defined for level '$LevelId'."
 }
+$lobbyStartRect = [ordered]@{
+  xMin = [Math]::Floor($shellContentX)
+  yMin = [Math]::Floor($shellContentY + 684.0 * $referenceScale)
+  xMax = [Math]::Ceiling($shellContentX + $shellContentWidth)
+  yMax = [Math]::Ceiling($shellContentY + (684.0 + 72.0) * $referenceScale)
+}
 $headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
 $formerActionRegion = Convert-ReferenceRect -X 8 -Y 760 -Width 386 -Height 50
 $hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
 $hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
 $formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
+$formerActionSpanThreshold = [Math]::Max(24,
+  [Math]::Ceiling(($formerActionRegion.xMax - $formerActionRegion.xMin) * 0.20))
 $nearBlackLumaThreshold = 0.08
 $maxBlackFraction = 0.01
 $maxNearBlackFraction = 0.05
@@ -181,6 +210,82 @@ $framePixelThresholds = [ordered]@{
   maxBlackFraction = $maxBlackFraction
   maxNearBlackFraction = $maxNearBlackFraction
   maxInvalidFraction = 0.05
+}
+
+function Get-YamlScalar {
+  param([string]$Text, [string]$Name)
+  $match = [regex]::Match($Text, "(?m)^\s*$([regex]::Escape($Name)):\s*(?<value>[^\r\n]+)\s*$")
+  if (-not $match.Success) { throw "Unity YAML scalar '$Name' was not found." }
+  return $match.Groups['value'].Value.Trim().Trim("'", '"')
+}
+
+function Get-ReleaseRuntimeUiIdentity {
+  $themePath = Join-Path $projectRoot 'Assets/UI/Theme/ReleaseRuntimeUiTheme.asset'
+  $artSetDirectory = Join-Path $projectRoot 'Assets/UI/Art/Sets'
+  if (-not (Test-Path -LiteralPath $themePath -PathType Leaf)) {
+    throw "Release runtime UI identity source is missing: $themePath"
+  }
+  if (-not (Test-Path -LiteralPath $artSetDirectory -PathType Container)) {
+    throw "Release runtime UI ArtSet directory is missing: $artSetDirectory"
+  }
+
+  $themeText = Get-Content -LiteralPath $themePath -Raw -Encoding UTF8
+  $activeArtSetMatch = [regex]::Match(
+    $themeText,
+    '(?m)^\s*activeArtSet:\s*\{[^}]*guid:\s*(?<guid>[0-9a-f]{32})[^}]*\}\s*$')
+  if (-not $activeArtSetMatch.Success) {
+    throw 'Release runtime UI Theme active ArtSet GUID binding could not be read.'
+  }
+  $activeArtSetGuid = $activeArtSetMatch.Groups['guid'].Value
+  $artSetMetaMatches = @(
+    Get-ChildItem -LiteralPath $artSetDirectory -Filter '*.asset.meta' -File |
+      Where-Object {
+        $metaText = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
+        $guidMatch = [regex]::Match($metaText, '(?m)^guid:\s*(?<guid>[0-9a-f]{32})\s*$')
+        $guidMatch.Success -and $guidMatch.Groups['guid'].Value -ceq $activeArtSetGuid
+      }
+  )
+  if ($artSetMetaMatches.Count -ne 1) {
+    throw (
+      "Release runtime UI Theme active ArtSet GUID '$activeArtSetGuid' resolved to " +
+      "$($artSetMetaMatches.Count) production ArtSet metadata files; expected exactly one.")
+  }
+
+  $artSetMetaPath = $artSetMetaMatches[0].FullName
+  $artSetPath = $artSetMetaPath.Substring(0, $artSetMetaPath.Length - '.meta'.Length)
+  if (-not (Test-Path -LiteralPath $artSetPath -PathType Leaf)) {
+    throw "Release runtime UI ArtSet asset is missing for metadata: $artSetMetaPath"
+  }
+
+  $themeId = Get-YamlScalar -Text $themeText -Name 'themeId'
+  $themeRevision = Get-YamlScalar -Text $themeText -Name 'revision'
+  if ($themeId -cne 'ui.sunny-orchard' -or $themeRevision -cne '1') {
+    throw "Unexpected release runtime UI Theme identity: $themeId@$themeRevision"
+  }
+
+  $artSetText = Get-Content -LiteralPath $artSetPath -Raw -Encoding UTF8
+  $artSetTypeMatch = [regex]::Match(
+    $artSetText,
+    '(?m)^\s*m_EditorClassIdentifier:\s*Assembly-CSharp::FruitDefense\.UI\.RuntimeUiArtSet\s*$')
+  if (-not $artSetTypeMatch.Success) {
+    throw "Release runtime UI Theme GUID does not resolve to a RuntimeUiArtSet asset: $artSetPath"
+  }
+  $artSetId = Get-YamlScalar -Text $artSetText -Name 'setId'
+  $artSetRevision = Get-YamlScalar -Text $artSetText -Name 'revision'
+  if ([string]::IsNullOrWhiteSpace($artSetId) -or [string]::IsNullOrWhiteSpace($artSetRevision)) {
+    throw "Release RuntimeUiArtSet identity is incomplete: $artSetPath"
+  }
+
+  return [ordered]@{
+    themeId = $themeId
+    themeRevision = $themeRevision
+    artSetId = $artSetId
+    artSetRevision = $artSetRevision
+    display = "$themeId@$themeRevision / $artSetId@$artSetRevision"
+    themeAsset = $themePath
+    artSetAsset = $artSetPath
+    activeArtSetGuid = $activeArtSetGuid
+  }
 }
 $warmAssetTransferLimitBytes = 16KB
 $warmTotalTransferLimitBytes = 64KB
@@ -543,13 +648,24 @@ function Get-ReleaseTransitionEvidence {
 
 function Invoke-CanvasClick {
   param([double]$X, [double]$Y)
+  Invoke-CanvasClickImmediate -X $X -Y $Y
+  Start-Sleep -Milliseconds 450
+}
+
+function Invoke-CanvasClickImmediate {
+  param([double]$X, [double]$Y)
   Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
     type = 'mousePressed'; x = $X; y = $Y; button = 'left'; clickCount = 1
   } | Out-Null
   Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
     type = 'mouseReleased'; x = $X; y = $Y; button = 'left'; clickCount = 1
   } | Out-Null
-  Start-Sleep -Milliseconds 450
+}
+
+function Move-CanvasPointerOut {
+  Invoke-Cdp -Method 'Input.dispatchMouseEvent' -Params @{
+    type = 'mouseMoved'; x = 1; y = 1; button = 'none'; buttons = 0
+  } | Out-Null
 }
 
 function Start-CanvasDrag {
@@ -741,7 +857,10 @@ function Get-ImageMetrics {
     $nearBlackSamples = 0
     $invalidSamples = 0
     $sampleCount = 0
+    [double]$lumaSum = 0
     $formerActionColorPixels = 0
+    $formerActionColorXMin = [int]::MaxValue
+    $formerActionColorXMax = [int]::MinValue
     $sampleStep = 4
     $maxNearBlackRunSamples = 0
     # These design-space regions are projected through the same safe-content transform as input controls.
@@ -768,6 +887,7 @@ function Get-ImageMetrics {
         }
         else { $nearBlackRunSamples = 0 }
         $sampleCount++
+        $lumaSum += $luma
         if ($pixel.A -gt 128 -and $luma -lt .025) { $blackSamples++ }
         if ($pixel.A -le 128 -or $luma -lt .025) { $invalidSamples++ }
       }
@@ -780,7 +900,11 @@ function Get-ImageMetrics {
         $pixel = $bitmap.GetPixel($x, $y)
         $looksLikeOldOrange = $pixel.R -gt 190 -and $pixel.G -gt 90 -and $pixel.G -lt 190 -and $pixel.B -lt 90
         $looksLikeOldRed = $pixel.R -gt 180 -and $pixel.G -lt 115 -and $pixel.B -lt 110
-        if ($looksLikeOldOrange -or $looksLikeOldRed) { $formerActionColorPixels++ }
+        if ($looksLikeOldOrange -or $looksLikeOldRed) {
+          $formerActionColorPixels++
+          $formerActionColorXMin = [Math]::Min($formerActionColorXMin, $x)
+          $formerActionColorXMax = [Math]::Max($formerActionColorXMax, $x)
+        }
       }
     }
     return [ordered]@{
@@ -792,7 +916,11 @@ function Get-ImageMetrics {
       nearBlackFraction = if ($sampleCount -gt 0) { $nearBlackSamples / [double]$sampleCount } else { 1.0 }
       maxNearBlackHorizontalRunFraction = $maxNearBlackRunFraction
       invalidFraction = if ($sampleCount -gt 0) { $invalidSamples / [double]$sampleCount } else { 1.0 }
+      averageLuma = if ($sampleCount -gt 0) { $lumaSum / [double]$sampleCount } else { 0.0 }
       formerActionColorPixels = $formerActionColorPixels
+      formerActionColorSpanPixels = if ($formerActionColorPixels -gt 0) {
+        $formerActionColorXMax - $formerActionColorXMin + 1
+      } else { 0 }
       sampledRegions = [ordered]@{
         header = $headerSampleRegion
         formerAction = $formerActionRegion
@@ -813,6 +941,174 @@ function Test-StableFrameMetrics {
   return $Metrics.invalidFraction -lt .05 -and
     $Metrics.blackFraction -lt $maxBlackFraction -and
     $Metrics.nearBlackFraction -lt $maxNearBlackFraction
+}
+
+function Get-ImagePixelSample {
+  param([string]$Path, [int]$X, [int]$Y)
+  Add-Type -AssemblyName System.Drawing
+  $bitmap = [Drawing.Bitmap]::FromFile($Path)
+  try {
+    $pixel = $bitmap.GetPixel(
+      [Math]::Min([Math]::Max(0, $X), $bitmap.Width - 1),
+      [Math]::Min([Math]::Max(0, $Y), $bitmap.Height - 1))
+    return [ordered]@{ r = [int]$pixel.R; g = [int]$pixel.G; b = [int]$pixel.B; a = [int]$pixel.A }
+  }
+  finally { $bitmap.Dispose() }
+}
+
+function Get-ShellSurfaceSamples {
+  param([string]$Path)
+  $safeBaseY = [Math]::Floor($Height - $SafeBottom - 72 * $referenceScale)
+  $samples = [ordered]@{
+    safeBase = Get-ImagePixelSample -Path $Path -X ([Math]::Floor($Width / 2)) -Y $safeBaseY
+  }
+  if ($SafeTop -gt 0) {
+    $samples.edge = Get-ImagePixelSample -Path $Path `
+      -X ([Math]::Floor($Width / 2)) -Y ([Math]::Floor($SafeTop / 2))
+  }
+  elseif ($SafeBottom -gt 0) {
+    $samples.edge = Get-ImagePixelSample -Path $Path `
+      -X ([Math]::Floor($Width / 2)) -Y ($Height - [Math]::Ceiling($SafeBottom / 2))
+  }
+  return $samples
+}
+
+function Test-ShellSurfaceSamples {
+  param([object]$Samples)
+  foreach ($name in @('safeBase', 'edge')) {
+    if (-not $Samples.Contains($name)) { continue }
+    $sample = $Samples[$name]
+    if ([int]$sample.a -lt 250) { return $false }
+    $luma = Get-SrgbRelativeLuminance -R ([int]$sample.r) -G ([int]$sample.g) -B ([int]$sample.b)
+    if ($luma -lt 0.08) { return $false }
+  }
+  return $true
+}
+
+function Get-SrgbRelativeLuminance {
+  param([int]$R, [int]$G, [int]$B)
+  $linear = foreach ($channel in @($R, $G, $B)) {
+    $value = $channel / 255.0
+    if ($value -le 0.04045) { $value / 12.92 }
+    else { [Math]::Pow(($value + 0.055) / 1.055, 2.4) }
+  }
+  return 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2]
+}
+
+function Get-LobbyActionContrast {
+  param([string]$Path)
+  Add-Type -AssemblyName System.Drawing
+  $bitmap = [Drawing.Bitmap]::FromFile($Path)
+  try {
+    # Inspect the central label area only; this excludes borders, the leading
+    # Start icon, the trailing state indicator, and the shallow bottom highlight.
+    $width = $lobbyStartRect.xMax - $lobbyStartRect.xMin
+    $height = $lobbyStartRect.yMax - $lobbyStartRect.yMin
+    $xMin = [Math]::Max(0, [Math]::Floor($lobbyStartRect.xMin + $width * 0.24))
+    $xMax = [Math]::Min($bitmap.Width, [Math]::Ceiling($lobbyStartRect.xMin + $width * 0.76))
+    $yMin = [Math]::Max(0, [Math]::Floor($lobbyStartRect.yMin + $height * 0.18))
+    $yMax = [Math]::Min($bitmap.Height, [Math]::Ceiling($lobbyStartRect.yMin + $height * 0.72))
+    $clusters = @{}
+    for ($y = $yMin; $y -lt $yMax; $y++) {
+      for ($x = $xMin; $x -lt $xMax; $x++) {
+        $pixel = $bitmap.GetPixel($x, $y)
+        if ($pixel.A -lt 250) { continue }
+        $key = "$([Math]::Floor($pixel.R / 16.0)),$([Math]::Floor($pixel.G / 16.0)),$([Math]::Floor($pixel.B / 16.0))"
+        if (-not $clusters.ContainsKey($key)) {
+          $clusters[$key] = [ordered]@{ count = 0; r = 0L; g = 0L; b = 0L }
+        }
+        $cluster = $clusters[$key]
+        $cluster.count++
+        $cluster.r += $pixel.R
+        $cluster.g += $pixel.G
+        $cluster.b += $pixel.B
+      }
+    }
+    if ($clusters.Count -lt 2) { throw "Action contrast sample has insufficient colors: $Path" }
+
+    $colors = foreach ($entry in $clusters.GetEnumerator()) {
+      $r = [int][Math]::Round($entry.Value.r / [double]$entry.Value.count)
+      $g = [int][Math]::Round($entry.Value.g / [double]$entry.Value.count)
+      $b = [int][Math]::Round($entry.Value.b / [double]$entry.Value.count)
+      [pscustomobject]@{
+        r = $r; g = $g; b = $b; count = [int]$entry.Value.count
+        luminance = Get-SrgbRelativeLuminance -R $r -G $g -B $b
+      }
+    }
+    $background = $colors | Sort-Object count -Descending | Select-Object -First 1
+    $minimumSolidGlyphPixels = [Math]::Max(6,
+      [Math]::Floor(($xMax - $xMin) * ($yMax - $yMin) * 0.0008))
+    $foreground = $colors |
+      Where-Object { $_.count -ge $minimumSolidGlyphPixels -and
+        $_.luminance -gt $background.luminance -and
+        ([Math]::Max($_.r, [Math]::Max($_.g, $_.b)) -
+          [Math]::Min($_.r, [Math]::Min($_.g, $_.b))) -le 48 } |
+      Sort-Object `
+        @{ Expression = 'luminance'; Descending = $true },
+        @{ Expression = 'count'; Descending = $true } |
+      Select-Object -First 1
+    if ($null -eq $foreground) {
+      throw "Action contrast sample has no solid light glyph color: $Path"
+    }
+    $ratio = ([Math]::Max($background.luminance, $foreground.luminance) + 0.05) /
+      ([Math]::Min($background.luminance, $foreground.luminance) + 0.05)
+    return [ordered]@{
+      background = [ordered]@{
+        r = $background.r; g = $background.g; b = $background.b; pixels = $background.count
+      }
+      foreground = [ordered]@{
+        r = $foreground.r; g = $foreground.g; b = $foreground.b; pixels = $foreground.count
+      }
+      ratio = $ratio
+      minimum = 3.0
+      passed = $ratio -ge 3.0
+      sampleRect = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
+    }
+  }
+  finally { $bitmap.Dispose() }
+}
+
+function Save-StableShellScreenshot {
+  param([string]$Name)
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $attempts = 0
+  $consecutiveStableFrames = 0
+  $previousStableLuma = $null
+  do {
+    $attempts++
+    $path = Save-Screenshot -Name $Name
+    $metrics = Get-ImageMetrics -Path $path
+    $surfaceSamples = Get-ShellSurfaceSamples -Path $path
+    $actionContrast = Get-LobbyActionContrast -Path $path
+    $metrics['surfaceSamples'] = $surfaceSamples
+    $metrics['actionContrast'] = $actionContrast
+    $passesFrameGuards = $metrics.width -eq $Width -and $metrics.height -eq $Height -and
+        (Test-StableFrameMetrics -Metrics $metrics) -and
+        (Test-ShellSurfaceSamples -Samples $surfaceSamples) -and
+        $actionContrast.passed
+    if ($passesFrameGuards) {
+      if ($null -ne $previousStableLuma -and
+          [Math]::Abs([double]$metrics.averageLuma - [double]$previousStableLuma) -le 0.006) {
+        $consecutiveStableFrames++
+      }
+      else {
+        $consecutiveStableFrames = 1
+      }
+      $previousStableLuma = [double]$metrics.averageLuma
+      if ($consecutiveStableFrames -ge 3) {
+        $metrics['consecutiveStableFrames'] = $consecutiveStableFrames
+        return [pscustomobject]@{ Path = $path; Metrics = $metrics; Attempts = $attempts }
+      }
+    }
+    else {
+      $consecutiveStableFrames = 0
+      $previousStableLuma = $null
+    }
+    Start-Sleep -Milliseconds 250
+  } while ((Get-Date) -lt $deadline)
+  throw (
+    "Sunny Orchard shell surface/contrast did not stabilize for '$Name': " +
+    "$($metrics | ConvertTo-Json -Depth 6 -Compress)")
 }
 
 function Save-StableScreenshot {
@@ -868,6 +1164,8 @@ if ($mappedDesignBounds.xMin -lt -0.001 -or $mappedDesignBounds.yMin -lt ($SafeT
     $mappedDesignBounds.yMax -gt ($Height - $SafeBottom + 0.001)) {
   throw "Mapped 402x874 design viewport escapes safe content: $($mappedDesignBounds | ConvertTo-Json -Compress)"
 }
+
+$runtimeUiIdentity = Get-ReleaseRuntimeUiIdentity
 
 if ($SelfCheck) {
   $syntheticHealthyMetrics = [pscustomobject]@{
@@ -1007,6 +1305,7 @@ if ($SelfCheck) {
     expectedCompositeIdentity = $expectedLevelIdentity
     viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
     safeArea = $safeAreaEvidence
+    runtimeUi = $runtimeUiIdentity
     mappedDesignBounds = $mappedDesignBounds
     referenceControls = $referenceControls
     mappedControls = $controls
@@ -1015,6 +1314,7 @@ if ($SelfCheck) {
       hudDarkPixels = $hudDarkPixelThreshold
       hudLightPixels = $hudLightPixelThreshold
       formerActionColorPixels = $formerActionPixelThreshold
+      formerActionColorSpanPixels = $formerActionSpanThreshold
       framePixels = $framePixelThresholds
     }
     blackFrameGuard = 'pass'
@@ -1068,12 +1368,13 @@ try {
   $delivery = Get-UnityDeliveryMetadata -PageUrl $Url -PageResponse $pageResponse
 
   $debugPort = Get-FreeTcpPort
+  $initialChromeUrl = if ($ShellVisual -or $ShellError) { 'about:blank' } else { $Url }
   $chromeArgs = @(
     '--headless=new', '--no-first-run', '--disable-background-networking', '--disable-extensions',
     '--hide-scrollbars', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist',
     '--user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1"',
     "--window-size=$Width,$Height", '--force-device-scale-factor=1',
-    "--remote-debugging-port=$debugPort", "--user-data-dir=$profileDir", $Url
+    "--remote-debugging-port=$debugPort", "--user-data-dir=$profileDir", $initialChromeUrl
   )
   $coldStartedAt = [DateTimeOffset]::UtcNow
   $chromeProcess = Start-Process -FilePath $ChromePath -ArgumentList $chromeArgs -WindowStyle Hidden -PassThru
@@ -1088,7 +1389,7 @@ try {
         $typeProperty = $candidate.PSObject.Properties['type']
         $urlProperty = $candidate.PSObject.Properties['url']
         if ($null -ne $typeProperty -and $null -ne $urlProperty -and
-            [string]$typeProperty.Value -eq 'page' -and [string]$urlProperty.Value -eq $Url) {
+            [string]$typeProperty.Value -eq 'page' -and [string]$urlProperty.Value -eq $initialChromeUrl) {
           $target = $candidate
           break
         }
@@ -1155,6 +1456,175 @@ try {
   });
 })()
 '@
+  $bootstrapCapture = [ordered]@{
+    state = if ($ShellVisual) { 'not-captured' } else { 'not-requested' }
+    reason = if ($ShellVisual) { 'Unity route became ready before a stable initializing frame was observed.' } else { '' }
+    cpuThrottlingRate = if ($ShellVisual) { $BootstrapCpuThrottlingRate } else { 1 }
+    attempts = 0
+  }
+  if ($ShellVisual) {
+    $bootstrapProbePath = Join-Path $outputDir '00-bootstrap-probe.png'
+    $bootstrapFinalPath = Join-Path $outputDir '00-bootstrap-initializing.png'
+    foreach ($staleBootstrapPath in @($bootstrapProbePath, $bootstrapFinalPath)) {
+      if (Test-Path -LiteralPath $staleBootstrapPath -PathType Leaf) {
+        Remove-Item -LiteralPath $staleBootstrapPath -Force
+      }
+    }
+    Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{
+      rate = $BootstrapCpuThrottlingRate
+    } | Out-Null
+    $coldStartedAt = [DateTimeOffset]::UtcNow
+    Invoke-Cdp -Method 'Page.navigate' -Params @{ url = $Url } | Out-Null
+
+    $bootstrapDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 25))
+    do {
+      try {
+        $bootstrapReadiness = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
+        $bootstrapViewportReady = $bootstrapReadiness.innerWidth -eq $Width -and
+          $bootstrapReadiness.innerHeight -eq $Height
+        $bootstrapCanvasReady = $bootstrapReadiness.width -eq $Width -and
+          $bootstrapReadiness.height -eq $Height -and
+          [Math]::Abs([double]$bootstrapReadiness.cssWidth - $Width) -lt 0.51 -and
+          [Math]::Abs([double]$bootstrapReadiness.cssHeight - $Height) -lt 0.51
+        if ($bootstrapReadiness.canvas -and $bootstrapReadiness.loading -eq 'none' -and
+            -not $bootstrapReadiness.acceptanceReady -and $bootstrapViewportReady -and
+            $bootstrapCanvasReady) {
+          $bootstrapCapture.attempts++
+          $bootstrapPath = Save-Screenshot -Name '00-bootstrap-probe'
+          $bootstrapMetrics = Get-ImageMetrics -Path $bootstrapPath
+          # Reject Unity's dark splash frame; the Bootstrap presentation uses the
+          # release Theme's light cream surfaces and is the application-owned evidence.
+          if ((Test-StableFrameMetrics -Metrics $bootstrapMetrics) -and
+              $bootstrapMetrics.averageLuma -gt 0.45) {
+            $bootstrapCapture.state = 'captured'
+            $bootstrapCapture.reason = ''
+            Move-Item -LiteralPath $bootstrapPath -Destination $bootstrapFinalPath -Force
+            $bootstrapCapture.screenshot = $bootstrapFinalPath
+            $bootstrapCapture.imageMetrics = $bootstrapMetrics
+            $bootstrapCapture.canvas = $bootstrapReadiness
+            break
+          }
+        }
+        if ($bootstrapReadiness.acceptanceReady) { break }
+      }
+      catch {
+        # Navigation can temporarily destroy the Runtime execution context.
+      }
+      Start-Sleep -Milliseconds 35
+    } while ((Get-Date) -lt $bootstrapDeadline)
+    Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{ rate = 1 } | Out-Null
+    if ($bootstrapCapture.state -ne 'captured' -and
+        (Test-Path -LiteralPath $bootstrapProbePath -PathType Leaf)) {
+      Remove-Item -LiteralPath $bootstrapProbePath -Force
+    }
+  }
+  elseif ($ShellError) {
+    $coldStartedAt = [DateTimeOffset]::UtcNow
+    Invoke-Cdp -Method 'Page.navigate' -Params @{ url = $Url } | Out-Null
+  }
+
+  if ($ShellError) {
+    $errorReadiness = $null
+    $errorDeadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+      try {
+        $candidate = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
+        $errorViewportReady = $candidate.innerWidth -eq $Width -and
+          $candidate.innerHeight -eq $Height
+        $errorCanvasReady = $candidate.width -eq $Width -and
+          $candidate.height -eq $Height -and
+          [Math]::Abs([double]$candidate.cssWidth - $Width) -lt 0.51 -and
+          [Math]::Abs([double]$candidate.cssHeight - $Height) -lt 0.51
+        if ($candidate.canvas -and $candidate.loading -eq 'none' -and
+            -not $candidate.acceptanceReady -and [int]$candidate.appRoute -eq -1 -and
+            $errorViewportReady -and $errorCanvasReady) {
+          $errorReadiness = $candidate
+          break
+        }
+      }
+      catch {
+        # Navigation can temporarily destroy the Runtime execution context.
+      }
+      Start-Sleep -Milliseconds 100
+    } while ((Get-Date) -lt $errorDeadline)
+    if ($null -eq $errorReadiness) {
+      throw 'Formal invalid-level launch did not reach a no-route application canvas.'
+    }
+
+    # The invalid level is resolved after the normal Bootstrap services complete.
+    # Wait beyond the short initializing modal so the persistent blocking error,
+    # rather than a startup or Unity splash frame, is the captured state.
+    Start-Sleep -Milliseconds 1800
+    $errorCapture = $null
+    $lastDarkErrorMetrics = $null
+    $errorFrameDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 20))
+    do {
+      $errorReadiness = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
+      if ($errorReadiness.acceptanceReady -or [int]$errorReadiness.appRoute -ne -1) {
+        throw (
+          'Formal invalid-level launch unexpectedly published a route: ' +
+          ($errorReadiness | ConvertTo-Json -Compress))
+      }
+      $candidateErrorCapture = Save-StableScreenshot `
+        -Name '00-bootstrap-blocking-error' `
+        -RequireHud $false
+      if ($candidateErrorCapture.Metrics.averageLuma -gt 0.25) {
+        $errorCapture = $candidateErrorCapture
+        break
+      }
+      $lastDarkErrorMetrics = $candidateErrorCapture.Metrics
+      Start-Sleep -Milliseconds 250
+    } while ((Get-Date) -lt $errorFrameDeadline)
+    if ($null -eq $errorCapture) {
+      throw (
+        'Formal invalid-level capture remained a dark Unity/black frame: ' +
+        ($lastDarkErrorMetrics | ConvertTo-Json -Compress))
+    }
+    $coldCacheRun = Get-UnityResourceTiming `
+      -Label 'cold-error' `
+      -DeliveryAssets $delivery.assets `
+      -StartedAt $coldStartedAt
+    $errorManifest = [ordered]@{
+      schemaVersion = 1
+      evidenceType = 'bootstrap-blocking-error-webgl-visual'
+      accepted = $true
+      capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+      url = $Url
+      input = [ordered]@{
+        acceptance = '1'
+        route = 'battle'
+        levelId = $ErrorLevelId
+        classification = 'formal-invalid-level-acceptance-input'
+      }
+      expectedUserCopy = -join ([char[]]@(
+        0x542f, 0x52a8, 0x5931, 0x8d25, 0xff1a, 0x6240,
+        0x9009, 0x5173, 0x5361, 0x4e0d, 0x53ef, 0x7528))
+      viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+      safeArea = $safeAreaEvidence
+      runtimeUi = $runtimeUiIdentity
+      browser = $browserEvidence
+      canvas = $errorReadiness
+      checks = [ordered]@{
+        releaseRuntimeUiIdentity = 'pass'
+        unityPlayerLoaded = 'pass'
+        noRouteReadyPublished = 'pass'
+        applicationFrameNotSplashOrBlack = 'pass'
+        requestedViewportAndCanvas = 'pass'
+        safeAreaQueryApplied = 'pass'
+        finiteUserCopyAndNonColorCue = 'manual-screenshot-review-required'
+      }
+      screenshot = $errorCapture.Path
+      imageMetrics = $errorCapture.Metrics
+      delivery = [ordered]@{
+        metadata = $delivery
+        coldRun = $coldCacheRun
+      }
+    }
+    $errorManifestPath = Join-Path $outputDir 'shell-error-evidence.json'
+    $errorManifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $errorManifestPath -Encoding UTF8
+    Write-Host "FRUIT_DEFENSE_SHELL_ERROR_OK manifest=$errorManifestPath"
+    return
+  }
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
   do {
     $readiness = (Invoke-JavaScript -Expression $readinessExpression) | ConvertFrom-Json
@@ -1266,6 +1736,174 @@ try {
 
   $screenshots = [ordered]@{}
 
+  if ($ShellVisual) {
+    Wait-AppRoute -Route 0
+    Move-CanvasPointerOut
+
+    $defaultIdentity = Get-AcceptanceIdentity
+    if ($null -eq $defaultIdentity -or [int]$defaultIdentity.route -ne 0 -or
+        -not [string]::IsNullOrEmpty([string]$defaultIdentity.sessionId) -or
+        [int]$defaultIdentity.seed -ne 0) {
+      throw "Default Lobby identity is invalid: $($defaultIdentity | ConvertTo-Json -Compress)"
+    }
+    if ([string]$defaultIdentity.levelId -ceq $LevelId) {
+      throw (
+        "Alternate-selection level '$LevelId' is already selected in the supplied browser profile. " +
+        'Use a fresh profile or choose another level.')
+    }
+
+    $shellScreenshots = [ordered]@{}
+    $shellMetrics = [ordered]@{}
+    $shellIdentities = [ordered]@{ defaultLobby = $defaultIdentity }
+    # Route-ready can precede the first fully composited themed frame. Require
+    # the approved base/edge colors so a transient grey overlay is never accepted.
+    $defaultCapture = Save-StableShellScreenshot -Name '01-lobby-default'
+    $shellScreenshots.defaultLobby = $defaultCapture.Path
+    $shellMetrics.defaultLobby = $defaultCapture.Metrics
+
+    Invoke-CanvasClick -X $controls[$levelCardControlName].x -Y $controls[$levelCardControlName].y
+    $shellIdentities.alternateLobby = Wait-AcceptanceIdentity `
+      -Route 0 -Stage 'alternate-selected-lobby' -SessionMode Cleared
+    Move-CanvasPointerOut
+    $alternateCapture = Save-StableShellScreenshot -Name '02-lobby-alternate-selection'
+    $shellScreenshots.alternateSelection = $alternateCapture.Path
+    $shellMetrics.alternateSelection = $alternateCapture.Metrics
+    $alternateHash = (Get-FileHash -LiteralPath $alternateCapture.Path -Algorithm SHA256).Hash
+
+    $transitionCapture = $null
+    $transitionAttempts = 0
+    $transitionDeadline = (Get-Date).AddSeconds([Math]::Min($TimeoutSeconds, 10))
+    try {
+      Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{
+        rate = $BootstrapCpuThrottlingRate
+      } | Out-Null
+      Invoke-CanvasClickImmediate -X $controls.lobbyStart.x -Y $controls.lobbyStart.y
+      do {
+        $transitionAttempts++
+        $currentRoute = Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1'
+        if ([int]$currentRoute -ne 0) { break }
+        $transitionPath = Save-Screenshot -Name '03-lobby-transition'
+        $routeAfterScreenshot = Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1'
+        if ([int]$routeAfterScreenshot -ne 0) {
+          Remove-Item -LiteralPath $transitionPath -Force -ErrorAction SilentlyContinue
+          break
+        }
+        $transitionMetrics = Get-ImageMetrics -Path $transitionPath
+        $transitionHash = (Get-FileHash -LiteralPath $transitionPath -Algorithm SHA256).Hash
+        if ((Test-StableFrameMetrics -Metrics $transitionMetrics) -and
+            $transitionHash -cne $alternateHash) {
+          $transitionCapture = [pscustomobject]@{
+            Path = $transitionPath
+            Metrics = $transitionMetrics
+            Sha256 = $transitionHash
+          }
+          break
+        }
+        Start-Sleep -Milliseconds 35
+      } while ((Get-Date) -lt $transitionDeadline)
+    }
+    finally {
+      Move-CanvasPointerOut
+      Invoke-Cdp -Method 'Emulation.setCPUThrottlingRate' -Params @{ rate = 1 } | Out-Null
+    }
+    if ($null -eq $transitionCapture) {
+      throw "Lobby transition frame was not captured before route change after $transitionAttempts attempts."
+    }
+    $transitionSurfaceSamples = Get-ShellSurfaceSamples -Path $transitionCapture.Path
+    if (-not (Test-ShellSurfaceSamples -Samples $transitionSurfaceSamples)) {
+      throw (
+        'Lobby transition frame did not retain an opaque stable shell surface: ' +
+        ($transitionSurfaceSamples | ConvertTo-Json -Compress))
+    }
+    $transitionActionContrast = Get-LobbyActionContrast -Path $transitionCapture.Path
+    if (-not $transitionActionContrast.passed) {
+      throw (
+        'Lobby transition action contrast is below 3.0: ' +
+        ($transitionActionContrast | ConvertTo-Json -Compress))
+    }
+    $transitionCapture.Metrics['surfaceSamples'] = $transitionSurfaceSamples
+    $transitionCapture.Metrics['actionContrast'] = $transitionActionContrast
+    $shellScreenshots.transition = $transitionCapture.Path
+    $shellMetrics.transition = $transitionCapture.Metrics
+
+    Wait-AppRoute -Route 1
+    $shellIdentities.battleAfterTransition = Wait-AcceptanceIdentity `
+      -Route 1 -Stage 'battle-after-lobby-transition' -SessionMode Required
+
+    $errorEvidence = [ordered]@{
+      state = 'separate-formal-capture-required'
+      reason = (
+        'Capture the application-owned Bootstrap blocking error separately with -ShellError. ' +
+        'That mode uses the production acceptance battle route with an invalid level id and does ' +
+        'not add a runtime hook, loader failure, or scene mutation.')
+      screenshot = $null
+    }
+    $allCapturedMetrics = @(
+      $shellMetrics.defaultLobby,
+      $shellMetrics.alternateSelection,
+      $shellMetrics.transition)
+    foreach ($metrics in $allCapturedMetrics) {
+      if ($metrics.width -ne $Width -or $metrics.height -ne $Height -or
+          -not (Test-StableFrameMetrics -Metrics $metrics)) {
+        throw "Shell visual frame is invalid: $($metrics | ConvertTo-Json -Compress)"
+      }
+    }
+
+    $shellManifest = [ordered]@{
+      schemaVersion = 1
+      evidenceType = 'bootstrap-lobby-webgl-visual'
+      accepted = $true
+      completion = 'complete-shell-visual-states'
+      capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+      url = $Url
+      viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+      safeArea = $safeAreaEvidence
+      runtimeUi = $runtimeUiIdentity
+      browser = $browserEvidence
+      canvas = $readiness
+      bootstrapInitializing = $bootstrapCapture
+      errorEvidence = $errorEvidence
+      checks = [ordered]@{
+        releaseRuntimeUiIdentity = 'pass'
+        bootstrapInitializing = if ($bootstrapCapture.state -eq 'captured') { 'pass' } else { 'not-captured' }
+        lobbyDefault = 'pass'
+        lobbyAlternateSelection = 'pass'
+        lobbyTransition = 'pass'
+        lobbyActionContrast = 'pass'
+        bootstrapOrLobbyError = 'separate-formal-capture-required'
+        selectedLevelInputMapping = 'pass'
+        startInputMapping = 'pass'
+        requestedViewportAndCanvas = 'pass'
+        safeAreaQueryApplied = 'pass'
+        screenshotDimensions = 'pass'
+        noBlackTransparentOrLargeNearBlackRegions = 'pass'
+        warmCacheReuse = 'pass'
+      }
+      delivery = $delivery
+      routeIdentities = $shellIdentities
+      screenshots = $shellScreenshots
+      imageMetrics = $shellMetrics
+      controls = [ordered]@{
+        alternateLevel = $controls[$levelCardControlName]
+        start = $controls.lobbyStart
+      }
+      referenceControls = [ordered]@{
+        alternateLevel = $referenceControls[$levelCardControlName]
+        start = $referenceControls.lobbyStart
+      }
+      transition = [ordered]@{
+        attempts = $transitionAttempts
+        cpuThrottlingRate = $BootstrapCpuThrottlingRate
+        alternateSha256 = $alternateHash
+        transitionSha256 = $transitionCapture.Sha256
+      }
+    }
+    $shellManifestPath = Join-Path $outputDir 'shell-visual-evidence.json'
+    $shellManifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $shellManifestPath -Encoding UTF8
+    Write-Host "FRUIT_DEFENSE_SHELL_VISUAL_OK manifest=$shellManifestPath"
+    return
+  }
+
   if ($Flow) {
     Wait-AppRoute -Route 0
     $flowScreenshots = [ordered]@{}
@@ -1283,13 +1921,15 @@ try {
       -Route 1 -Stage 'battle' -SessionMode Required
     $flowScreenshots.battle = (Save-StableScreenshot -Name '02-battle' -RequireHud $true).Path
 
-    Invoke-AcceptanceFlowCommand -Command 'victory'
+    Invoke-AcceptanceFlowCommand -Command $SettlementOutcome
     Wait-AppRoute -Route 2
     $flowIdentities.settlement = Wait-AcceptanceIdentity `
       -Route 2 -Stage 'settlement' -SessionMode Required
     Assert-SameSession -Expected $flowIdentities.battle `
       -Actual $flowIdentities.settlement -Stage 'settlement'
-    $flowScreenshots.settlement = (Save-StableScreenshot -Name '03-settlement' -RequireHud $false).Path
+    Move-CanvasPointerOut
+    $flowScreenshots.settlement = (Save-StableScreenshot `
+      -Name "03-settlement-$SettlementOutcome" -RequireHud $false).Path
 
     Invoke-CanvasClick -X $controls.settlementReturn.x -Y $controls.settlementReturn.y
     Wait-AppRoute -Route 0
@@ -1304,7 +1944,7 @@ try {
     if ([string]$flowIdentities.secondBattle.sessionId -ceq [string]$flowIdentities.battle.sessionId) {
       throw 'Returning to Lobby and starting again reused the completed session ID.'
     }
-    Invoke-AcceptanceFlowCommand -Command 'victory'
+    Invoke-AcceptanceFlowCommand -Command $SettlementOutcome
     Wait-AppRoute -Route 2
     $flowIdentities.secondSettlement = Wait-AcceptanceIdentity `
       -Route 2 -Stage 'second-settlement' -SessionMode Required
@@ -1337,11 +1977,13 @@ try {
       capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
       url = $Url
       levelId = $LevelId
+      settlementOutcome = $SettlementOutcome
       expectedCompositeIdentity = $expectedLevelIdentity
       viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
       safeArea = $safeAreaEvidence
       browser = $browserEvidence
       canvas = $readiness
+      runtimeUi = $runtimeUiIdentity
       checks = [ordered]@{
         lobbyToBattle = 'pass'
         battleToSettlement = 'pass'
@@ -1403,26 +2045,81 @@ try {
   Invoke-CanvasClick -X $controls.pauseRestart.x -Y $controls.pauseRestart.y
   $screenshots.restarted = (Save-StableScreenshot -Name '07-restarted').Path
 
+  Set-AcceptanceState -State 'selected-tool'
+  $toolAvailableCapture = Save-StableScreenshot -Name '08-tool-available'
+  $screenshots.toolAvailable = $toolAvailableCapture.Path
+  Invoke-CanvasClick -X $controls.weaponGatling.x -Y $controls.weaponGatling.y
+  $selectedToolCapture = Save-StableScreenshot -Name '09-selected-tool'
+  $toolAvailableHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $toolAvailableCapture.Path).Hash
+  $selectedToolHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $selectedToolCapture.Path).Hash
+  if ($selectedToolHash -ceq $toolAvailableHash) {
+    throw 'Gatling click did not change the real selectable-tool presentation.'
+  }
+  $screenshots.selectedTool = $selectedToolCapture.Path
+
   Set-AcceptanceState -State 'adjacent-pots'
-  $screenshots.adjacentPots = (Save-StableScreenshot -Name '08-adjacent-pots').Path
+  $screenshots.adjacentPots = (Save-StableScreenshot -Name '10-adjacent-pots').Path
 
   Set-AcceptanceState -State 'drag-target'
   Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y -ToX $controls.acceptanceCell0.x -ToY $controls.acceptanceCell0.y
-  $screenshots.dragTarget = (Save-StableScreenshot -Name '09-drag-target').Path
+  $screenshots.legalDragCue = (Save-StableScreenshot -Name '11-legal-drag-cue').Path
   Stop-CanvasDrag -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
 
+  Set-AcceptanceState -State 'selection-inspection'
+  $illegalTargetX = $controls.acceptanceCell0.x + 12.0 * $referenceScale
+  Start-CanvasDrag -FromX $controls.acceptanceCell0.x -FromY $controls.acceptanceCell0.y `
+    -ToX $illegalTargetX -ToY $controls.acceptanceCell0.y
+  $screenshots.illegalDragCue = (Save-StableScreenshot -Name '12-illegal-drag-cue').Path
+  Stop-CanvasDrag -X $illegalTargetX -Y $controls.acceptanceCell0.y
+
   Set-AcceptanceState -State 'dense-board'
-  $screenshots.denseBoard = (Save-StableScreenshot -Name '10-dense-board').Path
+  $screenshots.denseBoard = (Save-StableScreenshot -Name '13-dense-board').Path
 
   Set-AcceptanceState -State 'selection-inspection'
   # Deterministic interaction state projected through the enlarged board: attacking plant and empty pot use the first two canonical plantable cells.
   Invoke-CanvasClick -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
-  $screenshots.inspectionClick = (Save-StableScreenshot -Name '11-inspection-click').Path
+  $screenshots.plantDetail = (Save-StableScreenshot -Name '14-plant-detail').Path
   Invoke-CanvasClick -X $controls.acceptanceCell1.x -Y $controls.acceptanceCell1.y
-  $screenshots.destinationClickNoMove = (Save-StableScreenshot -Name '12-destination-click-no-move').Path
+  $screenshots.destinationClickNoMove = (Save-StableScreenshot -Name '15-destination-click-no-move').Path
   Start-CanvasDrag -FromX $controls.acceptanceCell0.x -FromY $controls.acceptanceCell0.y -ToX $controls.acceptanceCell1.x -ToY $controls.acceptanceCell1.y
   Stop-CanvasDrag -X $controls.acceptanceCell1.x -Y $controls.acceptanceCell1.y
-  $screenshots.dragRelocation = (Save-StableScreenshot -Name '13-after-drag-move').Path
+  $screenshots.dragRelocation = (Save-StableScreenshot -Name '16-after-drag-move').Path
+
+  # The existing URL-guarded Battle acceptance bridge owns stable terminal-card
+  # preview states. Production terminal submission and Battle-to-Settlement flow
+  # remain covered separately by Flow mode.
+  $terminalReferenceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $screenshots.dragRelocation).Hash
+  Move-CanvasPointerOut
+  Set-AcceptanceState -State "terminal-$BattleTerminalOutcome"
+  $terminalRouteBefore = [int](Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1')
+  $terminalCapture = Save-StableScreenshot `
+    -Name "17-battle-terminal-$BattleTerminalOutcome" -RequireHud $false
+  $terminalRouteAfter = [int](Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1')
+  $terminalHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $terminalCapture.Path).Hash
+  if ($terminalRouteBefore -ne 1 -or $terminalRouteAfter -ne 1 -or
+      $terminalHash -ceq $terminalReferenceHash -or
+      $terminalCapture.Metrics.averageLuma -ge $readyCapture.Metrics.averageLuma * 0.92) {
+    throw (
+      "Stable Battle terminal preview validation failed: outcome=$BattleTerminalOutcome " +
+      "route=$terminalRouteBefore/$terminalRouteAfter " +
+      "luma=$($terminalCapture.Metrics.averageLuma)/$($readyCapture.Metrics.averageLuma)")
+  }
+  $screenshots.terminal = $terminalCapture.Path
+  Invoke-CanvasClick -X $controls.terminalRestart.x -Y $controls.terminalRestart.y
+  $terminalRestartRoute = [int](Invoke-JavaScript -Expression 'window.fruitDefenseAppRoute ?? -1')
+  $terminalRestartIdentity = Wait-AcceptanceIdentity `
+    -Route 1 -Stage 'terminal-preview-restart' -SessionMode Required
+  Assert-SameSession -Expected $directBattleIdentity `
+    -Actual $terminalRestartIdentity -Stage 'terminal-preview-restart'
+  $terminalRestartCapture = Save-StableScreenshot -Name '18-terminal-preview-restarted'
+  if ($terminalRestartRoute -ne 1 -or
+      $terminalRestartCapture.Metrics.averageLuma -le $terminalCapture.Metrics.averageLuma * 1.08) {
+    throw (
+      "Terminal preview restart did not restore the unobscured Battle Ready presentation: " +
+      "route=$terminalRestartRoute " +
+      "luma=$($terminalRestartCapture.Metrics.averageLuma)/$($terminalCapture.Metrics.averageLuma)")
+  }
+  $screenshots.terminalPreviewRestarted = $terminalRestartCapture.Path
 
   $metrics = [ordered]@{}
   foreach ($state in $screenshots.Keys) {
@@ -1442,9 +2139,17 @@ try {
       $metrics.ready.headerLightPixels -lt $hudLightPixelThreshold) {
     throw "HUD text check failed: dark=$($metrics.ready.headerDarkPixels)/$hudDarkPixelThreshold light=$($metrics.ready.headerLightPixels)/$hudLightPixelThreshold."
   }
-  if ($metrics.ready.formerActionColorPixels -gt $formerActionPixelThreshold -or
-      $metrics.activeWave.formerActionColorPixels -gt $formerActionPixelThreshold) {
-    throw "Former bottom action-row colors are still present: ready=$($metrics.ready.formerActionColorPixels) active=$($metrics.activeWave.formerActionColorPixels)."
+  $readyHasFormerActionRow =
+    $metrics.ready.formerActionColorPixels -gt $formerActionPixelThreshold -and
+    $metrics.ready.formerActionColorSpanPixels -gt $formerActionSpanThreshold
+  $activeHasFormerActionRow =
+    $metrics.activeWave.formerActionColorPixels -gt $formerActionPixelThreshold -and
+    $metrics.activeWave.formerActionColorSpanPixels -gt $formerActionSpanThreshold
+  if ($readyHasFormerActionRow -or $activeHasFormerActionRow) {
+    throw (
+      "Former bottom action-row signature is still present: " +
+      "ready=$($metrics.ready.formerActionColorPixels)/$($metrics.ready.formerActionColorSpanPixels) " +
+      "active=$($metrics.activeWave.formerActionColorPixels)/$($metrics.activeWave.formerActionColorSpanPixels).")
   }
 
   $manifest = [ordered]@{
@@ -1455,6 +2160,7 @@ try {
     expectedCompositeIdentity = $expectedLevelIdentity
     viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
     safeArea = $safeAreaEvidence
+    runtimeUi = $runtimeUiIdentity
     browser = $browserEvidence
     canvas = $readiness
       checks = [ordered]@{
@@ -1480,9 +2186,15 @@ try {
       noLargeNearBlackRegions = 'pass'
       pauseContinuePreservesRun = 'pass'
       pauseRestartProducesCleanReadyState = 'pass'
+      selectedToolState = 'pass'
+      selectedToolAvailableToClickedHashChanged = 'pass'
+      legalInteractionCue = 'pass'
+      illegalInteractionCue = 'pass'
       inspectionClickInformationAndRange = 'pass'
       destinationClickNoRelocation = 'pass'
       dragRelocation = 'pass'
+      battleTerminalResultCard = 'pass'
+      terminalPreviewRestartReturnsReadyWithoutRouteSubmission = 'pass'
     }
     delivery = $delivery
     routeIdentities = [ordered]@{ battle = $directBattleIdentity }
@@ -1494,6 +2206,7 @@ try {
       hudDarkPixels = $hudDarkPixelThreshold
       hudLightPixels = $hudLightPixelThreshold
       formerActionColorPixels = $formerActionPixelThreshold
+      formerActionColorSpanPixels = $formerActionSpanThreshold
       framePixels = $framePixelThresholds
     }
     sessionSequence = [ordered]@{
@@ -1521,6 +2234,32 @@ try {
         'click empty destination without relocation',
         'drag source plant to destination to relocate'
       )
+    }
+    terminalCapture = [ordered]@{
+      outcome = $BattleTerminalOutcome
+      state = "terminal-$BattleTerminalOutcome"
+      routeBeforeScreenshot = $terminalRouteBefore
+      routeAfterScreenshot = $terminalRouteAfter
+      sha256 = $terminalHash
+      previewOnly = $true
+      productionSubmissionEvidence = 'Flow mode / task 5.3'
+      restart = [ordered]@{
+        route = $terminalRestartRoute
+        sessionId = $terminalRestartIdentity.sessionId
+        seed = $terminalRestartIdentity.seed
+        sameSession = $true
+        resultCardDismissed = $true
+      }
+    }
+    selectedToolCapture = [ordered]@{
+      state = 'selected-tool'
+      availableSha256 = $toolAvailableHash
+      selectedSha256 = $selectedToolHash
+      realClick = [ordered]@{
+        x = $controls.weaponGatling.x
+        y = $controls.weaponGatling.y
+      }
+      changed = $true
     }
   }
   $manifestPath = Join-Path $outputDir 'acceptance.json'

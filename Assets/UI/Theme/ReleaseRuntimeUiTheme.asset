@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252a6a20966144adbc63c013b50abe02, type: 3}
+  m_Name: ReleaseRuntimeUiTheme
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.UI.RuntimeUiTheme
+  themeId: ui.sunny-orchard
+  revision: 1
+  colors:
+    edgeBackground: {r: 0.9607843, g: 0.8666667, b: 0.68235296, a: 1}
+    baseSurface: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+    raisedSurface: {r: 1, g: 0.90588236, b: 0.6392157, a: 1}
+    primaryAction: {r: 0.33333334, g: 0.6039216, b: 0.22352941, a: 1}
+    secondaryAction: {r: 0.56078434, g: 0.7490196, b: 0.45490196, a: 1}
+    selectionAccent: {r: 1, g: 0.8235294, b: 0.3019608, a: 1}
+    success: {r: 0.42745098, g: 0.74509805, b: 0.29411766, a: 1}
+    warning: {r: 1, g: 0.7254902, b: 0.25882354, a: 1}
+    danger: {r: 0.827451, g: 0.30588236, b: 0.27058825, a: 1}
+    disabled: {r: 0.56078434, g: 0.7490196, b: 0.45490196, a: 1}
+    scrim: {r: 0.23921569, g: 0.16470589, b: 0.1254902, a: 1}
+    primaryText: {r: 0.54509807, g: 0.36862746, b: 0.23529412, a: 1}
+    secondaryText: {r: 0.43529412, g: 0.3529412, b: 0.27058825, a: 1}
+    inverseText: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+  packagedChineseFont: {fileID: 12800000, guid: 0445ac40b415f994eb06b41378ac9953, type: 3}
+  typography:
+    display:
+      fontSize: 40
+      lineHeight: 46
+      fontStyle: 1
+    screenTitle:
+      fontSize: 32
+      lineHeight: 38
+      fontStyle: 1
+    sectionTitle:
+      fontSize: 28
+      lineHeight: 34
+      fontStyle: 1
+    body:
+      fontSize: 20
+      lineHeight: 28
+      fontStyle: 0
+    controlLabel:
+      fontSize: 20
+      lineHeight: 24
+      fontStyle: 1
+    metric:
+      fontSize: 24
+      lineHeight: 28
+      fontStyle: 1
+    supplemental:
+      fontSize: 16
+      lineHeight: 22
+      fontStyle: 0
+  metrics:
+    spacingXs: 4
+    spacingSm: 8
+    spacingMd: 12
+    spacingLg: 16
+    spacingXl: 24
+    spacingXxl: 32
+    touchTargetMinimum: 44
+    surfaceInset: 16
+    componentGap: 8
+    outlineThin: 2
+    outlineStrong: 3
+    cornerSmall: 8
+    cornerMedium: 12
+    cornerLarge: 14
+    pressedOffset: 2
+    shallowShadowOffset: 2
+  feedback:
+    normalOpacity: 1
+    focusedOpacity: 1
+    pressedOpacity: 0.94
+    selectedOpacity: 1
+    disabledOpacity: 0.58
+    loadingOpacity: 0.72
+    scrimOpacity: 0.68
+    unscaledFocusSeconds: 0.08
+    unscaledPressSeconds: 0.08
+    unscaledSelectionSeconds: 0.12
+    unscaledTransitionSeconds: 0.18
+    unscaledStatusSeconds: 2.6
+  activeArtSet: {fileID: 11400000, guid: 91aa538ae02449cba8c971ffe4d427eb, type: 2}

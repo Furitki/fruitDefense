@@ -2,6 +2,7 @@ using System;
 using FruitDefense.App;
 using FruitDefense.Battle;
 using FruitDefense.Content;
+using FruitDefense.UI;
 using UnityEngine;
 
 namespace FruitDefense.Trials
@@ -11,10 +12,12 @@ namespace FruitDefense.Trials
     public sealed class CombinedWorkflowTrialBootstrap : MonoBehaviour, IBattleResultSink
     {
         [SerializeField] private FruitDefenseGame game;
+        [SerializeField] private RuntimeUiTheme runtimeUiTheme;
 
-        public void Configure(FruitDefenseGame value)
+        public void Configure(FruitDefenseGame value, RuntimeUiTheme theme)
         {
             game = value;
+            runtimeUiTheme = theme;
         }
 
         private void Awake()
@@ -23,6 +26,14 @@ namespace FruitDefense.Trials
             if (game == null)
                 throw new InvalidOperationException(
                     "Combined workflow trial scene requires FruitDefenseGame.");
+            if (runtimeUiTheme == null)
+                throw new InvalidOperationException(
+                    "Combined workflow trial scene requires an explicit runtime UI theme.");
+            var themeValidation = runtimeUiTheme.Validate();
+            if (!themeValidation.IsValid)
+                throw new InvalidOperationException(
+                    "Combined workflow trial runtime UI theme is invalid: "
+                    + themeValidation.Issues[0]);
             if (game.IsInitialized) return;
 
             var catalog = BundledLevelCatalogFactory.CreateCompiled();
@@ -44,7 +55,7 @@ namespace FruitDefense.Trials
                 level.Identity.LevelId,
                 0,
                 level.BattleContent.Header.contentVersion);
-            var result = game.Initialize(request, navigator, this, level);
+            var result = game.Initialize(request, navigator, this, runtimeUiTheme, level);
             if (!result.Success)
                 throw new InvalidOperationException(
                     "Combined workflow trial Battle initialization failed: "

@@ -1,0 +1,50 @@
+{
+  "status": "preflight-fail",
+  "accepted": false,
+  "reason": "The compact real Lobby still reads as scripted rectangular chrome and the primary CTA actual-pixel contrast is below 3.0 in both required 402 captures.",
+  "runtimeUi": {
+    "theme": "ui.sunny-orchard@1",
+    "artSet": "sunny-orchard-painted@1",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "payloadSha256": {
+    "loader": "93DAA9E1755FB305E3F16CD0FA4278BEE392C53730262968157214E9A6E9762F",
+    "data": "30ADF93B15136D6790FD048318D377449E22269E90E3E54EB8C287D0F065E9D7",
+    "framework": "628DED04A7AF9570E4032627EDCF6F973928EA5E8AA51C10F5ED97150760FC77",
+    "wasm": "04C9086ADE56A65AD4D1E1165A74A16F64B5F21BA188AD7B507681D5FBBE9CD8"
+  },
+  "captures": [
+    {
+      "viewport": "402x874-full",
+      "safeTop": 0,
+      "safeBottom": 0,
+      "path": "preflight-fail/full-402x874/01-lobby-default.png",
+      "sha256": "BC05EFD886943280BF152F66161074CD79868200C0B777F7E188F59095B2154E",
+      "actionContrast": {
+        "sampleRect": { "xMin": 105, "yMin": 426, "xMax": 297, "yMax": 460 },
+        "backgroundRgb": [89, 108, 24],
+        "foregroundRgb": [164, 159, 146],
+        "ratio": 2.2196086943603142,
+        "minimum": 3.0,
+        "passed": false
+      }
+    },
+    {
+      "viewport": "402x874-inset-44-34",
+      "safeTop": 44,
+      "safeBottom": 34,
+      "path": "preflight-fail/inset-402x874-44-34/01-lobby-default.png",
+      "sha256": "4114989F73A1116B10480C654660370BE56568DC17D3328121F549A03306B9B2",
+      "actionContrast": {
+        "sampleRect": { "xMin": 113, "yMin": 432, "xMax": 289, "yMax": 463 },
+        "backgroundRgb": [101, 124, 22],
+        "foregroundRgb": [194, 187, 171],
+        "ratio": 2.4707924256047846,
+        "minimum": 3.0,
+        "passed": false
+      }
+    }
+  ],
+  "fullMatrixExecuted": false,
+  "serverLogsRetained": false
+}

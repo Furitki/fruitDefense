@@ -1,0 +1,109 @@
+{
+  "payload": {
+    "loaderSha256": "81B6C1F7F0CF8CC4A237D19E8987001CD745CD735A5A1339D3EBF46D46F426A9",
+    "dataSha256": "489A222D6A70C97B4F5EB71A2FAB31345251632C1AE4AFE2229617DC0E8C8C6B",
+    "frameworkSha256": "74A8DF0275F82923985417AE9332CF12146A821AA6D729210950B977E721855D",
+    "wasmSha256": "76BB8318D749A8946E5D06F6C7817D6DE89892A587043EE4CBBE3F361B6E6D57"
+  },
+  "runs": [
+    {
+      "directory": "accepted-full-402x874-victory",
+      "screenshots": 18,
+      "accepted": true,
+      "maxBlackFraction": 0.0005425,
+      "maxNearBlackFraction": 0.0013563,
+      "maxInvalidFraction": 0.0005425,
+      "selectedTool": {
+        "availableSha256": "E9FB883520C83A477453590ADA8107F52AB1AC3BB296A2EEA5E064500A513B1A",
+        "selectedSha256": "23F8E9E84493E54F0D431882A4D65DDF3E8E74FC230F161529DF8722A0A628AE",
+        "differenceBounds": [17, 172, 193, 642],
+        "changedPixels": 5153
+      }
+    },
+    {
+      "directory": "accepted-full-402x874-defeat",
+      "screenshots": 18,
+      "accepted": true,
+      "maxBlackFraction": 0.0004973,
+      "maxNearBlackFraction": 0.0013111,
+      "maxInvalidFraction": 0.0004973,
+      "selectedTool": {
+        "availableSha256": "6EFC2404DA599E3991B8E8942388331097EFC67341ECD875DEFC2B1FB9FD9797",
+        "selectedSha256": "271C8C444E570F04C153EE21AFE91AA46303365E20B8C427B29692E63B340263",
+        "differenceBounds": [17, 172, 193, 642],
+        "changedPixels": 5142
+      }
+    },
+    {
+      "directory": "accepted-inset-402x874-44-34-victory",
+      "screenshots": 18,
+      "accepted": true,
+      "maxBlackFraction": 0.0002985,
+      "maxNearBlackFraction": 0.0016916,
+      "maxInvalidFraction": 0.0002985,
+      "selectedTool": {
+        "availableSha256": "162CBDEA4CE9F64D732CA2975DFF30388AA9C09BBF11B257D9E33DEDC8B4308E",
+        "selectedSha256": "9B67EB0A8279B24EA6C20C4E30600FDF7F3AE16C199DBFE1AB5A3FEA22582ACE",
+        "differenceBounds": [33, 200, 193, 629],
+        "changedPixels": 4251
+      }
+    },
+    {
+      "directory": "accepted-inset-402x874-44-34-defeat",
+      "screenshots": 18,
+      "accepted": true,
+      "maxBlackFraction": 0.0000995,
+      "maxNearBlackFraction": 0.0016419,
+      "maxInvalidFraction": 0.0000995,
+      "selectedTool": {
+        "availableSha256": "162CBDEA4CE9F64D732CA2975DFF30388AA9C09BBF11B257D9E33DEDC8B4308E",
+        "selectedSha256": "0B414835552F403213E30FC257384C41CF4077DBE6527606C5A0B1403ABE4384",
+        "differenceBounds": [33, 200, 193, 629],
+        "changedPixels": 4258
+      }
+    }
+  ],
+  "interactionCue": {
+    "fullSample": {
+      "coordinate": [10, 166],
+      "legalRgb": [110, 191, 75],
+      "illegalRgb": [217, 81, 71],
+      "differenceBounds": [8, 165, 96, 730]
+    },
+    "insetSample": {
+      "coordinate": [27, 195],
+      "legalRgb": [109, 190, 75],
+      "illegalRgb": [150, 74, 49],
+      "differenceBounds": [26, 193, 106, 709]
+    },
+    "nonColorCue": "The status text and indicator glyph change together with the legal/illegal color treatment."
+  },
+  "backgroundContinuity": {
+    "sourceAlpha": "Both production screen-background PNGs contain 65536 of 65536 pixels at alpha 255.",
+    "insetTopLeftSamples": {
+      "50,105": [246, 222, 173],
+      "80,105": [246, 222, 173],
+      "100,105": [246, 222, 173],
+      "120,105": [245, 221, 174],
+      "200,105": [245, 221, 174]
+    },
+    "insetFormerRightCrescentSamples": {
+      "382,650": [241, 220, 172],
+      "390,650": [245, 221, 174],
+      "382,750": [245, 221, 174],
+      "390,750": [245, 221, 174]
+    },
+    "review": "No near-black crescent, transparent hole, isolated base-color seam, clipping, or stretched nine-slice edge is visible in the full or inset ready, paused, detail, and terminal frames."
+  },
+  "betweenWaveText": {
+    "reviewed": [
+      "accepted-full-402x874-victory/03-between-wave.png",
+      "accepted-full-402x874-defeat/03-between-wave.png",
+      "accepted-inset-402x874-44-34-victory/03-between-wave.png",
+      "accepted-inset-402x874-44-34-defeat/03-between-wave.png"
+    ],
+    "statusCopy": "下一波倒计时 9 秒",
+    "actionCopy": "立即开始下一波",
+    "result": "Both strings render as complete single lines with no clipping or overlap in all four captures."
+  }
+}

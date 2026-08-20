@@ -1,0 +1,23 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.19f1 (7689f4515d75) revision 7768564'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-18163" at "2026-08-18T18:59:47.2528618Z"
+OS: 'Windows 10  (10.0.19045) 64bit Professional' Language: 'zh' Physical Memory: 32679 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-08-18T18:59:47Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe
+-batchmode
+-nographics
+-quit
+-projectPath
+E:\project\unity\furitDefense
+-executeMethod
+FruitDefense.Editor.BattleSessionHostSmoke.Run
+-logFile
+E:\project\unity\furitDefense\openspec\changes\unify-runtime-ui-visual-system\evidence\4.6-battle\editor-smoke\battle-session-restart-final.log
+Successfully changed project path to: E:\project\unity\furitDefense
+E:/project/unity/furitDefense
+Exiting without the bug reporter. Application will terminate with return code 1

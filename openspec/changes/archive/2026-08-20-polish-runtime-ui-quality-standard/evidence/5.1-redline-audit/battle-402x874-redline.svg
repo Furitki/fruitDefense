@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="804" height="874" viewBox="0 0 804 874">
+  <rect width="804" height="874" fill="#211d19"/>
+  <image href="../4.2-preflight/canonical/battle-402x874-full/01-ready.png" x="0" y="0" width="402" height="874"/>
+  <rect x="0" y="72" width="402" height="438" fill="none" stroke="#00b7ff" stroke-width="2"/>
+  <rect x="8" y="122.125" width="386" height="337.75" fill="none" stroke="#60e875" stroke-width="2"/>
+  <line x1="8" y1="112" x2="394" y2="112" stroke="#60e875" stroke-width="1"/>
+  <line x1="8" y1="108" x2="8" y2="116" stroke="#60e875" stroke-width="1"/>
+  <line x1="394" y1="108" x2="394" y2="116" stroke="#60e875" stroke-width="1"/>
+  <rect x="16" y="36" width="82" height="26" fill="#00b7ff" fill-opacity="0.10" stroke="#00b7ff" stroke-width="1"/>
+  <rect x="106" y="36" width="76" height="26" fill="#00b7ff" fill-opacity="0.10" stroke="#00b7ff" stroke-width="1"/>
+  <rect x="190" y="36" width="72" height="26" fill="#00b7ff" fill-opacity="0.10" stroke="#00b7ff" stroke-width="1"/>
+  <line x1="16" y1="49" x2="262" y2="49" stroke="#00b7ff" stroke-width="1" stroke-dasharray="5 4"/>
+  <rect x="8" y="522" width="386" height="48" fill="#ff5a4f" fill-opacity="0.07" stroke="#ff5a4f" stroke-width="1"/>
+  <rect x="8" y="580" width="386" height="68" fill="none" stroke="#ff5a4f" stroke-width="1"/>
+  <line x1="398" y1="570" x2="398" y2="580" stroke="#ff5a4f" stroke-width="3"/>
+  <text x="412" y="42" fill="#ffffff" font-family="sans-serif" font-size="21" font-weight="700">Battle 红线</text>
+  <text x="412" y="82" fill="#60e875" font-family="sans-serif" font-size="17">保护：MapViewport=(0,72,402,438)</text>
+  <text x="412" y="108" fill="#60e875" font-family="sans-serif" font-size="17">Grid=(8,122.125,386,337.75)</text>
+  <text x="412" y="134" fill="#60e875" font-family="sans-serif" font-size="17">gutters L/R=8, T/B=50.125</text>
+  <text x="412" y="160" fill="#60e875" font-family="sans-serif" font-size="17">对边差≤1；draw/hit projection不变</text>
+  <text x="412" y="214" fill="#66cfff" font-family="sans-serif" font-size="17">Header metrics center y=49</text>
+  <text x="412" y="240" fill="#66cfff" font-family="sans-serif" font-size="17">peer baseline/icon center≤1</text>
+  <text x="412" y="294" fill="#ff8178" font-family="sans-serif" font-size="17">BoardStatus y=522..570</text>
+  <text x="412" y="320" fill="#ff8178" font-family="sans-serif" font-size="17">ToolTray y=580..648；gap=10</text>
+  <text x="412" y="346" fill="#ff8178" font-family="sans-serif" font-size="17">tray title ink距stroke/slot≥4</text>
+  <text x="412" y="400" fill="#ffcf5a" font-family="sans-serif" font-size="16">High：Wave/Refresh/modal icon+label</text>
+  <text x="412" y="426" fill="#ffcf5a" font-family="sans-serif" font-size="16">必须以rendered union居中≤2</text>
+  <text x="412" y="478" fill="#ffffff" font-family="sans-serif" font-size="16">棕色道路属于8×7 Grid内容，</text>
+  <text x="412" y="504" fill="#ffffff" font-family="sans-serif" font-size="16">不是右/上空白 gutter。</text>
+</svg>

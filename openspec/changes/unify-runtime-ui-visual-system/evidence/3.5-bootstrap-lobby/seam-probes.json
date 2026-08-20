@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "payload": {
+    "loader": "23dda1fa00d8",
+    "data": "761196808a41",
+    "framework": "74a8df0275f8",
+    "wasm": "577ad40e2527"
+  },
+  "accepted": true,
+  "method": "Exact System.Drawing GetPixel samples on the accepted real-WebGL PNGs; intended antialiased art edges are retained and no underlying surface-base pixel interrupts a continuous nine-slice fill.",
+  "probes": [
+    {
+      "image": "inset-360x800-32-24/02-lobby-alternate-selection.png",
+      "surface": "selected level card",
+      "leftInnerAndOuter": "y=250: x23=#FFF6E0, x24=#FFF3DD, x25=#905217, x26=#9F621A, x27=#FECB44, x28..35=#FFCB44, x36=#A58545, x37..38=#FFCB44",
+      "rightInnerAndOuter": "y=250: x320..331=#FFCB44, x332=#FFCA43, x333=#B37923, x334=#8E5014, x335=#F9EED6",
+      "topAndBottom": "x=180: y209=#FFF5DF, y210=#F8EBD3, y211=#8D4E13, y212=#D1A352, y213=#FFD66B, y214=#FFCA45, y215..270=#FFCB44, y271=#FFBE31, y272=#FEC73F, y273=#AF7522, y274=#8E5014, y275=#D4C3A8, y276=#E0D1B8, y277=#FFF6E0"
+    },
+    {
+      "image": "inset-360x800-32-24/02-lobby-alternate-selection.png",
+      "surface": "primary action",
+      "leftAndRight": "y=415: x27..332=#559A39; x23..26 and x333..335 are intended outer antialias/border transitions",
+      "topAndBottom": "x=180: y386..389 are intended border transitions, y390..430=#559A39, y431..436 are intended border/shadow transitions, y437=#FFF6E0"
+    },
+    {
+      "image": "full-360x800/01-lobby-default.png",
+      "surface": "safe area",
+      "rightRegression": "x344/345/346 are all #FFF6E0 at y50/450/700/780"
+    },
+    {
+      "image": "inset-375x812-40-21/01-lobby-default.png",
+      "surface": "selected card and primary action",
+      "rightRegression": "x331/332/333 are #FFCB44 at y155/190 and #559A39 at y415"
+    },
+    {
+      "image": "inset-430x932-50-36/01-lobby-default.png",
+      "surface": "selected card and primary action",
+      "rightRegression": "x377/378/379 are #FFCB44 at y170/205 and #559A39 at y470"
+    }
+  ]
+}

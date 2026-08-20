@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="icon.resource-core">
+  <title>icon.resource-core</title>
+  <polygon points="48,73.2 27,53.88 24.48,38.76 32.88,27.84 45.48,28.68 48,35.4 50.52,28.68 63.12,27.84 71.52,38.76 69,53.88" fill="#D34E45" fill-opacity="1.0000" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="48.84,27.84 56.4,18.6 68.16,22.8 58.92,32.04" fill="#6DBE4B" fill-opacity="1.0000" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="3" stroke-linejoin="round"/>
+  <polyline points="47.16,32.04 47.16,22.8" fill="none" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

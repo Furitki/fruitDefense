@@ -1,0 +1,312 @@
+﻿{
+    "schemaVersion":  1,
+    "evidenceType":  "desktop-webgl-host-acceptance",
+    "accepted":  true,
+    "hostId":  "fruit-defense-portrait-contain-v1",
+    "logicalCanvas":  {
+                          "width":  402,
+                          "height":  874
+                      },
+    "buildRoot":  "E:\\project\\unity\\furitDefense\\Builds\\WebGL",
+    "payload":  {
+                    "loader":  {
+                                   "file":  "WebGL.loader.js",
+                                   "sha256":  "cfaa2d82d6d07c12674952310a75b305ecbb1bc55f3c302f8e29c114c5c5dc76",
+                                   "version":  "cfaa2d82d6d0",
+                                   "sizeBytes":  117893
+                               },
+                    "data":  {
+                                 "file":  "WebGL.data.unityweb",
+                                 "sha256":  "7fa3ef3d7c43fa535fef4ea935c85866fbbffbe36198cd54256302d97431be56",
+                                 "version":  "7fa3ef3d7c43",
+                                 "sizeBytes":  5575576
+                             },
+                    "framework":  {
+                                      "file":  "WebGL.framework.js.unityweb",
+                                      "sha256":  "0c5ecd20fc1c192495e6c368f0642cb5cb2937296cafae6130224ea9262081e6",
+                                      "version":  "0c5ecd20fc1c",
+                                      "sizeBytes":  69018
+                                  },
+                    "wasm":  {
+                                 "file":  "WebGL.wasm.unityweb",
+                                 "sha256":  "b0689f4279535d61f913e108ef6b61b8bd071a066856df94ef74c20ee0113c4e",
+                                 "version":  "b0689f427953",
+                                 "sizeBytes":  3881120
+                             }
+                },
+    "matrices":  [
+                     {
+                         "name":  "1280x720",
+                         "layout":  {
+                                        "viewport":  {
+                                                         "width":  1280,
+                                                         "height":  720,
+                                                         "devicePixelRatio":  1
+                                                     },
+                                        "expectedScale":  0.82379862700228834,
+                                        "snapshot":  {
+                                                         "hostId":  "fruit-defense-portrait-contain-v1",
+                                                         "layout":  "desktop-contain",
+                                                         "logicalWidth":  402,
+                                                         "logicalHeight":  874,
+                                                         "scale":  0.8237986270022883,
+                                                         "viewportWidth":  1280,
+                                                         "viewportHeight":  720,
+                                                         "devicePixelRatio":  1,
+                                                         "canvas":  {
+                                                                        "left":  474.421875,
+                                                                        "top":  0,
+                                                                        "right":  805.578125,
+                                                                        "bottom":  720,
+                                                                        "width":  331.15625,
+                                                                        "height":  720,
+                                                                        "backingWidth":  402,
+                                                                        "backingHeight":  874
+                                                                    },
+                                                         "scroll":  {
+                                                                        "x":  0,
+                                                                        "y":  0,
+                                                                        "documentWidth":  1280,
+                                                                        "documentHeight":  720
+                                                                    }
+                                                     }
+                                    },
+                         "input":  {
+                                       "logical":  {
+                                                       "x":  201,
+                                                       "y":  406
+                                                   },
+                                       "client":  {
+                                                      "x":  640,
+                                                      "y":  334.46224256292908
+                                                  },
+                                       "roundTrip":  {
+                                                         "x":  201,
+                                                         "y":  406,
+                                                         "maxErrorLogical":  0
+                                                     }
+                                   },
+                         "selectedLevelId":  "orchard-02",
+                         "route":  0,
+                         "payload":  {
+                                         "loader":  {
+                                                        "file":  "WebGL.loader.js",
+                                                        "sha256":  "cfaa2d82d6d07c12674952310a75b305ecbb1bc55f3c302f8e29c114c5c5dc76",
+                                                        "version":  "cfaa2d82d6d0",
+                                                        "sizeBytes":  117893
+                                                    },
+                                         "data":  {
+                                                      "file":  "WebGL.data.unityweb",
+                                                      "sha256":  "7fa3ef3d7c43fa535fef4ea935c85866fbbffbe36198cd54256302d97431be56",
+                                                      "version":  "7fa3ef3d7c43",
+                                                      "sizeBytes":  5575576
+                                                  },
+                                         "framework":  {
+                                                           "file":  "WebGL.framework.js.unityweb",
+                                                           "sha256":  "0c5ecd20fc1c192495e6c368f0642cb5cb2937296cafae6130224ea9262081e6",
+                                                           "version":  "0c5ecd20fc1c",
+                                                           "sizeBytes":  69018
+                                                       },
+                                         "wasm":  {
+                                                      "file":  "WebGL.wasm.unityweb",
+                                                      "sha256":  "b0689f4279535d61f913e108ef6b61b8bd071a066856df94ef74c20ee0113c4e",
+                                                      "version":  "b0689f427953",
+                                                      "sizeBytes":  3881120
+                                                  }
+                                     },
+                         "screenshot":  "openspec\\changes\\polish-runtime-ui-quality-standard\\evidence\\5.3-webgl-host\\matrix\\1280x720-lobby-orchard-02.png",
+                         "screenshotSha256":  "8ea9a6d88e18422145bb3cbbefd89a402379271eea103f1f4acc5387c4e558f0",
+                         "checks":  {
+                                        "completeCanvasContained":  "pass",
+                                        "uniformScale":  "pass",
+                                        "centeredLetterbox":  "pass",
+                                        "noPageScroll":  "pass",
+                                        "fixedLogicalBacking":  "pass",
+                                        "payloadIdentity":  "pass",
+                                        "canvasRelativeLobbyInput":  "pass"
+                                    }
+                     },
+                     {
+                         "name":  "1440x900",
+                         "layout":  {
+                                        "viewport":  {
+                                                         "width":  1440,
+                                                         "height":  900,
+                                                         "devicePixelRatio":  1
+                                                     },
+                                        "expectedScale":  1.0297482837528604,
+                                        "snapshot":  {
+                                                         "hostId":  "fruit-defense-portrait-contain-v1",
+                                                         "layout":  "desktop-contain",
+                                                         "logicalWidth":  402,
+                                                         "logicalHeight":  874,
+                                                         "scale":  1.0297482837528604,
+                                                         "viewportWidth":  1440,
+                                                         "viewportHeight":  900,
+                                                         "devicePixelRatio":  1,
+                                                         "canvas":  {
+                                                                        "left":  513.015625,
+                                                                        "top":  0,
+                                                                        "right":  926.96875,
+                                                                        "bottom":  900,
+                                                                        "width":  413.953125,
+                                                                        "height":  900,
+                                                                        "backingWidth":  402,
+                                                                        "backingHeight":  874
+                                                                    },
+                                                         "scroll":  {
+                                                                        "x":  0,
+                                                                        "y":  0,
+                                                                        "documentWidth":  1440,
+                                                                        "documentHeight":  900
+                                                                    }
+                                                     }
+                                    },
+                         "input":  {
+                                       "logical":  {
+                                                       "x":  201,
+                                                       "y":  406
+                                                   },
+                                       "client":  {
+                                                      "x":  719.9921875,
+                                                      "y":  418.07780320366135
+                                                  },
+                                       "roundTrip":  {
+                                                         "x":  201,
+                                                         "y":  406,
+                                                         "maxErrorLogical":  0
+                                                     }
+                                   },
+                         "selectedLevelId":  "orchard-02",
+                         "route":  0,
+                         "payload":  {
+                                         "loader":  {
+                                                        "file":  "WebGL.loader.js",
+                                                        "sha256":  "cfaa2d82d6d07c12674952310a75b305ecbb1bc55f3c302f8e29c114c5c5dc76",
+                                                        "version":  "cfaa2d82d6d0",
+                                                        "sizeBytes":  117893
+                                                    },
+                                         "data":  {
+                                                      "file":  "WebGL.data.unityweb",
+                                                      "sha256":  "7fa3ef3d7c43fa535fef4ea935c85866fbbffbe36198cd54256302d97431be56",
+                                                      "version":  "7fa3ef3d7c43",
+                                                      "sizeBytes":  5575576
+                                                  },
+                                         "framework":  {
+                                                           "file":  "WebGL.framework.js.unityweb",
+                                                           "sha256":  "0c5ecd20fc1c192495e6c368f0642cb5cb2937296cafae6130224ea9262081e6",
+                                                           "version":  "0c5ecd20fc1c",
+                                                           "sizeBytes":  69018
+                                                       },
+                                         "wasm":  {
+                                                      "file":  "WebGL.wasm.unityweb",
+                                                      "sha256":  "b0689f4279535d61f913e108ef6b61b8bd071a066856df94ef74c20ee0113c4e",
+                                                      "version":  "b0689f427953",
+                                                      "sizeBytes":  3881120
+                                                  }
+                                     },
+                         "screenshot":  "openspec\\changes\\polish-runtime-ui-quality-standard\\evidence\\5.3-webgl-host\\matrix\\1440x900-lobby-orchard-02.png",
+                         "screenshotSha256":  "0f1f602a175dcf5ed516bf1cc48bc487943af18c54dffc8fbeba63fc25f52e0a",
+                         "checks":  {
+                                        "completeCanvasContained":  "pass",
+                                        "uniformScale":  "pass",
+                                        "centeredLetterbox":  "pass",
+                                        "noPageScroll":  "pass",
+                                        "fixedLogicalBacking":  "pass",
+                                        "payloadIdentity":  "pass",
+                                        "canvasRelativeLobbyInput":  "pass"
+                                    }
+                     },
+                     {
+                         "name":  "1024x640",
+                         "layout":  {
+                                        "viewport":  {
+                                                         "width":  1024,
+                                                         "height":  640,
+                                                         "devicePixelRatio":  1
+                                                     },
+                                        "expectedScale":  0.73226544622425627,
+                                        "snapshot":  {
+                                                         "hostId":  "fruit-defense-portrait-contain-v1",
+                                                         "layout":  "desktop-contain",
+                                                         "logicalWidth":  402,
+                                                         "logicalHeight":  874,
+                                                         "scale":  0.7322654462242563,
+                                                         "viewportWidth":  1024,
+                                                         "viewportHeight":  640,
+                                                         "devicePixelRatio":  1,
+                                                         "canvas":  {
+                                                                        "left":  364.8125,
+                                                                        "top":  0,
+                                                                        "right":  659.171875,
+                                                                        "bottom":  640,
+                                                                        "width":  294.359375,
+                                                                        "height":  640,
+                                                                        "backingWidth":  402,
+                                                                        "backingHeight":  874
+                                                                    },
+                                                         "scroll":  {
+                                                                        "x":  0,
+                                                                        "y":  0,
+                                                                        "documentWidth":  1024,
+                                                                        "documentHeight":  640
+                                                                    }
+                                                     }
+                                    },
+                         "input":  {
+                                       "logical":  {
+                                                       "x":  201,
+                                                       "y":  406
+                                                   },
+                                       "client":  {
+                                                      "x":  511.9921875,
+                                                      "y":  297.29977116704805
+                                                  },
+                                       "roundTrip":  {
+                                                         "x":  201,
+                                                         "y":  406,
+                                                         "maxErrorLogical":  0
+                                                     }
+                                   },
+                         "selectedLevelId":  "orchard-02",
+                         "route":  0,
+                         "payload":  {
+                                         "loader":  {
+                                                        "file":  "WebGL.loader.js",
+                                                        "sha256":  "cfaa2d82d6d07c12674952310a75b305ecbb1bc55f3c302f8e29c114c5c5dc76",
+                                                        "version":  "cfaa2d82d6d0",
+                                                        "sizeBytes":  117893
+                                                    },
+                                         "data":  {
+                                                      "file":  "WebGL.data.unityweb",
+                                                      "sha256":  "7fa3ef3d7c43fa535fef4ea935c85866fbbffbe36198cd54256302d97431be56",
+                                                      "version":  "7fa3ef3d7c43",
+                                                      "sizeBytes":  5575576
+                                                  },
+                                         "framework":  {
+                                                           "file":  "WebGL.framework.js.unityweb",
+                                                           "sha256":  "0c5ecd20fc1c192495e6c368f0642cb5cb2937296cafae6130224ea9262081e6",
+                                                           "version":  "0c5ecd20fc1c",
+                                                           "sizeBytes":  69018
+                                                       },
+                                         "wasm":  {
+                                                      "file":  "WebGL.wasm.unityweb",
+                                                      "sha256":  "b0689f4279535d61f913e108ef6b61b8bd071a066856df94ef74c20ee0113c4e",
+                                                      "version":  "b0689f427953",
+                                                      "sizeBytes":  3881120
+                                                  }
+                                     },
+                         "screenshot":  "openspec\\changes\\polish-runtime-ui-quality-standard\\evidence\\5.3-webgl-host\\matrix\\1024x640-lobby-orchard-02.png",
+                         "screenshotSha256":  "4ea61e7a972ccd988c0a60d0078e289fd915a986c9fef44135381e1d918a9079",
+                         "checks":  {
+                                        "completeCanvasContained":  "pass",
+                                        "uniformScale":  "pass",
+                                        "centeredLetterbox":  "pass",
+                                        "noPageScroll":  "pass",
+                                        "fixedLogicalBacking":  "pass",
+                                        "payloadIdentity":  "pass",
+                                        "canvasRelativeLobbyInput":  "pass"
+                                    }
+                     }
+                 ]
+}

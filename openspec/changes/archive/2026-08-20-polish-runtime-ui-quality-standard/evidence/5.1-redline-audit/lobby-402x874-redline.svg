@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="804" height="874" viewBox="0 0 804 874">
+  <rect width="804" height="874" fill="#211d19"/>
+  <image href="../4.2-preflight/canonical/shell-visual-402x874-full/01-lobby-default.png" x="0" y="0" width="402" height="874"/>
+  <line x1="0" y1="437" x2="402" y2="437" stroke="#00b7ff" stroke-width="1" stroke-dasharray="6 6"/>
+  <rect x="16" y="30" width="370" height="596" fill="none" stroke="#00b7ff" stroke-width="2" stroke-dasharray="7 5"/>
+  <line x1="0" y1="328" x2="402" y2="328" stroke="#00b7ff" stroke-width="2"/>
+  <rect x="16" y="54" width="370" height="56" fill="#e64034" fill-opacity="0.10" stroke="#ff5a4f" stroke-width="2"/>
+  <rect x="16" y="130" width="370" height="176" fill="#e64034" fill-opacity="0.08" stroke="#ff5a4f" stroke-width="2"/>
+  <rect x="16" y="318" width="370" height="176" fill="#e64034" fill-opacity="0.08" stroke="#ff5a4f" stroke-width="2"/>
+  <rect x="16" y="506" width="370" height="176" fill="#e64034" fill-opacity="0.08" stroke="#ff5a4f" stroke-width="2"/>
+  <rect x="16" y="702" width="370" height="72" fill="#e64034" fill-opacity="0.12" stroke="#ff5a4f" stroke-width="2"/>
+  <rect x="16" y="790" width="370" height="58" fill="#e64034" fill-opacity="0.06" stroke="#ff5a4f" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="0" y1="414" x2="402" y2="414" stroke="#ff5a4f" stroke-width="2"/>
+  <text x="412" y="42" fill="#ffffff" font-family="sans-serif" font-size="21" font-weight="700">Lobby 红线</text>
+  <text x="412" y="80" fill="#66cfff" font-family="sans-serif" font-size="17">当前正常内容：y 30..626</text>
+  <text x="412" y="106" fill="#66cfff" font-family="sans-serif" font-size="17">视觉中心 y=328；下空白 248</text>
+  <text x="412" y="148" fill="#ff8178" font-family="sans-serif" font-size="17">目标正常内容：y 54..774</text>
+  <text x="412" y="174" fill="#ff8178" font-family="sans-serif" font-size="17">视觉中心 y=414；下空白 100</text>
+  <text x="412" y="224" fill="#ffffff" font-family="sans-serif" font-size="16">Title 16,54,370,56</text>
+  <text x="412" y="250" fill="#ffffff" font-family="sans-serif" font-size="16">Cards y=130/318/506, h=176</text>
+  <text x="412" y="276" fill="#ffffff" font-family="sans-serif" font-size="16">Start y=702,h=72</text>
+  <text x="412" y="326" fill="#ffffff" font-family="sans-serif" font-size="16">卡内：thumbnail 164×104</text>
+  <text x="412" y="352" fill="#ffffff" font-family="sans-serif" font-size="16">thumbnail+copy union center ≤2</text>
+  <text x="412" y="378" fill="#ffffff" font-family="sans-serif" font-size="16">marker 48 / transient 28 contained</text>
+  <text x="412" y="430" fill="#ffcf5a" font-family="sans-serif" font-size="16">红框为目标，不是当前通过证据</text>
+</svg>

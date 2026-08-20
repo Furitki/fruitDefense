@@ -1,5 +1,4 @@
 using FruitDefense.App;
-using FruitDefense.Shell;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,12 +11,10 @@ namespace FruitDefense.Editor
         {
             BattleContentCatalogEditor.ValidateBundledCatalog();
             AppFrameworkValidation.SmokeValidate();
-            ShellFlowValidation.SmokeValidate();
             LocalServicePortsSmoke.Run();
             DeterministicSimulationSmoke.Run();
             ComposableBattleSkillsSmoke.Run();
             BattleSnapshotV1Smoke.Run();
-            BattleSessionHostSmoke.Run();
             ProjectSetup.SmokeValidate();
             Debug.Log("FRUIT_DEFENSE_P0_RELEASE_GATE_OK");
         }

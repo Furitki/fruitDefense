@@ -1,0 +1,77 @@
+{
+  "schema": "fruit-defense.imagegen-prompt-record.v1",
+  "setId": "sunny-orchard-painted",
+  "references": [
+    "Assets/UI/Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png",
+    "openspec/changes/unify-runtime-ui-visual-system/evidence/sunny-orchard-redo-proof/sunny-orchard-core-components-v2.png"
+  ],
+  "generationBoundary": "All visible forms were produced by built-in imagegen. Deterministic processing was limited to chroma-key connected-background alpha removal, low-alpha spill cleanup, uniform resize/aspect-fit, gallery composition, and hashes.",
+  "assets": [
+    {
+      "semanticId": "ornament.screen-corner",
+      "generatedOutput": "exec-2edece6a-b030-4119-bdd5-5c4bb28b9b6c.png",
+      "chromaOutput": "exec-28f6b765-731b-4c77-94b0-ab730dd0c7a6.png",
+      "prompt": "Transparent square screen-corner ornament: compact hand-painted cluster of 3–4 orchard leaves and one tiny five-petal white blossom, mirror-friendly, visible art inside the centered 72% safe box, warm Sunny Orchard palette, thin soil-brown outline, no fruit or text."
+    },
+    {
+      "semanticId": "surface.section-ribbon",
+      "generatedOutput": "exec-126cc9fd-8685-4f4e-b686-03b651a95ad7.png",
+      "prompt": "Square 3x3 nine-slice pale leaf-green section ribbon/panel with thin soil-brown hand-painted outline; central 50% text-safe field and full stretch bands contain only calm repeatable paint; leaves and tiny white blossoms confined to the four protected 25% corners; no text or emblem."
+    },
+    {
+      "semanticId": "surface.illustration-frame",
+      "generatedOutput": "exec-6a1a261d-446f-40a4-b86a-d7fd379f9802.png",
+      "chromaOutput": "exec-14f11150-8e84-4db8-a81b-b6ce0766d1e3.png",
+      "prompt": "Transparent square 3x3 nine-slice illustration-frame overlay: slender warm-cream and leaf-green rails, transparent center, straight repeatable stretch rails, leaf/white-flower motifs only in protected 25% corners, hand-painted Sunny Orchard treatment, no text."
+    },
+    {
+      "semanticId": "ornament.metric-divider",
+      "generatedOutput": "exec-61066bfe-db67-4eb5-a075-873806e7d236.png",
+      "chromaOutput": "exec-246dc12b-dc7a-4ab2-b2c0-51ce634baeee.png",
+      "prompt": "Transparent square master containing one centered slender vertical orchard-vine/leaf-vein divider, fine soil-brown stem, four tiny leaf pairs and one restrained amber node, generous padding, legible at small size, no text or frame."
+    },
+    {
+      "semanticId": "ornament.result-banner",
+      "generatedOutput": "exec-ac44ace6-9b17-47d3-9270-4fa72e6444f3.png",
+      "transparentOutput": "exec-b11e99aa-3341-41cb-af76-fc9dcb0b06a6.png",
+      "prompt": "Transparent thin horizontal amber result ribbon with a calm empty text-safe center, straight repeatable center field, endpoint folds and leaf tips only at the ends, restrained soil-brown hand-painted outline and shadow, no stars or text."
+    },
+    {
+      "semanticId": "illustration.orchard-vista",
+      "generatedOutput": "exec-998e6189-da82-4bfd-b132-194ded151abe.png",
+      "prompt": "Wide low-contrast orchard vista behind runtime copy: gently curving cream road, round fruit-tree canopies framing both sides, distant hills and pale blue sky, broad quiet central 60%, hand-painted storybook orchard-cartoon, no frame or text."
+    },
+    {
+      "semanticId": "illustration.lobby-orchard-01",
+      "generatedOutput": "exec-f9414d87-5142-4e0f-a19f-8adcba9555cc.png",
+      "prompt": "Landscape U-shaped tutorial orchard thumbnail: two simple fruit-tree rows curve around a broad open cream teaching lawn/path, major U composition readable at 84x54, friendly morning light, no labels or UI."
+    },
+    {
+      "semanticId": "illustration.lobby-orchard-02",
+      "generatedOutput": "exec-d0ea97e7-a953-403c-94c6-849e4c1db579.png",
+      "prompt": "Landscape S-shaped fruit-creek thumbnail: one bold clear blue S curve through orchard banks, large uncluttered fruit trees and optional tiny bridge, composition readable at 84x54, no labels or UI."
+    },
+    {
+      "semanticId": "illustration.lobby-orchard-03",
+      "generatedOutput": "exec-b5fb53c6-42de-4c61-95a9-7a2dc3a2171e.png",
+      "prompt": "Landscape core-corridor-at-dusk thumbnail: two dense parallel fruit-tree rows create a straight central path toward a softly glowing core tree, warm amber dusk with gameplay clarity, readable at 84x54, no labels or UI."
+    },
+    {
+      "semanticId": "action.primary",
+      "generatedOutput": "exec-52fb463b-9dea-44f8-b66a-f0c0b3a97747.png",
+      "chromaOutput": "exec-5fe6e775-c73d-40cd-8272-cbea83a621a5.png",
+      "prompt": "Edit the existing painted primary nine-slice: preserve silhouette, border and brush texture; replace the broad empty center with deep matte leaf green visually centered near #477F2A; keep highlights thin and subdued for inverse CJK contrast; no ornament or text."
+    }
+  ],
+  "alphaProcess": {
+    "method": "imagegen flat magenta background followed by deterministic connected-background removal; enclosed frame center additionally seeded; residual keyed spill and runtime alpha below 48 removed",
+    "nativeRgba": ["ornament.result-banner"],
+    "opaque": [
+      "surface.section-ribbon",
+      "illustration.orchard-vista",
+      "illustration.lobby-orchard-01",
+      "illustration.lobby-orchard-02",
+      "illustration.lobby-orchard-03"
+    ]
+  }
+}

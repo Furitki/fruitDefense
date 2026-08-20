@@ -1,0 +1,409 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.19f1 (7689f4515d75) revision 7768564'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Channel LicenseClient-18163 doesn't exist
+OS: 'Windows 10  (10.0.19045) 64bit Professional' Language: 'zh' Physical Memory: 32679 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-08-18T16:01:58Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 20020)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe
+-batchmode
+-quit
+-nographics
+-projectPath
+E:\project\unity\furitDefense
+-executeMethod
+TempSunnyOrchardArtSetValidation.Run
+-logFile
+E:\project\unity\furitDefense\openspec\changes\unify-runtime-ui-visual-system\evidence\production-art\unity-import-validation.log
+Successfully changed project path to: E:\project\unity\furitDefense
+E:/project/unity/furitDefense
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [6636]  Target information:
+
+Player connection [6636]  * "[IP] 192.168.3.10 [Port] 55504 [Flags] 2 [Guid] 3370822036 [EditorId] 3370822036 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-02DUQIQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [6636]  * "[IP] 169.254.219.203 [Port] 55504 [Flags] 2 [Guid] 3370822036 [EditorId] 3370822036 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-02DUQIQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [6636] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [6636] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-18163" at "2026-08-18T16:01:59.3410672Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 20020, path: "C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Package Manager] Connected to IPC stream "Upm-5772" after 0.3 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              6f034f4cb8ac421fb0749eee6d6adb7a
+  Correlation Id:          f456f35218b951be054740a5ca617689
+  External correlation Id: 1966960456297138484
+  Machine Id:              45/sxUmrq84w1DGaAIO3nlH4R54=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-18163" (connect: 0.37s, validation: 0.14s, handshake: 0.05s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-18163-notifications" at "2026-08-18T16:01:59.5264016Z"
+[Licensing::Module] Connected to LicensingClient (PId: 20020, launch time: 0.01, total connection time: 0.56s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-PJMF-AXN2-R4YC-DCT2-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: 2026-08-28T17:01:35Z
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.60s
+[Licensing::Module] Licensing is initialized (took 0.14s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 0.18 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.19f1 (7689f4515d75)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path E:/project/unity/furitDefense/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56772
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.002460 seconds.
+- Loaded All Assemblies, in  0.387 seconds
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.340 seconds
+Domain Reload Profiling: 724ms
+	BeginReloadAssembly (147ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (26ms)
+	RebuildCommonClasses (33ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (44ms)
+	LoadAllAssembliesAndSetupDomain (148ms)
+		LoadAssemblies (118ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (145ms)
+			TypeCache.Refresh (144ms)
+				TypeCache.ScanAssembly (131ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (341ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (308ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (47ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (69ms)
+			ProcessInitializeOnLoadAttributes (119ms)
+			ProcessInitializeOnLoadMethodAttributes (69ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 33 packages:
+  Built-in packages:
+    com.unity.modules.ai@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vehicles@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.hierarchycore)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/2000b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: E:/project/unity/furitDefense
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s65ms
+*** Tundra build success (0.03 seconds), 0 items updated, 157 evaluated
+AssetDatabase: script compilation time: 0.380229s
+Begin MonoManager ReloadAssembly
+Total cache size 31377775
+Total cache size after purge 31377775, took 00:00:00.0331463
+- Loaded All Assemblies, in  0.339 seconds
+Refreshing native plugins compatible for Editor in 0.16 ms, found 0 plugins.
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.419 seconds
+Domain Reload Profiling: 755ms
+	BeginReloadAssembly (256ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (78ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (44ms)
+	RebuildCommonClasses (31ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (22ms)
+	LoadAllAssembliesAndSetupDomain (16ms)
+		LoadAssemblies (108ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (11ms)
+			TypeCache.Refresh (7ms)
+				TypeCache.ScanAssembly (3ms)
+			BuildScriptInfoCaches (1ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (419ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (263ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (27ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (93ms)
+			ProcessInitializeOnLoadAttributes (97ms)
+			ProcessInitializeOnLoadMethodAttributes (35ms)
+			AfterProcessingInitializeOnLoad (8ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (24ms)
+Start importing Assets/UI/Art/Sources/sunny-orchard/export_sunny_orchard.py using Guid(8752d27d7c6e4b4e99b541566f204743) (DefaultImporter) -> (artifact id: '4f10b9522a579db416fa6c05e98c57ed') in 0.0202894 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-status.png using Guid(204d7d4a485bc29a14acf4293df1d98d) (TextureImporter) -> (artifact id: '7a95e76cc53313b78217b5130fd2801b') in 0.005334 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-retry.png using Guid(309e75ce25d35b3553439ce42c02a651) (TextureImporter) -> (artifact id: 'c4b1a63a55d4f382a2600835f8150729') in 0.001949 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-resource-core.png using Guid(71fac1f7b79712ba80c6855ee2e16112) (TextureImporter) -> (artifact id: 'b233824c729a2a2ab1943be55078c18d') in 0.001957 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-screen-background.png using Guid(81c25e15dd0bd2802865ef47410f7840) (TextureImporter) -> (artifact id: 'd85db326ea970164b088057a3e91d80a') in 0.0025895 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-warning.png using Guid(d13c1f542c02af12a6ce13561f8c5de1) (TextureImporter) -> (artifact id: 'a87e05306e1729f7fd74725db5bf448d') in 0.0017795 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/slot-tool.png using Guid(42ed9160585d74781cc083778152eb44) (TextureImporter) -> (artifact id: 'c031f643de8f6e6c6fd001266591d895') in 0.0018869 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-drag-illegal.png using Guid(92f3f1be059c0bb2937419790add2c68) (TextureImporter) -> (artifact id: 'e217a3bd69654942b25eee132cb0fafc') in 0.0017806 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/action-quiet.png using Guid(f2cbed108745232ff2667c3b0f7a8350) (TextureImporter) -> (artifact id: '7730d6109eed7d2158bcd234c4dd0671') in 0.0018171 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-loading.png using Guid(138782b9ac68450bd85ad47ff61f0a09) (TextureImporter) -> (artifact id: '0582e8184039fff3a3213d672490926b') in 0.0017988 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/action-secondary.png using Guid(63bb732a5425a69dd29d8b142cc42b2b) (TextureImporter) -> (artifact id: 'f2045a4cbfe3d29a2cc0d336ddb9b6b1') in 0.0019248 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-swap.png using Guid(34829cf1b6d6595ed3d05147ff69bb16) (TextureImporter) -> (artifact id: '7f968ca373a185d7960b1a8f62c02a4e') in 0.0017412 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/marker-selected.png using Guid(442fb1ad1a18b59b6ddf6246c1b01946) (TextureImporter) -> (artifact id: '51feefaa8a8c00773c937d53cc0e4895') in 0.0017549 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-result.png using Guid(8472c53e9b0507a7757ada88b40a40ee) (TextureImporter) -> (artifact id: 'a1a2654c61db24e318f1200296193113') in 0.0018587 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-panel-raised.png using Guid(45c54eb7badec942d8a826438f4c3d3a) (TextureImporter) -> (artifact id: 'f4b147d1d4a7cc6df7835d6bc333decc') in 0.0018194 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-resource-sun.png using Guid(559dde2e10e9cd5fc43ace372341eeb1) (TextureImporter) -> (artifact id: '015b2700687628320c4b169a260d2c3d') in 0.0018007 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-return.png using Guid(a5df09bdf77ff8b6dc7313a82a06f9af) (TextureImporter) -> (artifact id: '808e0ce0765bda893bcaf7fcf06738ea') in 0.0017188 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-refresh.png using Guid(f7e601e0328cea5ce7fa06272d135c87) (TextureImporter) -> (artifact id: 'd16cb88a61b3ffbfc2a4afb4703c1c94') in 0.001748 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/action-danger.png using Guid(78ab4add444969d9b0cb53a9ae0bc0c7) (TextureImporter) -> (artifact id: '2f0ca3e3b7f65f12c712eb386900728c') in 0.0020423 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-merge.png using Guid(c8db5507433273b6532e39de66d8a682) (TextureImporter) -> (artifact id: '6859e5d3d7f6a865785e3f679d1d13cd') in 0.0018312 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/slot-nursery.png using Guid(29a52cfbbf47d8ef5e436a8b8939a235) (TextureImporter) -> (artifact id: '4af742e149346f22fbff85718af61a08') in 0.0018314 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-error.png using Guid(495839732be5c60ff755ea2d4d72540c) (TextureImporter) -> (artifact id: 'b0d0edb4334a05e2417f3e756d987ad9') in 0.0017517 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-drag-legal.png using Guid(c96a85d959748ea5d0babc77f1d78cda) (TextureImporter) -> (artifact id: 'dfc93103b40874b8eb8a99f089fcca5b') in 0.0017983 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-scrim.png using Guid(f92c557f9eae432f27cddfcfb4ceb9c5) (TextureImporter) -> (artifact id: '23bf6c595b58f809215593b1e9947f93') in 0.0015006 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-modal.png using Guid(2a2ef291622a05c71c0f27f8e577bdb8) (TextureImporter) -> (artifact id: '93dd0a42c541702c1fb3f05fcdbe957d') in 0.0018837 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-disabled.png using Guid(9a302bf9ab1844dc77fd993ceab50675) (TextureImporter) -> (artifact id: '3153b9939eecde7351881cf63dd51bc0') in 0.0017491 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-resource-wave.png using Guid(baeace2658f788359fd9581a3129b47f) (TextureImporter) -> (artifact id: '9f250499fe05116e06665b65a15aece0') in 0.0019476 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-detail.png using Guid(da4e4d55ca7174cb97c433962ba94f30) (TextureImporter) -> (artifact id: 'a3523a69dd6ea36efd9103cf52c277c4') in 0.0018625 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-safe-area.png using Guid(0b6f35333564fcaaedfe0b6f4939638b) (TextureImporter) -> (artifact id: 'eef1ee6f7d87c97f509a656388a46ae1') in 0.0019641 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-card-selectable.png using Guid(4b0dd75ed1f8f987d2e508cb47da4768) (TextureImporter) -> (artifact id: '117d75de8ac087c6433f42604ef099bc') in 0.0019126 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-close.png using Guid(3c4914eb522977e1065661da7e254909) (TextureImporter) -> (artifact id: '2512ea5d9c0f1f304b8cb5a64e1e718f') in 0.0018183 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/action-primary.png using Guid(acfd468232bad9aea7b5bf3e72ac4449) (TextureImporter) -> (artifact id: 'd840288d2cb2f7551f17aa38c22dfa94') in 0.0019279 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-continue.png using Guid(0d6193450ebd89c93c675d3ea0283ad2) (TextureImporter) -> (artifact id: '93b84b3588c6a374b10e2eb27b18d48c') in 0.0017888 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-tool-pot.png using Guid(9d8695cffe358c056b1dfa4dd1d9cf4c) (TextureImporter) -> (artifact id: '0396bde8977c8411195c7e1d18af007e') in 0.0018704 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-metric.png using Guid(dd50a08e3c160f11844e3f94c97700a1) (TextureImporter) -> (artifact id: 'a8f9076c513764d0bbcf27532455e464') in 0.0018662 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/surface-panel-standard.png using Guid(2e88c9cc3c80092ae60113a8f7ad3dae) (TextureImporter) -> (artifact id: '4d5ef898a56922bc333ca0a3899f9626') in 0.0018129 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/indicator-success.png using Guid(1faf646bd184ab8414584124efc24e99) (TextureImporter) -> (artifact id: '268d11008ea6291b9303c83cd7250f91') in 0.0018193 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-speed.png using Guid(8f75c76f95b1048ecb56ad32b687c690) (TextureImporter) -> (artifact id: 'e76b0d35482a5e29a87f7d5a4132f289') in 0.0017467 seconds
+Start importing Assets/UI/Art/Runtime/sunny-orchard/icon-control-pause.png using Guid(9fa185fd1ba54dbc274f3d225e45af77) (TextureImporter) -> (artifact id: '35a235bf952bb9c27cf45732967ccd31') in 0.0018185 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-success.svg using Guid(210cb18c2dc9e4f3dabe98fa67462854) (ScriptedImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+ -> (artifact id: 'adb58ca65d57884163f3883a3c9251fa') in 0.3021934 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-disabled.svg using Guid(81fc968077fa4d17125b491ecf64cd1e) (ScriptedImporter) -> (artifact id: '277ff4f22fbc3222e1e5f6575db24d36') in 0.0042601 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-resource-sun.svg using Guid(c13a931cc96e9c4ac6594b06a994b39a) (ScriptedImporter) -> (artifact id: 'c95b8003a3e10d9d7c0302228ff37d62') in 0.0124122 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-card-selectable.svg using Guid(22102393a950451a6b614eff9a6e336a) (ScriptedImporter) -> (artifact id: 'ea63ab3bb206bcf4d725134de03ae50c') in 0.0052372 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-refresh.svg using Guid(52ce45b58a0a69c849e7e96bb6cfb451) (ScriptedImporter) -> (artifact id: 'c73e73aa12387c47fcc7be37ee2c1c47') in 0.0043336 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.svg using Guid(82a2ab7c386d61384bf98be02e9b1a88) (ScriptedImporter) -> (artifact id: '5022188f671c4c139e4cb69975ac9f41') in 0.0032143 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-scrim.svg using Guid(b25f10508ee82321b39cd5686668fff1) (ScriptedImporter) -> (artifact id: '617702ef95031a908fe3dfd690707b66') in 0.0038231 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-pause.svg using Guid(23b6d12090843be3b68bf415ae16afcf) (ScriptedImporter) -> (artifact id: 'a96491b8d4f57cd3a747f38d740db184') in 0.0035111 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-screen-background.svg using Guid(340050b3d4babff9683b4a91b956e22b) (ScriptedImporter) -> (artifact id: '343a360d1c0e3bd76e9f9aecc36b63cb') in 0.0032162 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/action-secondary.svg using Guid(345b751136496f701a7653589ba087ac) (ScriptedImporter) -> (artifact id: '2604beea6f43e84b7ade461d1b35d4dc') in 0.0033434 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-warning.svg using Guid(f4c873f9a344f852ef99bdc33a639b0f) (ScriptedImporter) -> (artifact id: '02a359b15c02f944e027c8238a6e80ca') in 0.0038093 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-metric.svg using Guid(b53795bd3b266171ba931c169696a3d3) (ScriptedImporter) -> (artifact id: '581c1f7624e523cde9c3406640d9962c') in 0.0035454 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-swap.svg using Guid(56b31fb7925b180001dc8571c17c72c9) (ScriptedImporter) -> (artifact id: '048e46e93b8b7f1628a63d94dfee8bbd') in 0.0030065 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-resource-wave.svg using Guid(6678c2f250ebb13080e61fa45688456a) (ScriptedImporter) -> (artifact id: '832acd5977e200934406becd4d7df2d1') in 0.0044981 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-panel-raised.svg using Guid(a6ca90f666cf2920522aaec6856ea4f2) (ScriptedImporter) -> (artifact id: '4686922badcce1b46ba2930fabd38943') in 0.0046737 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-retry.svg using Guid(f6dea7245f28c43ce415152a33e21d57) (ScriptedImporter) -> (artifact id: 'ac4b107a247954e7a1d5ba5388895290') in 0.0038424 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-result.svg using Guid(57811dd4bc8f2e226dd1d93a9affd8db) (ScriptedImporter) -> (artifact id: 'a8c3cc13052cd376f0cccdbf29529251') in 0.0039893 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-merge.svg using Guid(871d025c8ae2d2813672f93a4b5119fe) (ScriptedImporter) -> (artifact id: 'aebb39e2d4653ed0a995df925bd0a7de') in 0.0042669 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-resource-core.svg using Guid(c7d1010dce7e7a5ba1e798eb5be286c2) (ScriptedImporter) -> (artifact id: '1bb9f39cff57c9efc9c32b508ebfa123') in 0.003199 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-panel-standard.svg using Guid(c709a0183d216873ad80e17b8eda2f02) (ScriptedImporter) -> (artifact id: '540d84d4565c0cd9ac59ce854fbd6900') in 0.0030426 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-loading.svg using Guid(08e3565868f36147b8bef20c09c5729f) (ScriptedImporter) -> (artifact id: '1c23d9af03983d40015715dd9e8e789c') in 0.0029699 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/slot-nursery.svg using Guid(e8e8713705fcb8a16a7cb6a3b9186c1e) (ScriptedImporter) -> (artifact id: 'a96ce3d58ffa9c5505265333472e74b5') in 0.0067673 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-tool-pot.svg using Guid(09ddc5dc83a8536d8351885eb732275c) (ScriptedImporter) -> (artifact id: 'c0bc89006d91e8fb0e124f6a0ba86afb') in 0.0043255 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/slot-tool.svg using Guid(393034340e7bf89adf4eb722b3fdcff1) (ScriptedImporter) -> (artifact id: 'b4932ef3597cf8793a2c4a7222dc929f') in 0.0043179 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-close.svg using Guid(6ab490ac24b4e89c431e31e4f9ecc51a) (ScriptedImporter) -> (artifact id: '35d3a4664bd8c50b09221db023a4e0b4') in 0.0053493 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/action-primary.svg using Guid(8a7b8fca3b2f631b822ad774d1ad69c6) (ScriptedImporter) -> (artifact id: 'fd63062afd6032411ebc8ba4a25b8828') in 0.004422 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/marker-selected.svg using Guid(9a299cb6929b7b3ba72da497a54a71b8) (ScriptedImporter) -> (artifact id: '50d93482184198873a30ad41b78e63be') in 0.0032977 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-modal.svg using Guid(5b45cbd12c77d692eadff5783fa3faa2) (ScriptedImporter) -> (artifact id: 'e0f2547e325da07c7ac3c37bc599136c') in 0.0045228 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-detail.svg using Guid(4c1964ff28c852a746896adc8b7b9242) (ScriptedImporter) -> (artifact id: '332a494f5d3a14b2b92e534ebf0bf91c') in 0.0036854 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-status.svg using Guid(9c673129ca3b9b2f46e3d2a26b8c526e) (ScriptedImporter) -> (artifact id: 'f6f918317951e63aff8adb2e40f37fff') in 0.0035061 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-drag-illegal.svg using Guid(1d493ed101cfe2f2c8478ab6d66dda5b) (ScriptedImporter) -> (artifact id: '494235e4a1f2739a63d553f5bf35ade5') in 0.0035936 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-speed.svg using Guid(2d1b26879c3707bfd9708585b6855786) (ScriptedImporter) -> (artifact id: 'e0158f4304bfc054d0591a127c748735') in 0.004407 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/icon-control-return.svg using Guid(9d2661e96305bd99610c5da0dff8c711) (ScriptedImporter) -> (artifact id: '1301b5df0c5e2afb50bed67fa4c8e281') in 0.0032087 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-error.svg using Guid(bd602595a5ac9d5a771c9ecc2b5ecad9) (ScriptedImporter) -> (artifact id: 'b8e1b49aafd56acf206556682fed958c') in 0.003201 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/indicator-drag-legal.svg using Guid(beba0b15e74848abca1d7a43474f1d19) (ScriptedImporter) -> (artifact id: '092b5bbb756056744c12cf77a10a7f11') in 0.0032044 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/action-quiet.svg using Guid(dee88cc0a807caa41bf51e914f39ebd8) (ScriptedImporter) -> (artifact id: '519c0bed1a380d24a8fc67afef926ed9') in 0.0047128 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/surface-safe-area.svg using Guid(2f48a67380ba9c3773a08f1984f55f38) (ScriptedImporter) -> (artifact id: '445150b573d7e5e8ea2075d7cf1d80e7') in 0.0034401 seconds
+Start importing Assets/UI/Art/Sources/sunny-orchard/action-danger.svg using Guid(6fe00cb840fcace4dfb06e79a4ca4395) (ScriptedImporter) -> (artifact id: 'cb39b970c5fe787308b39b54dac73df9') in 0.0031464 seconds
+Refreshing native plugins compatible for Editor in 0.19 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=00696e7cd0a153b4397b8f6bf484a67c): Total: 1.877 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=77 (actual=77, local cache=0, cache server=0)
+		Asset DB Process Time: managed=5 ms, native=1073 ms
+		Asset DB Callback time: managed=52 ms, native=17 ms
+		Scripting: domain reloads=1, domain reload time=339 ms, compile time=382 ms, other=7 ms
+		Project Asset Count: scripts=160, non-scripts=672
+		Asset File Changes: new=0, changed=77, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.002ms
+	InvokePackagesCallback: 16.668ms
+	ApplyChangesToAssetFolders: 0.336ms
+	Scan: 22.838ms
+	OnSourceAssetsModified: 0.831ms
+	CategorizeAssetsWithTransientArtifact: 0.416ms
+	ProcessAssetsWithTransientArtifactChanges: 2.324ms
+	CategorizeAssets: 4.354ms
+	ImportOutOfDateAssets: 990.347ms (38.085ms without children)
+		ImportManagerImport: 569.617ms (2.501ms without children)
+			ImportInProcess: 566.644ms
+			UpdateCategorizedAssets: 0.473ms
+		CompileScripts: 381.719ms
+		ReloadNativeAssets: 0.001ms
+		UnloadImportedAssets: 0.114ms
+		ReloadImportedAssets: 0.007ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.082ms
+		InitializingProgressBar: 0.005ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 0.717ms
+	PostProcessAllAssets: 53.015ms
+	Hotreload: 1.223ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.002ms
+	UnloadStreamsBegin: 0.944ms
+	PersistCurrentRevisions: 0.184ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 0.051ms
+	Untracked: 783.734ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 12.311ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-水果塔防
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 130 unused Assets / (0.6 MB). Loaded Objects now: 774.
+Memory consumption went from 137.6 MB to 137.1 MB.
+Total: 6.217200 ms (FindLiveObjects: 0.083200 ms CreateObjectMapping: 0.011200 ms MarkObjects: 5.855600 ms  DeleteObjects: 0.266500 ms)
+
+Asset Pipeline Refresh (id=2d631998b825275439a370fa7f7ccad7): Total: 0.022 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+SUNNY_ORCHARD_ART_SET_VALIDATION_PASS slots=40 set=sunny-orchard revision=1
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TempSunnyOrchardArtSetValidation:Run () (at Assets/Editor/TempSunnyOrchardArtSetValidation.cs:81)
+
+(Filename: Assets/Editor/TempSunnyOrchardArtSetValidation.cs Line: 81)
+
+Batchmode quit successfully invoked - shutting down!
+Curl error 42: Callback aborted
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-18163-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-18163 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

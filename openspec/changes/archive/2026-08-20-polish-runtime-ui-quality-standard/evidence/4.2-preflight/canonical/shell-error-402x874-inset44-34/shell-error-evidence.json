@@ -1,0 +1,232 @@
+﻿{
+    "schemaVersion":  1,
+    "evidenceType":  "bootstrap-blocking-error-webgl-visual",
+    "accepted":  true,
+    "capturedAtUtc":  "2026-08-19T19:28:26.6421928+00:00",
+    "url":  "http://127.0.0.1:64285/?acceptance=1\u0026route=battle\u0026levelId=__missing-ui-acceptance__\u0026safeTop=44\u0026safeBottom=34",
+    "input":  {
+                  "acceptance":  "1",
+                  "route":  "battle",
+                  "levelId":  "__missing-ui-acceptance__",
+                  "classification":  "formal-invalid-level-acceptance-input"
+              },
+    "expectedUserCopy":  "启动失败：所选关卡不可用",
+    "viewport":  {
+                     "width":  402,
+                     "height":  874,
+                     "coordinateSpace":  "css-pixel/top-left"
+                 },
+    "safeArea":  {
+                     "top":  44,
+                     "bottom":  34,
+                     "left":  0,
+                     "right":  0,
+                     "coordinateSpace":  "css-pixel/top-left",
+                     "contentRect":  {
+                                         "x":  0,
+                                         "y":  44,
+                                         "width":  402,
+                                         "height":  796
+                                     },
+                     "designReference":  {
+                                             "width":  402,
+                                             "height":  874
+                                         },
+                     "designScale":  0.91075514874141872,
+                     "designOffset":  {
+                                          "x":  17.938215102974851,
+                                          "y":  44
+                                      },
+                     "shellContentRect":  {
+                                              "x":  32.51029748283753,
+                                              "y":  60.393592677345538,
+                                              "width":  336.97940503432494,
+                                              "height":  763
+                                          }
+                 },
+    "runtimeUi":  {
+                      "themeId":  "ui.sunny-orchard",
+                      "themeRevision":  "1",
+                      "artSetId":  "sunny-orchard-painted",
+                      "artSetRevision":  "1",
+                      "display":  "ui.sunny-orchard@1 / sunny-orchard-painted@1",
+                      "themeAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+                      "artSetAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+                      "activeArtSetGuid":  "91aa538ae02449cba8c971ffe4d427eb"
+                  },
+    "browser":  {
+                    "product":  "Chrome/151.0.7922.169",
+                    "userAgent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+                    "protocolVersion":  "1.3",
+                    "jsVersion":  "15.1.206.21",
+                    "executable":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                    "launchMode":  "external-headless-chrome-cdp"
+                },
+    "canvas":  {
+                   "href":  "http://127.0.0.1:64285/?acceptance=1\u0026route=battle\u0026levelId=__missing-ui-acceptance__\u0026safeTop=44\u0026safeBottom=34",
+                   "title":  "Unity Web Player | 水果塔防",
+                   "canvas":  true,
+                   "width":  402,
+                   "height":  874,
+                   "cssWidth":  402,
+                   "cssHeight":  874,
+                   "innerWidth":  402,
+                   "innerHeight":  874,
+                   "devicePixelRatio":  1,
+                   "timeOrigin":  1787167703120.8,
+                   "loading":  "none",
+                   "warning":  "",
+                   "acceptanceReady":  false,
+                   "appRoute":  -1,
+                   "body":  ""
+               },
+    "checks":  {
+                   "releaseRuntimeUiIdentity":  "pass",
+                   "unityPlayerLoaded":  "pass",
+                   "noRouteReadyPublished":  "pass",
+                   "applicationFrameNotSplashOrBlack":  "pass",
+                   "requestedViewportAndCanvas":  "pass",
+                   "safeAreaQueryApplied":  "pass",
+                   "finiteUserCopyAndNonColorCue":  "manual-screenshot-review-required"
+               },
+    "screenshot":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\polish-runtime-ui-quality-standard\\evidence\\4.2-preflight\\canonical\\shell-error-402x874-inset44-34\\00-bootstrap-blocking-error.png",
+    "imageMetrics":  {
+                         "width":  402,
+                         "height":  874,
+                         "headerDarkPixels":  11221,
+                         "headerLightPixels":  0,
+                         "blackFraction":  0,
+                         "nearBlackFraction":  0,
+                         "maxNearBlackHorizontalRunFraction":  0,
+                         "invalidFraction":  0,
+                         "averageLuma":  0.29583941458415913,
+                         "formerActionColorPixels":  0,
+                         "formerActionColorSpanPixels":  0,
+                         "sampledRegions":  {
+                                                "header":  {
+                                                               "xMin":  29,
+                                                               "yMin":  54,
+                                                               "xMax":  258,
+                                                               "yMax":  103
+                                                           },
+                                                "formerAction":  {
+                                                                     "xMin":  25,
+                                                                     "yMin":  736,
+                                                                     "xMax":  377,
+                                                                     "yMax":  782
+                                                                 },
+                                                "frameContent":  {
+                                                                     "xMin":  0,
+                                                                     "yMin":  44,
+                                                                     "xMax":  402,
+                                                                     "yMax":  840
+                                                                 }
+                                            }
+                     },
+    "delivery":  {
+                     "metadata":  {
+                                      "assetVersions":  {
+                                                            "loader":  "34035c24f91b",
+                                                            "data":  "1ca6385231e1",
+                                                            "framework":  "2311a6f94ac3",
+                                                            "wasm":  "ba2503f395b7"
+                                                        },
+                                      "htmlCacheControl":  "no-cache",
+                                      "assets":  {
+                                                     "loader":  {
+                                                                    "url":  "http://127.0.0.1:64285/Build/WebGL.loader.js?v=34035c24f91b",
+                                                                    "version":  "34035c24f91b",
+                                                                    "contentType":  "text/javascript; charset=utf-8",
+                                                                    "contentEncoding":  "",
+                                                                    "cacheControl":  "public, max-age=31536000, immutable",
+                                                                    "contentLength":  117893,
+                                                                    "etag":  "\"34035c24f91b91e9e6aeb447743a0031d761f433d034614758e6f0cd4e65519f\"",
+                                                                    "contentSha256":  "34035c24f91b91e9e6aeb447743a0031d761f433d034614758e6f0cd4e65519f"
+                                                                },
+                                                     "data":  {
+                                                                  "url":  "http://127.0.0.1:64285/Build/WebGL.data.unityweb?v=1ca6385231e1",
+                                                                  "version":  "1ca6385231e1",
+                                                                  "contentType":  "application/octet-stream",
+                                                                  "contentEncoding":  "",
+                                                                  "cacheControl":  "public, max-age=31536000, immutable",
+                                                                  "contentLength":  5575646,
+                                                                  "etag":  "\"1ca6385231e1ac7e9e1fe1085cf5778fcc662573bd4a2119a7e29ddb5f16d443\"",
+                                                                  "contentSha256":  "1ca6385231e1ac7e9e1fe1085cf5778fcc662573bd4a2119a7e29ddb5f16d443"
+                                                              },
+                                                     "framework":  {
+                                                                       "url":  "http://127.0.0.1:64285/Build/WebGL.framework.js.unityweb?v=2311a6f94ac3",
+                                                                       "version":  "2311a6f94ac3",
+                                                                       "contentType":  "application/octet-stream",
+                                                                       "contentEncoding":  "",
+                                                                       "cacheControl":  "public, max-age=31536000, immutable",
+                                                                       "contentLength":  69099,
+                                                                       "etag":  "\"2311a6f94ac3a7402e5ddf95f625c21d6b5607dfaa10951a830a1c76aa446fd0\"",
+                                                                       "contentSha256":  "2311a6f94ac3a7402e5ddf95f625c21d6b5607dfaa10951a830a1c76aa446fd0"
+                                                                   },
+                                                     "wasm":  {
+                                                                  "url":  "http://127.0.0.1:64285/Build/WebGL.wasm.unityweb?v=ba2503f395b7",
+                                                                  "version":  "ba2503f395b7",
+                                                                  "contentType":  "application/octet-stream",
+                                                                  "contentEncoding":  "",
+                                                                  "cacheControl":  "public, max-age=31536000, immutable",
+                                                                  "contentLength":  3864044,
+                                                                  "etag":  "\"ba2503f395b7c2ca05a2140a32f8b383fd1bcf5f12d63bad9d4c1d526fbf90ba\"",
+                                                                  "contentSha256":  "ba2503f395b7c2ca05a2140a32f8b383fd1bcf5f12d63bad9d4c1d526fbf90ba"
+                                                              }
+                                                 }
+                                  },
+                     "coldRun":  {
+                                     "label":  "cold-error",
+                                     "startedAtUtc":  "2026-08-19T19:28:23.1172598+00:00",
+                                     "completedAtUtc":  "2026-08-19T19:28:26.6421928+00:00",
+                                     "startupDurationMilliseconds":  3524.933,
+                                     "totalPayloadTransferSize":  9627882,
+                                     "assets":  {
+                                                    "loader":  {
+                                                                   "url":  "http://127.0.0.1:64285/Build/WebGL.loader.js?v=34035c24f91b",
+                                                                   "startTimeMilliseconds":  26.1,
+                                                                   "durationMilliseconds":  5.4,
+                                                                   "transferSize":  118193,
+                                                                   "encodedBodySize":  117893,
+                                                                   "decodedBodySize":  117893,
+                                                                   "responseStatus":  200,
+                                                                   "deliveryType":  "",
+                                                                   "nextHopProtocol":  "http/1.1"
+                                                               },
+                                                    "data":  {
+                                                                 "url":  "http://127.0.0.1:64285/Build/WebGL.data.unityweb?v=1ca6385231e1",
+                                                                 "startTimeMilliseconds":  346.3,
+                                                                 "durationMilliseconds":  20.1,
+                                                                 "transferSize":  5575946,
+                                                                 "encodedBodySize":  5575646,
+                                                                 "decodedBodySize":  5575646,
+                                                                 "responseStatus":  200,
+                                                                 "deliveryType":  "",
+                                                                 "nextHopProtocol":  "http/1.1"
+                                                             },
+                                                    "framework":  {
+                                                                      "url":  "http://127.0.0.1:64285/Build/WebGL.framework.js.unityweb?v=2311a6f94ac3",
+                                                                      "startTimeMilliseconds":  259.4,
+                                                                      "durationMilliseconds":  5,
+                                                                      "transferSize":  69399,
+                                                                      "encodedBodySize":  69099,
+                                                                      "decodedBodySize":  69099,
+                                                                      "responseStatus":  200,
+                                                                      "deliveryType":  "",
+                                                                      "nextHopProtocol":  "http/1.1"
+                                                                  },
+                                                    "wasm":  {
+                                                                 "url":  "http://127.0.0.1:64285/Build/WebGL.wasm.unityweb?v=ba2503f395b7",
+                                                                 "startTimeMilliseconds":  259.4,
+                                                                 "durationMilliseconds":  30.5,
+                                                                 "transferSize":  3864344,
+                                                                 "encodedBodySize":  3864044,
+                                                                 "decodedBodySize":  3864044,
+                                                                 "responseStatus":  200,
+                                                                 "deliveryType":  "",
+                                                                 "nextHopProtocol":  "http/1.1"
+                                                             }
+                                                }
+                                 }
+                 }
+}

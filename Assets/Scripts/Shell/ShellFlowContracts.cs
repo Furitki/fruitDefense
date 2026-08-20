@@ -25,8 +25,7 @@ namespace FruitDefense.Shell
         public int RemainingLives { get; }
     }
 
-    // Optional extension consumed by the multi-level Lobby. Keeping selection outside the
-    // base flow contract preserves compatibility with existing shell fakes and presenters.
+    // Required by the multi-level Lobby while Settlement consumes the base flow contract.
     public interface ILevelSelectionFlowContext
     {
         IReadOnlyList<LevelDefinition> PlayableLevels { get; }

@@ -35,6 +35,7 @@ FruitDefense 是一个使用 Unity 6 开发的竖屏水果塔防项目。玩家�
 |---|---|
 | [游戏策划总纲](docs/design/game-design-overview.md) | 游戏定位、核心循环、内容结构、版本方向和待定策划问题 |
 | [P0 发布基线](docs/p0-release-baseline.md) | 当前 P0 运行形态、版本化产物和已验证门禁 |
+| [运行时 UI 视觉系统](docs/ui/ui-visual-system.md) | 跨页面组件、状态语义、美术生产、导入与视觉审查规范 |
 | [P1 首波门禁](docs/p1-first-wave-gate.md) | 当前平台适配与 P1 后续工作的放行条件 |
 | [平台验证](docs/platform/) | 抖音、微信的工具链、设备与兼容性证据 |
 | [构建与发布管线](docs/build-and-release-pipelines.md) | 本地 Web/PC 构建、证据清单和线上 WebGL 发布门禁 |

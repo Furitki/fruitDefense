@@ -1,0 +1,110 @@
+﻿{
+    "schemaVersion":  1,
+    "evidenceType":  "project-webgl-host-source-self-check",
+    "accepted":  true,
+    "hostId":  "fruit-defense-portrait-contain-v1",
+    "checks":  [
+                   {
+                       "viewport":  {
+                                        "width":  1280,
+                                        "height":  720,
+                                        "devicePixelRatio":  1
+                                    },
+                       "expectedScale":  0.82379862700228834,
+                       "snapshot":  {
+                                        "hostId":  "fruit-defense-portrait-contain-v1",
+                                        "layout":  "desktop-contain",
+                                        "logicalWidth":  402,
+                                        "logicalHeight":  874,
+                                        "scale":  0.8237986270022883,
+                                        "viewportWidth":  1280,
+                                        "viewportHeight":  720,
+                                        "devicePixelRatio":  1,
+                                        "canvas":  {
+                                                       "left":  474.421875,
+                                                       "top":  0,
+                                                       "right":  805.578125,
+                                                       "bottom":  720,
+                                                       "width":  331.15625,
+                                                       "height":  720,
+                                                       "backingWidth":  402,
+                                                       "backingHeight":  874
+                                                   },
+                                        "scroll":  {
+                                                       "x":  0,
+                                                       "y":  0,
+                                                       "documentWidth":  1280,
+                                                       "documentHeight":  720
+                                                   }
+                                    }
+                   },
+                   {
+                       "viewport":  {
+                                        "width":  1024,
+                                        "height":  640,
+                                        "devicePixelRatio":  2
+                                    },
+                       "expectedScale":  0.73226544622425627,
+                       "snapshot":  {
+                                        "hostId":  "fruit-defense-portrait-contain-v1",
+                                        "layout":  "desktop-contain",
+                                        "logicalWidth":  402,
+                                        "logicalHeight":  874,
+                                        "scale":  0.7322654462242563,
+                                        "viewportWidth":  1024,
+                                        "viewportHeight":  640,
+                                        "devicePixelRatio":  2,
+                                        "canvas":  {
+                                                       "left":  364.8125,
+                                                       "top":  0,
+                                                       "right":  659.171875,
+                                                       "bottom":  640,
+                                                       "width":  294.359375,
+                                                       "height":  640,
+                                                       "backingWidth":  402,
+                                                       "backingHeight":  874
+                                                   },
+                                        "scroll":  {
+                                                       "x":  0,
+                                                       "y":  0,
+                                                       "documentWidth":  1024,
+                                                       "documentHeight":  640
+                                                   }
+                                    }
+                   },
+                   {
+                       "viewport":  {
+                                        "width":  1440,
+                                        "height":  900,
+                                        "devicePixelRatio":  1
+                                    },
+                       "expectedScale":  1.0297482837528604,
+                       "snapshot":  {
+                                        "hostId":  "fruit-defense-portrait-contain-v1",
+                                        "layout":  "desktop-contain",
+                                        "logicalWidth":  402,
+                                        "logicalHeight":  874,
+                                        "scale":  1.0297482837528604,
+                                        "viewportWidth":  1440,
+                                        "viewportHeight":  900,
+                                        "devicePixelRatio":  1,
+                                        "canvas":  {
+                                                       "left":  513.015625,
+                                                       "top":  0,
+                                                       "right":  926.96875,
+                                                       "bottom":  900,
+                                                       "width":  413.953125,
+                                                       "height":  900,
+                                                       "backingWidth":  402,
+                                                       "backingHeight":  874
+                                                   },
+                                        "scroll":  {
+                                                       "x":  0,
+                                                       "y":  0,
+                                                       "documentWidth":  1440,
+                                                       "documentHeight":  900
+                                                   }
+                                    }
+                   }
+               ]
+}

@@ -8,6 +8,7 @@ using FruitDefense.Core;
 using FruitDefense.Platform;
 using FruitDefense.Presentation;
 using FruitDefense.Tilemaps;
+using FruitDefense.UI;
 using UnityEngine;
 
 namespace FruitDefense
@@ -50,12 +51,15 @@ namespace FruitDefense
             public WeaponKind SelectedWeapon = WeaponKind.None;
             public bool PotToolSelected;
             public string Status = DefaultStatus;
-            public float StatusUntil;
+            public bool StatusSuccess = true;
+            public RuntimeUiFeedbackPulse StatusPulse;
             public DragSession Drag;
             public int DragControlId;
             public int ReturnPulsePlantId = -1;
-            public float ReturnPulseUntil;
-            public float NurseryRollDisplayUntil;
+            public RuntimeUiFeedbackPulse ReturnPulse;
+            public RuntimeUiFeedbackPulse NurseryRollDisplayPulse;
+            public int SelectionPulseTarget;
+            public RuntimeUiFeedbackPulse SelectionPulse;
 
             public bool IsClean()
             {
@@ -63,12 +67,15 @@ namespace FruitDefense
                     && SelectedWeapon == WeaponKind.None
                     && !PotToolSelected
                     && Status == DefaultStatus
-                    && StatusUntil == 0f
+                    && StatusSuccess
+                    && !StatusPulse.IsScheduled
                     && Drag == null
                     && DragControlId == 0
                     && ReturnPulsePlantId == -1
-                    && ReturnPulseUntil == 0f
-                    && NurseryRollDisplayUntil == 0f;
+                    && !ReturnPulse.IsScheduled
+                    && !NurseryRollDisplayPulse.IsScheduled
+                    && SelectionPulseTarget == 0
+                    && !SelectionPulse.IsScheduled;
             }
         }
 
@@ -81,22 +88,8 @@ namespace FruitDefense
             public Rect Rect;
         }
 
-        // iPhone 17 logical portrait reference: 1206 x 2622 physical pixels at 3x.
-        private const float DesignWidth = 402f;
-        private const float DesignHeight = 874f;
-        private const string BetweenWaveActionLabel = "\u7ACB\u5373\u5F00\u59CB\u4E0B\u4E00\u6CE2";
-        private const string DefaultStatus = "点击水果查看信息；拖动完成种植、移动、返回与合成";
-        private static readonly Rect HeaderRect = new Rect(8f, 8f, 386f, 60f);
-        private static readonly Rect BattleSurfaceRect = new Rect(0f, 72f, 402f, 798f);
-        private static readonly Rect BoardRect = new Rect(0f, 72f, 402f, 500f);
-        private static readonly Rect ToolTrayRect = new Rect(8f, 580f, 386f, 68f);
-        private static readonly Rect NurseryTrayRect = new Rect(8f, 656f, 386f, 80f);
-        private static readonly Rect RefreshActionRect = new Rect(8f, 744f, 386f, 44f);
-        private static readonly Rect DetailRect = new Rect(8f, 796f, 386f, 70f);
-        private static readonly Rect ModalRect = new Rect(36f, 300f, 330f, 244f);
-        private const float MergeHintMinWidth = 92f;
-        private const float MergeHintMaxWidth = 160f;
-        private const float MergeHintHeight = 24f;
+        private static string DefaultStatus => RuntimeUiCopyCatalog.Get(
+            RuntimeUiCopyId.BattleDefaultGuidance).Text;
         private const float TerrainTileSeamOverlap = .75f;
         public static int AttackRangeTextureSize => 1024;
 
@@ -106,36 +99,40 @@ namespace FruitDefense
         private IAppNavigator _navigator;
         private IBattleResultSink _resultSink;
         private AppBootstrap _appBootstrap;
+        private RuntimeUiTheme _runtimeUiTheme;
+        private RuntimeUiDrawContext _runtimeUiDrawContext;
         private bool _hasInitialized;
         private bool _isInitialized;
         private bool _hasEnteredBattleRoute;
         private bool _resultSubmitted;
         private bool _sessionDisposed;
-        private Font _font;
+        private bool _acceptanceTerminalPreview;
         private Texture2D _tempArtAtlas;
         private Texture2D _combatVfxAtlas;
         private Texture2D _attackRangeTexture;
         [SerializeField] private BattlefieldTerrainPalette[] battlefieldTerrainPalettes =
             Array.Empty<BattlefieldTerrainPalette>();
-        private BattlefieldProjection _projection;
-        private GUIStyle _title;
-        private GUIStyle _heading;
-        private GUIStyle _body;
-        private GUIStyle _small;
-        private GUIStyle _center;
-        private GUIStyle _button;
-        private GUIStyle _entity;
-        private GUIStyle _tiny;
+        private BattleUiLayout _battleUiLayout;
+        private GUIStyle _worldLabelStyle;
+        private GUIStyle _terrainFailureStyle;
         private int _inspectedPlantId = -1;
         private WeaponKind _selectedWeapon = WeaponKind.None;
         private bool _potToolSelected;
         private string _status = DefaultStatus;
-        private float _statusUntil;
+        private bool _statusSuccess = true;
+        private RuntimeUiFeedbackPulse _statusPulse;
+        private string _preparedStatusSource = string.Empty;
+        private float _preparedStatusWidth = -1f;
+        private RuntimeUiStatusTextMode _preparedStatusTextMode =
+            RuntimeUiStatusTextMode.SingleLine;
+        private RuntimeUiStatusTextLines _preparedStatusTextLines;
         private DragSession _drag;
         private int _dragControlId;
         private int _returnPulsePlantId = -1;
-        private float _returnPulseUntil;
-        private float _nurseryRollDisplayUntil;
+        private RuntimeUiFeedbackPulse _returnPulse;
+        private RuntimeUiFeedbackPulse _nurseryRollDisplayPulse;
+        private int _selectionPulseTarget;
+        private RuntimeUiFeedbackPulse _selectionPulse;
         private string _terrainPresentationError = string.Empty;
         private string _lastLoggedTerrainPresentationError = string.Empty;
 
@@ -313,16 +310,20 @@ namespace FruitDefense
                 return false;
             }
 
-            var compactHint = MergeHintRect(new Rect(180f, 180f, 48f, 48f), 118f);
-            if (compactHint.width < MergeHintMinWidth || compactHint.width > MergeHintMaxWidth
-                || compactHint.width >= 280f || compactHint.height != MergeHintHeight
-                || compactHint.height >= 30f || compactHint.xMin < 8f || compactHint.xMax > DesignWidth - 8f)
+            var layout = new BattleUiLayout(simulation.Map);
+            var compactHint = layout.MergeHint(new Rect(180f, 180f, 48f, 48f), 118f);
+            if (compactHint.width < BattleUiLayout.MergeHintMinimumWidth
+                || compactHint.width > BattleUiLayout.MergeHintMaximumWidth
+                || compactHint.width >= 280f
+                || compactHint.height != BattleUiLayout.MergeHintHeight
+                || compactHint.height >= 30f || compactHint.xMin < 8f
+                || compactHint.xMax > BattleUiLayout.DesignWidth - 8f)
             {
                 reason = "merge hint frame is not compact or contained";
                 return false;
             }
 
-            var projection = new BattlefieldProjection(simulation.Map, BoardRect);
+            var projection = layout.Battlefield;
             var center = simulation.PotPoint(firstPot);
             var range = EffectiveAttackRange(first);
             var centerOnScreen = projection.MapToScreen(center);
@@ -375,8 +376,9 @@ namespace FruitDefense
 
         public static bool ValidatePortraitLayout(out string reason)
         {
-            var design = new Rect(0f, 0f, DesignWidth, DesignHeight);
-            var topLevelRegions = new[] { HeaderRect, BattleSurfaceRect };
+            var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
+            var design = layout.Design;
+            var topLevelRegions = new[] { layout.Header, layout.BattleSurface };
             foreach (var region in topLevelRegions)
             {
                 if (!ContainsRect(design, region))
@@ -386,7 +388,7 @@ namespace FruitDefense
                 }
             }
 
-            if (HeaderRect.yMax > BattleSurfaceRect.yMin)
+            if (layout.Header.yMax > layout.BattleSurface.yMin)
             {
                 reason = "header overlaps the embedded battle surface";
                 return false;
@@ -394,11 +396,12 @@ namespace FruitDefense
 
             var embeddedRegions = new[]
             {
-                BoardRect, ToolTrayRect, NurseryTrayRect, RefreshRect(), DetailRect,
+                layout.Board, layout.ToolTray, layout.NurseryTray,
+                layout.RefreshAction, layout.Detail,
             };
             foreach (var region in embeddedRegions)
             {
-                if (!ContainsRect(BattleSurfaceRect, region))
+                if (!ContainsRect(layout.BattleSurface, region))
                 {
                     reason = "embedded region leaves the battle surface: " + region;
                     return false;
@@ -414,13 +417,13 @@ namespace FruitDefense
                 }
             }
 
-            if (BoardRect.width < DesignWidth || BoardRect.height <= 398f)
+            if (layout.Board.width < BattleUiLayout.DesignWidth || layout.Board.height <= 398f)
             {
                 reason = "battlefield did not reach the enlarged full-width target";
                 return false;
             }
 
-            var projection = new BattlefieldProjection(GameConfig.DefaultBattlefield, BoardRect);
+            var projection = layout.Battlefield;
             var legacyProjection = new BattlefieldProjection(GameConfig.DefaultBattlefield,
                 new Rect(4f, 76f, 394f, 398f));
             if (!projection.ValidatePlantingGeometry(out reason)) return false;
@@ -447,10 +450,10 @@ namespace FruitDefense
                 reason = "frameless flowerpot visual is not near-cell-size or contained";
                 return false;
             }
-            var nurseryCell = NurseryRect(0);
-            var nurseryIcon = FramelessSlotIconRect(nurseryCell);
-            var potToolCell = PotToolRect();
-            var potToolIcon = PotToolIconRect();
+            var nurseryCell = layout.NurserySlot(0);
+            var nurseryIcon = BattleUiLayout.FramelessSlotIcon(nurseryCell);
+            var potToolCell = layout.PotTool;
+            var potToolIcon = layout.PotToolIcon;
             if (!ContainsRect(nurseryCell, nurseryIcon)
                 || nurseryIcon.width / nurseryCell.width < .9f
                 || nurseryIcon.height / nurseryCell.height < .9f
@@ -481,13 +484,12 @@ namespace FruitDefense
 
             var primaryTargets = new[]
             {
-                new Rect(274f, 16f, 52f, 44f), new Rect(334f, 16f, 52f, 44f),
-                WeaponToolRect(WeaponKind.Gatling), WeaponToolRect(WeaponKind.Ice),
-                WeaponToolRect(WeaponKind.Chili), PotToolRect(),
-                RefreshRect(),
-                projection.WaveActionRect,
-                DetailCloseRect(),
-                NurseryRect(0), NurseryRect(1), NurseryRect(2), NurseryRect(3), NurseryRect(4),
+                layout.PauseAction, layout.SpeedAction,
+                layout.WeaponTool(WeaponKind.Gatling), layout.WeaponTool(WeaponKind.Ice),
+                layout.WeaponTool(WeaponKind.Chili), layout.PotTool,
+                layout.RefreshAction, layout.WaveAction, layout.DetailCloseAction,
+                layout.NurserySlot(0), layout.NurserySlot(1), layout.NurserySlot(2),
+                layout.NurserySlot(3), layout.NurserySlot(4),
             };
             foreach (var target in primaryTargets)
             {
@@ -504,27 +506,33 @@ namespace FruitDefense
 
         public static bool ValidateSessionControlContract(out string reason)
         {
-            var projection = new BattlefieldProjection(GameConfig.DefaultBattlefield, BoardRect);
+            var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
+            var projection = layout.Battlefield;
             if (!projection.ValidateControlInset(out reason)) return false;
 
-            if (!HasWaveAction(GamePhase.Ready, false)
-                || WaveActionLabel(GamePhase.Ready) != "开始波次"
-                || HasWaveAction(GamePhase.Playing, false)
-                || !HasWaveAction(GamePhase.BetweenWaves, false)
-                || WaveActionLabel(GamePhase.BetweenWaves) != "立即开始下一波"
-                || HasWaveAction(GamePhase.Victory, false)
-                || HasWaveAction(GamePhase.Defeat, false)
-                || HasWaveAction(GamePhase.Ready, true))
+            var readyUi = BattleUiPresentationState.Create(GamePhase.Ready, false);
+            var playingUi = BattleUiPresentationState.Create(GamePhase.Playing, false);
+            var betweenUi = BattleUiPresentationState.Create(GamePhase.BetweenWaves, false);
+            var victoryUi = BattleUiPresentationState.Create(GamePhase.Victory, false);
+            var defeatUi = BattleUiPresentationState.Create(GamePhase.Defeat, false);
+            var pausedUi = BattleUiPresentationState.Create(GamePhase.Ready, true);
+            if (!readyUi.ShowsWaveAction || readyUi.WaveActionLabel != "开始波次"
+                || playingUi.ShowsWaveAction
+                || !betweenUi.ShowsWaveAction
+                || betweenUi.WaveActionLabel != "立即开始下一波"
+                || victoryUi.ShowsWaveAction
+                || defeatUi.ShowsWaveAction
+                || pausedUi.ShowsWaveAction)
             {
                 reason = "phase-specific battlefield wave action contract failed";
                 return false;
             }
 
-            if (ModalActionCount(GamePhase.Ready, false) != 0
-                || ModalActionCount(GamePhase.Playing, true) != 2
-                || ModalActionCount(GamePhase.BetweenWaves, true) != 2
-                || ModalActionCount(GamePhase.Victory, false) != 1
-                || ModalActionCount(GamePhase.Defeat, false) != 1)
+            if (readyUi.ModalActionCount != 0
+                || BattleUiPresentationState.Create(GamePhase.Playing, true).ModalActionCount != 2
+                || BattleUiPresentationState.Create(GamePhase.BetweenWaves, true).ModalActionCount != 2
+                || victoryUi.ModalActionCount != 1
+                || defeatUi.ModalActionCount != 1)
             {
                 reason = "phase-specific modal action count failed";
                 return false;
@@ -535,10 +543,11 @@ namespace FruitDefense
                 Rect? previous = null;
                 for (var index = 0; index < count; index++)
                 {
-                    var target = ModalActionRect(index, count);
+                    var target = layout.ModalAction(index, count);
+                    var owner = count == 1 ? layout.TerminalModal : layout.Modal;
                     if (Mathf.Min(target.width, target.height) < 44f
-                        || target.xMin < ModalRect.xMin || target.yMin < ModalRect.yMin
-                        || target.xMax > ModalRect.xMax || target.yMax > ModalRect.yMax
+                        || target.xMin < owner.xMin || target.yMin < owner.yMin
+                        || target.xMax > owner.xMax || target.yMax > owner.yMax
                         || previous.HasValue && previous.Value.Overlaps(target))
                     {
                         reason = "modal action geometry failed for " + count + " actions";
@@ -555,7 +564,8 @@ namespace FruitDefense
                 reason = "ready wave action did not start wave one";
                 return false;
             }
-            if (HasWaveAction(ready.State.Phase, ready.State.Paused) || ready.StartWave(out _))
+            if (BattleUiPresentationState.Create(
+                    ready.State.Phase, ready.State.Paused).ShowsWaveAction || ready.StartWave(out _))
             {
                 reason = "playing phase exposed or accepted a wave-start action";
                 return false;
@@ -587,12 +597,15 @@ namespace FruitDefense
                 SelectedWeapon = WeaponKind.Ice,
                 PotToolSelected = true,
                 Status = "stale",
-                StatusUntil = 5f,
+                StatusSuccess = false,
+                StatusPulse = RuntimeUiFeedbackPulse.Begin(0f, 5f),
                 Drag = new DragSession { Type = DragPayloadType.Plant, PlantId = 88, Active = true },
                 DragControlId = 7,
                 ReturnPulsePlantId = 88,
-                ReturnPulseUntil = 5f,
-                NurseryRollDisplayUntil = 5f,
+                ReturnPulse = RuntimeUiFeedbackPulse.Begin(0f, 5f),
+                NurseryRollDisplayPulse = RuntimeUiFeedbackPulse.Begin(0f, 5f),
+                SelectionPulseTarget = 2,
+                SelectionPulse = RuntimeUiFeedbackPulse.Begin(0f, 5f),
             };
             ResetFullRun(restartSimulation, presentation, 9103);
             if (!presentation.IsClean()
@@ -610,55 +623,9 @@ namespace FruitDefense
             return true;
         }
 
-        public static bool HasWaveAction(GamePhase phase, bool paused)
-        {
-            return !paused && (phase == GamePhase.Ready || phase == GamePhase.BetweenWaves);
-        }
-
-        public static string WaveActionLabel(GamePhase phase)
-        {
-            if (phase == GamePhase.BetweenWaves) return BetweenWaveActionLabel;
-            return phase == GamePhase.Ready ? "开始波次"
-                : phase == GamePhase.BetweenWaves ? "立即开始下一波"
-                : string.Empty;
-        }
-
-        // Temporary compatibility path for the current single Main scene. Once the final Bootstrap
-        // scene is active it owns construction and this installer exits without creating a host.
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void InstallStandaloneCompatibilityHost()
-        {
-            if (AppBootstrap.Instance != null) return;
-            if (FindAnyObjectByType<LayeredTerrainAcceptancePresenter>() != null) return;
-
-            var host = FindAnyObjectByType<FruitDefenseGame>();
-            if (host == null)
-                host = new GameObject("FruitDefenseGame-StandaloneCompatibility").AddComponent<FruitDefenseGame>();
-            if (host.IsInitialized) return;
-
-            var navigator = new AppNavigator();
-            if (navigator.TryBeginTransition(AppRoute.Battle, out _))
-                navigator.TryCompleteTransition(out _);
-            var request = new BattleLaunchRequest(
-                "standalone-" + Guid.NewGuid().ToString("N"),
-                "orchard-01",
-                0,
-                "builtin");
-            var result = host.Initialize(request, navigator, new StandaloneCompatibilityResultSink());
-            if (!result.Success)
-                Debug.LogError("Standalone battle compatibility initialization failed: " + result.ErrorCode);
-        }
-
         private void Awake()
         {
             Screen.orientation = ScreenOrientation.Portrait;
-            _font = Resources.Load<Font>("Fonts/NotoSansSC-UI");
-            if (_font == null)
-            {
-                Debug.LogError("Bundled UI font is missing: Resources/Fonts/NotoSansSC-UI.ttf");
-                _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            }
-            _font.RequestCharactersInTexture("开始波次立即开始下一波继续游戏重新开始", 15, FontStyle.Bold);
             _tempArtAtlas = Resources.Load<Texture2D>("TempArt/fruit-defense-temp-atlas");
             _combatVfxAtlas = Resources.Load<Texture2D>("TempArt/combat-vfx-atlas");
             _attackRangeTexture = CreateAttackRangeTexture();
@@ -672,7 +639,6 @@ namespace FruitDefense
                 _combatVfxAtlas.filterMode = FilterMode.Bilinear;
                 _combatVfxAtlas.wrapMode = TextureWrapMode.Clamp;
             }
-            BuildStyles();
             Application.targetFrameRate = 60;
         }
 
@@ -681,18 +647,21 @@ namespace FruitDefense
             DisposeSession();
             if (_attackRangeTexture != null) Destroy(_attackRangeTexture);
             _attackRangeTexture = null;
-            _font = null;
             _tempArtAtlas = null;
             _combatVfxAtlas = null;
+            _worldLabelStyle = null;
+            _terrainFailureStyle = null;
         }
 
         public BattleSessionInitializationResult Initialize(
             BattleLaunchRequest request,
             IAppNavigator navigator,
             IBattleResultSink resultSink,
+            RuntimeUiTheme runtimeUiTheme,
             BattlefieldMapDefinition map = null)
         {
-            if (!TryValidateInitialization(request, navigator, resultSink, out var failure)) return failure;
+            if (!TryValidateInitialization(
+                    request, navigator, resultSink, runtimeUiTheme, out var failure)) return failure;
 
             GameSimulation simulation;
             try
@@ -706,16 +675,19 @@ namespace FruitDefense
                     BattleSessionInitializationResult.SimulationConstructionFailed);
             }
 
-            return CompleteInitialization(request, navigator, resultSink, simulation);
+            return CompleteInitialization(
+                request, navigator, resultSink, runtimeUiTheme, simulation);
         }
 
         public BattleSessionInitializationResult Initialize(
             BattleLaunchRequest request,
             IAppNavigator navigator,
             IBattleResultSink resultSink,
+            RuntimeUiTheme runtimeUiTheme,
             ResolvedLevelDefinition resolvedLevel)
         {
-            if (!TryValidateInitialization(request, navigator, resultSink, out var failure)) return failure;
+            if (!TryValidateInitialization(
+                    request, navigator, resultSink, runtimeUiTheme, out var failure)) return failure;
             if (resolvedLevel == null)
                 return BattleSessionInitializationResult.Failed(
                     BattleSessionInitializationResult.ResolvedLevelRequired);
@@ -742,11 +714,12 @@ namespace FruitDefense
                     BattleSessionInitializationResult.SimulationConstructionFailed);
             }
 
-            return CompleteInitialization(request, navigator, resultSink, simulation);
+            return CompleteInitialization(
+                request, navigator, resultSink, runtimeUiTheme, simulation);
         }
 
         private bool TryValidateInitialization(BattleLaunchRequest request,
-            IAppNavigator navigator, IBattleResultSink resultSink,
+            IAppNavigator navigator, IBattleResultSink resultSink, RuntimeUiTheme runtimeUiTheme,
             out BattleSessionInitializationResult failure)
         {
             if (_hasInitialized)
@@ -778,25 +751,43 @@ namespace FruitDefense
                     BattleSessionInitializationResult.ResultSinkRequired);
                 return false;
             }
+            if (runtimeUiTheme == null)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.RuntimeUiThemeRequired);
+                return false;
+            }
+            var themeValidation = runtimeUiTheme.Validate();
+            if (!themeValidation.IsValid)
+            {
+                failure = BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.RuntimeUiThemeInvalid + ":"
+                    + themeValidation.Issues[0].Code);
+                return false;
+            }
 
             failure = default;
             return true;
         }
 
         private BattleSessionInitializationResult CompleteInitialization(BattleLaunchRequest request,
-            IAppNavigator navigator, IBattleResultSink resultSink, GameSimulation simulation)
+            IAppNavigator navigator, IBattleResultSink resultSink, RuntimeUiTheme runtimeUiTheme,
+            GameSimulation simulation)
         {
 
             _hasInitialized = true;
             _isInitialized = true;
             _sessionDisposed = false;
+            _acceptanceTerminalPreview = false;
             _currentRequest = request;
             _navigator = navigator;
             _resultSink = resultSink;
+            _runtimeUiTheme = runtimeUiTheme;
+            BuildWorldRenderingStyles(runtimeUiTheme.PackagedChineseFont);
             _game = simulation;
             RefreshTerrainPresentationStatus();
             _presentation.Clear();
-            _projection = new BattlefieldProjection(_game.Map, BoardRect);
+            _battleUiLayout = new BattleUiLayout(_game.Map);
             _hasEnteredBattleRoute = navigator.CurrentRoute == AppRoute.Battle;
             _navigator.RouteChanged += OnAppRouteChanged;
 
@@ -834,6 +825,7 @@ namespace FruitDefense
                 return false;
             }
 
+            _acceptanceTerminalPreview = false;
             var presentation = CaptureRestartPresentation();
             ResetFullRun(_game, presentation, _currentRequest.Seed);
             _presentation.Clear();
@@ -882,6 +874,7 @@ namespace FruitDefense
         {
             if (!_isInitialized || _game == null || _currentRequest == null || _resultSubmitted)
                 return false;
+            if (_acceptanceTerminalPreview) return false;
 
             var phase = _game.State.Phase;
             if (phase != GamePhase.Victory && phase != GamePhase.Defeat) return false;
@@ -958,12 +951,15 @@ namespace FruitDefense
                 ActiveSessionHostCount--;
 
             _isInitialized = false;
+            _acceptanceTerminalPreview = false;
             _navigator = null;
             _resultSink = null;
+            _runtimeUiTheme = null;
+            _runtimeUiDrawContext = null;
             _appBootstrap = null;
             _currentRequest = null;
             _game = null;
-            _projection = null;
+            _battleUiLayout = null;
             _presentation.Clear();
             CancelTransientInteraction();
             ResetInteractionState();
@@ -978,40 +974,24 @@ namespace FruitDefense
             _potToolSelected = false;
         }
 
-        private sealed class StandaloneCompatibilityResultSink : IBattleResultSink
+        private void BuildWorldRenderingStyles(Font packagedChineseFont)
         {
-            public bool TrySubmitResult(BattleResult result, out string errorCode)
+            _worldLabelStyle = new GUIStyle
             {
-                Debug.Log("Standalone battle completed: " + result.Outcome);
-                errorCode = string.Empty;
-                return true;
-            }
-        }
-
-        private void BuildStyles()
-        {
-            _title = Style(20, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.20f, .13f, .08f));
-            _heading = Style(16, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(.25f, .16f, .10f));
-            _body = Style(15, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(.26f, .18f, .11f));
-            _small = Style(15, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(.38f, .29f, .20f));
-            _center = Style(15, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .16f, .09f));
-            _entity = Style(18, FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
-            _tiny = Style(10, FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
-            _button = Style(15, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .16f, .09f));
-            _body.wordWrap = true;
-            _small.wordWrap = true;
-            _button.wordWrap = false;
-            _button.normal.background = Texture2D.whiteTexture;
-            _button.hover.background = Texture2D.whiteTexture;
-            _button.active.background = Texture2D.whiteTexture;
-        }
-
-        private GUIStyle Style(int size, FontStyle fontStyle, TextAnchor anchor, Color color)
-        {
-            return new GUIStyle
+                font = packagedChineseFont,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                richText = true,
+            };
+            _terrainFailureStyle = new GUIStyle
             {
-                font = _font, fontSize = size, fontStyle = fontStyle,
-                alignment = anchor, normal = { textColor = color }, richText = true,
+                font = packagedChineseFont,
+                fontSize = 15,
+                fontStyle = FontStyle.Normal,
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = true,
+                richText = true,
+                normal = { textColor = new Color(1f, .82f, .72f, 1f) },
             };
         }
 
@@ -1030,12 +1010,18 @@ namespace FruitDefense
 
         public void ConfigureAcceptanceState(string stateName)
         {
+            ConfigureAcceptanceState(stateName, Application.absoluteURL);
+        }
+
+        private void ConfigureAcceptanceState(string stateName, string absoluteUrl)
+        {
             if (!_isInitialized || _game == null) return;
-            if (!Application.absoluteURL.Contains("acceptance=1")) return;
+            if (string.IsNullOrEmpty(absoluteUrl) || !absoluteUrl.Contains("acceptance=1")) return;
+            _acceptanceTerminalPreview = false;
             _game.Reset(20260714);
             _game.DiscardPendingPresentationEvents();
             _presentation.Clear();
-            _projection = new BattlefieldProjection(_game.Map, BoardRect);
+            _battleUiLayout = new BattleUiLayout(_game.Map);
             _game.State.Pots.Clear();
             _game.State.Plants.Clear();
             _game.State.Zombies.Clear();
@@ -1063,6 +1049,22 @@ namespace FruitDefense
                     {
                         Id = _game.State.NextId++, Kind = PlantKind.Sunflower, Star = 1, NurseryIndex = 0,
                     });
+                    break;
+                case "selected-tool":
+                    AddAcceptancePot(GetAcceptanceCell(0), PlantKind.Pea);
+                    _game.State.Inventory.Gatling = 1;
+                    break;
+                case "terminal-victory":
+                    _game.State.Phase = GamePhase.Victory;
+                    _game.State.WaveIndex = _game.MaxWaves;
+                    _game.State.Lives = 3;
+                    _acceptanceTerminalPreview = true;
+                    break;
+                case "terminal-defeat":
+                    _game.State.Phase = GamePhase.Defeat;
+                    _game.State.WaveIndex = Math.Min(6, _game.MaxWaves);
+                    _game.State.Lives = 0;
+                    _acceptanceTerminalPreview = true;
                     break;
                 case "active-wave":
                     AddAcceptancePot(GetAcceptanceCell(0), PlantKind.Pea);
@@ -1135,28 +1137,36 @@ namespace FruitDefense
         private void OnGUI()
         {
             if (!_isInitialized || _game == null) return;
+            var layout = BattleLayout;
+            _runtimeUiDrawContext = RuntimeUiGui.RequireContext(
+                _runtimeUiDrawContext, _runtimeUiTheme, 1f);
             var safeArea = RuntimeSafeAreaResolver.ResolveCurrent();
             var viewportLayout = BattlefieldProjection.CalculateViewportLayout(
-                Screen.width, Screen.height, safeArea, DesignWidth, DesignHeight);
+                Screen.width, Screen.height, safeArea,
+                BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
             GUI.matrix = Matrix4x4.identity;
-            var background = ThemeColor(theme => theme.BackgroundColor, new Color(.91f, .86f, .75f));
-            DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), background);
+            RuntimeUiGui.DrawScreenBackground(_runtimeUiDrawContext,
+                new Rect(0f, 0f, Screen.width, Screen.height));
             GUI.matrix = viewportLayout.GuiMatrix;
-            HandleDragInput(Event.current);
-            DrawRect(new Rect(0f, 0f, DesignWidth, DesignHeight), background);
-            DrawHeader();
-            DrawBoard();
-            DrawEmbeddedBattleControls();
-            DrawDragGhost();
-            DrawOverlay();
+            HandleDragInput(Event.current, layout);
+            var currentDropTarget = CurrentDropTarget(layout);
+            var currentDropCue = ResolveDropCue(currentDropTarget);
+            DrawHeader(layout, _runtimeUiDrawContext);
+            DrawBoard(layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
+            DrawEmbeddedBattleControls(
+                layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
+            DrawDragGhost(
+                layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
+            DrawOverlay(layout, _runtimeUiDrawContext);
         }
 
-        private void HandleDragInput(Event evt)
+        private void HandleDragInput(Event evt, BattleUiLayout layout)
         {
             if (_game == null) return;
             var controlId = GUIUtility.GetControlID(0x4F524348, FocusType.Passive);
-            var ended = _game.State.Phase == GamePhase.Victory || _game.State.Phase == GamePhase.Defeat;
-            if ((_game.State.Paused || ended) && _drag != null) CancelDrag("拖拽已取消，物品返回原位");
+            var viewState = BattleUiPresentationState.Create(
+                _game.State.Phase, _game.State.Paused);
+            if (viewState.BlocksDrag && _drag != null) CancelDrag("拖拽已取消，物品返回原位");
 
             if (evt.type == EventType.KeyDown && evt.keyCode == KeyCode.Escape && _drag != null)
             {
@@ -1164,11 +1174,11 @@ namespace FruitDefense
                 evt.Use();
                 return;
             }
-            if (_game.State.Paused || ended) return;
+            if (viewState.BlocksDrag) return;
 
             if (evt.type == EventType.MouseDown && evt.button == 0)
             {
-                var source = FindDragSourceAt(evt.mousePosition);
+                var source = FindDragSourceAt(evt.mousePosition, layout);
                 if (source == null) return;
                 source.Start = evt.mousePosition;
                 source.Current = evt.mousePosition;
@@ -1189,7 +1199,7 @@ namespace FruitDefense
                     _selectedWeapon = WeaponKind.None;
                     _potToolSelected = false;
                 }
-                if (_drag.Active) UpdateDragHoverStatus(_drag.Current);
+                if (_drag.Active) UpdateDragHoverStatus(_drag.Current, layout);
                 evt.Use();
                 return;
             }
@@ -1198,7 +1208,7 @@ namespace FruitDefense
             {
                 var session = _drag;
                 session.Current = evt.mousePosition;
-                if (session.Active) CompleteDrag(session, session.Current);
+                if (session.Active) CompleteDrag(session, session.Current, layout);
                 else PerformSourceClick(session);
                 _drag = null;
                 if (GUIUtility.hotControl == _dragControlId) GUIUtility.hotControl = 0;
@@ -1207,38 +1217,42 @@ namespace FruitDefense
             }
         }
 
-        private DragSession FindDragSourceAt(Vector2 point)
+        private DragSession FindDragSourceAt(Vector2 point, BattleUiLayout layout)
         {
             foreach (var plant in _game.State.Plants)
             {
-                var rect = PlantSourceRect(plant);
+                var rect = PlantSourceRect(plant, layout);
                 if (rect.width > 0f && rect.Contains(point))
                     return new DragSession { Type = DragPayloadType.Plant, PlantId = plant.Id };
             }
-            if (_game.State.Inventory.Gatling > 0 && WeaponToolRect(WeaponKind.Gatling).Contains(point))
+            if (_game.State.Inventory.Gatling > 0
+                && layout.WeaponTool(WeaponKind.Gatling).Contains(point))
                 return new DragSession { Type = DragPayloadType.Weapon, Weapon = WeaponKind.Gatling };
-            if (_game.State.Inventory.Ice > 0 && WeaponToolRect(WeaponKind.Ice).Contains(point))
+            if (_game.State.Inventory.Ice > 0
+                && layout.WeaponTool(WeaponKind.Ice).Contains(point))
                 return new DragSession { Type = DragPayloadType.Weapon, Weapon = WeaponKind.Ice };
-            if (_game.State.Inventory.Chili > 0 && WeaponToolRect(WeaponKind.Chili).Contains(point))
+            if (_game.State.Inventory.Chili > 0
+                && layout.WeaponTool(WeaponKind.Chili).Contains(point))
                 return new DragSession { Type = DragPayloadType.Weapon, Weapon = WeaponKind.Chili };
-            if (_game.State.Inventory.Pots > 0 && PotToolRect().Contains(point))
+            if (_game.State.Inventory.Pots > 0 && layout.PotTool.Contains(point))
                 return new DragSession { Type = DragPayloadType.Pot };
             return null;
         }
 
-        private DropTarget FindDropTargetAt(DragSession session, Vector2 cursor)
+        private DropTarget FindDropTargetAt(
+            DragSession session, Vector2 cursor, BattleUiLayout layout)
         {
             var targets = new List<DropTarget>();
             if (session.Type == DragPayloadType.Plant)
             {
                 foreach (var pot in _game.State.Pots.Where(value => value.Active))
                 {
-                    var rect = PotHitRect(pot);
+                    var rect = layout.Battlefield.PotHitRect(pot.Cell);
                     targets.Add(new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = rect });
                 }
                 for (var slot = 0; slot < 5; slot++)
                 {
-                    var rect = NurseryRect(slot);
+                    var rect = layout.NurserySlot(slot);
                     targets.Add(new DropTarget { Type = DropTargetType.Nursery, Slot = slot, Rect = rect });
                 }
             }
@@ -1246,7 +1260,7 @@ namespace FruitDefense
             {
                 foreach (var plant in _game.State.Plants)
                 {
-                    var rect = PlantSourceRect(plant);
+                    var rect = PlantSourceRect(plant, layout);
                     if (rect.width > 0f)
                         targets.Add(new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = rect });
                 }
@@ -1256,7 +1270,7 @@ namespace FruitDefense
                 foreach (var cell in _game.Map.PlantableCells)
                 {
                     if (_game.State.Pots.Any(pot => pot.Active && pot.Cell == cell)) continue;
-                    var rect = ExpansionRect(cell);
+                    var rect = layout.Battlefield.PotHitRect(cell);
                     targets.Add(new DropTarget { Type = DropTargetType.Expansion, Cell = cell, Rect = rect });
                 }
             }
@@ -1282,9 +1296,9 @@ namespace FruitDefense
             if (plant != null) HandlePlantClick(plant);
         }
 
-        private void CompleteDrag(DragSession session, Vector2 point)
+        private void CompleteDrag(DragSession session, Vector2 point, BattleUiLayout layout)
         {
-            var target = FindDropTargetAt(session, point);
+            var target = FindDropTargetAt(session, point, layout);
             if (session.Type == DragPayloadType.Plant)
             {
                 if (target.Type == DropTargetType.Pot)
@@ -1337,7 +1351,8 @@ namespace FruitDefense
             if (_drag != null && _drag.Type == DragPayloadType.Plant)
             {
                 _returnPulsePlantId = _drag.PlantId;
-                _returnPulseUntil = Time.unscaledTime + .55f;
+                _returnPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                    _runtimeUiTheme.Feedback.UnscaledStatusSeconds);
             }
             SetStatus(false, reason);
             _drag = null;
@@ -1345,12 +1360,13 @@ namespace FruitDefense
             _dragControlId = 0;
         }
 
-        private void UpdateDragHoverStatus(Vector2 point)
+        private void UpdateDragHoverStatus(Vector2 point, BattleUiLayout layout)
         {
-            var target = FindDropTargetAt(_drag, point);
+            var target = FindDropTargetAt(_drag, point, layout);
             var status = DragTargetStatus(_drag, target);
             _status = (status.Legal ? "✓ " : "! ") + status.Reason;
-            _statusUntil = Time.unscaledTime + .4f;
+            _statusPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledFocusSeconds);
         }
 
         private InteractionStatus DragTargetStatus(DragSession session, DropTarget target)
@@ -1381,6 +1397,50 @@ namespace FruitDefense
                     : new PlantDropStatus(false, PlantDropAction.Invalid, "这里不能放置水果");
         }
 
+        private DropTarget CurrentDropTarget(BattleUiLayout layout)
+        {
+            return _drag != null && _drag.Active
+                ? FindDropTargetAt(_drag, _drag.Current, layout)
+                : new DropTarget { Type = DropTargetType.None };
+        }
+
+        private BattleUiDropCue ResolveDropCue(DropTarget target)
+        {
+            if (_drag == null || !_drag.Active) return BattleUiDropCue.None;
+            if (_drag.Type == DragPayloadType.Plant)
+            {
+                var status = PlantDragTargetStatus(_drag, target);
+                return BattleUiPresentationState.ResolveDropCue(status.Legal,
+                    status.Action == PlantDropAction.Merge,
+                    status.Action == PlantDropAction.Swap);
+            }
+
+            var interaction = DragTargetStatus(_drag, target);
+            return BattleUiPresentationState.ResolveDropCue(
+                interaction.Legal, false, false);
+        }
+
+        private static bool MatchesDropTarget(DropTarget candidate, DropTarget current)
+        {
+            if (candidate.Type != current.Type) return false;
+            switch (candidate.Type)
+            {
+                case DropTargetType.Pot:
+                case DropTargetType.Plant: return candidate.Id == current.Id;
+                case DropTargetType.Nursery: return candidate.Slot == current.Slot;
+                case DropTargetType.Expansion: return candidate.Cell == current.Cell;
+                default: return false;
+            }
+        }
+
+        private static void DrawDropCue(RuntimeUiDrawContext drawContext,
+            Rect target, BattleUiDropCue cue)
+        {
+            if (cue == BattleUiDropCue.None) return;
+            RuntimeUiGui.DrawIndicator(drawContext, BattleUiLayout.CueBadge(target),
+                BattleUiPresentationState.DropIndicatorKind(cue));
+        }
+
         private static bool ShouldShowMergeHint(DragPayloadType payloadType, PlantDropStatus status)
         {
             return payloadType == DragPayloadType.Plant
@@ -1388,17 +1448,21 @@ namespace FruitDefense
                 && status.Action == PlantDropAction.Merge;
         }
 
-        private static Rect MergeHintRect(Rect dragRect, float labelWidth)
-        {
-            var width = Mathf.Clamp(labelWidth + 20f, MergeHintMinWidth, MergeHintMaxWidth);
-            var x = Mathf.Clamp(dragRect.center.x - width * .5f, 8f, DesignWidth - 8f - width);
-            return new Rect(x, dragRect.yMax + 4f, width, MergeHintHeight);
-        }
-
         private void ToggleWeaponSelection(WeaponKind weapon)
         {
             _selectedWeapon = _selectedWeapon == weapon ? WeaponKind.None : weapon;
             _potToolSelected = false;
+            if (_selectedWeapon == WeaponKind.None)
+            {
+                _selectionPulseTarget = 0;
+                _selectionPulse = default;
+            }
+            else
+            {
+                _selectionPulseTarget = (int)_selectedWeapon;
+                _selectionPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                    _runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
+            }
             SetStatus(true, _selectedWeapon == WeaponKind.None ? "已取消武器选择" : "拖动或点击植物安装" + GameConfig.WeaponName(weapon));
         }
 
@@ -1406,81 +1470,56 @@ namespace FruitDefense
         {
             _potToolSelected = !_potToolSelected;
             _selectedWeapon = WeaponKind.None;
+            _selectionPulseTarget = _potToolSelected ? -1 : 0;
+            _selectionPulse = _potToolSelected
+                ? RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                    _runtimeUiTheme.Feedback.UnscaledSelectionSeconds)
+                : default;
             SetStatus(true, _potToolSelected ? "拖动花盆到绿色候选格，或点击扩建" : "已取消扩建");
         }
 
-        private static Rect NurseryRect(int slot)
-        {
-            const float gap = 5f;
-            var width = (NurseryTrayRect.width - 16f - gap * 4f) / 5f;
-            return new Rect(NurseryTrayRect.x + 8f + slot * (width + gap),
-                NurseryTrayRect.y + 18f, width, NurseryTrayRect.height - 22f);
-        }
-
-        private static Rect WeaponToolRect(WeaponKind weapon)
-        {
-            var index = weapon == WeaponKind.Gatling ? 0 : weapon == WeaponKind.Ice ? 1 : 2;
-            return ToolRect(index);
-        }
-
-        private static Rect PotToolRect() { return ToolRect(3); }
-
-        private static Rect PotToolIconRect()
-        {
-            var rect = PotToolRect();
-            var size = rect.height - 2f;
-            return new Rect(rect.x + 1f, rect.y + 1f, size, size);
-        }
-
-        private static Rect ToolRect(int index)
-        {
-            const float gap = 5f;
-            var width = (ToolTrayRect.width - 16f - gap * 3f) / 4f;
-            return new Rect(ToolTrayRect.x + 8f + index * (width + gap),
-                ToolTrayRect.y + 18f, width, ToolTrayRect.height - 22f);
-        }
-
-        private static Rect RefreshRect() { return RefreshActionRect; }
-
-        private static Rect DetailCloseRect()
-        {
-            return new Rect(DetailRect.xMax - 48f, DetailRect.y + 4f, 44f, 44f);
-        }
-
-        private BattlefieldProjection Projection
+        private BattleUiLayout BattleLayout
         {
             get
             {
-                if (_projection == null) _projection = new BattlefieldProjection(_game.Map, BoardRect);
-                return _projection;
+                if (_battleUiLayout == null)
+                    throw new InvalidOperationException("Battle UI layout is unavailable before initialization.");
+                return _battleUiLayout;
             }
         }
 
-        private Rect ExpansionRect(Vector2Int cell) { return Projection.PotHitRect(cell); }
+        private BattlefieldProjection Projection => BattleLayout.Battlefield;
 
-        private Rect PotHitRect(Pot pot)
+        private static Rect ExpansionRect(Vector2Int cell, BattleUiLayout layout)
         {
-            return Projection.PotHitRect(pot.Cell);
+            return layout.Battlefield.PotHitRect(cell);
         }
-        private Rect PotVisualRect(Pot pot)
+
+        private static Rect PotHitRect(Pot pot, BattleUiLayout layout)
         {
-            return Projection.PotVisualRect(pot.Cell);
+            return layout.Battlefield.PotHitRect(pot.Cell);
         }
-        private Rect PlantSourceRect(Plant plant)
+
+        private static Rect PotVisualRect(Pot pot, BattleUiLayout layout)
+        {
+            return layout.Battlefield.PotVisualRect(pot.Cell);
+        }
+
+        private Rect PlantSourceRect(Plant plant, BattleUiLayout layout)
         {
             if (plant.PotId >= 0)
             {
                 var pot = _game.PotById(plant.PotId);
-                return pot == null ? new Rect() : PotHitRect(pot);
+                return pot == null ? new Rect() : PotHitRect(pot, layout);
             }
-            return plant.NurseryIndex >= 0 ? NurseryRect(plant.NurseryIndex) : new Rect();
+            return plant.NurseryIndex >= 0
+                ? layout.NurserySlot(plant.NurseryIndex)
+                : new Rect();
         }
         private static Rect Grow(Rect rect, float amount)
         {
             return new Rect(rect.x - amount, rect.y - amount, rect.width + amount * 2f, rect.height + amount * 2f);
         }
-
-        private static Rect FramelessSlotIconRect(Rect rect) { return Grow(rect, -2f); }
 
         private static bool ContainsRect(Rect outer, Rect inner)
         {
@@ -1488,38 +1527,100 @@ namespace FruitDefense
                 && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;
         }
 
-        private void DrawHeader()
+        private static bool ContainsPointer(Rect rect)
         {
-            DrawPanel(HeaderRect, new Color(.99f, .97f, .88f));
-            GUI.Label(new Rect(16f, 12f, 118f, 24f), "水果塔防", _title);
-            GUI.Label(new Rect(16f, 38f, 88f, 24f), "阳光 <b>" + _game.State.Sun + "</b>", _body);
-            GUI.Label(new Rect(104f, 38f, 82f, 24f), "核心 <b>" + _game.State.Lives + "</b>", _body);
-            GUI.Label(new Rect(186f, 38f, 76f, 24f), "波次 <b>" + _game.State.WaveIndex
-                + "/" + _game.MaxWaves + "</b>", _body);
-            if (ColoredButton(new Rect(274f, 16f, 52f, 44f), _game.State.Paused ? "继续" : "暂停", new Color(.96f, .84f, .48f)))
+            return Event.current != null && rect.Contains(Event.current.mousePosition);
+        }
+
+        private static bool IsPointerPress(Rect rect)
+        {
+            return ContainsPointer(rect) && Event.current.button == 0
+                && (Event.current.rawType == EventType.MouseDown
+                    || Event.current.rawType == EventType.MouseDrag);
+        }
+
+        private static bool DrawSharedHitTarget(RuntimeUiDrawContext drawContext,
+            Rect rect, RuntimeUiInteractionState state)
+        {
+            var enabled = GUI.enabled;
+            GUI.enabled = enabled && state != RuntimeUiInteractionState.Disabled
+                && state != RuntimeUiInteractionState.Loading;
+            try
+            {
+                return GUI.Button(rect, GUIContent.none, drawContext.Styles.HitTarget);
+            }
+            finally
+            {
+                GUI.enabled = enabled;
+            }
+        }
+
+        private void DrawHeader(BattleUiLayout layout, RuntimeUiDrawContext drawContext)
+        {
+            var viewState = BattleUiPresentationState.Create(
+                _game.State.Phase, _game.State.Paused);
+            RuntimeUiGui.DrawRaisedPanel(drawContext, layout.Header);
+            var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleTitle);
+            RuntimeUiGui.DrawSingleLineText(drawContext, layout.HeaderTitle,
+                titleCopy.Text,
+                titleCopy.Role, titleCopy.Tone, titleCopy.Alignment);
+            RuntimeUiGui.DrawMetric(drawContext, layout.SunMetric,
+                RuntimeUiArtSlot.IconResourceSun,
+                RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleSun).Text,
+                _game.State.Sun.ToString(), compactInline: true,
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+            RuntimeUiGui.DrawMetric(drawContext, layout.LivesMetric,
+                RuntimeUiArtSlot.IconResourceCore,
+                RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleCore).Text,
+                _game.State.Lives.ToString(), compactInline: true,
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+            RuntimeUiGui.DrawMetric(drawContext, layout.WaveMetric,
+                RuntimeUiArtSlot.IconResourceWave,
+                RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleWave).Text,
+                _game.State.WaveIndex.ToString(),
+                compactInline: true,
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+            RuntimeUiGui.DrawMetricDivider(drawContext, layout.FirstMetricDivider);
+            RuntimeUiGui.DrawMetricDivider(drawContext, layout.SecondMetricDivider);
+
+            var pauseState = BattleUiPresentationState.ResolveActionState(
+                viewState.IsPaused, ContainsPointer(layout.PauseAction),
+                IsPointerPress(layout.PauseAction));
+            if (RuntimeUiGui.DrawAction(drawContext, layout.PauseAction, string.Empty,
+                    RuntimeUiActionKind.Quiet, pauseState, viewState.PauseActionIcon))
                 _game.TogglePause();
-            if (ColoredButton(new Rect(334f, 16f, 52f, 44f), _game.State.Speed + " 倍", new Color(.83f, .91f, .67f)))
+
+            var speedState = BattleUiPresentationState.ResolveActionState(
+                _game.State.Speed != 1, ContainsPointer(layout.SpeedAction),
+                IsPointerPress(layout.SpeedAction));
+            var speedClicked = RuntimeUiGui.DrawAction(drawContext, layout.SpeedAction,
+                _game.State.Speed + "×", RuntimeUiActionKind.Quiet, speedState,
+                RuntimeUiArtSlot.IconControlSpeed,
+                RuntimeUiTypographyRole.Supplemental);
+            if (speedClicked)
                 _game.SetSpeed(_game.State.Speed == 1 ? 2 : 1);
         }
 
-        private void DrawBoard()
+        private void DrawBoard(BattleUiLayout layout, RuntimeUiDrawContext drawContext,
+            DropTarget currentDropTarget, BattleUiDropCue currentDropCue)
         {
-            var ground = ThemeColor(theme => theme.GroundColor, new Color(.46f, .68f, .28f));
-            DrawPanel(BattleSurfaceRect, Color.Lerp(ground, Color.black, .18f));
+            RuntimeUiGui.DrawStandardPanel(drawContext, layout.BattleSurface);
             var texturedTerrain = DrawBattlefieldTerrain();
             if (!texturedTerrain)
-                DrawTerrainPresentationFailure();
+                DrawTerrainPresentationFailure(layout);
             DrawRouteTiles();
             DrawCore();
-            DrawPlantingCells(texturedTerrain);
-            DrawInspectedAttackRange();
-            if (_potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot)) DrawExpansionCandidates();
-            DrawPotsAndPlants();
+            DrawPlantingCells(texturedTerrain, layout);
+            DrawInspectedAttackRange(layout);
+            if (_potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot))
+                DrawExpansionCandidates(
+                    layout, drawContext, currentDropTarget, currentDropCue);
+            DrawPotsAndPlants(layout, drawContext, currentDropTarget, currentDropCue);
             DrawProjectiles();
             DrawZombies();
             DrawCombatEffects();
-            DrawFeedback();
-            DrawBoardStatus();
+            DrawFeedback(layout);
+            DrawBoardStatus(layout, drawContext, currentDropCue);
         }
 
         private bool DrawBattlefieldTerrain()
@@ -1588,19 +1689,13 @@ namespace FruitDefense
                 + _terrainPresentationError, this);
         }
 
-        private void DrawTerrainPresentationFailure()
+        private void DrawTerrainPresentationFailure(BattleUiLayout layout)
         {
-            var panel = new Rect(BoardRect.x + 6f, BoardRect.y + 6f,
-                BoardRect.width - 12f, BoardRect.height - 12f);
-            DrawRect(panel, new Color(.24f, .10f, .10f, 1f));
-            var style = new GUIStyle(_body)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = true,
-            };
-            style.normal.textColor = new Color(1f, .82f, .72f, 1f);
+            var panel = layout.TerrainFailurePanel;
+            DrawWorldRect(panel, new Color(.24f, .10f, .10f, 1f));
             GUI.Label(Grow(panel, -12f),
-                "Terrain presentation unavailable\n" + _terrainPresentationError, style);
+                "Terrain presentation unavailable\n" + _terrainPresentationError,
+                _terrainFailureStyle);
         }
 
         private void DrawBattlefieldBaseLayer(BattlefieldMapDefinition map, Rect grid,
@@ -1681,10 +1776,16 @@ namespace FruitDefense
         private void DrawCore()
         {
             var rect = Projection.CoreRect;
-            DrawRect(rect, ThemeColor(theme => theme.CoreColor, new Color(.71f, .79f, .45f)));
-            GUI.Label(new Rect(rect.x, rect.y + rect.height * .08f, rect.width, rect.height * .55f), "♣",
-                Style(17, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.19f, .38f, .16f)));
-            GUI.Label(new Rect(rect.x, rect.center.y + rect.height * .08f, rect.width, 18f), "核心", _tiny);
+            DrawWorldRect(rect,
+                ThemeColor(theme => theme.CoreColor, new Color(.71f, .79f, .45f)));
+            DrawWorldLabel(
+                new Rect(rect.x, rect.y + rect.height * .08f,
+                    rect.width, rect.height * .55f),
+                "♣", 17, new Color(.19f, .38f, .16f));
+            DrawWorldLabel(
+                new Rect(rect.x, rect.center.y + rect.height * .08f,
+                    rect.width, 18f),
+                "核心", 10, Color.white);
         }
 
         private void DrawRouteTiles()
@@ -1700,13 +1801,13 @@ namespace FruitDefense
                 var markerSize = rect.width * .28f;
                 var marker = new Rect(rect.center.x - markerSize * .5f, rect.center.y - markerSize * .5f,
                     markerSize, markerSize);
-                DrawRect(marker, descriptor.Kind == BattlefieldRouteTileKind.Entry
+                DrawWorldRect(marker, descriptor.Kind == BattlefieldRouteTileKind.Entry
                     ? new Color(.42f, .82f, .32f)
                     : accent);
             }
         }
 
-        private void DrawPlantingCells(bool texturedTerrain)
+        private void DrawPlantingCells(bool texturedTerrain, BattleUiLayout layout)
         {
             // Missing contour or pair assets are a presentation failure. Do not disguise it
             // by reverting to the legacy plantable-cell terrain treatment.
@@ -1715,10 +1816,11 @@ namespace FruitDefense
             var plantable = ThemeColor(theme => theme.PlantableColor, new Color(.58f, .72f, .36f));
             foreach (var cell in _game.Map.PlantableCells)
             {
-                var rect = ExpansionRect(cell);
+                var rect = ExpansionRect(cell, layout);
                 if (!expansionActive)
                 {
-                    DrawOutline(Grow(rect, .5f), 1f, new Color(.2f, .24f, .16f, .28f));
+                    DrawWorldOutline(
+                        Grow(rect, .5f), 1f, new Color(.2f, .24f, .16f, .28f));
                     continue;
                 }
                 var active = _game.State.Pots.Any(pot => pot.Active && pot.Cell == cell);
@@ -1745,17 +1847,19 @@ namespace FruitDefense
                             : new Color(1f, 1f, 1f, .025f);
                 }
                 if (texturedTerrain)
-                    DrawOutline(Grow(rect, .5f), 1f, border);
+                    DrawWorldOutline(Grow(rect, .5f), 1f, border);
                 else
-                    DrawRect(Grow(rect, .5f), border);
-                DrawRect(rect, fill);
+                    DrawWorldRect(Grow(rect, .5f), border);
+                DrawWorldRect(rect, fill);
                 if (!active)
-                    GUI.Label(rect, expansionActive && legal ? "+" : "·", Style(11, FontStyle.Bold, TextAnchor.MiddleCenter,
-                        expansionActive && legal ? new Color(.88f, 1f, .55f) : new Color(.31f, .43f, .2f, .9f)));
+                    DrawWorldLabel(rect, expansionActive && legal ? "+" : "·", 11,
+                        expansionActive && legal
+                            ? new Color(.88f, 1f, .55f)
+                            : new Color(.31f, .43f, .2f, .9f));
             }
         }
 
-        private void DrawInspectedAttackRange()
+        private void DrawInspectedAttackRange(BattleUiLayout layout)
         {
             var plant = _game.PlantById(_inspectedPlantId);
             if (plant == null || plant.PotId < 0) return;
@@ -1763,8 +1867,8 @@ namespace FruitDefense
             var range = EffectiveAttackRange(plant);
             if (pot == null || range <= .0001f) return;
             var rangeRect = Projection.MapRect(_game.PotPoint(pot), range * 2f, range * 2f);
-            rangeRect.position -= BoardRect.position;
-            GUI.BeginGroup(BoardRect);
+            rangeRect.position -= layout.Board.position;
+            GUI.BeginGroup(layout.Board);
             GUI.DrawTexture(rangeRect, _attackRangeTexture, ScaleMode.StretchToFill, true);
             GUI.EndGroup();
         }
@@ -1774,35 +1878,49 @@ namespace FruitDefense
             return plant == null ? 0f : GameConfig.Plant(plant.Kind).Range * GameConfig.StarRange(plant.Star);
         }
 
-        private void DrawPotsAndPlants()
+        private void DrawPotsAndPlants(BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext, DropTarget currentDropTarget,
+            BattleUiDropCue currentDropCue)
         {
             foreach (var pot in _game.State.Pots.Where(value => value.Active))
             {
-                var hitRect = PotHitRect(pot);
-                var rect = PotVisualRect(pot);
+                var hitRect = PotHitRect(pot, layout);
+                var rect = PotVisualRect(pot, layout);
                 var plant = _game.PlantAtPot(pot.Id);
                 var selected = plant != null && plant.Id == _inspectedPlantId;
-                var border = selected ? new Color(1f, .84f, .23f) : new Color(.58f, .42f, .24f);
                 var target = _drag != null && _drag.Active && _drag.Type == DragPayloadType.Weapon && plant != null
                     ? new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = hitRect }
                     : new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = hitRect };
-                if (IsCurrentDropTarget(target)) border = DropHighlightColor(target);
-                if (plant != null && plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil)
-                    border = Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f));
-                var returning = plant != null && plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil;
-                if (selected || IsCurrentDropTarget(target) || returning)
-                    DrawOutline(Grow(hitRect, -1f), 2f, border);
+                var returning = plant != null && plant.Id == _returnPulsePlantId
+                    && _returnPulse.IsActive(Time.unscaledTime);
                 DrawTempSprite(rect, plant == null ? TempSprite.EmptyPot : TempSprite.OccupiedPot);
                 if (plant == null)
                 {
-                    if (GUI.Button(hitRect, GUIContent.none, GUIStyle.none)) HandlePotClick(pot.Id);
+                    if (MatchesDropTarget(target, currentDropTarget))
+                        DrawDropCue(drawContext, hitRect, currentDropCue);
+                    if (DrawSharedHitTarget(drawContext, hitRect,
+                            RuntimeUiInteractionState.Normal))
+                        HandlePotClick(pot.Id);
                     continue;
                 }
-                if (GUI.Button(hitRect, GUIContent.none, GUIStyle.none)) HandlePlantClick(plant);
+                if (DrawSharedHitTarget(drawContext, hitRect,
+                        RuntimeUiInteractionState.Normal))
+                    HandlePlantClick(plant);
                 DrawAnimatedPlant(Grow(rect, 1f), plant);
-                GUI.Label(new Rect(rect.x - 4f, rect.yMax - 1f, rect.width + 8f, 10f), new string('★', plant.Star), _tiny);
+                DrawWorldLabel(
+                    new Rect(rect.x - 4f, rect.yMax - 1f, rect.width + 8f, 10f),
+                    new string('★', plant.Star), 10, Color.white);
                 if (plant.MoveCooldown > 0f)
-                    GUI.Label(rect, plant.MoveCooldown.ToString("0.0"), _tiny);
+                    DrawWorldLabel(rect, plant.MoveCooldown.ToString("0.0"),
+                        10, Color.white);
+                if (selected)
+                    RuntimeUiGui.DrawIndicator(drawContext,
+                        BattleUiLayout.CueBadge(hitRect), RuntimeUiIndicatorKind.Selected);
+                else if (returning)
+                    RuntimeUiGui.DrawIndicator(drawContext,
+                        BattleUiLayout.CueBadge(hitRect), RuntimeUiIndicatorKind.Warning);
+                if (MatchesDropTarget(target, currentDropTarget))
+                    DrawDropCue(drawContext, hitRect, currentDropCue);
             }
         }
 
@@ -1854,22 +1972,26 @@ namespace FruitDefense
                 : "点击只查看信息；请拖动" + GameConfig.Plant(inspected.Kind).Name + "到花盆";
         }
 
-        private void DrawExpansionCandidates()
+        private void DrawExpansionCandidates(BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext, DropTarget currentDropTarget,
+            BattleUiDropCue currentDropCue)
         {
             foreach (var cell in _game.Map.PlantableCells)
             {
                 if (_game.State.Pots.Any(pot => pot.Active && pot.Cell == cell)) continue;
                 var legal = _game.CanExpand(cell);
-                var rect = ExpansionRect(cell);
-                var visualRect = Projection.PotVisualRect(cell);
+                var rect = ExpansionRect(cell, layout);
+                var visualRect = layout.Battlefield.PotVisualRect(cell);
                 var target = new DropTarget { Type = DropTargetType.Expansion, Cell = cell, Rect = rect };
-                if (IsCurrentDropTarget(target))
-                    DrawOutline(Grow(rect, -1f), 3f, legal ? new Color(.95f, .83f, .2f) : new Color(.9f, .25f, .2f));
-                else
-                    DrawOutline(Grow(rect, -1f), 1f,
-                        legal ? new Color(.32f, .69f, .28f, .72f) : new Color(.42f, .36f, .34f, .72f));
                 DrawTempSprite(visualRect, legal ? TempSprite.ExpansionPot : TempSprite.LockedPot);
-                if (GUI.Button(rect, GUIContent.none, GUIStyle.none) && legal)
+                var cue = MatchesDropTarget(target, currentDropTarget)
+                    ? currentDropCue
+                    : BattleUiPresentationState.ResolveDropCue(legal, false, false);
+                DrawDropCue(drawContext, rect, cue);
+                var state = legal
+                    ? RuntimeUiInteractionState.Normal
+                    : RuntimeUiInteractionState.Disabled;
+                if (DrawSharedHitTarget(drawContext, rect, state) && legal)
                 {
                     SetStatus(_game.ExpandPot(cell, out var reason), reason);
                     if (_game.State.Inventory.Pots <= 0) _potToolSelected = false;
@@ -1896,9 +2018,9 @@ namespace FruitDefense
                 var healthWidth = Projection.LegacyVisualSize(80f);
                 var healthRect = new Rect(point.x - healthWidth * .5f, rect.y - 3f,
                     healthWidth, 2f);
-                DrawRect(healthRect, new Color(.22f, .16f, .12f));
+                DrawWorldRect(healthRect, new Color(.22f, .16f, .12f));
                 healthRect.width *= Mathf.Clamp01(zombie.Hp / zombie.MaxHp);
-                DrawRect(healthRect, new Color(.85f, .22f, .16f));
+                DrawWorldRect(healthRect, new Color(.85f, .22f, .16f));
             }
         }
 
@@ -1969,144 +2091,217 @@ namespace FruitDefense
             }
         }
 
-        private void DrawFeedback()
+        private void DrawFeedback(BattleUiLayout layout)
         {
             foreach (var feedback in _presentation.Feedback)
             {
                 var point = ToBoard(feedback.Point);
-                var style = Style(11, FontStyle.Bold, TextAnchor.MiddleCenter, feedback.Color);
-                GUI.Label(BattlefieldFeedbackRect(Projection.GridRect, point), feedback.Text, style);
+                DrawWorldLabel(BattleUiLayout.BattlefieldFeedback(
+                    layout.Battlefield.GridRect, point), feedback.Text, 11, feedback.Color);
             }
         }
 
         public static Rect BattlefieldFeedbackRect(Rect gridRect, Vector2 point)
         {
-            var width = Mathf.Min(90f, Mathf.Max(0f, gridRect.width));
-            var height = Mathf.Min(18f, Mathf.Max(0f, gridRect.height));
-            var x = Mathf.Clamp(point.x - width * .5f, gridRect.xMin, gridRect.xMax - width);
-            var y = Mathf.Clamp(point.y - 28f, gridRect.yMin, gridRect.yMax - height);
-            return new Rect(x, y, width, height);
+            return BattleUiLayout.BattlefieldFeedback(gridRect, point);
         }
 
-        private void DrawBoardStatus()
+        private void DrawBoardStatus(
+            BattleUiLayout layout, RuntimeUiDrawContext drawContext,
+            BattleUiDropCue currentDropCue)
         {
             var state = _game.State;
-            var text = state.Phase == GamePhase.Playing
-                ? "第 " + state.WaveIndex + " 波 · " + state.Zombies.Count + " 个敌人"
-                : state.Phase == GamePhase.BetweenWaves
-                    ? "下一波倒计时 " + Mathf.CeilToInt(state.BetweenTimer) + " 秒"
-                    : state.Phase == GamePhase.Ready ? "准备阶段"
-                    : state.Phase == GamePhase.Victory ? "防守成功"
-                    : "核心失守";
-            var strip = Projection.ControlStripRect;
-            DrawRect(strip, new Color(.98f, .95f, .83f, .94f));
-            if (HasWaveAction(state.Phase, state.Paused))
+            var viewState = BattleUiPresentationState.Create(state.Phase, state.Paused);
+            var transientVisible = _statusPulse.IsActive(Time.unscaledTime)
+                && !string.IsNullOrEmpty(_status);
+            var text = transientVisible
+                ? _status
+                : viewState.BoardStatusText(
+                    state.WaveIndex, state.Zombies.Count, state.BetweenTimer);
+            var statusState = transientVisible
+                ? BattleUiPresentationState.ResolveTransientStatusState(
+                    _statusSuccess, currentDropCue)
+                : viewState.StatusInteractionState;
+            var statusRect = viewState.ShowsWaveAction
+                ? layout.BoardStatusWithWaveAction
+                : layout.BoardStatus;
+            if (transientVisible)
             {
-                var labelRect = new Rect(strip.x + 8f, strip.y, strip.width - Projection.WaveActionRect.width - 16f, strip.height);
-                GUI.Label(labelRect, text, Style(12, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .16f, .09f)));
-                if (ColoredButton(Projection.WaveActionRect, WaveActionLabel(state.Phase), new Color(.93f, .62f, .2f)))
+                PrepareTransientStatusText(drawContext, statusRect, text, statusState);
+                RuntimeUiGui.DrawStatus(drawContext, statusRect, _preparedStatusTextLines,
+                    statusState, RuntimeUiTypographyRole.Supplemental,
+                    _preparedStatusTextMode);
+            }
+            else
+            {
+                RuntimeUiGui.DrawStatus(drawContext, statusRect, text, statusState,
+                    RuntimeUiTypographyRole.Supplemental,
+                    RuntimeUiStatusTextMode.SingleLine);
+            }
+            if (transientVisible)
+                DrawDropCue(drawContext, statusRect, currentDropCue);
+            if (viewState.ShowsWaveAction)
+            {
+                var actionState = BattleUiPresentationState.ResolveActionState(
+                    false, ContainsPointer(layout.WaveAction),
+                    IsPointerPress(layout.WaveAction));
+                if (RuntimeUiGui.DrawAction(drawContext, layout.WaveAction,
+                        viewState.WaveActionLabel, RuntimeUiActionKind.Primary,
+                        actionState, RuntimeUiArtSlot.IconControlStartWave,
+                        RuntimeUiTypographyRole.Supplemental))
                     SetStatus(_game.StartWave(out var reason), reason);
-                return;
             }
-            GUI.Label(strip, text, Style(12, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .16f, .09f)));
         }
 
-        private void DrawEmbeddedBattleControls()
+        private void DrawEmbeddedBattleControls(BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext, DropTarget currentDropTarget,
+            BattleUiDropCue currentDropCue)
         {
-            DrawRect(ToolTrayRect, new Color(.97f, .94f, .82f, .94f));
-            GUI.Label(new Rect(ToolTrayRect.x + 8f, ToolTrayRect.y, 180f, 18f), "构筑栏", _small);
-            DrawTools();
-            DrawRect(NurseryTrayRect, new Color(.97f, .94f, .82f, .94f));
-            GUI.Label(new Rect(NurseryTrayRect.x + 8f, NurseryTrayRect.y, 180f, 18f), "刷新栏", _small);
-            DrawNursery();
-            DrawSelectedPlant();
+            RuntimeUiGui.DrawStandardPanel(drawContext, layout.ToolTray);
+            var toolCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleToolTray);
+            RuntimeUiGui.DrawSingleLineText(drawContext, layout.ToolTrayTitle,
+                toolCopy.Text,
+                toolCopy.Role, toolCopy.Tone, toolCopy.Alignment);
+            DrawTools(layout, drawContext);
+            RuntimeUiGui.DrawStandardPanel(drawContext, layout.NurseryTray);
+            var nurseryCopy = RuntimeUiCopyCatalog.Get(
+                RuntimeUiCopyId.BattleNurseryTray);
+            RuntimeUiGui.DrawSingleLineText(drawContext, layout.NurseryTrayTitle,
+                nurseryCopy.Text, nurseryCopy.Role, nurseryCopy.Tone,
+                nurseryCopy.Alignment);
+            DrawNursery(layout, drawContext, currentDropTarget, currentDropCue);
+            DrawSelectedPlant(layout, drawContext);
         }
 
-        private void DrawTools()
+        private void DrawTools(BattleUiLayout layout, RuntimeUiDrawContext drawContext)
         {
-            DrawToolButton(WeaponToolRect(WeaponKind.Gatling), WeaponKind.Gatling, _game.State.Inventory.Gatling);
-            DrawToolButton(WeaponToolRect(WeaponKind.Ice), WeaponKind.Ice, _game.State.Inventory.Ice);
-            DrawToolButton(WeaponToolRect(WeaponKind.Chili), WeaponKind.Chili, _game.State.Inventory.Chili);
+            DrawToolButton(layout.WeaponTool(WeaponKind.Gatling), WeaponKind.Gatling,
+                _game.State.Inventory.Gatling, layout, drawContext);
+            DrawToolButton(layout.WeaponTool(WeaponKind.Ice), WeaponKind.Ice,
+                _game.State.Inventory.Ice, layout, drawContext);
+            DrawToolButton(layout.WeaponTool(WeaponKind.Chili), WeaponKind.Chili,
+                _game.State.Inventory.Chili, layout, drawContext);
             var draggingPot = _drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot;
-            var potColor = _potToolSelected || draggingPot ? new Color(1f, .83f, .32f) : new Color(.84f, .9f, .66f);
-            var potRect = PotToolRect();
-            if (_potToolSelected || draggingPot) DrawOutline(potRect, 2f, potColor);
-            DrawTempSprite(PotToolIconRect(), TempSprite.EmptyPot);
-            GUI.Label(new Rect(potRect.x + 47f, potRect.y + 3f, potRect.width - 49f, 44f), "花盆\n×" + _game.State.Inventory.Pots, _small);
-            if (GUI.Button(potRect, GUIContent.none, GUIStyle.none) && _game.State.Inventory.Pots > 0)
-            {
+            var potRect = layout.PotTool;
+            var available = _game.State.Inventory.Pots > 0;
+            var state = BattleUiPresentationState.ResolveSlotState(available,
+                _potToolSelected || draggingPot, ContainsPointer(potRect),
+                IsPointerPress(potRect));
+            var selectionEmphasized = _potToolSelected && _selectionPulseTarget == -1
+                && _selectionPulse.IsActive(Time.unscaledTime);
+            RuntimeUiGui.DrawSlot(drawContext, potRect, RuntimeUiSlotKind.Tool, state,
+                selectionEmphasized);
+            RuntimeUiGui.DrawIcon(drawContext, layout.PotToolIcon,
+                RuntimeUiArtSlot.IconToolPot, state);
+            RuntimeUiGui.DrawText(drawContext, layout.PotToolLabel,
+                "花盆\n×" + _game.State.Inventory.Pots,
+                RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
+                TextAnchor.MiddleCenter, state);
+            RuntimeUiGui.DrawStateIndicator(drawContext, potRect, state);
+            if (DrawSharedHitTarget(drawContext, potRect, state) && available)
                 TogglePotTool();
-            }
         }
 
-        private void DrawToolButton(Rect rect, WeaponKind weapon, int count)
+        private void DrawToolButton(
+            Rect rect, WeaponKind weapon, int count, BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext)
         {
             var selected = _selectedWeapon == weapon;
             var dragging = _drag != null && _drag.Active && _drag.Type == DragPayloadType.Weapon && _drag.Weapon == weapon;
-            var color = selected || dragging ? new Color(1f, .83f, .3f) : new Color(.82f, .89f, .7f);
-            DrawRect(rect, color);
-            DrawTempSprite(new Rect(rect.x + 6f, rect.y + 5f, 36f, 36f), WeaponSprite(weapon));
-            GUI.Label(new Rect(rect.x + 43f, rect.y + 3f, 41f, 44f), "×" + count, _small);
-            if (!GUI.Button(rect, GUIContent.none, GUIStyle.none) || count <= 0) return;
+            var state = BattleUiPresentationState.ResolveSlotState(count > 0,
+                selected || dragging, ContainsPointer(rect), IsPointerPress(rect));
+            var selectionEmphasized = selected && _selectionPulseTarget == (int)weapon
+                && _selectionPulse.IsActive(Time.unscaledTime);
+            RuntimeUiGui.DrawSlot(drawContext, rect, RuntimeUiSlotKind.Tool, state,
+                selectionEmphasized);
+            DrawStatefulTempSprite(
+                drawContext, layout.ToolIcon(rect), WeaponSprite(weapon), state);
+            RuntimeUiGui.DrawText(drawContext, layout.ToolCountLabel(rect), "×" + count,
+                RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
+                TextAnchor.MiddleCenter, state);
+            RuntimeUiGui.DrawStateIndicator(drawContext, rect, state);
+            if (!DrawSharedHitTarget(drawContext, rect, state) || count <= 0) return;
             ToggleWeaponSelection(weapon);
         }
 
-        private void DrawNursery()
+        private void DrawNursery(BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext, DropTarget currentDropTarget,
+            BattleUiDropCue currentDropCue)
         {
             for (var slot = 0; slot < 5; slot++)
             {
-                var rect = NurseryRect(slot);
+                var rect = layout.NurserySlot(slot);
                 var plant = _game.PlantAtNursery(slot);
                 var target = new DropTarget { Type = DropTargetType.Nursery, Slot = slot, Rect = rect };
-                var targetHovered = IsCurrentDropTarget(target);
+                var cue = MatchesDropTarget(target, currentDropTarget)
+                    ? currentDropCue
+                    : BattleUiDropCue.None;
+                if (plant != null && currentDropTarget.Type == DropTargetType.Plant
+                    && currentDropTarget.Id == plant.Id)
+                    cue = currentDropCue;
                 if (plant == null)
                 {
-                    if (targetHovered) DrawOutline(Grow(rect, -1f), 2f, DropHighlightColor(target));
-                    var showingPotReward = Time.unscaledTime < _nurseryRollDisplayUntil
+                    var showingPotReward = _nurseryRollDisplayPulse.IsActive(Time.unscaledTime)
                         && _game.LastNurseryPotSlots.Contains(slot);
+                    var state = cue != BattleUiDropCue.None
+                        ? BattleUiPresentationState.DropInteractionState(cue)
+                        : showingPotReward
+                            ? RuntimeUiInteractionState.Success
+                            : BattleUiPresentationState.ResolveSlotState(true, false,
+                                ContainsPointer(rect), IsPointerPress(rect));
+                    RuntimeUiGui.DrawSlot(
+                        drawContext, rect, RuntimeUiSlotKind.Nursery, state);
                     if (showingPotReward)
                     {
-                        DrawTempSprite(FramelessSlotIconRect(rect), TempSprite.EmptyPot);
-                        GUI.Label(new Rect(rect.x + 2f, rect.yMax - 18f,
-                            rect.width - 4f, 16f), "花盆入库", _tiny);
+                        RuntimeUiGui.DrawIcon(drawContext,
+                            BattleUiLayout.FramelessSlotIcon(rect),
+                            RuntimeUiArtSlot.IconToolPot, state);
+                        RuntimeUiGui.DrawSingleLineText(drawContext,
+                            BattleUiLayout.NurserySlotLabel(rect),
+                            RuntimeUiCopyCatalog.Get(
+                                RuntimeUiCopyId.BattleNurseryPotStored).Text,
+                            RuntimeUiTypographyRole.Supplemental,
+                            RuntimeUiTextTone.State, TextAnchor.MiddleCenter, state);
                     }
                     else
-                        GUI.Label(rect, "空位", _small);
-                    if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
+                        RuntimeUiGui.DrawSingleLineText(drawContext, rect,
+                            RuntimeUiCopyCatalog.Get(
+                                RuntimeUiCopyId.BattleNurseryEmpty).Text,
+                            RuntimeUiTypographyRole.Supplemental,
+                            RuntimeUiTextTone.Secondary, TextAnchor.MiddleCenter, state);
+                    RuntimeUiGui.DrawStateIndicator(drawContext, rect, state);
+                    DrawDropCue(drawContext, rect, cue);
+                    if (DrawSharedHitTarget(drawContext, rect, state))
                         SetStatus(false, DestinationDragGuidance(_game.PlantById(_inspectedPlantId), true));
                     continue;
                 }
                 var selected = plant.Id == _inspectedPlantId;
-                var showOutline = selected;
-                var outline = new Color(1f, .83f, .31f);
-                if (targetHovered)
-                {
-                    showOutline = true;
-                    outline = DropHighlightColor(target);
-                }
-                if (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Weapon)
-                {
-                    var plantTarget = new DropTarget { Type = DropTargetType.Plant, Id = plant.Id, Rect = rect };
-                    if (IsCurrentDropTarget(plantTarget))
-                    {
-                        showOutline = true;
-                        outline = DropHighlightColor(plantTarget);
-                    }
-                }
-                if (plant.Id == _returnPulsePlantId && Time.unscaledTime < _returnPulseUntil)
-                {
-                    showOutline = true;
-                    outline = Color.Lerp(new Color(1f, .96f, .35f), Color.white, Mathf.PingPong(Time.unscaledTime * 8f, 1f));
-                }
-                if (showOutline) DrawOutline(Grow(rect, -1f), 2f, outline);
-                DrawTempSprite(FramelessSlotIconRect(rect), PlantSprite(plant));
-                GUI.Label(new Rect(rect.x + 2f, rect.yMax - 18f,
-                    rect.width - 4f, 16f), new string('★', plant.Star), _tiny);
-                if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
+                var returning = plant.Id == _returnPulsePlantId
+                    && _returnPulse.IsActive(Time.unscaledTime);
+                var occupiedState = cue != BattleUiDropCue.None
+                    ? BattleUiPresentationState.DropInteractionState(cue)
+                    : returning
+                        ? RuntimeUiInteractionState.Warning
+                        : BattleUiPresentationState.ResolveSlotState(true, selected,
+                            ContainsPointer(rect), IsPointerPress(rect));
+                RuntimeUiGui.DrawSlot(
+                    drawContext, rect, RuntimeUiSlotKind.Nursery, occupiedState);
+                DrawTempSprite(BattleUiLayout.FramelessSlotIcon(rect), PlantSprite(plant));
+                RuntimeUiGui.DrawText(drawContext, BattleUiLayout.NurserySlotLabel(rect),
+                    new string('★', plant.Star), RuntimeUiTypographyRole.Supplemental,
+                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, occupiedState);
+                RuntimeUiGui.DrawStateIndicator(drawContext, rect, occupiedState);
+                DrawDropCue(drawContext, rect, cue);
+                if (DrawSharedHitTarget(drawContext, rect, occupiedState))
                     HandlePlantClick(plant);
             }
             var cost = GameConfig.RefreshCost(_game.State.RefreshCount);
-            if (ColoredButton(RefreshRect(), "刷新五株水果 · 消耗 " + cost + " 阳光", new Color(.47f, .7f, .32f)))
+            var refreshState = BattleUiPresentationState.ResolveActionState(false,
+                ContainsPointer(layout.RefreshAction), IsPointerPress(layout.RefreshAction));
+            if (RuntimeUiGui.DrawAction(drawContext, layout.RefreshAction,
+                    RuntimeUiCopyCatalog.FormatRefreshAction(cost),
+                    RuntimeUiActionKind.Primary, refreshState,
+                    RuntimeUiArtSlot.IconControlRefresh))
                 RefreshNurseryFromUi();
         }
 
@@ -2115,78 +2310,54 @@ namespace FruitDefense
             var success = _game.RefreshNursery(out var reason);
             if (success)
             {
-                _nurseryRollDisplayUntil = Time.unscaledTime + 1.8f;
+                _nurseryRollDisplayPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                    _runtimeUiTheme.Feedback.UnscaledStatusSeconds);
                 if (_inspectedPlantId >= 0 && _game.PlantById(_inspectedPlantId) == null) _inspectedPlantId = -1;
             }
             SetStatus(success, reason);
         }
 
-        private void DrawSelectedPlant()
+        private void DrawSelectedPlant(
+            BattleUiLayout layout, RuntimeUiDrawContext drawContext)
         {
             var plant = _game.PlantById(_inspectedPlantId);
             if (plant == null) return;
-            DrawPanel(DetailRect, new Color(.93f, .89f, .78f));
+            const RuntimeUiInteractionState detailState =
+                RuntimeUiInteractionState.Selected;
+            RuntimeUiGui.DrawDetailCard(drawContext, layout.Detail, detailState);
             var stats = GameConfig.Plant(plant.Kind);
-            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 4f,
-                DetailRect.width - 64f, 22f), stats.Name + " · " + plant.Star + " 星", _heading);
+            RuntimeUiGui.DrawSingleLineText(drawContext, layout.DetailTitle,
+                stats.Name + " · " + plant.Star + " 星",
+                RuntimeUiTypographyRole.ControlLabel, RuntimeUiTextTone.Primary,
+                TextAnchor.MiddleLeft, detailState);
             var effectiveRange = EffectiveAttackRange(plant);
             var rangeText = effectiveRange > .0001f
                 ? Mathf.RoundToInt(GameConfig.LegacyDistance(effectiveRange)).ToString()
                 : "无攻击范围";
-            GUI.Label(new Rect(DetailRect.x + 8f, DetailRect.y + 28f,
-                DetailRect.width - 64f, 34f),
+            RuntimeUiGui.DrawSingleLineText(drawContext, layout.DetailBody,
                 "伤害 " + Mathf.RoundToInt(stats.Damage * GameConfig.StarDamage(plant.Star))
                 + " · 范围 " + rangeText
-                + " · 装备 " + GameConfig.WeaponName(plant.Weapon), _small);
-            if (ColoredButton(DetailCloseRect(), "关闭", new Color(.85f, .78f, .65f)))
+                + " · 装备 " + GameConfig.WeaponName(plant.Weapon),
+                RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Secondary,
+                TextAnchor.MiddleLeft, detailState);
+            var closeState = BattleUiPresentationState.ResolveActionState(false,
+                ContainsPointer(layout.DetailCloseAction),
+                IsPointerPress(layout.DetailCloseAction));
+            if (RuntimeUiGui.DrawAction(drawContext, layout.DetailCloseAction,
+                    string.Empty, RuntimeUiActionKind.Quiet, closeState,
+                    RuntimeUiArtSlot.IconControlClose))
                 _inspectedPlantId = -1;
         }
 
-        private bool IsCurrentDropTarget(DropTarget candidate)
-        {
-            if (_drag == null || !_drag.Active) return false;
-            var current = FindDropTargetAt(_drag, _drag.Current);
-            if (candidate.Type != current.Type) return false;
-            switch (candidate.Type)
-            {
-                case DropTargetType.Pot:
-                case DropTargetType.Plant: return candidate.Id == current.Id;
-                case DropTargetType.Nursery: return candidate.Slot == current.Slot;
-                case DropTargetType.Expansion: return candidate.Cell == current.Cell;
-                default: return false;
-            }
-        }
-
-        private Color DropHighlightColor(DropTarget target)
-        {
-            if (_drag == null) return new Color(.58f, .42f, .24f);
-            if (_drag.Type == DragPayloadType.Plant)
-            {
-                var status = PlantDragTargetStatus(_drag, target);
-                if (status.Action == PlantDropAction.Merge && status.Legal) return new Color(1f, .74f, .08f);
-                if (status.Action == PlantDropAction.Swap && status.Legal) return new Color(.2f, .68f, .92f);
-                if (status.Legal) return new Color(.28f, .85f, .28f);
-                if (status.Action == PlantDropAction.Cancel) return new Color(.75f, .72f, .62f);
-                return new Color(.94f, .25f, .2f);
-            }
-            var interaction = DragTargetStatus(_drag, target);
-            return interaction.Legal ? new Color(.28f, .85f, .28f) : new Color(.94f, .25f, .2f);
-        }
-
-        private void DrawDragGhost()
+        private void DrawDragGhost(BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext, DropTarget currentTarget,
+            BattleUiDropCue currentDropCue)
         {
             if (_drag == null || !_drag.Active) return;
-            var currentTarget = FindDropTargetAt(_drag, _drag.Current);
             var rect = DragGeometry.PreviewRect(_drag.Current);
             if (currentTarget.Type != DropTargetType.None)
                 rect.center = Vector2.Lerp(rect.center, currentTarget.Rect.center, .42f);
-            rect.center = new Vector2(
-                Mathf.Clamp(rect.center.x, 24f, DesignWidth - 24f),
-                Mathf.Clamp(rect.center.y, 24f, DesignHeight - 24f));
-            var border = currentTarget.Type == DropTargetType.None
-                ? new Color(.78f, .4f, .3f)
-                : DropHighlightColor(currentTarget);
-            DrawOutline(rect, 2f, new Color(border.r, border.g, border.b, .95f));
+            rect = layout.ClampDragPreview(rect);
 
             if (_drag.Type == DragPayloadType.Plant)
             {
@@ -2197,68 +2368,120 @@ namespace FruitDefense
                 DrawTempSprite(rect, WeaponSprite(_drag.Weapon));
             else
                 DrawTempSprite(rect, TempSprite.EmptyPot);
+            DrawDropCue(drawContext, rect, currentDropCue);
 
             var mergeStatus = _drag.Type == DragPayloadType.Plant
                 ? PlantDragTargetStatus(_drag, currentTarget)
                 : default(PlantDropStatus);
             if (!ShouldShowMergeHint(_drag.Type, mergeStatus)) return;
 
-            var hintStyle = Style(12, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(1f, .86f, .45f));
-            var labelWidth = hintStyle.CalcSize(new GUIContent(mergeStatus.Reason)).x;
-            var hintRect = MergeHintRect(rect, labelWidth);
-            DrawRect(hintRect, new Color(.13f, .1f, .07f, .86f));
-            GUI.Label(hintRect, mergeStatus.Reason, hintStyle);
+            var labelWidth = drawContext.Styles.Text(
+                RuntimeUiTypographyRole.Supplemental,
+                TextAnchor.MiddleCenter).CalcSize(new GUIContent(mergeStatus.Reason)).x;
+            var hintRect = layout.MergeHint(rect, labelWidth);
+            RuntimeUiGui.DrawStandardPanel(
+                drawContext, hintRect, RuntimeUiInteractionState.Warning);
+            RuntimeUiGui.DrawText(drawContext, BattleUiLayout.CueLabel(hintRect),
+                mergeStatus.Reason, RuntimeUiTypographyRole.Supplemental,
+                RuntimeUiTextTone.State, TextAnchor.MiddleCenter,
+                RuntimeUiInteractionState.Warning);
+            RuntimeUiGui.DrawStateIndicator(
+                drawContext, hintRect, RuntimeUiInteractionState.Warning);
+            DrawDropCue(drawContext, hintRect, BattleUiDropCue.Merge);
         }
 
-        private void DrawOverlay()
+        private void DrawOverlay(
+            BattleUiLayout layout, RuntimeUiDrawContext drawContext)
         {
-            var phase = _game.State.Phase;
-            if (_game.State.Paused && phase != GamePhase.Victory && phase != GamePhase.Defeat)
-            {
-                DrawModal("游戏暂停", "按空格或选择操作", "继续游戏", () => _game.TogglePause(), "重新开始", RestartRun);
-            }
-            else if (phase == GamePhase.Victory)
-            {
-                DrawModal("果园守住了！", "成功抵御全部 " + _game.MaxWaves + " 波僵尸",
-                    "重新开始", RestartRun);
-            }
-            else if (phase == GamePhase.Defeat)
-            {
-                DrawModal("僵尸闯进果园了", "坚持到第 " + _game.State.WaveIndex + " 波", "重新开始", RestartRun);
-            }
+            var state = BattleUiPresentationState.Create(
+                _game.State.Phase, _game.State.Paused);
+            if (!state.ShowsOverlay) return;
+
+            var content = state.ModalContent(_game.State.WaveIndex, _game.MaxWaves);
+            if (state.Mode == BattleUiChromeMode.Paused)
+                DrawModal(layout, drawContext, content,
+                    () => _game.TogglePause(), RestartRun);
+            else
+                DrawModal(layout, drawContext, content, RestartRun);
         }
 
         private void DrawModal(
-            string title,
-            string message,
-            string primaryAction,
+            BattleUiLayout layout,
+            RuntimeUiDrawContext drawContext,
+            BattleUiModalContent content,
             Action primaryCallback,
-            string secondaryAction = null,
             Action secondaryCallback = null)
         {
-            DrawRect(new Rect(0f, 0f, DesignWidth, DesignHeight), new Color(.12f, .09f, .06f, .68f));
-            DrawPanel(ModalRect, new Color(1f, .97f, .86f));
-            GUI.Label(new Rect(52f, 326f, 298f, 52f), title,
-                Style(24, FontStyle.Bold, TextAnchor.MiddleCenter, new Color(.24f, .15f, .08f)));
-            GUI.Label(new Rect(60f, 390f, 282f, 52f), message, _center);
-            var actionCount = secondaryCallback == null ? 1 : 2;
-            if (ColoredButton(ModalActionRect(0, actionCount), primaryAction, new Color(.43f, .67f, .3f)))
+            var modalRect = content.UsesResultCard ? layout.TerminalModal : layout.Modal;
+            RuntimeUiGui.DrawBlockingModal(
+                drawContext, layout.Design, modalRect, content.SurfaceState);
+            if (content.UsesResultCard)
+            {
+                RuntimeUiGui.DrawResultCard(
+                    drawContext, modalRect, RuntimeUiInteractionState.Normal);
+                RuntimeUiGui.DrawResultBanner(
+                    drawContext, layout.ModalResultBanner);
+                RuntimeUiGui.DrawSingleLineText(drawContext,
+                    layout.ModalResultBannerText, content.ResultBannerText,
+                    RuntimeUiTypographyRole.SectionTitle, RuntimeUiTextTone.State,
+                    TextAnchor.MiddleCenter, content.SurfaceState);
+                RuntimeUiGui.DrawOrchardVista(
+                    drawContext, layout.ModalOrchardVista);
+            }
+            RuntimeUiGui.DrawSectionRibbon(
+                drawContext, content.UsesResultCard
+                    ? layout.ModalTerminalTitle : layout.ModalTitle,
+                content.SurfaceState);
+            RuntimeUiGui.DrawSingleLineText(drawContext,
+                content.UsesResultCard ? layout.ModalTerminalTitle : layout.ModalTitle,
+                content.Title,
+                RuntimeUiTypographyRole.SectionTitle, RuntimeUiTextTone.State,
+                TextAnchor.MiddleCenter, content.SurfaceState);
+            var messageRect = content.UsesResultCard
+                ? layout.ModalTerminalMessage : layout.ModalMessage;
+            if (content.MessageLines.HasSecondLine)
+            {
+                RuntimeUiGui.DrawControlledTwoLineText(drawContext, messageRect,
+                    content.MessageLines, RuntimeUiTypographyRole.Body,
+                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter,
+                    content.SurfaceState);
+            }
+            else
+            {
+                RuntimeUiGui.DrawSingleLineText(drawContext, messageRect,
+                    content.MessageLines.FirstLine, RuntimeUiTypographyRole.Body,
+                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter,
+                    content.SurfaceState);
+            }
+            if (content.UsesResultCard)
+            {
+                RuntimeUiGui.DrawIndicator(drawContext, layout.ModalResultIndicator,
+                    content.SurfaceState == RuntimeUiInteractionState.Success
+                        ? RuntimeUiIndicatorKind.Success
+                        : RuntimeUiIndicatorKind.Error);
+            }
+            else
+            {
+                RuntimeUiGui.DrawIndicator(drawContext, layout.ModalPauseIndicator,
+                    RuntimeUiIndicatorKind.Warning);
+            }
+            var actionCount = content.ActionCount;
+            var primaryRect = layout.ModalAction(0, actionCount);
+            var primaryState = BattleUiPresentationState.ResolveActionState(false,
+                ContainsPointer(primaryRect), IsPointerPress(primaryRect));
+            if (RuntimeUiGui.DrawAction(drawContext, primaryRect,
+                    content.PrimaryAction, content.PrimaryActionKind,
+                    primaryState, content.PrimaryActionIcon))
                 primaryCallback();
-            if (actionCount == 2
-                && ColoredButton(ModalActionRect(1, actionCount), secondaryAction, new Color(.86f, .35f, .3f)))
+
+            if (actionCount != 2) return;
+            var secondaryRect = layout.ModalAction(1, actionCount);
+            var secondaryState = BattleUiPresentationState.ResolveActionState(false,
+                ContainsPointer(secondaryRect), IsPointerPress(secondaryRect));
+            if (RuntimeUiGui.DrawAction(drawContext, secondaryRect,
+                    content.SecondaryAction, content.SecondaryActionKind,
+                    secondaryState, content.SecondaryActionIcon))
                 secondaryCallback();
-        }
-
-        private static int ModalActionCount(GamePhase phase, bool paused)
-        {
-            if (phase == GamePhase.Victory || phase == GamePhase.Defeat) return 1;
-            return paused ? 2 : 0;
-        }
-
-        private static Rect ModalActionRect(int index, int actionCount)
-        {
-            if (actionCount <= 1) return new Rect(92f, 466f, 218f, 52f);
-            return new Rect(index == 0 ? 54f : 206f, 466f, 142f, 52f);
         }
 
         private void RestartRun()
@@ -2280,12 +2503,15 @@ namespace FruitDefense
                 SelectedWeapon = _selectedWeapon,
                 PotToolSelected = _potToolSelected,
                 Status = _status,
-                StatusUntil = _statusUntil,
+                StatusSuccess = _statusSuccess,
+                StatusPulse = _statusPulse,
                 Drag = _drag,
                 DragControlId = _dragControlId,
                 ReturnPulsePlantId = _returnPulsePlantId,
-                ReturnPulseUntil = _returnPulseUntil,
-                NurseryRollDisplayUntil = _nurseryRollDisplayUntil,
+                ReturnPulse = _returnPulse,
+                NurseryRollDisplayPulse = _nurseryRollDisplayPulse,
+                SelectionPulseTarget = _selectionPulseTarget,
+                SelectionPulse = _selectionPulse,
             };
         }
 
@@ -2295,12 +2521,16 @@ namespace FruitDefense
             _selectedWeapon = presentation.SelectedWeapon;
             _potToolSelected = presentation.PotToolSelected;
             _status = presentation.Status;
-            _statusUntil = presentation.StatusUntil;
+            _statusSuccess = presentation.StatusSuccess;
+            _statusPulse = presentation.StatusPulse;
+            InvalidatePreparedStatusText();
             _drag = presentation.Drag;
             _dragControlId = presentation.DragControlId;
             _returnPulsePlantId = presentation.ReturnPulsePlantId;
-            _returnPulseUntil = presentation.ReturnPulseUntil;
-            _nurseryRollDisplayUntil = presentation.NurseryRollDisplayUntil;
+            _returnPulse = presentation.ReturnPulse;
+            _nurseryRollDisplayPulse = presentation.NurseryRollDisplayPulse;
+            _selectionPulseTarget = presentation.SelectionPulseTarget;
+            _selectionPulse = presentation.SelectionPulse;
         }
 
         private static void ResetFullRun(
@@ -2313,12 +2543,15 @@ namespace FruitDefense
             presentation.SelectedWeapon = WeaponKind.None;
             presentation.PotToolSelected = false;
             presentation.Status = DefaultStatus;
-            presentation.StatusUntil = 0f;
+            presentation.StatusSuccess = true;
+            presentation.StatusPulse = default;
             presentation.Drag = null;
             presentation.DragControlId = 0;
             presentation.ReturnPulsePlantId = -1;
-            presentation.ReturnPulseUntil = 0f;
-            presentation.NurseryRollDisplayUntil = 0f;
+            presentation.ReturnPulse = default;
+            presentation.NurseryRollDisplayPulse = default;
+            presentation.SelectionPulseTarget = 0;
+            presentation.SelectionPulse = default;
         }
 
         private static Texture2D CreateAttackRangeTexture()
@@ -2353,6 +2586,15 @@ namespace FruitDefense
         private void DrawTempSprite(Rect rect, TempSprite sprite, Color tint)
         {
             DrawAtlasSprite(_tempArtAtlas, rect, (int)sprite, tint);
+        }
+
+        private void DrawStatefulTempSprite(RuntimeUiDrawContext drawContext,
+            Rect rect, TempSprite sprite, RuntimeUiInteractionState state)
+        {
+            var opacity = state == RuntimeUiInteractionState.Disabled
+                ? drawContext.Opacity(state)
+                : 1f;
+            DrawTempSprite(rect, sprite, new Color(1f, 1f, 1f, opacity));
         }
 
         private void DrawVfxSprite(Rect rect, CombatSprite sprite)
@@ -2509,8 +2751,37 @@ namespace FruitDefense
 
         private void SetStatus(bool success, string text)
         {
-            _status = (success ? "✓ " : "! ") + text;
-            _statusUntil = Time.unscaledTime + 2.6f;
+            _status = text ?? string.Empty;
+            _statusSuccess = success;
+            InvalidatePreparedStatusText();
+            _statusPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledStatusSeconds);
+        }
+
+        private void PrepareTransientStatusText(RuntimeUiDrawContext drawContext,
+            Rect statusRect, string text, RuntimeUiInteractionState state)
+        {
+            if (string.Equals(_preparedStatusSource, text, StringComparison.Ordinal)
+                && Mathf.Abs(_preparedStatusWidth - statusRect.width) <= .001f)
+                return;
+
+            _preparedStatusTextMode = RuntimeUiGui.ResolveStatusTextMode(
+                drawContext, statusRect, text, state,
+                RuntimeUiTypographyRole.Supplemental);
+            var textLayout = RuntimeUiGui.ResolveStatusTextLayout(
+                drawContext, statusRect, state,
+                RuntimeUiTypographyRole.Supplemental, _preparedStatusTextMode);
+            _preparedStatusTextLines = RuntimeUiGui.ResolveStatusTextLines(textLayout, text);
+            _preparedStatusSource = text;
+            _preparedStatusWidth = statusRect.width;
+        }
+
+        private void InvalidatePreparedStatusText()
+        {
+            _preparedStatusSource = string.Empty;
+            _preparedStatusWidth = -1f;
+            _preparedStatusTextMode = RuntimeUiStatusTextMode.SingleLine;
+            _preparedStatusTextLines = default;
         }
 
         private Vector2 ToBoard(Vector2 point)
@@ -2518,13 +2789,14 @@ namespace FruitDefense
             return Projection.MapToScreen(point);
         }
 
-        private static void DrawPanel(Rect rect, Color color)
+        private void DrawWorldLabel(Rect rect, string text, int fontSize, Color color)
         {
-            DrawRect(new Rect(rect.x - 2f, rect.y - 2f, rect.width + 4f, rect.height + 4f), new Color(.34f, .25f, .15f));
-            DrawRect(rect, color);
+            _worldLabelStyle.fontSize = fontSize;
+            _worldLabelStyle.normal.textColor = color;
+            GUI.Label(rect, text, _worldLabelStyle);
         }
 
-        private static void DrawRect(Rect rect, Color color)
+        private static void DrawWorldRect(Rect rect, Color color)
         {
             var previous = GUI.color;
             GUI.color = color;
@@ -2532,13 +2804,15 @@ namespace FruitDefense
             GUI.color = previous;
         }
 
-        private static void DrawOutline(Rect rect, float thickness, Color color)
+        private static void DrawWorldOutline(Rect rect, float thickness, Color color)
         {
             thickness = Mathf.Max(1f, Mathf.Min(thickness, Mathf.Min(rect.width, rect.height) * .5f));
-            DrawRect(new Rect(rect.x, rect.y, rect.width, thickness), color);
-            DrawRect(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), color);
-            DrawRect(new Rect(rect.x, rect.y + thickness, thickness, rect.height - thickness * 2f), color);
-            DrawRect(new Rect(rect.xMax - thickness, rect.y + thickness, thickness, rect.height - thickness * 2f), color);
+            DrawWorldRect(new Rect(rect.x, rect.y, rect.width, thickness), color);
+            DrawWorldRect(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), color);
+            DrawWorldRect(new Rect(rect.x, rect.y + thickness,
+                thickness, rect.height - thickness * 2f), color);
+            DrawWorldRect(new Rect(rect.xMax - thickness, rect.y + thickness,
+                thickness, rect.height - thickness * 2f), color);
         }
 
         private Color ThemeColor(Func<LevelPresentationThemeDefinition, string> select,
@@ -2547,15 +2821,6 @@ namespace FruitDefense
             var theme = _game == null ? null : _game.Theme;
             if (theme == null || select == null) return fallback;
             return ColorUtility.TryParseHtmlString(select(theme), out var color) ? color : fallback;
-        }
-
-        private bool ColoredButton(Rect rect, string text, Color color)
-        {
-            var previous = GUI.backgroundColor;
-            GUI.backgroundColor = color;
-            var clicked = GUI.Button(rect, text, _button);
-            GUI.backgroundColor = previous;
-            return clicked;
         }
 
     }

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "runtime-ui-final-handoff-audit",
+  "accepted": true,
+  "scope": "ordinary WebGL runtime UI visual/theme/art-set acceptance",
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "1",
+    "artSetId": "sunny-orchard",
+    "artSetRevision": "1",
+    "activeArtSetGuid": "12cc0c638d174040bb0384d7bf17ea92"
+  },
+  "payload": {
+    "loader": "851fcdde61eef1484651f2967dacaa331ac377b0b8466d78c7557aaf1e0a507e",
+    "data": "f6ef5e73ae2c98afee676d099f7b3a0eda2dcd946ef76362e456aaf759f24044",
+    "framework": "628ded04a7af9570e4032627edcf6f973928ea5e8aa51c10f5ed97150760fc77",
+    "wasm": "1e2ae62ab967aba634bef0d8aa3e5726eab40cbf20acbc7893fc4a43d55c7015",
+    "indexHtml": "b9da71958fb5c463f1e146dc9904fcaf034ed47841f1d926dd6b652e22776091",
+    "payloadBytes": 8885317,
+    "buildBytes": 8905120
+  },
+  "matrix": {
+    "supportedShellRuns": 8,
+    "crossRouteRuns": 10,
+    "crossRouteAdditionalRuns": 8,
+    "sharedCrossRouteShellRuns": 2,
+    "canonicalAcceptanceManifests": 16,
+    "canonicalScreenshots": 85
+  },
+  "checks": {
+    "strictBefore": "pass",
+    "aggregateP0": "pass",
+    "independentWebBuild": "pass",
+    "allManifestsAccepted": "pass",
+    "allManifestChecksAccepted": "pass",
+    "payloadIdentityCrossCheck": "pass",
+    "runtimeUiIdentityCrossCheck": "pass",
+    "viewportAndSafeAreaCrossCheck": "pass",
+    "routeSessionAndInputCrossCheck": "pass",
+    "manualOriginalResolutionReview": "pass",
+    "strictAfter": "pass"
+  },
+  "metrics": {
+    "maximumBlackFraction": 0.0006329400063294,
+    "maximumNearBlackFraction": 0.0014467200144672,
+    "maximumInvalidFraction": 0.0006329400063294,
+    "minimumLobbyActionContrast": 3.21555998483371
+  },
+  "interactionHashes": {
+    "full": {
+      "toolAvailable": "fad9c4977cf31c2f8461178b0780e33f97c99bc58316007bb48f41039a503645",
+      "toolSelected": "0efe400795f3b14a03d37ceb1757b985dd50319d65040cb45561ff4c3c8aa441",
+      "legalCue": "08f2a3926f490dfe441c25de5b752d7794abd1a6b95a08bda2668894f3970a8b",
+      "illegalCue": "fc3d220a096edea9b13ed867d5b8d7c5df6dff0cdd2aba8f6d6e5eb0bd800e6c"
+    },
+    "inset": {
+      "toolAvailable": "994b2803c2362c37482934c19597ad2b9fab601d1025710fe7ef5837cfc18373",
+      "toolSelected": "252fa49c20cecad18ac0817ea9d58444b38754dd6d299ad4c4b3a0b8f49ddc11",
+      "legalCue": "d9ca33fcfc8a961691ae0193be0ea8f89142926a58388ee2540d78460cfdc9df",
+      "illegalCue": "1c1ef5da54022b1f77e2822806436b0d12fafe71de406851677db84587792296"
+    }
+  },
+  "manualReview": {
+    "plantDetailCompactTwoLines": "complete in full and inset; indicator and WaveAction do not overlap",
+    "betweenWaveSingleLine": "complete in full and inset",
+    "loadingEmphasis": "visible text and spinner cues across all eight Shell runs",
+    "backgroundAndNineSlice": "no crescent, transparent ellipse, missing outer pixel, or isolated seam observed",
+    "selectionAndDragCues": "selected and legal/illegal states are visually distinct and hash-distinct",
+    "settlementActions": "victory/defeat, Retry, Return, returned Lobby, and retry Battle fit in full and inset",
+    "legacyAndFallback": "no Unity default skin, legacy chrome, fallback surface, or mixed ArtSet observed"
+  },
+  "cleanup": {
+    "serverLogsRemainingAcrossChangeEvidence": 0,
+    "generatedInvalidDirectoryPresent": false,
+    "runtimeUiWarmProfileSourcePresent": false,
+    "activeAcceptanceProcesses": 0
+  },
+  "regressions": [
+    "regressions/plant-detail-status-clip-pre-fix-e0fd82921005",
+    "regressions/transition-race-final-attempt-1-inset-375x812-40-21",
+    "regressions/transition-race-attempt-1"
+  ],
+  "boundaries": {
+    "candidateB": "acceptance-time snapshot: preserved, pending, non-active",
+    "postAcceptanceCandidateDecision": "rejected; production Assets removed by task 7.3 follow-up; historical evidence retained",
+    "task3_4": "unchecked",
+    "gameplayClaim": false,
+    "persistenceClaim": false,
+    "miniGamePlatformClaim": false,
+    "designOverviewClaim": false
+  }
+}

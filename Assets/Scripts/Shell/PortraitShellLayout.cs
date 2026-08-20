@@ -58,12 +58,6 @@ namespace FruitDefense.Shell
         public Rect StartButton { get; }
         public Rect Status { get; }
 
-        // Compatibility aliases for the former reserved-card layout. They intentionally map
-        // to the same source rectangles used to draw and hit-test the three playable levels.
-        public Rect LevelCard => Orchard01Card;
-        public Rect GrowthCard => Orchard02Card;
-        public Rect SettingsCard => Orchard03Card;
-
         public Rect LevelCardFor(string levelId)
         {
             switch (levelId)
@@ -76,6 +70,27 @@ namespace FruitDefense.Shell
         }
     }
 
+    public readonly struct LobbyLevelCardLayout
+    {
+        public LobbyLevelCardLayout(Rect frame, Rect thumbnail, Rect title, Rect body,
+            Rect selectedMarker, Rect transientIndicator)
+        {
+            Frame = frame;
+            Thumbnail = thumbnail;
+            Title = title;
+            Body = body;
+            SelectedMarker = selectedMarker;
+            TransientIndicator = transientIndicator;
+        }
+
+        public Rect Frame { get; }
+        public Rect Thumbnail { get; }
+        public Rect Title { get; }
+        public Rect Body { get; }
+        public Rect SelectedMarker { get; }
+        public Rect TransientIndicator { get; }
+    }
+
     public readonly struct SettlementShellLayout
     {
         public SettlementShellLayout(
@@ -86,6 +101,9 @@ namespace FruitDefense.Shell
             Rect completedLevel,
             Rect reachedWave,
             Rect remainingLives,
+            Rect resultBanner,
+            Rect orchardVista,
+            Rect resultIndicator,
             Rect retryButton,
             Rect returnButton,
             Rect status)
@@ -97,6 +115,9 @@ namespace FruitDefense.Shell
             CompletedLevel = completedLevel;
             ReachedWave = reachedWave;
             RemainingLives = remainingLives;
+            ResultBanner = resultBanner;
+            OrchardVista = orchardVista;
+            ResultIndicator = resultIndicator;
             RetryButton = retryButton;
             ReturnButton = returnButton;
             Status = status;
@@ -109,6 +130,9 @@ namespace FruitDefense.Shell
         public Rect CompletedLevel { get; }
         public Rect ReachedWave { get; }
         public Rect RemainingLives { get; }
+        public Rect ResultBanner { get; }
+        public Rect OrchardVista { get; }
+        public Rect ResultIndicator { get; }
         public Rect RetryButton { get; }
         public Rect ReturnButton { get; }
         public Rect Status { get; }
@@ -118,7 +142,41 @@ namespace FruitDefense.Shell
     {
         public const float ReferenceWidth = 402f;
         public const float ReferenceHeight = 874f;
-        public const float ReferenceLevelCardHeight = 82f;
+        public const float ReferenceLevelCardHeight = 176f;
+
+        public static LobbyLevelCardLayout CreateLobbyLevelCard(Rect card, float scale)
+        {
+            if (scale <= 0f || float.IsNaN(scale) || float.IsInfinity(scale))
+                throw new ArgumentOutOfRangeException(nameof(scale),
+                    "Lobby level-card scale must be finite and positive.");
+            var frame = new Rect(card.x + 4f * scale,
+                card.y + 36f * scale,
+                Mathf.Min(card.width - 8f * scale, 164f * scale),
+                Mathf.Min(card.height - 72f * scale, 104f * scale));
+            var thumbnailInset = Mathf.Min(6f * scale,
+                Mathf.Min(frame.width, frame.height) * .25f);
+            var thumbnail = Inset(frame, thumbnailInset);
+            // The selected source uses a 96px canvas at 2x source scale with a
+            // ~68-72px alpha box. A 48 logical canvas therefore renders the
+            // approved 32-36px optical medallion without stretching its art.
+            var markerSize = Mathf.Min(48f * scale,
+                Mathf.Min(frame.width, frame.height));
+            var marker = new Rect(frame.xMax - markerSize, frame.y,
+                markerSize, markerSize);
+            var transientSize = Mathf.Min(28f * scale,
+                Mathf.Min(frame.width, frame.height));
+            var transient = new Rect(frame.xMax - transientSize,
+                frame.yMax - transientSize, transientSize, transientSize);
+            var textX = Mathf.Min(card.xMax, card.x + 176f * scale);
+            var textWidth = Mathf.Max(0f,
+                Mathf.Min(190f * scale, card.xMax - textX - 4f * scale));
+            return new LobbyLevelCardLayout(frame, thumbnail,
+                new Rect(textX, card.y + 34f * scale,
+                    textWidth, 44f * scale),
+                new Rect(textX, card.y + 90f * scale,
+                    textWidth, 44f * scale),
+                marker, transient);
+        }
 
         public static LobbyShellLayout CreateLobby(float viewportWidth, float viewportHeight, Rect safeArea)
         {
@@ -130,12 +188,12 @@ namespace FruitDefense.Shell
 
             return new LobbyShellLayout(
                 frame,
-                RectAt(x, y + 17f * scale, width, 48f * scale),
-                RectAt(x, y + 92f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 190f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 288f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 396f * scale, width, 64f * scale),
-                RectAt(x, y + 478f * scale, width, 58f * scale));
+                RectAt(x, y + 36f * scale, width, 56f * scale),
+                RectAt(x, y + 112f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 300f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 488f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 684f * scale, width, 72f * scale),
+                RectAt(x, y + 772f * scale, width, 58f * scale));
         }
 
         public static SettlementShellLayout CreateSettlement(float viewportWidth, float viewportHeight, Rect safeArea)
@@ -146,18 +204,28 @@ namespace FruitDefense.Shell
             var y = frame.Content.y;
             var scale = frame.Scale;
 
-            var resultCard = RectAt(x, y + 103f * scale, width, 260f * scale);
+            var resultCard = RectAt(x, y + 112f * scale, width, 474f * scale);
+            var metricX = x + 16f * scale;
+            var metricWidth = 338f * scale;
+            var resultBanner = RectAt(x + 42f * scale, y + 128f * scale,
+                286f * scale, 72f * scale);
             return new SettlementShellLayout(
                 frame,
-                RectAt(x, y + 17f * scale, width, 48f * scale),
+                RectAt(x, y + 36f * scale, width, 56f * scale),
                 resultCard,
-                RectAt(x + 18f * scale, resultCard.y + 18f * scale, width - 36f * scale, 54f * scale),
-                RectAt(x + 18f * scale, resultCard.y + 78f * scale, width - 36f * scale, 32f * scale),
-                RectAt(x + 18f * scale, resultCard.y + 122f * scale, width - 36f * scale, 42f * scale),
-                RectAt(x + 18f * scale, resultCard.y + 178f * scale, width - 36f * scale, 42f * scale),
-                RectAt(x, y + 399f * scale, width, 64f * scale),
-                RectAt(x, y + 481f * scale, width, 58f * scale),
-                RectAt(x, y + 557f * scale, width, 58f * scale));
+                RectAt(x + 82f * scale, y + 138f * scale,
+                    206f * scale, 52f * scale),
+                RectAt(metricX, y + 418f * scale, metricWidth, 48f * scale),
+                RectAt(metricX, y + 474f * scale, metricWidth, 48f * scale),
+                RectAt(metricX, y + 530f * scale, metricWidth, 48f * scale),
+                resultBanner,
+                RectAt(x + 16f * scale, y + 216f * scale,
+                    338f * scale, 190f * scale),
+                RectAt(x + 292f * scale, y + 150f * scale,
+                    28f * scale, 28f * scale),
+                RectAt(x, y + 606f * scale, width, 72f * scale),
+                RectAt(x, y + 694f * scale, width, 64f * scale),
+                RectAt(x, y + 774f * scale, width, 58f * scale));
         }
 
         public static ShellHitTarget HitTest(LobbyShellLayout layout, Vector2 guiPoint, bool isTransitioning)
@@ -203,7 +271,10 @@ namespace FruitDefense.Shell
             var horizontalMargin = 16f * scale;
             var contentWidth = Mathf.Min(370f * scale, guiSafeArea.width - horizontalMargin * 2f);
             var contentX = guiSafeArea.x + (guiSafeArea.width - contentWidth) * .5f;
-            var contentY = guiSafeArea.y + 18f * scale;
+            var designHeight = ReferenceHeight * scale;
+            var verticalLetterbox = Mathf.Max(0f,
+                (guiSafeArea.height - designHeight) * .5f);
+            var contentY = guiSafeArea.y + verticalLetterbox + 18f * scale;
             var contentHeight = Mathf.Max(0f, guiSafeArea.yMax - contentY - 18f * scale);
             var content = new Rect(contentX, contentY, contentWidth, contentHeight);
             var header = RectAt(contentX, contentY, contentWidth, 74f * scale);
@@ -213,6 +284,15 @@ namespace FruitDefense.Shell
         private static Rect RectAt(float x, float y, float width, float height)
         {
             return new Rect(x, y, Mathf.Max(0f, width), Mathf.Max(0f, height));
+        }
+
+        private static Rect Inset(Rect rect, float inset)
+        {
+            var value = Mathf.Min(Mathf.Max(0f, inset),
+                Mathf.Min(Mathf.Max(0f, rect.width), Mathf.Max(0f, rect.height)) * .5f);
+            return new Rect(rect.x + value, rect.y + value,
+                Mathf.Max(0f, rect.width - value * 2f),
+                Mathf.Max(0f, rect.height - value * 2f));
         }
 
         private static Rect Intersect(Rect first, Rect second)

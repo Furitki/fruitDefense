@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="indicator.drag-illegal">
+  <title>indicator.drag-illegal</title>
+  <polyline points="21.792,37.5168 21.792,21.792 37.5168,21.792" fill="none" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="58.4832,21.792 74.208,21.792 74.208,37.5168" fill="none" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="74.208,58.4832 74.208,74.208 58.4832,74.208" fill="none" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="37.5168,74.208 21.792,74.208 21.792,58.4832" fill="none" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="48" cy="48" rx="18.3456" ry="18.3456" fill="#000000" fill-opacity="0.0000" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6"/>
+  <polyline points="34.896,61.104 61.104,34.896" fill="none" stroke="#D34E45" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

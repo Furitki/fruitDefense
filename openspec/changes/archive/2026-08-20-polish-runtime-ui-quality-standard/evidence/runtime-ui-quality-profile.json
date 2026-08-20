@@ -1,0 +1,96 @@
+{
+  "schema": "fruit-defense.runtime-ui-quality-profile.evidence.v1",
+  "revision": "1",
+  "scope": "numeric contract for polish-runtime-ui-quality-standard tasks 1.2 and 2.x",
+  "note": "Task 2.1 must encode these values in the single editor-owned profile; runtime presenters must not duplicate them.",
+  "viewports": [
+    { "width": 360, "height": 800, "insetTop": 32, "insetBottom": 24 },
+    { "width": 375, "height": 812, "insetTop": 40, "insetBottom": 21 },
+    { "width": 402, "height": 874, "insetTop": 44, "insetBottom": 34 },
+    { "width": 430, "height": 932, "insetTop": 50, "insetBottom": 36 }
+  ],
+  "typography": {
+    "minimumPlayerFacingFontSizeLogical": 15,
+    "roles": {
+      "Display": { "fontSize": 40, "lineHeight": 46, "fontStyle": "Bold" },
+      "ScreenTitle": { "fontSize": 32, "lineHeight": 38, "fontStyle": "Bold" },
+      "SectionTitle": { "fontSize": 28, "lineHeight": 34, "fontStyle": "Bold" },
+      "Body": { "fontSize": 20, "lineHeight": 28, "fontStyle": "Normal" },
+      "ControlLabel": { "fontSize": 20, "lineHeight": 24, "fontStyle": "Bold" },
+      "Metric": { "fontSize": 24, "lineHeight": 28, "fontStyle": "Bold" },
+      "Supplemental": { "fontSize": 16, "lineHeight": 22, "fontStyle": "Normal" }
+    },
+    "baselineToleranceLogical": 1,
+    "repeatedCenterToleranceLogical": 1,
+    "finiteLinePolicies": {
+      "screenTitle": 1,
+      "sectionTitle": 1,
+      "controlLabel": 1,
+      "cardTitle": 1,
+      "cardBody": 1,
+      "metricLabel": 1,
+      "metricValue": 1,
+      "compactStatus": 2,
+      "bodyMessage": 2
+    },
+    "implicitShrinkAllowed": false,
+    "ellipsisAllowed": false,
+    "unboundedWordWrapAllowed": false
+  },
+  "spacing": {
+    "gridLogical": 4,
+    "iconTextGapMinLogical": 4,
+    "componentGapMinLogical": 8,
+    "contentInsetMinLogical": 8,
+    "textToBorderGapMinLogical": 4,
+    "touchTargetMinLogical": 44,
+    "opticalCompensationMaxLogical": 2
+  },
+  "contrast": {
+    "smallOrRegularTextMinRatio": 4.5,
+    "largeOrBoldTextMinRatio": 3.0,
+    "disabledInformationalTextMinRatio": 3.0,
+    "essentialIconOrBoundaryMinRatio": 3.0,
+    "stateMustHaveNonColorCue": true,
+    "measureAfterTintAlphaAndRasterComposition": true
+  },
+  "icons": {
+    "canvasPixels": 96,
+    "safeInsetPixels": 12,
+    "pixelsPerLogicalUnit": 2,
+    "centroidOffsetMaxPixelsPerAxis": 4,
+    "centroidOffsetMaxLogicalPerAxis": 2,
+    "familyMajorAlphaDimensionMinPixels": 60,
+    "familyMajorAlphaDimensionMaxPixels": 72,
+    "runtimeOpticalShortEdgeMinLogical": 16,
+    "runtimeOpticalMajorEdgeMinLogical": 18,
+    "runtimeStrokeMinLogical": 2,
+    "transparentEdgeAlphaRequired": 0
+  },
+  "nineSlice": {
+    "canvasPixels": 128,
+    "sliceBorderPixels": 32,
+    "safeInsetPixels": 20,
+    "pixelsPerLogicalUnit": 2,
+    "minimumDestinationLogical": 32,
+    "ornamentAlphaAllowedInStretchCenter": false,
+    "partitionCoverageCount": 1,
+    "seamToleranceDevicePixels": 0
+  },
+  "illustrations": {
+    "aspectRatioErrorMax": 0.01,
+    "unusedAspectFitBarMaxLogical": 8,
+    "lobbyThumbnailMinWidthLogical": 72,
+    "lobbyThumbnailMinHeightLogical": 46,
+    "resultVistaMinWidthLogical": 128,
+    "resultVistaMinHeightLogical": 72,
+    "textOverlapAllowed": false,
+    "declaredRibbonSafeZoneRequiredForTextOverlay": true
+  },
+  "routeComposition": {
+    "unusedLowerSafeAreaMaxFraction": 0.30,
+    "battlefieldInteractionGeometryProtected": true,
+    "drawAndHitRectMustShareAuthority": true,
+    "externalGeometryChangeRequiresAllViewportAndInputRerun": true
+  }
+}

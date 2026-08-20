@@ -1,0 +1,87 @@
+{
+  "set_id": "sunny-orchard",
+  "canvas_px": 96,
+  "safe_inset_px": 12,
+  "centroid_axis_limit_px": 4,
+  "family_major_range_px": [60, 72],
+  "drag_short_min_px": 64,
+  "validator_coordinate_convention": "x right-positive, y up-positive",
+  "diagnostics": [
+    {
+      "code": "icon.optical.family-size",
+      "asset": "indicator-loading.png",
+      "before": { "major_px": 56 },
+      "after": { "major_px": 60 }
+    },
+    {
+      "code": "icon.optical.centroid",
+      "asset": "indicator-loading.png",
+      "before": { "centroid_x_px": 5.953, "centroid_y_px": 1.715 },
+      "after": { "centroid_x_px": 3.945, "centroid_y_px": 1.974 }
+    },
+    {
+      "code": "icon.optical.centroid",
+      "asset": "indicator-warning.png",
+      "before": { "centroid_x_px": 0.125, "centroid_y_px": -7.568 },
+      "after": { "centroid_x_px": 0.126, "centroid_y_px": -3.854 }
+    },
+    {
+      "code": "icon.optical.smallest-draw",
+      "asset": "indicator-drag-legal.png",
+      "before": { "short_px": 62 },
+      "after": { "short_px": 64 }
+    },
+    {
+      "code": "icon.optical.smallest-draw",
+      "asset": "indicator-drag-illegal.png",
+      "before": { "short_px": 62 },
+      "after": { "short_px": 64 }
+    },
+    {
+      "code": "icon.optical.family-size",
+      "asset": "icon-control-pause.png",
+      "before": { "major_px": 58 },
+      "after": { "major_px": 60 }
+    },
+    {
+      "code": "icon.optical.centroid",
+      "asset": "icon-control-speed.png",
+      "before": { "centroid_x_px": -5.756, "centroid_y_px": -0.220 },
+      "after": { "centroid_x_px": -3.756, "centroid_y_px": -0.220 }
+    },
+    {
+      "code": "icon.optical.family-size",
+      "asset": "icon-control-retry.png",
+      "before": { "major_px": 56 },
+      "after": { "major_px": 60 }
+    },
+    {
+      "code": "icon.optical.centroid",
+      "asset": "icon-control-retry.png",
+      "before": { "centroid_x_px": -5.860, "centroid_y_px": 2.009 },
+      "after": { "centroid_x_px": -3.481, "centroid_y_px": 2.323 }
+    },
+    {
+      "code": "icon.optical.family-size",
+      "asset": "icon-control-return.png",
+      "before": { "major_px": 54 },
+      "after": { "major_px": 60 }
+    },
+    {
+      "code": "icon.optical.centroid",
+      "asset": "icon-control-return.png",
+      "before": { "centroid_x_px": 5.001, "centroid_y_px": -0.421 },
+      "after": { "centroid_x_px": 3.748, "centroid_y_px": -0.424 }
+    }
+  ],
+  "post_fix_assets": [
+    { "asset": "indicator-loading.png", "alpha_bbox_px": [60, 60], "centroid_px": [3.945, 1.974] },
+    { "asset": "indicator-warning.png", "alpha_bbox_px": [70, 57], "centroid_px": [0.126, -3.854] },
+    { "asset": "indicator-drag-legal.png", "alpha_bbox_px": [64, 64], "centroid_px": [0.491, -0.819] },
+    { "asset": "indicator-drag-illegal.png", "alpha_bbox_px": [64, 64], "centroid_px": [0.125, -0.128] },
+    { "asset": "icon-control-pause.png", "alpha_bbox_px": [48, 60], "centroid_px": [0.119, -0.124] },
+    { "asset": "icon-control-speed.png", "alpha_bbox_px": [67, 55], "centroid_px": [-3.756, -0.220] },
+    { "asset": "icon-control-retry.png", "alpha_bbox_px": [57, 60], "centroid_px": [-3.481, 2.323] },
+    { "asset": "icon-control-return.png", "alpha_bbox_px": [60, 57], "centroid_px": [3.748, -0.424] }
+  ]
+}

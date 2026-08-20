@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using FruitDefense.App;
 using FruitDefense.Content;
 using FruitDefense.Core;
+using FruitDefense.Presentation;
 using FruitDefense.Shell;
 using FruitDefense.Tilemaps;
+using FruitDefense.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -21,20 +23,18 @@ namespace FruitDefense.Editor
             "Assets/LayeredTerrain/CompositeBrushes/GrassSoil/Runtime64/Mask-00.png";
         internal const string BattlefieldTerrainPalettePath =
             "Assets/Battlefield/Terrain/OrchardDefaultTerrainPalette.asset";
-        private const float P0DesignWidth = 402f;
-        private const float P0DesignHeight = 874f;
-        private static readonly Rect ReferenceBattleSurfaceRect = new Rect(0f, 72f, 402f, 798f);
-        private static readonly Rect ReferenceBattlefieldBoardRect = new Rect(0f, 72f, 402f, 500f);
-        private static readonly Rect ReferenceToolTrayRect = new Rect(8f, 580f, 386f, 68f);
-        private static readonly Rect ReferenceNurseryTrayRect = new Rect(8f, 656f, 386f, 80f);
-        private static readonly Rect ReferenceRefreshRect = new Rect(8f, 744f, 386f, 44f);
-        private static readonly Rect ReferenceDetailRect = new Rect(8f, 796f, 386f, 70f);
-
+        internal const string ReleaseRuntimeUiThemePath =
+            "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset";
+        internal const string ReleaseRuntimeUiArtSetPath =
+            "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset";
+        internal const string PackagedRuntimeUiFontPath =
+            "Assets/Resources/Fonts/NotoSansSC-UI.ttf";
         [MenuItem("Fruit Defense/Configure Project")]
         public static void Configure()
         {
             if (!AssetDatabase.IsValidFolder("Assets/Scenes")) AssetDatabase.CreateFolder("Assets", "Scenes");
-            CreateBootstrapScene();
+            var runtimeUiTheme = EnsureReleaseRuntimeUiTheme();
+            CreateBootstrapScene(runtimeUiTheme);
             CreateComponentScene<LobbyPresenter>("Lobby", "LobbyPresenter");
             CreateBattleScene();
             CreateComponentScene<SettlementPresenter>("Settlement", "SettlementPresenter");
@@ -60,13 +60,136 @@ namespace FruitDefense.Editor
             Debug.Log("Fruit Defense project configured: Bootstrap, Lobby, Battle, Settlement");
         }
 
-        private static void CreateBootstrapScene()
+        private static void CreateBootstrapScene(RuntimeUiTheme runtimeUiTheme)
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var root = new GameObject("AppBootstrap");
             root.AddComponent<AppBootstrap>();
-            root.AddComponent<AppFlowCoordinator>();
+            AssignRuntimeUiTheme(root.AddComponent<AppFlowCoordinator>(), runtimeUiTheme);
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/Bootstrap.unity");
+        }
+
+        public static void ConfigureReleaseRuntimeUiTheme()
+        {
+            var runtimeUiTheme = EnsureReleaseRuntimeUiTheme();
+            var bootstrap = SceneManager.GetSceneByPath("Assets/Scenes/Bootstrap.unity");
+            var openedForBinding = false;
+            if (!bootstrap.IsValid() || !bootstrap.isLoaded)
+            {
+                bootstrap = EditorSceneManager.OpenScene(
+                    "Assets/Scenes/Bootstrap.unity", OpenSceneMode.Additive);
+                openedForBinding = true;
+            }
+
+            try
+            {
+                AppFlowCoordinator coordinator = null;
+                foreach (var root in bootstrap.GetRootGameObjects())
+                {
+                    coordinator = root.GetComponentInChildren<AppFlowCoordinator>(true);
+                    if (coordinator != null) break;
+                }
+                if (coordinator == null)
+                    throw new System.InvalidOperationException(
+                        "Release Bootstrap scene does not contain AppFlowCoordinator.");
+
+                AssignRuntimeUiTheme(coordinator, runtimeUiTheme);
+                EditorSceneManager.MarkSceneDirty(bootstrap);
+                if (!EditorSceneManager.SaveScene(bootstrap))
+                    throw new System.InvalidOperationException(
+                        "Failed to save the release Bootstrap theme binding.");
+                AssetDatabase.SaveAssets();
+            }
+            finally
+            {
+                if (openedForBinding && bootstrap.IsValid() && bootstrap.isLoaded)
+                    EditorSceneManager.CloseScene(bootstrap, true);
+            }
+        }
+
+        internal static RuntimeUiTheme RequireReleaseRuntimeUiTheme()
+        {
+            var runtimeUiTheme = AssetDatabase.LoadAssetAtPath<RuntimeUiTheme>(
+                ReleaseRuntimeUiThemePath);
+            if (runtimeUiTheme == null)
+                throw new System.InvalidOperationException(
+                    "Release runtime UI theme is missing: " + ReleaseRuntimeUiThemePath);
+
+            var validation = runtimeUiTheme.Validate();
+            if (!validation.IsValid)
+                throw new System.InvalidOperationException(
+                    "Release runtime UI theme is invalid: " + validation.Issues[0]);
+            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "1")
+                throw new System.InvalidOperationException(
+                    "Release runtime UI theme identity must be ui.sunny-orchard@1.");
+            if (!ReferenceEquals(runtimeUiTheme.PackagedChineseFont,
+                    AssetDatabase.LoadAssetAtPath<Font>(PackagedRuntimeUiFontPath)))
+                throw new System.InvalidOperationException(
+                    "Release runtime UI theme must use the packaged NotoSansSC-UI font.");
+            if (runtimeUiTheme.ActiveArtSet == null
+                || runtimeUiTheme.ActiveArtSet.SetId != "sunny-orchard-painted"
+                || runtimeUiTheme.ActiveArtSet.Revision != "1"
+                || AssetDatabase.GetAssetPath(runtimeUiTheme.ActiveArtSet)
+                    != ReleaseRuntimeUiArtSetPath)
+                throw new System.InvalidOperationException(
+                    "Release runtime UI theme must activate sunny-orchard-painted@1.");
+            return runtimeUiTheme;
+        }
+
+        private static RuntimeUiTheme EnsureReleaseRuntimeUiTheme()
+        {
+            EnsureFolder("Assets/UI");
+            EnsureFolder("Assets/UI/Theme");
+
+            var runtimeUiTheme = AssetDatabase.LoadAssetAtPath<RuntimeUiTheme>(
+                ReleaseRuntimeUiThemePath);
+            if (runtimeUiTheme == null)
+            {
+                runtimeUiTheme = ScriptableObject.CreateInstance<RuntimeUiTheme>();
+                runtimeUiTheme.name = "ReleaseRuntimeUiTheme";
+                AssetDatabase.CreateAsset(runtimeUiTheme, ReleaseRuntimeUiThemePath);
+            }
+
+            var packagedFont = AssetDatabase.LoadAssetAtPath<Font>(PackagedRuntimeUiFontPath);
+            var artSet = AssetDatabase.LoadAssetAtPath<RuntimeUiArtSet>(
+                ReleaseRuntimeUiArtSetPath);
+            if (packagedFont == null)
+                throw new System.InvalidOperationException(
+                    "Packaged runtime UI font is missing: " + PackagedRuntimeUiFontPath);
+            if (artSet == null)
+                throw new System.InvalidOperationException(
+                    "Release runtime UI art set is missing: "
+                    + ReleaseRuntimeUiArtSetPath);
+
+            var serializedTheme = new SerializedObject(runtimeUiTheme);
+            serializedTheme.FindProperty("themeId").stringValue = "ui.sunny-orchard";
+            serializedTheme.FindProperty("revision").stringValue = "1";
+            serializedTheme.FindProperty("packagedChineseFont").objectReferenceValue = packagedFont;
+            serializedTheme.FindProperty("activeArtSet").objectReferenceValue = artSet;
+            serializedTheme.FindProperty("colors").FindPropertyRelative("primaryAction")
+                .colorValue = new Color32(85, 154, 57, 255);
+            serializedTheme.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(runtimeUiTheme);
+            AssetDatabase.SaveAssetIfDirty(runtimeUiTheme);
+            return RequireReleaseRuntimeUiTheme();
+        }
+
+        private static void AssignRuntimeUiTheme(
+            AppFlowCoordinator coordinator, RuntimeUiTheme runtimeUiTheme)
+        {
+            if (coordinator == null)
+                throw new System.ArgumentNullException(nameof(coordinator));
+            if (runtimeUiTheme == null)
+                throw new System.ArgumentNullException(nameof(runtimeUiTheme));
+
+            var serializedCoordinator = new SerializedObject(coordinator);
+            var property = serializedCoordinator.FindProperty("runtimeUiTheme");
+            if (property == null)
+                throw new System.InvalidOperationException(
+                    "AppFlowCoordinator runtimeUiTheme binding field is missing.");
+            property.objectReferenceValue = runtimeUiTheme;
+            serializedCoordinator.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(coordinator);
         }
 
         private static void CreateComponentScene<T>(string sceneName, string objectName) where T : Component
@@ -195,14 +318,10 @@ namespace FruitDefense.Editor
                 "temporary combat effect atlas imported");
             var uiFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/Resources/Fonts/NotoSansSC-UI.ttf");
             Assert(uiFont != null, "bundled WebGL UI font imported");
-            Assert(uiFont.HasCharacter('水') && uiFont.HasCharacter('果') && uiFont.HasCharacter('塔')
-                && uiFont.HasCharacter('防'), "bundled WebGL UI font covers representative Chinese copy");
-            foreach (var glyph in "立即开始下一波继续游戏重新")
-                Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers session-control glyph: " + glyph);
-            foreach (var glyph in "关卡选择成长设置默认返回大厅战斗结算胜利失败剩余生命")
-                Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers shell glyph: " + glyph);
-            foreach (var glyph in "第一二三形教学路线宽松熟悉种植合成覆盖连续转弯兼顾快速护甲敌人核心走廊短线压迫守住首领冲击")
-                Assert(uiFont.HasCharacter(glyph), "bundled WebGL UI font covers level-card glyph: " + glyph);
+            Assert(RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph(uiFont,
+                    out var missingRuntimeUiGlyph),
+                "bundled WebGL UI font covers the authoritative release UI glyph probe; missing: "
+                + missingRuntimeUiGlyph);
             Assert(FruitDefenseGame.ValidatePortraitLayout(out var portraitLayoutReason),
                 "portrait layout geometry: " + portraitLayoutReason);
             Assert(FruitDefenseGame.ValidateInspectionOnlyInteraction(out var inspectionReason),
@@ -211,6 +330,14 @@ namespace FruitDefense.Editor
                 "session control contract: " + sessionControlReason);
             ValidateP1LevelCatalogPath();
             ValidateP0SceneConfiguration();
+            ValidateBootstrapRuntimeUiPresentation();
+            BattleUiLayoutSmoke.Run();
+            RuntimeUiQualitySmoke.Run();
+            RuntimeUiFeedbackTimingSmoke.Run();
+            RuntimeUiGlyphCoverageSmoke.Run();
+            RuntimeUiPerformanceSmoke.Run();
+            RuntimeUiVisualSystemValidator.ValidateReleaseOrThrow();
+            RuntimeUiVisualSystemSmoke.Run();
             Debug.Log("FRUIT_DEFENSE_SMOKE_OK");
         }
 
@@ -220,11 +347,15 @@ namespace FruitDefense.Editor
             MultiLevelSimulationSmoke.Run();
             BattleSnapshotV2Smoke.Run();
             BattleSessionHostSmoke.Run();
-            ShellFlowValidation.SmokeValidate();
+            ShellFlowValidation.SmokeValidate(RequireReleaseRuntimeUiTheme());
         }
 
         private static void ValidateP0SceneConfiguration()
         {
+            var runtimeUiTheme = RequireReleaseRuntimeUiTheme();
+            var themeGuids = AssetDatabase.FindAssets("t:RuntimeUiTheme", new[] { "Assets" });
+            Assert(themeGuids.Length == 1,
+                "exactly one release RuntimeUiTheme asset exists under Assets");
             var expected = new[]
             {
                 "Assets/Scenes/Bootstrap.unity",
@@ -251,13 +382,19 @@ namespace FruitDefense.Editor
                     bootstrap = EditorSceneManager.OpenScene(expected[0], OpenSceneMode.Additive);
                 var bootstrapCount = 0;
                 var coordinatorCount = 0;
+                AppFlowCoordinator coordinator = null;
                 foreach (var root in bootstrap.GetRootGameObjects())
                 {
                     bootstrapCount += root.GetComponentsInChildren<AppBootstrap>(true).Length;
                     coordinatorCount += root.GetComponentsInChildren<AppFlowCoordinator>(true).Length;
+                    if (coordinator == null)
+                        coordinator = root.GetComponentInChildren<AppFlowCoordinator>(true);
                 }
                 Assert(bootstrapCount == 1, "exactly one AppBootstrap in release Bootstrap scene");
                 Assert(coordinatorCount == 1, "exactly one AppFlowCoordinator in release Bootstrap scene");
+                Assert(coordinator != null
+                    && ReferenceEquals(coordinator.RuntimeUiTheme, runtimeUiTheme),
+                    "release Bootstrap coordinator owns the one release runtime UI theme");
             }
             finally
             {
@@ -265,6 +402,176 @@ namespace FruitDefense.Editor
                     EditorSceneManager.RestoreSceneManagerSetup(previousSetup);
                 else if (bootstrap.IsValid() && bootstrap.isLoaded)
                     EditorSceneManager.CloseScene(bootstrap, true);
+            }
+
+            for (var sceneIndex = 1; sceneIndex < expected.Length; sceneIndex++)
+            {
+                var dependencies = AssetDatabase.GetDependencies(expected[sceneIndex], false);
+                for (var dependencyIndex = 0;
+                     dependencyIndex < dependencies.Length;
+                     dependencyIndex++)
+                {
+                    var dependency = AssetDatabase.LoadMainAssetAtPath(
+                        dependencies[dependencyIndex]);
+                    Assert(!(dependency is RuntimeUiTheme) && !(dependency is RuntimeUiArtSet),
+                        "release route scene has no direct runtime UI theme/art set reference: "
+                        + expected[sceneIndex]);
+                }
+            }
+        }
+
+        private static void ValidateBootstrapRuntimeUiPresentation()
+        {
+            var runtimeUiTheme = RequireReleaseRuntimeUiTheme();
+            for (var index = 0;
+                 index < RuntimeUiQualityProfile.Viewports.Count; index++)
+            {
+                var viewportCase = RuntimeUiQualityProfile.Viewports[index];
+                ValidateBootstrapPresentationCase(runtimeUiTheme,
+                    viewportCase.Viewport, viewportCase.FullSafeArea,
+                    "full-safe-area");
+                ValidateBootstrapPresentationCase(runtimeUiTheme,
+                    viewportCase.Viewport, viewportCase.InsetSafeArea,
+                    "top-" + viewportCase.SafeTop
+                    + "-bottom-" + viewportCase.SafeBottom);
+            }
+
+            AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapLevelUnavailable).Text,
+                AppFlowCoordinator.LevelResolutionFailed);
+            AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapConfigurationUnavailable).Text,
+                AppFlowCoordinator.RuntimeConfigInvalid,
+                AppFlowCoordinator.RuntimeUiThemeInvalid + ":invalid-theme");
+            AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapContentUnavailable).Text,
+                AppFlowCoordinator.BundledContentInvalid,
+                AppFlowCoordinator.BundledLevelCatalogInvalid,
+                AppFlowCoordinator.BundledContentMismatch);
+            AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapPageUnavailable).Text,
+                AppFlowCoordinator.SceneUnavailable,
+                AppFlowCoordinator.SceneLoadFailed,
+                AppFlowCoordinator.BattleHostMissing,
+                AppFlowCoordinator.LobbyPresenterMissing,
+                AppFlowCoordinator.SettlementPresenterMissing);
+            AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapUnknownFailure).Text,
+                "unknown-error");
+            ValidateBootstrapSharedStateSource();
+        }
+
+        private static void ValidateBootstrapPresentationCase(RuntimeUiTheme runtimeUiTheme,
+            Vector2Int viewport, Rect safeArea, string caseName)
+        {
+            var noActionLayout = AppFlowCoordinator.CreateBootstrapPresentationLayout(
+                viewport.x, viewport.y, safeArea);
+            var layout = AppFlowCoordinator.CreateBootstrapPresentationLayout(
+                viewport.x, viewport.y, safeArea, true);
+            var viewportRect = new Rect(0f, 0f, viewport.x, viewport.y);
+            Assert(noActionLayout.Scale > 0f
+                && ContainsRect(viewportRect, noActionLayout.SafeArea)
+                && ContainsRect(noActionLayout.SafeArea, noActionLayout.Modal)
+                && ContainsRect(noActionLayout.Modal, noActionLayout.Title)
+                && ContainsRect(noActionLayout.Modal, noActionLayout.Status)
+                && noActionLayout.RetryAction.width == 0f
+                && noActionLayout.RetryAction.height == 0f,
+                "Bootstrap no-action presentation remains finite for "
+                + viewport + " " + caseName);
+            Assert(layout.Scale > 0f
+                && ContainsRect(viewportRect, layout.SafeArea)
+                && ContainsRect(layout.SafeArea, layout.Modal)
+                && ContainsRect(layout.Modal, layout.Title)
+                && ContainsRect(layout.Modal, layout.Status)
+                && ContainsRect(layout.Modal, layout.RetryAction)
+                && ContainsRect(layout.SafeArea, layout.RecoverableStatus),
+                "Bootstrap presentation remains contained for " + viewport + " " + caseName);
+            Assert(Mathf.Min(layout.RetryAction.width, layout.RetryAction.height)
+                    >= runtimeUiTheme.Metrics.TouchTargetMinimum * layout.Scale - .001f,
+                "Bootstrap retry action retains the theme touch target for "
+                + viewport + " " + caseName);
+
+            if (viewport == new Vector2Int(402, 874)
+                && RectApproximately(safeArea, new Rect(0f, 0f, 402f, 874f)))
+            {
+                Assert(RectApproximately(noActionLayout.Modal,
+                        new Rect(21f, 262f, 360f, 142f), .01f)
+                    && RectApproximately(noActionLayout.Title,
+                        new Rect(41f, 278f, 320f, 34f), .01f)
+                    && RectApproximately(noActionLayout.Status,
+                        new Rect(41f, 318f, 320f, 45f), .01f)
+                    && RectApproximately(layout.Modal,
+                        new Rect(21f, 262f, 360f, 190f), .01f)
+                    && RectApproximately(layout.RetryAction,
+                        new Rect(41f, 367f, 320f, 52f), .01f),
+                    "Bootstrap 402 full geometry matches the approved quality audit");
+            }
+
+        }
+
+        private static void AssertBlockingErrorCopy(string expected, params string[] rawErrors)
+        {
+            for (var index = 0; index < rawErrors.Length; index++)
+            {
+                Assert(AppFlowCoordinator.FormatBootstrapBlockingError(rawErrors[index]) == expected,
+                    "Bootstrap blocking error uses finite shared copy: " + rawErrors[index]);
+            }
+        }
+
+        private static void ValidateBootstrapSharedStateSource()
+        {
+            var sourcePath = System.IO.Path.Combine(
+                Application.dataPath, "Scripts/App/AppFlowCoordinator.cs");
+            var source = System.IO.File.ReadAllText(sourcePath);
+            const string startToken = "private void OnGUI(";
+            const string endToken = "private readonly struct SceneLoadResult";
+            var start = source.IndexOf(startToken, System.StringComparison.Ordinal);
+            var end = source.IndexOf(endToken, start + startToken.Length,
+                System.StringComparison.Ordinal);
+            Assert(start >= 0 && end > start,
+                "Bootstrap shared presentation source boundaries are present");
+            var presentation = source.Substring(start, end - start);
+            var requiredTokens = new[]
+            {
+                "RuntimeUiGui.RequireContext",
+                "RuntimeUiGui.DrawScreenBackground",
+                "RuntimeUiGui.DrawSafeArea",
+                "RuntimeUiGui.DrawScreenCorners",
+                "RuntimeUiGui.DrawBlockingModal",
+                "RuntimeUiGui.DrawSingleLineText",
+                "RuntimeUiGui.DrawStatus",
+                "RuntimeUiGui.DrawAction",
+                "RuntimeUiInteractionState.Warning",
+                "RuntimeUiInteractionState.Error",
+                "RuntimeUiInteractionState.Loading",
+                "RuntimeUiActionKind.Primary",
+                "RuntimeUiInteractionState.Normal",
+                "RuntimeUiArtSlot.IconControlRetry",
+                "FormatBootstrapBlockingError",
+                "_bootstrap.TryRetryInitialization()",
+            };
+            for (var index = 0; index < requiredTokens.Length; index++)
+            {
+                Assert(presentation.Contains(requiredTokens[index]),
+                    "Bootstrap Loading/Error/Retry presentation uses shared state: "
+                    + requiredTokens[index]);
+            }
+
+            var forbiddenTokens = new[]
+            {
+                "GUI.Box(",
+                "GUI.Label(",
+                "GUI.Button(",
+                "GUI.skin",
+                "GUIStyle.none",
+                "Texture2D.whiteTexture",
+                "Resources.Load",
+            };
+            for (var index = 0; index < forbiddenTokens.Length; index++)
+            {
+                Assert(!presentation.Contains(forbiddenTokens[index]),
+                    "Bootstrap presentation has no default-skin/source fallback: "
+                    + forbiddenTokens[index]);
             }
         }
 
@@ -550,7 +857,7 @@ namespace FruitDefense.Editor
         private static void ValidateBattlefieldProjectionGeometry()
         {
             var map = GameConfig.DefaultBattlefield;
-            var projection = new BattlefieldProjection(map, ReferenceBattlefieldBoardRect);
+            var projection = new BattleUiLayout(map).Battlefield;
             var legacyProjection = new BattlefieldProjection(map, new Rect(4f, 76f, 394f, 398f));
             Assert(Mathf.Approximately(BattlefieldProjection.PotVisualRatio, .88f)
                 && projection.TileSize > 0f
@@ -660,38 +967,38 @@ namespace FruitDefense.Editor
 
         private static void ValidateBattlefieldViewportMatrix()
         {
-            var expectedViewports = new[]
-            {
-                new Vector2Int(360, 800),
-                new Vector2Int(375, 812),
-                new Vector2Int(402, 874),
-                new Vector2Int(430, 932),
-            };
-            Assert(BattlefieldProjection.RequiredPortraitViewports.Count == expectedViewports.Length,
+            var battleUiLayout = new BattleUiLayout(GameConfig.DefaultBattlefield);
+            Assert(BattlefieldProjection.RequiredPortraitViewports.Count
+                    == RuntimeUiQualityProfile.Viewports.Count,
                 "required portrait viewport matrix has four cases");
-            for (var index = 0; index < expectedViewports.Length; index++)
+            for (var index = 0;
+                 index < RuntimeUiQualityProfile.Viewports.Count; index++)
             {
-                var viewport = expectedViewports[index];
+                var viewportCase = RuntimeUiQualityProfile.Viewports[index];
+                var viewport = viewportCase.Viewport;
                 Assert(BattlefieldProjection.RequiredPortraitViewports[index] == viewport,
                     "required portrait viewport is exact at index " + index);
-                ValidateViewportLayoutCase(viewport,
-                    new Rect(0f, 0f, viewport.x, viewport.y), "full-safe-area");
-                ValidateViewportLayoutCase(viewport,
-                    new Rect(0f, 34f, viewport.x, viewport.y - 34f - 24f),
-                    "top-24-bottom-34");
+                ValidateViewportLayoutCase(battleUiLayout, viewport,
+                    viewportCase.FullSafeArea, "full-safe-area");
+                ValidateViewportLayoutCase(battleUiLayout, viewport,
+                    viewportCase.InsetSafeArea,
+                    "top-" + viewportCase.SafeTop
+                    + "-bottom-" + viewportCase.SafeBottom);
             }
 
-            ValidateViewportLayoutCase(new Vector2Int(402, 874),
+            ValidateViewportLayoutCase(battleUiLayout, new Vector2Int(402, 874),
                 new Rect(0f, 0f, 402f, 827f), "top-47");
-            ValidateViewportLayoutCase(new Vector2Int(402, 874),
+            ValidateViewportLayoutCase(battleUiLayout, new Vector2Int(402, 874),
                 new Rect(0f, 34f, 402f, 840f), "bottom-34");
         }
 
         private static void ValidateViewportLayoutCase(
-            Vector2Int viewport, Rect safeArea, string caseName)
+            BattleUiLayout battleUiLayout, Vector2Int viewport,
+            Rect safeArea, string caseName)
         {
             var layout = BattlefieldProjection.CalculateViewportLayout(
-                viewport.x, viewport.y, safeArea, P0DesignWidth, P0DesignHeight);
+                viewport.x, viewport.y, safeArea,
+                BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
             var viewportRect = new Rect(0f, 0f, viewport.x, viewport.y);
             Assert(layout.Scale > 0f
                 && ContainsRect(viewportRect, layout.SafeAreaInGuiSpace)
@@ -702,13 +1009,13 @@ namespace FruitDefense.Editor
 
             var designRegions = new[]
             {
-                new Rect(8f, 8f, 386f, 60f),
-                ReferenceBattleSurfaceRect,
-                ReferenceBattlefieldBoardRect,
-                ReferenceToolTrayRect,
-                ReferenceNurseryTrayRect,
-                ReferenceRefreshRect,
-                ReferenceDetailRect,
+                battleUiLayout.Header,
+                battleUiLayout.BattleSurface,
+                battleUiLayout.Board,
+                battleUiLayout.ToolTray,
+                battleUiLayout.NurseryTray,
+                battleUiLayout.RefreshAction,
+                battleUiLayout.Detail,
             };
             foreach (var region in designRegions)
             {
@@ -719,7 +1026,7 @@ namespace FruitDefense.Editor
             }
 
             var map = GameConfig.DefaultBattlefield;
-            var projection = new BattlefieldProjection(map, ReferenceBattlefieldBoardRect);
+            var projection = battleUiLayout.Battlefield;
             Assert(projection.ValidateControlInset(out var controlReason),
                 "battlefield control inset contract for " + viewport + " " + caseName + ": " + controlReason);
             var projectedBoard = layout.ProjectDesignRect(projection.BoardRect);

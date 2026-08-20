@@ -3,6 +3,8 @@ using FruitDefense.App;
 using FruitDefense.Battle;
 using FruitDefense.Core;
 using FruitDefense.Platform;
+using FruitDefense.UI;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,9 +14,11 @@ namespace FruitDefense.Editor
     {
         public static void Run()
         {
+            var runtimeUiTheme = ProjectSetup.RequireReleaseRuntimeUiTheme();
             ValidateResultContract();
-            ValidateInitializationAndLifecycle();
-            ValidateDefeatResult();
+            ValidateInitializationAndLifecycle(runtimeUiTheme);
+            ValidateDefeatResult(runtimeUiTheme);
+            ValidateAcceptanceTerminalPreview(runtimeUiTheme);
             Debug.Log("Fruit Defense battle session host validation passed.");
         }
 
@@ -38,7 +42,7 @@ namespace FruitDefense.Editor
                 "negative remaining lives are rejected");
         }
 
-        private static void ValidateInitializationAndLifecycle()
+        private static void ValidateInitializationAndLifecycle(RuntimeUiTheme runtimeUiTheme)
         {
             var baselineHostCount = FruitDefenseGame.ActiveSessionHostCount;
             var gameObject = new GameObject("BattleSessionHostSmoke");
@@ -49,33 +53,41 @@ namespace FruitDefense.Editor
             try
             {
                 AssertFailure(
-                    host.Initialize(null, navigator, sink),
+                    host.Initialize(null, navigator, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.InvalidRequest,
                     "null launch request is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("", "orchard-01", 11, "builtin"), navigator, sink),
+                    host.Initialize(new BattleLaunchRequest("", "orchard-01", 11, "builtin"),
+                        navigator, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.InvalidSessionId,
                     "missing session id is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("session-a", "", 11, "builtin"), navigator, sink),
+                    host.Initialize(new BattleLaunchRequest("session-a", "", 11, "builtin"),
+                        navigator, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.InvalidLevelId,
                     "missing level id is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("session-a", "orchard-01", 11, ""), navigator, sink),
+                    host.Initialize(new BattleLaunchRequest("session-a", "orchard-01", 11, ""),
+                        navigator, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.InvalidContentVersion,
                     "missing content version is rejected");
 
                 var request = new BattleLaunchRequest("session-a", "orchard-01", 24680, "builtin-v1");
                 AssertFailure(
-                    host.Initialize(request, null, sink),
+                    host.Initialize(request, null, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.NavigatorRequired,
                     "missing navigator is rejected");
                 AssertFailure(
-                    host.Initialize(request, navigator, null),
+                    host.Initialize(request, navigator, null, runtimeUiTheme),
                     BattleSessionInitializationResult.ResultSinkRequired,
                     "missing result sink is rejected");
 
-                var initialized = host.Initialize(request, navigator, sink);
+                AssertFailure(
+                    host.Initialize(request, navigator, sink, null),
+                    BattleSessionInitializationResult.RuntimeUiThemeRequired,
+                    "missing runtime UI theme is rejected");
+
+                var initialized = host.Initialize(request, navigator, sink, runtimeUiTheme);
                 Assert(initialized.Success && host.IsInitialized, "valid request initializes the host");
                 Assert(ReferenceEquals(host.CurrentRequest, request), "host retains the immutable request instance");
                 Assert(host.Simulation != null && host.Simulation.State.RandomSeed == request.Seed,
@@ -86,7 +98,9 @@ namespace FruitDefense.Editor
 
                 var originalSimulation = host.Simulation;
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("session-b", "orchard-01", 999, "builtin-v1"), navigator, sink),
+                    host.Initialize(
+                        new BattleLaunchRequest("session-b", "orchard-01", 999, "builtin-v1"),
+                        navigator, sink, runtimeUiTheme),
                     BattleSessionInitializationResult.AlreadyInitialized,
                     "repeated initialization is rejected");
                 Assert(ReferenceEquals(originalSimulation, host.Simulation)
@@ -149,7 +163,7 @@ namespace FruitDefense.Editor
                 "destroying the scene host releases navigation callbacks");
         }
 
-        private static void ValidateDefeatResult()
+        private static void ValidateDefeatResult(RuntimeUiTheme runtimeUiTheme)
         {
             var gameObject = new GameObject("BattleSessionDefeatSmoke");
             var host = gameObject.AddComponent<FruitDefenseGame>();
@@ -158,7 +172,8 @@ namespace FruitDefense.Editor
             try
             {
                 var request = new BattleLaunchRequest("session-defeat", "orchard-01", 13579, "builtin-v1");
-                Assert(host.Initialize(request, navigator, sink).Success, "defeat host initializes");
+                Assert(host.Initialize(request, navigator, sink, runtimeUiTheme).Success,
+                    "defeat host initializes");
                 host.Simulation.State.Phase = GamePhase.Defeat;
                 host.Simulation.State.WaveIndex = 6;
                 host.Simulation.State.Lives = 0;
@@ -168,6 +183,93 @@ namespace FruitDefense.Editor
                     && sink.LastResult.ReachedWave == 6
                     && sink.LastResult.RemainingLives == 0,
                     "defeat submits the expected single result");
+            }
+            finally
+            {
+                host.DisposeSession();
+                UnityEngine.Object.DestroyImmediate(gameObject);
+            }
+        }
+
+        private static void ValidateAcceptanceTerminalPreview(RuntimeUiTheme runtimeUiTheme)
+        {
+            var gameObject = new GameObject("BattleSessionAcceptanceTerminalPreviewSmoke");
+            var host = gameObject.AddComponent<FruitDefenseGame>();
+            var navigator = new TestNavigator(AppRoute.Battle);
+            var sink = new RecordingResultSink();
+            try
+            {
+                var request = new BattleLaunchRequest(
+                    "session-terminal-preview", "orchard-01", 86420, "builtin-v1");
+                Assert(host.Initialize(request, navigator, sink, runtimeUiTheme).Success,
+                    "acceptance terminal-preview host initializes");
+
+                var configureForUrl = typeof(FruitDefenseGame).GetMethod(
+                    "ConfigureAcceptanceState",
+                    BindingFlags.Instance | BindingFlags.NonPublic,
+                    null,
+                    new[] { typeof(string), typeof(string) },
+                    null);
+                Assert(configureForUrl != null,
+                    "acceptance state bridge retains its URL-guarded implementation");
+
+                configureForUrl.Invoke(host, new object[]
+                {
+                    "terminal-victory", "https://fruit.example/?route=battle"
+                });
+                Assert(host.Simulation.State.Phase == GamePhase.Ready
+                    && !host.TrySubmitTerminalResult()
+                    && sink.SubmissionCount == 0,
+                    "terminal preview is unreachable without the existing acceptance URL guard");
+                configureForUrl.Invoke(host, new object[]
+                {
+                    "selected-tool", "https://fruit.example/?route=battle"
+                });
+                Assert(host.Simulation.State.Inventory.Gatling == 0,
+                    "selected-tool setup is unreachable without the acceptance URL guard");
+
+                configureForUrl.Invoke(host, new object[]
+                {
+                    "terminal-victory", "https://fruit.example/?acceptance=1&route=battle"
+                });
+                Assert(host.Simulation.State.Phase == GamePhase.Victory
+                    && host.Simulation.State.WaveIndex == host.Simulation.MaxWaves
+                    && host.Simulation.State.Lives == 3
+                    && !host.TrySubmitTerminalResult()
+                    && !host.HasSubmittedResult
+                    && sink.SubmissionCount == 0,
+                    "acceptance victory preview suppresses only terminal submission");
+                Assert(host.RestartCurrentSession(out var restartError)
+                    && string.IsNullOrEmpty(restartError)
+                    && host.Simulation.State.Phase == GamePhase.Ready,
+                    "restart clears the acceptance terminal preview");
+
+                configureForUrl.Invoke(host, new object[]
+                {
+                    "terminal-defeat", "https://fruit.example/?acceptance=1&route=battle"
+                });
+                Assert(host.Simulation.State.Phase == GamePhase.Defeat
+                    && host.Simulation.State.Lives == 0
+                    && !host.TrySubmitTerminalResult()
+                    && sink.SubmissionCount == 0,
+                    "acceptance defeat preview is stable and does not submit");
+
+                configureForUrl.Invoke(host, new object[]
+                {
+                    "selected-tool", "https://fruit.example/?acceptance=1&route=battle"
+                });
+                Assert(host.Simulation.State.Phase == GamePhase.Ready
+                    && host.Simulation.State.Inventory.Gatling == 1,
+                    "guarded selected-tool state exposes one real selectable Gatling");
+
+                host.Simulation.State.Phase = GamePhase.Victory;
+                host.Simulation.State.WaveIndex = 4;
+                host.Simulation.State.Lives = 2;
+                Assert(host.TrySubmitTerminalResult()
+                    && host.HasSubmittedResult
+                    && sink.SubmissionCount == 1
+                    && sink.LastResult.Outcome == BattleOutcome.Victory,
+                    "a nonterminal acceptance state clears preview suppression");
             }
             finally
             {

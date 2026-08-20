@@ -1,5 +1,6 @@
 using System;
 using FruitDefense.App;
+using FruitDefense.UI;
 using UnityEngine;
 
 namespace FruitDefense.Shell
@@ -10,19 +11,29 @@ namespace FruitDefense.Shell
         public const string Orchard01LevelId = "orchard-01";
         public const string Orchard02LevelId = "orchard-02";
         public const string Orchard03LevelId = "orchard-03";
-        public const string DefaultLevelId = Orchard01LevelId;
         public const string MissingContext = "shell-context-missing";
         public const string MissingNavigator = "shell-navigator-missing";
         public const string MissingContentVersion = "bundled-content-version-missing";
         public const string MissingSelectedLevel = "lobby-selected-level-missing";
-        public const string LevelSelectionUnavailable = "lobby-level-selection-unavailable";
         public const string LevelSelectionMismatch = "lobby-level-selection-mismatch";
 
         private IShellFlowContext _context;
-        private string _visibleSelectedLevelId = DefaultLevelId;
-        private ShellStyleSet _styles;
-        private Font _font;
-        private float _styleScale = -1f;
+        private RuntimeUiTheme _runtimeUiTheme;
+        private string _visibleSelectedLevelId = string.Empty;
+        private RuntimeUiDrawContext _drawContext;
+        private RuntimeUiFeedbackPulse _focusPulse;
+        private RuntimeUiFeedbackPulse _pressPulse;
+        private RuntimeUiFeedbackPulse _selectionPulse;
+        private RuntimeUiFeedbackPulse _transitionPulse;
+        private RuntimeUiFeedbackPulse _statusPulse;
+        private string _focusTarget = string.Empty;
+        private string _pressTarget = string.Empty;
+        private string _selectionTarget = string.Empty;
+        private string _transitionTarget = string.Empty;
+        private string _observedErrorCode = string.Empty;
+        private bool _wasTransitioning;
+
+        private const string StartFeedbackTarget = "start";
 
         public ShellFlowError LastError { get; private set; }
         public string LastSessionId { get; private set; } = string.Empty;
@@ -30,13 +41,36 @@ namespace FruitDefense.Shell
         public string LastContentVersion { get; private set; } = string.Empty;
         public string SelectedLevelId => _visibleSelectedLevelId;
 
-        public void Initialize(IShellFlowContext context)
+        public void Initialize(IShellFlowContext context, RuntimeUiTheme runtimeUiTheme)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (!(context is ILevelSelectionFlowContext selection))
+                throw new ArgumentException(
+                    "Lobby requires a level-selection flow context.", nameof(context));
+            if (runtimeUiTheme == null)
+                throw new ArgumentNullException(nameof(runtimeUiTheme));
+            var validation = runtimeUiTheme.Validate();
+            if (!validation.IsValid)
+                throw new ArgumentException(validation.Issues[0].ToString(), nameof(runtimeUiTheme));
+
             _context = context;
-            _visibleSelectedLevelId = context is ILevelSelectionFlowContext selection
-                ? selection.SelectedLevelId ?? string.Empty
-                : DefaultLevelId;
+            _runtimeUiTheme = runtimeUiTheme;
+            _drawContext = null;
+            _visibleSelectedLevelId = selection.SelectedLevelId ?? string.Empty;
             LastError = ShellFlowError.None;
+            _focusPulse = default;
+            _pressPulse = default;
+            _selectionPulse = default;
+            _transitionPulse = default;
+            _statusPulse = default;
+            _focusTarget = string.Empty;
+            _pressTarget = string.Empty;
+            _selectionTarget = string.Empty;
+            _transitionTarget = string.Empty;
+            _observedErrorCode = string.Empty;
+            _wasTransitioning = context.Navigator == null
+                || context.Navigator.TransitionState != AppTransitionState.Idle;
         }
 
         public bool TrySelectLevel(string levelId)
@@ -48,15 +82,7 @@ namespace FruitDefense.Shell
             if (_context.Navigator.TransitionState != AppTransitionState.Idle)
                 return false;
 
-            if (!(_context is ILevelSelectionFlowContext selection))
-            {
-                if (!string.Equals(levelId, DefaultLevelId, StringComparison.Ordinal))
-                    return Fail(new ShellFlowError(LevelSelectionUnavailable, levelId));
-                _visibleSelectedLevelId = DefaultLevelId;
-                LastError = ShellFlowError.None;
-                return true;
-            }
-
+            var selection = (ILevelSelectionFlowContext)_context;
             if (!selection.TrySelectLevel(levelId, out var error))
                 return Fail(error);
             if (!string.Equals(selection.SelectedLevelId, levelId, StringComparison.Ordinal))
@@ -80,8 +106,7 @@ namespace FruitDefense.Shell
             var selectedLevelId = _visibleSelectedLevelId;
             if (string.IsNullOrWhiteSpace(selectedLevelId))
                 return Fail(new ShellFlowError(MissingSelectedLevel));
-            if (_context is ILevelSelectionFlowContext selection
-                && !IsPlayable(selection, selectedLevelId))
+            if (!IsPlayable((ILevelSelectionFlowContext)_context, selectedLevelId))
                 return Fail(new ShellFlowError(MissingSelectedLevel, selectedLevelId));
 
             var contentVersion = _context.BundledContentVersion;
@@ -122,47 +147,213 @@ namespace FruitDefense.Shell
 
         private void OnGUI()
         {
+            if (_runtimeUiTheme == null) return;
+            var unscaledTime = Time.unscaledTime;
             var layout = PortraitShellLayout.CreateLobby(
                 Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent());
-            EnsureStyles(layout.Frame.Scale);
+            _drawContext = RuntimeUiGui.RequireContext(
+                _drawContext, _runtimeUiTheme, layout.Frame.Scale);
 
-            ShellGui.DrawPanel(layout.Frame.SafeArea, _styles.Panel);
-            GUI.Label(layout.Title, "果园防线", _styles.Title);
+            RuntimeUiGui.DrawScreenBackground(_drawContext,
+                new Rect(0f, 0f, Screen.width, Screen.height));
+            RuntimeUiGui.DrawSafeArea(_drawContext, layout.Frame.SafeArea);
+            RuntimeUiGui.DrawScreenCorners(_drawContext, layout.Frame.SafeArea);
+            RuntimeUiGui.DrawSectionRibbon(_drawContext, layout.Title);
+            var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.LobbyTitle);
+            RuntimeUiGui.DrawSingleLineText(_drawContext, layout.Title, titleCopy.Text,
+                titleCopy.Role, titleCopy.Tone, titleCopy.Alignment);
 
             var transitioning = _context?.Navigator == null
                 || _context.Navigator.TransitionState != AppTransitionState.Idle;
+            RefreshTransitionFeedback(transitioning, unscaledTime);
+            RefreshStatusFeedback(unscaledTime);
+            var transitionEmphasized = _transitionPulse.IsActive(unscaledTime);
             DrawLevelCard(layout.Orchard01Card, Orchard01LevelId,
-                "第一关 · U形教学", "路线宽松｜熟悉种植与合成", transitioning);
+                RuntimeUiCopyId.LobbyOrchard01Title,
+                RuntimeUiCopyId.LobbyOrchard01Body, transitioning,
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard01);
             DrawLevelCard(layout.Orchard02Card, Orchard02LevelId,
-                "第二关 · S形覆盖", "连续转弯｜兼顾快速与护甲敌人", transitioning);
+                RuntimeUiCopyId.LobbyOrchard02Title,
+                RuntimeUiCopyId.LobbyOrchard02Body, transitioning,
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard02);
             DrawLevelCard(layout.Orchard03Card, Orchard03LevelId,
-                "第三关 · 核心走廊", "短线压迫｜守住首领冲击", transitioning);
+                RuntimeUiCopyId.LobbyOrchard03Title,
+                RuntimeUiCopyId.LobbyOrchard03Body, transitioning,
+                transitionEmphasized, unscaledTime, RuntimeUiLobbyThumbnail.Orchard03);
 
-            var previousEnabled = GUI.enabled;
-            GUI.enabled = !transitioning && !string.IsNullOrWhiteSpace(_visibleSelectedLevelId);
-            if (GUI.Button(layout.StartButton,
-                    transitioning ? "正在进入…" : "开始战斗 · " + _visibleSelectedLevelId,
-                    _styles.PrimaryButton))
-                TryStart();
-            GUI.enabled = previousEnabled;
+            var startHovered = ContainsPointer(layout.StartButton);
+            if (startHovered)
+                BeginFocus(StartFeedbackTarget, unscaledTime);
+            var startPressed = IsPointerPress(layout.StartButton)
+                || IsFeedbackActive(_pressPulse, _pressTarget,
+                    StartFeedbackTarget, unscaledTime);
+            var startState = ResolveActionState(transitioning,
+                !string.IsNullOrWhiteSpace(_visibleSelectedLevelId),
+                startHovered || IsFeedbackActive(_focusPulse, _focusTarget,
+                    StartFeedbackTarget, unscaledTime), startPressed);
+            var startCopy = RuntimeUiCopyCatalog.Get(transitioning
+                ? RuntimeUiCopyId.LobbyTransitioning
+                : RuntimeUiCopyId.LobbyStart);
+            if (RuntimeUiGui.DrawAction(_drawContext, layout.StartButton,
+                    transitioning ? startCopy.Text
+                        : RuntimeUiCopyCatalog.FormatLobbyStart(_visibleSelectedLevelId),
+                    RuntimeUiActionKind.Primary, startState,
+                    RuntimeUiArtSlot.IconControlStart,
+                    startCopy.Role,
+                    transitionEmphasized
+                        && string.Equals(_transitionTarget, StartFeedbackTarget,
+                            StringComparison.Ordinal)))
+            {
+                BeginPress(StartFeedbackTarget, unscaledTime);
+                if (TryStart())
+                    BeginTransition(StartFeedbackTarget, unscaledTime);
+            }
 
-            var status = LastError.IsEmpty ? string.Empty : "暂时无法继续：" + LastError.Code;
-            GUI.Label(layout.Status, status, _styles.Status);
+            var status = LastError.IsEmpty
+                ? string.Empty
+                : RuntimeUiCopyCatalog.FormatLobbyError(LastError.Code);
+            if (!string.IsNullOrEmpty(status))
+            {
+                var statusCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.LobbyError);
+                RuntimeUiGui.DrawStatus(_drawContext, layout.Status, status,
+                    RuntimeUiInteractionState.Error,
+                    statusCopy.Role,
+                    RuntimeUiCopyCatalog.StatusTextMode(statusCopy),
+                    _statusPulse.IsActive(unscaledTime));
+            }
         }
 
-        private void DrawLevelCard(Rect rect, string levelId, string title, string focus,
-            bool transitioning)
+        private void DrawLevelCard(Rect rect, string levelId,
+            RuntimeUiCopyId titleCopyId, RuntimeUiCopyId bodyCopyId,
+            bool transitioning, bool transitionEmphasized, float unscaledTime,
+            RuntimeUiLobbyThumbnail thumbnail)
         {
             var selected = string.Equals(_visibleSelectedLevelId, levelId, StringComparison.Ordinal);
-            var available = !(_context is ILevelSelectionFlowContext selection)
-                || IsPlayable(selection, levelId);
+            var available = IsPlayable((ILevelSelectionFlowContext)_context, levelId);
+            var pointerInside = ContainsPointer(rect);
+            if (pointerInside)
+                BeginFocus(levelId, unscaledTime);
+            var pointerPressed = IsPointerPress(rect)
+                || IsFeedbackActive(_pressPulse, _pressTarget, levelId, unscaledTime);
+            var state = ResolveCardState(transitioning, available, selected,
+                pointerInside || IsFeedbackActive(
+                    _focusPulse, _focusTarget, levelId, unscaledTime), pointerPressed);
+            var selectionEmphasized = selected && IsFeedbackActive(
+                _selectionPulse, _selectionTarget, levelId, unscaledTime);
+            RuntimeUiGui.DrawSelectableCard(_drawContext, rect, state,
+                selectionEmphasized || transitionEmphasized,
+                drawStateIndicator: false);
+
+            var cardLayout = PortraitShellLayout.CreateLobbyLevelCard(
+                rect, _drawContext.Scale);
+            RuntimeUiGui.DrawLobbyThumbnail(_drawContext, cardLayout.Thumbnail,
+                thumbnail);
+            RuntimeUiGui.DrawIllustrationFrame(_drawContext, cardLayout.Frame);
+            var titleCopy = RuntimeUiCopyCatalog.Get(titleCopyId);
+            var bodyCopy = RuntimeUiCopyCatalog.Get(bodyCopyId);
+            RuntimeUiGui.DrawSingleLineText(_drawContext,
+                cardLayout.Title, titleCopy.Text, titleCopy.Role,
+                titleCopy.Tone, titleCopy.Alignment, state);
+            RuntimeUiGui.DrawSingleLineText(_drawContext, cardLayout.Body,
+                bodyCopy.Text, bodyCopy.Role,
+                bodyCopy.Tone, bodyCopy.Alignment, state);
+
+            if (selected)
+            {
+                RuntimeUiGui.DrawIndicator(_drawContext, cardLayout.SelectedMarker,
+                    RuntimeUiIndicatorKind.Selected);
+            }
+            if (state == RuntimeUiInteractionState.Disabled)
+                RuntimeUiGui.DrawIndicator(_drawContext, cardLayout.TransientIndicator,
+                    RuntimeUiIndicatorKind.Disabled);
+            else if (state == RuntimeUiInteractionState.Loading)
+                RuntimeUiGui.DrawIndicator(_drawContext, cardLayout.TransientIndicator,
+                    RuntimeUiIndicatorKind.Loading);
+
             var previousEnabled = GUI.enabled;
             GUI.enabled = !transitioning && available;
-            var prefix = selected ? "✓ 已选择  " : string.Empty;
-            if (GUI.Button(rect, prefix + title + "\n" + focus,
-                    selected ? _styles.PrimaryButton : _styles.SecondaryButton))
-                TrySelectLevel(levelId);
+            if (GUI.Button(rect, GUIContent.none, _drawContext.Styles.HitTarget))
+            {
+                BeginPress(levelId, unscaledTime);
+                if (TrySelectLevel(levelId))
+                {
+                    _selectionTarget = levelId;
+                    _selectionPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                        _runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
+                }
+            }
             GUI.enabled = previousEnabled;
+        }
+
+        private void BeginFocus(string target, float unscaledTime)
+        {
+            _focusTarget = target;
+            _focusPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledFocusSeconds);
+        }
+
+        private void BeginPress(string target, float unscaledTime)
+        {
+            _pressTarget = target;
+            _pressPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledPressSeconds);
+        }
+
+        private void BeginTransition(string target, float unscaledTime)
+        {
+            _transitionTarget = target;
+            _transitionPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledTransitionSeconds);
+        }
+
+        private void RefreshTransitionFeedback(bool transitioning, float unscaledTime)
+        {
+            if (transitioning && !_wasTransitioning)
+                BeginTransition(StartFeedbackTarget, unscaledTime);
+            _wasTransitioning = transitioning;
+        }
+
+        private void RefreshStatusFeedback(float unscaledTime)
+        {
+            var errorCode = LastError.Code ?? string.Empty;
+            if (string.Equals(errorCode, _observedErrorCode, StringComparison.Ordinal))
+                return;
+            _observedErrorCode = errorCode;
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                _statusPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                    _runtimeUiTheme.Feedback.UnscaledStatusSeconds);
+            }
+        }
+
+        private static bool IsFeedbackActive(RuntimeUiFeedbackPulse pulse,
+            string activeTarget, string target, float unscaledTime)
+        {
+            return string.Equals(activeTarget, target, StringComparison.Ordinal)
+                && pulse.IsActive(unscaledTime);
+        }
+
+        internal static RuntimeUiInteractionState ResolveCardState(bool transitioning,
+            bool available, bool selected, bool pointerInside, bool pointerPressed)
+        {
+            if (transitioning) return RuntimeUiInteractionState.Loading;
+            if (!available) return RuntimeUiInteractionState.Disabled;
+            if (pointerPressed) return RuntimeUiInteractionState.Pressed;
+            if (selected) return RuntimeUiInteractionState.Selected;
+            return pointerInside
+                ? RuntimeUiInteractionState.HoveredOrFocused
+                : RuntimeUiInteractionState.Normal;
+        }
+
+        internal static RuntimeUiInteractionState ResolveActionState(bool transitioning,
+            bool available, bool pointerInside, bool pointerPressed)
+        {
+            if (transitioning) return RuntimeUiInteractionState.Loading;
+            if (!available) return RuntimeUiInteractionState.Disabled;
+            if (pointerPressed) return RuntimeUiInteractionState.Pressed;
+            return pointerInside
+                ? RuntimeUiInteractionState.HoveredOrFocused
+                : RuntimeUiInteractionState.Normal;
         }
 
         private static bool IsPlayable(ILevelSelectionFlowContext selection, string levelId)
@@ -178,12 +369,16 @@ namespace FruitDefense.Shell
             return false;
         }
 
-        private void EnsureStyles(float scale)
+        private static bool ContainsPointer(Rect rect)
         {
-            if (_styles != null && Mathf.Approximately(_styleScale, scale)) return;
-            if (_font == null) _font = Resources.Load<Font>("Fonts/NotoSansSC-UI");
-            _styles = ShellStyleSet.Create(GUI.skin, scale, _font);
-            _styleScale = scale;
+            return Event.current != null && rect.Contains(Event.current.mousePosition);
+        }
+
+        private static bool IsPointerPress(Rect rect)
+        {
+            return ContainsPointer(rect) && Event.current.button == 0
+                && (Event.current.rawType == EventType.MouseDown
+                    || Event.current.rawType == EventType.MouseDrag);
         }
 
         private bool Fail(ShellFlowError error)

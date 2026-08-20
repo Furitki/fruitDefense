@@ -1,0 +1,166 @@
+{
+  "verdict": "accepted",
+  "payload": {
+    "loaderSha256": "e0fd8292100517f441ce1e5ab1eb7a8219aa40919e46f125667090633a9b9388",
+    "dataSha256": "cc0a2b18a0c194bd7aafaff1e0b6b49247162799d54671ca892045612e938a60",
+    "frameworkSha256": "628ded04a7af9570e4032627edcf6f973928ea5e8aa51c10f5ed97150760fc77",
+    "wasmSha256": "868b0585638663a2ad55c2d2ba62dac4caee134ba340e01ebc53c841b25e084a"
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "1",
+    "artSetId": "sunny-orchard",
+    "artSetRevision": "1",
+    "activeArtSetGuid": "12cc0c638d174040bb0384d7bf17ea92",
+    "matchedInAllTenManifests": true
+  },
+  "matrix": [
+    {
+      "run": "full-402x874-shell-visual",
+      "manifest": "shell-visual-evidence.json",
+      "safeArea": [0, 0],
+      "screenshots": 3,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "full-402x874-shell-error",
+      "manifest": "shell-error-evidence.json",
+      "safeArea": [0, 0],
+      "screenshots": 1,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "full-402x874-battle",
+      "manifest": "acceptance.json",
+      "safeArea": [0, 0],
+      "screenshots": 18,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0.0006329,
+      "maxNearBlackFraction": 0.0015371,
+      "maxInvalidFraction": 0.0006329
+    },
+    {
+      "run": "full-402x874-flow-victory",
+      "manifest": "flow-acceptance.json",
+      "safeArea": [0, 0],
+      "screenshots": 5,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "full-402x874-flow-defeat",
+      "manifest": "flow-acceptance.json",
+      "safeArea": [0, 0],
+      "screenshots": 5,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "inset-402x874-44-34-shell-visual",
+      "manifest": "shell-visual-evidence.json",
+      "safeArea": [44, 34],
+      "screenshots": 3,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "inset-402x874-44-34-shell-error",
+      "manifest": "shell-error-evidence.json",
+      "safeArea": [44, 34],
+      "screenshots": 1,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "inset-402x874-44-34-battle",
+      "manifest": "acceptance.json",
+      "safeArea": [44, 34],
+      "screenshots": 18,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0.0002985,
+      "maxNearBlackFraction": 0.0013434,
+      "maxInvalidFraction": 0.0002985
+    },
+    {
+      "run": "inset-402x874-44-34-flow-victory",
+      "manifest": "flow-acceptance.json",
+      "safeArea": [44, 34],
+      "screenshots": 5,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0.000398,
+      "maxInvalidFraction": 0
+    },
+    {
+      "run": "inset-402x874-44-34-flow-defeat",
+      "manifest": "flow-acceptance.json",
+      "safeArea": [44, 34],
+      "screenshots": 5,
+      "accepted": true,
+      "payloadMatch": true,
+      "routeSessionInvariant": true,
+      "maxBlackFraction": 0,
+      "maxNearBlackFraction": 0.000398,
+      "maxInvalidFraction": 0
+    }
+  ],
+  "manualReview": {
+    "screenshots": 64,
+    "lobbyLoadingActionContrast": 3.2155599848337064,
+    "battleSelectedTool": {
+      "fullChangedPixels": 5110,
+      "fullDifferenceBounds": [16, 172, 193, 642],
+      "insetChangedPixels": 4280,
+      "insetDifferenceBounds": [33, 200, 193, 629]
+    },
+    "battleLegalIllegalCue": {
+      "fullDifferenceBounds": [8, 165, 96, 730],
+      "fullChangedPixels": 4061,
+      "insetDifferenceBounds": [26, 193, 106, 709],
+      "insetChangedPixels": 3411
+    },
+    "bootstrapInitializing": "The short initialization frame was not captured; both required Loading transition frames were captured and reviewed.",
+    "shellError": "The finite LevelResolutionFailed user copy, error glyph, and application modal were manually verified in full and inset captures.",
+    "defaultOrLegacySkin": false,
+    "mixedArtSet": false,
+    "clipping": false,
+    "stretching": false,
+    "overlap": false,
+    "contrastFailure": false,
+    "inputDrift": false,
+    "nineSliceSeam": false,
+    "backgroundTransparencyOrCrescent": false
+  }
+}

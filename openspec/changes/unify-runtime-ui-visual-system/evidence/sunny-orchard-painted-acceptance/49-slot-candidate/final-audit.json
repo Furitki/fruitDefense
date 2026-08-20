@@ -1,0 +1,58 @@
+{
+  "status": "accepted",
+  "accepted": true,
+  "scope": "ordinary WebGL runtime UI visual/theme/art-set portrait acceptance",
+  "runtimeUi": {
+    "theme": "ui.sunny-orchard@1",
+    "artSet": "sunny-orchard-painted@1",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb",
+    "requiredSemanticSlots": 49
+  },
+  "payloadSha256": {
+    "loader": "677D7B5431FA1EBFB0076D55F5B09E121EB81792E785F2A0CD0F89116E88E5C5",
+    "data": "24A7191BDECD4CB3B25E194A927045AE3CAC1356FFFCD9C6BC5F63211075AB35",
+    "framework": "377D39D2C40E2BBD6F8DCC8DAFC7B64D30E3AB9F94D598D82752E81F6F1146EE",
+    "wasm": "41A4189136E53C1F2703283234812A48248C8574447EB648F9613FE546D2AC3A"
+  },
+  "matrix": {
+    "shellVisualRuns": 8,
+    "crossRouteRuns": 10,
+    "crossRouteSharedShellVisualRuns": 2,
+    "additionalCrossRouteRuns": 8,
+    "acceptedManifests": 16,
+    "rejectedManifests": 0
+  },
+  "measured": {
+    "minimumLobbyPrimaryActionContrast": 5.747710375344677,
+    "requiredPrimaryActionContrast": 3.0,
+    "maximumCanonicalBlackFraction": 0.0,
+    "maximumCanonicalInvalidFraction": 0.0,
+    "shellConsecutiveStableFrames": 3,
+    "selectedToolAvailableToClickedHashesDiffer": true,
+    "legalAndIllegalInteractionCuesDiffer": true
+  },
+  "manualReview": {
+    "v2HierarchyAndOrchardRecognition": "pass",
+    "lobbyThumbnailAspectAndSafeInset": "pass",
+    "selectionMarkerOpticalWeightAndCollision": "pass",
+    "primaryActionGroupOpticalCenter": "pass",
+    "chineseClippingAndIconCollision": "pass",
+    "nineSliceFourSidesAndInnerBoundaries": "pass",
+    "leafDecorationOutsideStretchCenters": "pass",
+    "opaqueBackgroundAndTransparentEdgeGuard": "pass",
+    "battleBetweenWaveSingleLine": "pass",
+    "battleTransientTwoLineStatus": "pass",
+    "battlePauseDetailTerminal": "pass",
+    "settlementVictoryDefeatReturnRetry": "pass",
+    "bootstrapFiniteErrorCopyAndNonColorCue": "pass",
+    "defaultLegacyMixedSet": "absent",
+    "inputDrift": "absent"
+  },
+  "infrastructureRegressions": [
+    "Initial 402 full default screenshot was captured during Bootstrap fade and the transition frame raced route change; archived under timing-regression/full-402x874-attempt-01.",
+    "Initial 430 full transition capture raced route change; archived under timing-regression/full-430x932-attempt-01.",
+    "The legacy bottom-row color sentinel matched only the new refresh icon's 8-by-7 pixel orange area; archived under acceptance-guard-regression and replaced by a pixel-count plus horizontal-span signature."
+  ],
+  "userVisibleServer4173Touched": false,
+  "openSpecTaskCheckboxChanged": true
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="indicator.error">
+  <title>indicator.error</title>
+  <polygon points="36.24,18.6 59.76,18.6 77.4,36.24 77.4,59.76 59.76,77.4 36.24,77.4 18.6,59.76 18.6,36.24" fill="#D34E45" fill-opacity="1.0000" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="4" stroke-linejoin="round"/>
+  <polyline points="33.72,33.72 62.28,62.28" fill="none" stroke="#FFFDF6" stroke-opacity="1.0000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="62.28,33.72 33.72,62.28" fill="none" stroke="#FFFDF6" stroke-opacity="1.0000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

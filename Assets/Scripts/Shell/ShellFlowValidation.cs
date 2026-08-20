@@ -2,36 +2,125 @@ using System;
 using System.Collections.Generic;
 using FruitDefense.App;
 using FruitDefense.Content;
+using FruitDefense.UI;
 using UnityEngine;
 
 namespace FruitDefense.Shell
 {
     public static class ShellFlowValidation
     {
-        public static void SmokeValidate()
+        public static void SmokeValidate(RuntimeUiTheme runtimeUiTheme)
         {
-            Validate();
+            Validate(runtimeUiTheme);
             Debug.Log("FRUIT_DEFENSE_SHELL_OK");
         }
 
-        public static void Validate()
+        public static void Validate(RuntimeUiTheme runtimeUiTheme)
         {
+            if (runtimeUiTheme == null)
+                throw new ArgumentNullException(nameof(runtimeUiTheme));
+            var validation = runtimeUiTheme.Validate();
+            if (!validation.IsValid)
+                throw new ArgumentException(validation.Issues[0].ToString(), nameof(runtimeUiTheme));
+
             ShellLayoutValidation.ValidateReferenceGeometry();
-            ValidateThreeCardSelectionAndSelectedStart();
-            ValidateUnavailableProfileRecoveryAndLegacyCompatibility();
-            ValidateSettlementDisplay();
-            ValidateReturnAndRetry();
-            ValidateInvalidResultRecovery();
+            ValidateLobbyVisualContract(runtimeUiTheme);
+            ValidateThreeCardSelectionAndSelectedStart(runtimeUiTheme);
+            ValidateUnavailableProfileRecovery(runtimeUiTheme);
+            ValidateSettlementVisualContract(runtimeUiTheme);
+            ValidateSettlementDisplay(runtimeUiTheme);
+            ValidateReturnAndRetry(runtimeUiTheme);
+            ValidateInvalidResultRecovery(runtimeUiTheme);
         }
 
-        private static void ValidateThreeCardSelectionAndSelectedStart()
+        private static void ValidateLobbyVisualContract(RuntimeUiTheme runtimeUiTheme)
+        {
+            var drawContext = RuntimeUiDrawContext.Create(runtimeUiTheme, 1f);
+            Assert(ReferenceEquals(drawContext.Theme, runtimeUiTheme)
+                && ReferenceEquals(drawContext.ArtSet, runtimeUiTheme.ActiveArtSet)
+                && ReferenceEquals(drawContext.Styles.HitTarget.font, null),
+                "Lobby draw context is theme-bound and its transparent hit style has no fallback font");
+
+            Assert(LobbyPresenter.ResolveCardState(false, true, true, false, false)
+                    == RuntimeUiInteractionState.Selected
+                && LobbyPresenter.ResolveCardState(false, false, true, false, false)
+                    == RuntimeUiInteractionState.Disabled
+                && LobbyPresenter.ResolveCardState(true, true, true, false, false)
+                    == RuntimeUiInteractionState.Loading
+                && LobbyPresenter.ResolveCardState(false, true, false, true, false)
+                    == RuntimeUiInteractionState.HoveredOrFocused
+                && LobbyPresenter.ResolveCardState(false, true, false, true, true)
+                    == RuntimeUiInteractionState.Pressed,
+                "Lobby cards map selection, unavailable, transition, focus, and press to shared states");
+            Assert(LobbyPresenter.ResolveActionState(true, true, false, false)
+                    == RuntimeUiInteractionState.Loading
+                && LobbyPresenter.ResolveActionState(false, false, false, false)
+                    == RuntimeUiInteractionState.Disabled
+                && LobbyPresenter.ResolveActionState(false, true, true, true)
+                    == RuntimeUiInteractionState.Pressed,
+                "Lobby Start maps transition and unavailable states before pointer feedback");
+
+            var artSet = runtimeUiTheme.ActiveArtSet;
+            Assert(HasDistinctCue(artSet, RuntimeUiArtSlot.MarkerSelected,
+                    RuntimeUiArtSlot.IndicatorDisabled)
+                && HasDistinctCue(artSet, RuntimeUiArtSlot.IndicatorLoading,
+                    RuntimeUiArtSlot.IndicatorError),
+                "Lobby selected, disabled, loading, and error states own distinct non-color cues");
+        }
+
+        private static bool HasDistinctCue(RuntimeUiArtSet artSet,
+            RuntimeUiArtSlot first, RuntimeUiArtSlot second)
+        {
+            return artSet != null
+                && artSet.TryGetBinding(first, out var firstBinding)
+                && artSet.TryGetBinding(second, out var secondBinding)
+                && firstBinding.Sprite != null && secondBinding.Sprite != null
+                && firstBinding.Sprite != secondBinding.Sprite;
+        }
+
+        private static void ValidateSettlementVisualContract(RuntimeUiTheme runtimeUiTheme)
+        {
+            var drawContext = RuntimeUiDrawContext.Create(runtimeUiTheme, 1f);
+            Assert(ReferenceEquals(drawContext.Theme, runtimeUiTheme)
+                && ReferenceEquals(drawContext.ArtSet, runtimeUiTheme.ActiveArtSet)
+                && ReferenceEquals(drawContext.Styles.HitTarget.font, null),
+                "Settlement draw context is theme-bound and has no fallback font");
+
+            Assert(SettlementPresenter.ResolveResultState(true, true)
+                    == RuntimeUiInteractionState.Success
+                && SettlementPresenter.ResolveResultState(true, false)
+                    == RuntimeUiInteractionState.Error
+                && SettlementPresenter.ResolveResultState(false, false)
+                    == RuntimeUiInteractionState.Loading,
+                "Settlement outcome maps victory, defeat, and recovery to shared states");
+            Assert(SettlementPresenter.ResolveActionState(true, true, false, false)
+                    == RuntimeUiInteractionState.Loading
+                && SettlementPresenter.ResolveActionState(false, false, false, false)
+                    == RuntimeUiInteractionState.Disabled
+                && SettlementPresenter.ResolveActionState(false, true, true, false)
+                    == RuntimeUiInteractionState.HoveredOrFocused
+                && SettlementPresenter.ResolveActionState(false, true, true, true)
+                    == RuntimeUiInteractionState.Pressed,
+                "Settlement actions map transition and availability before pointer feedback");
+
+            var artSet = runtimeUiTheme.ActiveArtSet;
+            Assert(HasDistinctCue(artSet, RuntimeUiArtSlot.IndicatorSuccess,
+                    RuntimeUiArtSlot.IndicatorError)
+                && HasDistinctCue(artSet, RuntimeUiArtSlot.IndicatorLoading,
+                    RuntimeUiArtSlot.IndicatorDisabled)
+                && HasDistinctCue(artSet, RuntimeUiArtSlot.IndicatorWarning,
+                    RuntimeUiArtSlot.IndicatorError),
+                "Settlement outcome, transition, disabled, and recoverable states own distinct non-color cues");
+        }
+
+        private static void ValidateThreeCardSelectionAndSelectedStart(RuntimeUiTheme runtimeUiTheme)
         {
             var context = FakeShellFlowContext.AtLobby("builtin-test-v1",
                 LobbyPresenter.Orchard01LevelId);
             var presenter = CreatePresenter<LobbyPresenter>("LobbyMultiLevelValidation");
             try
             {
-                presenter.Initialize(context);
+                presenter.Initialize(context, runtimeUiTheme);
                 Assert(presenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId,
                     "Lobby visibly restores the context selection");
 
@@ -72,7 +161,7 @@ namespace FruitDefense.Shell
             var strictPresenter = CreatePresenter<LobbyPresenter>("LobbyStrictSelectionValidation");
             try
             {
-                strictPresenter.Initialize(strictContext);
+                strictPresenter.Initialize(strictContext, runtimeUiTheme);
                 Assert(!strictPresenter.TrySelectLevel("orchard-missing")
                     && strictPresenter.SelectedLevelId == LobbyPresenter.Orchard03LevelId,
                     "unknown selection is rejected without changing or defaulting the visible level");
@@ -86,14 +175,15 @@ namespace FruitDefense.Shell
             }
         }
 
-        private static void ValidateUnavailableProfileRecoveryAndLegacyCompatibility()
+        private static void ValidateUnavailableProfileRecovery(
+            RuntimeUiTheme runtimeUiTheme)
         {
             var recovered = FakeShellFlowContext.AtRecoveredLobby(
                 "builtin-test-v1", "orchard-removed", LobbyPresenter.Orchard01LevelId);
             var presenter = CreatePresenter<LobbyPresenter>("LobbyProfileRecoveryValidation");
             try
             {
-                presenter.Initialize(recovered);
+                presenter.Initialize(recovered, runtimeUiTheme);
                 Assert(recovered.RecoveredUnavailableLevelId == "orchard-removed"
                     && presenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId,
                     "unavailable stored identity remains observable while safe UI default is selected");
@@ -105,31 +195,16 @@ namespace FruitDefense.Shell
             {
                 DestroyPresenter(presenter);
             }
-
-            var legacy = new LegacyLobbyContext("builtin-test-v1");
-            var legacyPresenter = CreatePresenter<LobbyPresenter>("LobbyLegacyContextValidation");
-            try
-            {
-                legacyPresenter.Initialize(legacy);
-                Assert(legacyPresenter.SelectedLevelId == LobbyPresenter.Orchard01LevelId
-                    && legacyPresenter.TryStart()
-                    && legacy.StartLevelId == LobbyPresenter.Orchard01LevelId,
-                    "base shell contexts retain orchard-01 compatibility");
-            }
-            finally
-            {
-                DestroyPresenter(legacyPresenter);
-            }
         }
 
-        private static void ValidateSettlementDisplay()
+        private static void ValidateSettlementDisplay(RuntimeUiTheme runtimeUiTheme)
         {
             var context = FakeShellFlowContext.AtSettlement(
                 new SettlementViewData(LobbyPresenter.Orchard03LevelId, true, 12, 3));
             var presenter = CreatePresenter<SettlementPresenter>("SettlementDisplayValidation");
             try
             {
-                presenter.Initialize(context);
+                presenter.Initialize(context, runtimeUiTheme);
                 Assert(presenter.HasViewData, "valid Settlement binds view data");
                 Assert(presenter.ViewData.LevelId == LobbyPresenter.Orchard03LevelId
                     && presenter.ViewData.Victory
@@ -143,14 +218,14 @@ namespace FruitDefense.Shell
             }
         }
 
-        private static void ValidateReturnAndRetry()
+        private static void ValidateReturnAndRetry(RuntimeUiTheme runtimeUiTheme)
         {
             var returnContext = FakeShellFlowContext.AtSettlement(
                 new SettlementViewData(LobbyPresenter.Orchard03LevelId, false, 7, 0));
             var returnPresenter = CreatePresenter<SettlementPresenter>("SettlementReturnValidation");
             try
             {
-                returnPresenter.Initialize(returnContext);
+                returnPresenter.Initialize(returnContext, runtimeUiTheme);
                 Assert(returnPresenter.TryReturn(), "Return command is accepted");
                 Assert(returnContext.ReturnCount == 1 && returnContext.ClearedBeforeReturn,
                     "Return clears completed session/result before navigation");
@@ -175,7 +250,7 @@ namespace FruitDefense.Shell
             var retryPresenter = CreatePresenter<SettlementPresenter>("SettlementRetryValidation");
             try
             {
-                retryPresenter.Initialize(retryContext);
+                retryPresenter.Initialize(retryContext, runtimeUiTheme);
                 Assert(retryPresenter.TryRetry(), "Retry command is accepted");
                 Assert(retryContext.RetryCount == 1,
                     "Retry issues exactly one flow command");
@@ -196,13 +271,14 @@ namespace FruitDefense.Shell
             }
         }
 
-        private static void ValidateInvalidResultRecovery()
+        private static void ValidateInvalidResultRecovery(RuntimeUiTheme runtimeUiTheme)
         {
-            ValidateRecovery(false, SettlementPresenter.MissingResult);
-            ValidateRecovery(true, "settlement-result-level-mismatch");
+            ValidateRecovery(runtimeUiTheme, false, SettlementPresenter.MissingResult);
+            ValidateRecovery(runtimeUiTheme, true, "settlement-result-level-mismatch");
         }
 
-        private static void ValidateRecovery(bool mismatch, string expectedErrorCode)
+        private static void ValidateRecovery(RuntimeUiTheme runtimeUiTheme,
+            bool mismatch, string expectedErrorCode)
         {
             var context = FakeShellFlowContext.AtSettlement(
                 new SettlementViewData(LobbyPresenter.Orchard02LevelId, true, 1, 1));
@@ -212,7 +288,7 @@ namespace FruitDefense.Shell
                 mismatch ? "SettlementMismatchValidation" : "SettlementMissingValidation");
             try
             {
-                presenter.Initialize(context);
+                presenter.Initialize(context, runtimeUiTheme);
                 Assert(!presenter.HasViewData,
                     "invalid Settlement does not bind fabricated view data");
                 Assert(context.ReportedError.Code == expectedErrorCode,
@@ -483,57 +559,6 @@ namespace FruitDefense.Shell
                 if (!navigator.TryBeginTransition(route, out var error)
                     || !navigator.TryCompleteTransition(out error))
                     throw new InvalidOperationException("Fake navigation setup failed: " + error);
-            }
-        }
-
-        private sealed class LegacyLobbyContext : IShellFlowContext
-        {
-            private readonly AppNavigator _navigator = new AppNavigator();
-
-            public LegacyLobbyContext(string contentVersion)
-            {
-                BundledContentVersion = contentVersion;
-            }
-
-            public IAppNavigator Navigator => _navigator;
-            public string BundledContentVersion { get; }
-            public string StartLevelId { get; private set; }
-
-            public bool TryStartDefaultBattle(string levelId, string sessionId, int seed,
-                string contentVersion, out ShellFlowError error)
-            {
-                if (!_navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
-                {
-                    error = new ShellFlowError(navigationError);
-                    return false;
-                }
-                StartLevelId = levelId;
-                error = ShellFlowError.None;
-                return true;
-            }
-
-            public bool TryGetSettlementViewData(out SettlementViewData viewData,
-                out ShellFlowError error)
-            {
-                viewData = default;
-                error = new ShellFlowError(SettlementPresenter.MissingResult);
-                return false;
-            }
-
-            public bool TryReturnToLobby(out ShellFlowError error)
-            {
-                error = new ShellFlowError("unsupported");
-                return false;
-            }
-
-            public bool TryRetryBattle(out ShellFlowError error)
-            {
-                error = new ShellFlowError("unsupported");
-                return false;
-            }
-
-            public void ReportRecoverableError(ShellFlowError error)
-            {
             }
         }
     }

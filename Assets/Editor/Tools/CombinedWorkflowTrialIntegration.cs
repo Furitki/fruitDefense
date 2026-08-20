@@ -237,7 +237,7 @@ namespace FruitDefense.Editor
             var trialBootstrap = game.GetComponent<CombinedWorkflowTrialBootstrap>();
             if (trialBootstrap == null)
                 trialBootstrap = game.gameObject.AddComponent<CombinedWorkflowTrialBootstrap>();
-            trialBootstrap.Configure(game);
+            trialBootstrap.Configure(game, ProjectSetup.RequireReleaseRuntimeUiTheme());
             EditorUtility.SetDirty(trialBootstrap);
 
             var marker = GameObject.Find("TRIAL-ProtectedHybrid-FullComposite-KnownSeams");

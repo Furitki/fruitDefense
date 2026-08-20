@@ -1,0 +1,547 @@
+﻿{
+    "schemaVersion":  1,
+    "evidenceType":  "bootstrap-lobby-webgl-visual",
+    "accepted":  true,
+    "completion":  "complete-shell-visual-states",
+    "capturedAtUtc":  "2026-08-19T13:35:09.3836770+00:00",
+    "url":  "http://127.0.0.1:58911/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=44\u0026safeBottom=34",
+    "viewport":  {
+                     "width":  402,
+                     "height":  874,
+                     "coordinateSpace":  "css-pixel/top-left"
+                 },
+    "safeArea":  {
+                     "top":  44,
+                     "bottom":  34,
+                     "left":  0,
+                     "right":  0,
+                     "coordinateSpace":  "css-pixel/top-left",
+                     "contentRect":  {
+                                         "x":  0,
+                                         "y":  44,
+                                         "width":  402,
+                                         "height":  796
+                                     },
+                     "designReference":  {
+                                             "width":  402,
+                                             "height":  874
+                                         },
+                     "designScale":  0.91075514874141872,
+                     "designOffset":  {
+                                          "x":  17.938215102974851,
+                                          "y":  44
+                                      },
+                     "shellContentRect":  {
+                                              "x":  32.51029748283753,
+                                              "y":  60.393592677345538,
+                                              "width":  336.97940503432494,
+                                              "height":  763
+                                          }
+                 },
+    "runtimeUi":  {
+                      "themeId":  "ui.sunny-orchard",
+                      "themeRevision":  "1",
+                      "artSetId":  "sunny-orchard-painted",
+                      "artSetRevision":  "1",
+                      "display":  "ui.sunny-orchard@1 / sunny-orchard-painted@1",
+                      "themeAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+                      "artSetAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+                      "activeArtSetGuid":  "91aa538ae02449cba8c971ffe4d427eb"
+                  },
+    "browser":  {
+                    "product":  "Chrome/151.0.7922.169",
+                    "userAgent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+                    "protocolVersion":  "1.3",
+                    "jsVersion":  "15.1.206.21",
+                    "executable":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                    "launchMode":  "external-headless-chrome-cdp"
+                },
+    "canvas":  {
+                   "href":  "http://127.0.0.1:58911/?acceptance=1\u0026levelId=orchard-02\u0026safeTop=44\u0026safeBottom=34",
+                   "title":  "Unity Web Player | 水果塔防",
+                   "canvas":  true,
+                   "width":  402,
+                   "height":  874,
+                   "cssWidth":  402,
+                   "cssHeight":  874,
+                   "innerWidth":  402,
+                   "innerHeight":  874,
+                   "devicePixelRatio":  1,
+                   "timeOrigin":  1787146499021.6,
+                   "loading":  "none",
+                   "warning":  "",
+                   "acceptanceReady":  true,
+                   "appRoute":  0,
+                   "body":  ""
+               },
+    "bootstrapInitializing":  {
+                                  "state":  "not-captured",
+                                  "reason":  "Unity route became ready before a stable initializing frame was observed.",
+                                  "cpuThrottlingRate":  20,
+                                  "attempts":  8
+                              },
+    "errorEvidence":  {
+                          "state":  "separate-formal-capture-required",
+                          "reason":  "Capture the application-owned Bootstrap blocking error separately with -ShellError. That mode uses the production acceptance battle route with an invalid level id and does not add a runtime hook, loader failure, or scene mutation.",
+                          "screenshot":  null
+                      },
+    "checks":  {
+                   "releaseRuntimeUiIdentity":  "pass",
+                   "bootstrapInitializing":  "not-captured",
+                   "lobbyDefault":  "pass",
+                   "lobbyAlternateSelection":  "pass",
+                   "lobbyTransition":  "pass",
+                   "lobbyActionContrast":  "pass",
+                   "bootstrapOrLobbyError":  "separate-formal-capture-required",
+                   "selectedLevelInputMapping":  "pass",
+                   "startInputMapping":  "pass",
+                   "requestedViewportAndCanvas":  "pass",
+                   "safeAreaQueryApplied":  "pass",
+                   "screenshotDimensions":  "pass",
+                   "noBlackTransparentOrLargeNearBlackRegions":  "pass",
+                   "warmCacheReuse":  "pass"
+               },
+    "delivery":  {
+                     "assetVersions":  {
+                                           "loader":  "677d7b5431fa",
+                                           "data":  "24a7191bdecd",
+                                           "framework":  "377d39d2c40e",
+                                           "wasm":  "41a4189136e5"
+                                       },
+                     "htmlCacheControl":  "no-cache",
+                     "assets":  {
+                                    "loader":  {
+                                                   "url":  "http://127.0.0.1:58911/Build/WebGL.loader.js?v=677d7b5431fa",
+                                                   "version":  "677d7b5431fa",
+                                                   "contentType":  "text/javascript; charset=utf-8",
+                                                   "contentEncoding":  "",
+                                                   "cacheControl":  "public, max-age=31536000, immutable",
+                                                   "contentLength":  117893,
+                                                   "etag":  "\"677d7b5431fa1ebfb0076d55f5b09e121eb81792e785f2a0cd0f89116e88e5c5\"",
+                                                   "contentSha256":  "677d7b5431fa1ebfb0076d55f5b09e121eb81792e785f2a0cd0f89116e88e5c5"
+                                               },
+                                    "data":  {
+                                                 "url":  "http://127.0.0.1:58911/Build/WebGL.data.unityweb?v=24a7191bdecd",
+                                                 "version":  "24a7191bdecd",
+                                                 "contentType":  "application/octet-stream",
+                                                 "contentEncoding":  "",
+                                                 "cacheControl":  "public, max-age=31536000, immutable",
+                                                 "contentLength":  5575450,
+                                                 "etag":  "\"24a7191bdecd4cb3b25e194a927045ae3cac1356fffcd9c6bc5f63211075ab35\"",
+                                                 "contentSha256":  "24a7191bdecd4cb3b25e194a927045ae3cac1356fffcd9c6bc5f63211075ab35"
+                                             },
+                                    "framework":  {
+                                                      "url":  "http://127.0.0.1:58911/Build/WebGL.framework.js.unityweb?v=377d39d2c40e",
+                                                      "version":  "377d39d2c40e",
+                                                      "contentType":  "application/octet-stream",
+                                                      "contentEncoding":  "",
+                                                      "cacheControl":  "public, max-age=31536000, immutable",
+                                                      "contentLength":  69037,
+                                                      "etag":  "\"377d39d2c40e2bbd6f8dcc8dafc7b64d30e3ab9f94d598d82752e81f6f1146ee\"",
+                                                      "contentSha256":  "377d39d2c40e2bbd6f8dcc8dafc7b64d30e3ab9f94d598d82752e81f6f1146ee"
+                                                  },
+                                    "wasm":  {
+                                                 "url":  "http://127.0.0.1:58911/Build/WebGL.wasm.unityweb?v=41a4189136e5",
+                                                 "version":  "41a4189136e5",
+                                                 "contentType":  "application/octet-stream",
+                                                 "contentEncoding":  "",
+                                                 "cacheControl":  "public, max-age=31536000, immutable",
+                                                 "contentLength":  3882891,
+                                                 "etag":  "\"41a4189136e53c1f2703283234812a48248c8574447eb648f9613fe546d2ac3a\"",
+                                                 "contentSha256":  "41a4189136e53c1f2703283234812a48248c8574447eb648f9613fe546d2ac3a"
+                                             }
+                                },
+                     "cacheLimits":  {
+                                         "perAssetTransferBytes":  16384,
+                                         "totalTransferBytes":  65536
+                                     },
+                     "cacheRuns":  {
+                                       "cold":  {
+                                                    "label":  "cold",
+                                                    "startedAtUtc":  "2026-08-19T13:34:41.2482784+00:00",
+                                                    "completedAtUtc":  "2026-08-19T13:34:58.9990955+00:00",
+                                                    "startupDurationMilliseconds":  17750.817,
+                                                    "totalPayloadTransferSize":  9646471,
+                                                    "assets":  {
+                                                                   "loader":  {
+                                                                                  "url":  "http://127.0.0.1:58911/Build/WebGL.loader.js?v=677d7b5431fa",
+                                                                                  "startTimeMilliseconds":  141.3,
+                                                                                  "durationMilliseconds":  3.4,
+                                                                                  "transferSize":  118193,
+                                                                                  "encodedBodySize":  117893,
+                                                                                  "decodedBodySize":  117893,
+                                                                                  "responseStatus":  200,
+                                                                                  "deliveryType":  "",
+                                                                                  "nextHopProtocol":  "http/1.1"
+                                                                              },
+                                                                   "data":  {
+                                                                                "url":  "http://127.0.0.1:58911/Build/WebGL.data.unityweb?v=24a7191bdecd",
+                                                                                "startTimeMilliseconds":  942.9,
+                                                                                "durationMilliseconds":  109,
+                                                                                "transferSize":  5575750,
+                                                                                "encodedBodySize":  5575450,
+                                                                                "decodedBodySize":  5575450,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            },
+                                                                   "framework":  {
+                                                                                     "url":  "http://127.0.0.1:58911/Build/WebGL.framework.js.unityweb?v=377d39d2c40e",
+                                                                                     "startTimeMilliseconds":  625.1,
+                                                                                     "durationMilliseconds":  3.4,
+                                                                                     "transferSize":  69337,
+                                                                                     "encodedBodySize":  69037,
+                                                                                     "decodedBodySize":  69037,
+                                                                                     "responseStatus":  200,
+                                                                                     "deliveryType":  "",
+                                                                                     "nextHopProtocol":  "http/1.1"
+                                                                                 },
+                                                                   "wasm":  {
+                                                                                "url":  "http://127.0.0.1:58911/Build/WebGL.wasm.unityweb?v=41a4189136e5",
+                                                                                "startTimeMilliseconds":  629.4,
+                                                                                "durationMilliseconds":  132.1,
+                                                                                "transferSize":  3883191,
+                                                                                "encodedBodySize":  3882891,
+                                                                                "decodedBodySize":  3882891,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            }
+                                                               }
+                                                },
+                                       "warm":  {
+                                                    "label":  "warm",
+                                                    "startedAtUtc":  "2026-08-19T13:34:59.0120988+00:00",
+                                                    "completedAtUtc":  "2026-08-19T13:35:02.0858294+00:00",
+                                                    "startupDurationMilliseconds":  3073.731,
+                                                    "totalPayloadTransferSize":  300,
+                                                    "assets":  {
+                                                                   "loader":  {
+                                                                                  "url":  "http://127.0.0.1:58911/Build/WebGL.loader.js?v=677d7b5431fa",
+                                                                                  "startTimeMilliseconds":  63.7,
+                                                                                  "durationMilliseconds":  0,
+                                                                                  "transferSize":  0,
+                                                                                  "encodedBodySize":  117893,
+                                                                                  "decodedBodySize":  117893,
+                                                                                  "responseStatus":  200,
+                                                                                  "deliveryType":  "cache",
+                                                                                  "nextHopProtocol":  "http/1.1"
+                                                                              },
+                                                                   "data":  {
+                                                                                "url":  "http://127.0.0.1:58911/Build/WebGL.data.unityweb?v=24a7191bdecd",
+                                                                                "startTimeMilliseconds":  86.8,
+                                                                                "durationMilliseconds":  1.3,
+                                                                                "transferSize":  300,
+                                                                                "encodedBodySize":  0,
+                                                                                "decodedBodySize":  0,
+                                                                                "responseStatus":  304,
+                                                                                "deliveryType":  "cache",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            },
+                                                                   "framework":  {
+                                                                                     "url":  "http://127.0.0.1:58911/Build/WebGL.framework.js.unityweb?v=377d39d2c40e",
+                                                                                     "startTimeMilliseconds":  71,
+                                                                                     "durationMilliseconds":  1.6,
+                                                                                     "transferSize":  0,
+                                                                                     "encodedBodySize":  69037,
+                                                                                     "decodedBodySize":  69037,
+                                                                                     "responseStatus":  200,
+                                                                                     "deliveryType":  "cache",
+                                                                                     "nextHopProtocol":  ""
+                                                                                 },
+                                                                   "wasm":  {
+                                                                                "url":  "http://127.0.0.1:58911/Build/WebGL.wasm.unityweb?v=41a4189136e5",
+                                                                                "startTimeMilliseconds":  71.1,
+                                                                                "durationMilliseconds":  8,
+                                                                                "transferSize":  0,
+                                                                                "encodedBodySize":  3882891,
+                                                                                "decodedBodySize":  3882891,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "cache",
+                                                                                "nextHopProtocol":  ""
+                                                                            }
+                                                               }
+                                                }
+                                   },
+                     "releaseTransition":  {
+                                               "state":  "not-requested"
+                                           }
+                 },
+    "routeIdentities":  {
+                            "defaultLobby":  {
+                                                 "route":  0,
+                                                 "routeName":  "lobby",
+                                                 "sessionId":  "",
+                                                 "seed":  0,
+                                                 "levelId":  "orchard-01",
+                                                 "mapId":  "orchard-01",
+                                                 "waveSetId":  "waves.orchard-01.teaching",
+                                                 "ruleSetId":  "rules.orchard-01.baseline",
+                                                 "themeId":  "theme.orchard-01.day"
+                                             },
+                            "alternateLobby":  {
+                                                   "route":  0,
+                                                   "routeName":  "lobby",
+                                                   "sessionId":  "",
+                                                   "seed":  0,
+                                                   "levelId":  "orchard-02",
+                                                   "mapId":  "orchard-02",
+                                                   "waveSetId":  "waves.orchard-02.coverage",
+                                                   "ruleSetId":  "rules.orchard-02.coverage",
+                                                   "themeId":  "theme.orchard-02.creek"
+                                               },
+                            "battleAfterTransition":  {
+                                                          "route":  1,
+                                                          "routeName":  "battle",
+                                                          "sessionId":  "73b39125050b45d38fbc71229362fe7d",
+                                                          "seed":  2091584329,
+                                                          "levelId":  "orchard-02",
+                                                          "mapId":  "orchard-02",
+                                                          "waveSetId":  "waves.orchard-02.coverage",
+                                                          "ruleSetId":  "rules.orchard-02.coverage",
+                                                          "themeId":  "theme.orchard-02.creek"
+                                                      }
+                        },
+    "screenshots":  {
+                        "defaultLobby":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\unify-runtime-ui-visual-system\\evidence\\sunny-orchard-painted-acceptance\\49-slot-candidate\\shell-visual\\inset-402x874-44-34\\01-lobby-default.png",
+                        "alternateSelection":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\unify-runtime-ui-visual-system\\evidence\\sunny-orchard-painted-acceptance\\49-slot-candidate\\shell-visual\\inset-402x874-44-34\\02-lobby-alternate-selection.png",
+                        "transition":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\unify-runtime-ui-visual-system\\evidence\\sunny-orchard-painted-acceptance\\49-slot-candidate\\shell-visual\\inset-402x874-44-34\\03-lobby-transition.png"
+                    },
+    "imageMetrics":  {
+                         "defaultLobby":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  540,
+                                              "headerLightPixels":  8846,
+                                              "blackFraction":  0,
+                                              "nearBlackFraction":  9.9507438181004035E-05,
+                                              "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                              "invalidFraction":  0,
+                                              "averageLuma":  0.84754649832346585,
+                                              "formerActionColorPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  29,
+                                                                                    "yMin":  54,
+                                                                                    "xMax":  258,
+                                                                                    "yMax":  103
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  25,
+                                                                                          "yMin":  736,
+                                                                                          "xMax":  377,
+                                                                                          "yMax":  782
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  44,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  840
+                                                                                      }
+                                                                 },
+                                              "surfaceSamples":  {
+                                                                     "safeBase":  {
+                                                                                      "r":  250,
+                                                                                      "g":  236,
+                                                                                      "b":  201,
+                                                                                      "a":  255
+                                                                                  },
+                                                                     "edge":  {
+                                                                                  "r":  254,
+                                                                                  "g":  239,
+                                                                                  "b":  190,
+                                                                                  "a":  255
+                                                                              }
+                                                                 },
+                                              "actionContrast":  {
+                                                                     "background":  {
+                                                                                        "r":  67,
+                                                                                        "g":  108,
+                                                                                        "b":  21,
+                                                                                        "pixels":  4356
+                                                                                    },
+                                                                     "foreground":  {
+                                                                                        "r":  255,
+                                                                                        "g":  246,
+                                                                                        "b":  224,
+                                                                                        "pixels":  157
+                                                                                    },
+                                                                     "ratio":  5.7477103753446768,
+                                                                     "minimum":  3,
+                                                                     "passed":  true,
+                                                                     "sampleRect":  {
+                                                                                        "xMin":  113,
+                                                                                        "yMin":  431,
+                                                                                        "xMax":  289,
+                                                                                        "yMax":  464
+                                                                                    }
+                                                                 },
+                                              "consecutiveStableFrames":  3
+                                          },
+                         "alternateSelection":  {
+                                                    "width":  402,
+                                                    "height":  874,
+                                                    "headerDarkPixels":  540,
+                                                    "headerLightPixels":  8846,
+                                                    "blackFraction":  0,
+                                                    "nearBlackFraction":  9.9507438181004035E-05,
+                                                    "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                                    "invalidFraction":  0,
+                                                    "averageLuma":  0.8476334936573402,
+                                                    "formerActionColorPixels":  0,
+                                                    "sampledRegions":  {
+                                                                           "header":  {
+                                                                                          "xMin":  29,
+                                                                                          "yMin":  54,
+                                                                                          "xMax":  258,
+                                                                                          "yMax":  103
+                                                                                      },
+                                                                           "formerAction":  {
+                                                                                                "xMin":  25,
+                                                                                                "yMin":  736,
+                                                                                                "xMax":  377,
+                                                                                                "yMax":  782
+                                                                                            },
+                                                                           "frameContent":  {
+                                                                                                "xMin":  0,
+                                                                                                "yMin":  44,
+                                                                                                "xMax":  402,
+                                                                                                "yMax":  840
+                                                                                            }
+                                                                       },
+                                                    "surfaceSamples":  {
+                                                                           "safeBase":  {
+                                                                                            "r":  250,
+                                                                                            "g":  236,
+                                                                                            "b":  201,
+                                                                                            "a":  255
+                                                                                        },
+                                                                           "edge":  {
+                                                                                        "r":  254,
+                                                                                        "g":  239,
+                                                                                        "b":  190,
+                                                                                        "a":  255
+                                                                                    }
+                                                                       },
+                                                    "actionContrast":  {
+                                                                           "background":  {
+                                                                                              "r":  67,
+                                                                                              "g":  108,
+                                                                                              "b":  21,
+                                                                                              "pixels":  4356
+                                                                                          },
+                                                                           "foreground":  {
+                                                                                              "r":  255,
+                                                                                              "g":  246,
+                                                                                              "b":  224,
+                                                                                              "pixels":  157
+                                                                                          },
+                                                                           "ratio":  5.7477103753446768,
+                                                                           "minimum":  3,
+                                                                           "passed":  true,
+                                                                           "sampleRect":  {
+                                                                                              "xMin":  113,
+                                                                                              "yMin":  431,
+                                                                                              "xMax":  289,
+                                                                                              "yMax":  464
+                                                                                          }
+                                                                       },
+                                                    "consecutiveStableFrames":  3
+                                                },
+                         "transition":  {
+                                            "width":  402,
+                                            "height":  874,
+                                            "headerDarkPixels":  540,
+                                            "headerLightPixels":  8846,
+                                            "blackFraction":  0,
+                                            "nearBlackFraction":  9.9507438181004035E-05,
+                                            "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                            "invalidFraction":  0,
+                                            "averageLuma":  0.85702479374153939,
+                                            "formerActionColorPixels":  0,
+                                            "sampledRegions":  {
+                                                                   "header":  {
+                                                                                  "xMin":  29,
+                                                                                  "yMin":  54,
+                                                                                  "xMax":  258,
+                                                                                  "yMax":  103
+                                                                              },
+                                                                   "formerAction":  {
+                                                                                        "xMin":  25,
+                                                                                        "yMin":  736,
+                                                                                        "xMax":  377,
+                                                                                        "yMax":  782
+                                                                                    },
+                                                                   "frameContent":  {
+                                                                                        "xMin":  0,
+                                                                                        "yMin":  44,
+                                                                                        "xMax":  402,
+                                                                                        "yMax":  840
+                                                                                    }
+                                                               },
+                                            "surfaceSamples":  {
+                                                                   "safeBase":  {
+                                                                                    "r":  250,
+                                                                                    "g":  236,
+                                                                                    "b":  201,
+                                                                                    "a":  255
+                                                                                },
+                                                                   "edge":  {
+                                                                                "r":  254,
+                                                                                "g":  239,
+                                                                                "b":  190,
+                                                                                "a":  255
+                                                                            }
+                                                               },
+                                            "actionContrast":  {
+                                                                   "background":  {
+                                                                                      "r":  67,
+                                                                                      "g":  108,
+                                                                                      "b":  21,
+                                                                                      "pixels":  4352
+                                                                                  },
+                                                                   "foreground":  {
+                                                                                      "r":  255,
+                                                                                      "g":  246,
+                                                                                      "b":  224,
+                                                                                      "pixels":  36
+                                                                                  },
+                                                                   "ratio":  5.7477103753446768,
+                                                                   "minimum":  3,
+                                                                   "passed":  true,
+                                                                   "sampleRect":  {
+                                                                                      "xMin":  113,
+                                                                                      "yMin":  431,
+                                                                                      "xMax":  289,
+                                                                                      "yMax":  464
+                                                                                  }
+                                                               }
+                                        }
+                     },
+    "controls":  {
+                     "alternateLevel":  {
+                                            "x":  201,
+                                            "y":  270.77803203661324
+                                        },
+                     "start":  {
+                                   "x":  201,
+                                   "y":  450.19679633867275
+                               }
+                 },
+    "referenceControls":  {
+                              "alternateLevel":  {
+                                                     "x":  201,
+                                                     "y":  249
+                                                 },
+                              "start":  {
+                                            "x":  201,
+                                            "y":  446
+                                        }
+                          },
+    "transition":  {
+                       "attempts":  1,
+                       "cpuThrottlingRate":  20,
+                       "alternateSha256":  "7F749EBB70D537D1966ECA81F46E917546956FC4C9648A027E717FC649B4E5B0",
+                       "transitionSha256":  "19D7F6B8CC21C50D2127C763C36EFCDE7AEE5BBF671491A5C8F6CE2DCD019CA3"
+                   }
+}

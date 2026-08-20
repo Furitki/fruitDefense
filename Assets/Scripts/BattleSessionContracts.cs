@@ -1,6 +1,7 @@
 using System;
 using FruitDefense.App;
 using FruitDefense.Content;
+using FruitDefense.UI;
 using FruitDefense.Core;
 using FruitDefense.Platform;
 
@@ -136,6 +137,8 @@ namespace FruitDefense.Battle
         public const string InvalidContentVersion = "battle-content-version-required";
         public const string NavigatorRequired = "battle-navigator-required";
         public const string ResultSinkRequired = "battle-result-sink-required";
+        public const string RuntimeUiThemeRequired = "battle-runtime-ui-theme-required";
+        public const string RuntimeUiThemeInvalid = "battle-runtime-ui-theme-invalid";
         public const string ResolvedLevelRequired = "battle-resolved-level-required";
         public const string ResolvedLevelMismatch = "battle-resolved-level-mismatch";
         public const string ResolvedContentMismatch = "battle-resolved-content-version-mismatch";
@@ -180,12 +183,14 @@ namespace FruitDefense.Battle
             BattleLaunchRequest request,
             IAppNavigator navigator,
             IBattleResultSink resultSink,
+            RuntimeUiTheme runtimeUiTheme,
             BattlefieldMapDefinition map = null);
 
         BattleSessionInitializationResult Initialize(
             BattleLaunchRequest request,
             IAppNavigator navigator,
             IBattleResultSink resultSink,
+            RuntimeUiTheme runtimeUiTheme,
             ResolvedLevelDefinition resolvedLevel);
 
         void HandlePlatformVisibility(PlatformVisibility visibility);

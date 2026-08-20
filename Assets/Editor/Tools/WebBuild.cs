@@ -12,9 +12,24 @@ namespace FruitDefense.Editor
     public static class WebBuild
     {
         private const string OutputDirectory = "Builds/WebGL";
+        private const string WebGlTemplate = "PROJECT:FruitDefensePortraitContain";
+        private const string TemplateDirectory =
+            "Assets/WebGLTemplates/FruitDefensePortraitContain";
+        private const string TemplateHostId = "fruit-defense-portrait-contain-v1";
+        private static readonly string[] ByteStableTemplateFiles =
+        {
+            "TemplateData/fruit-defense-host.css",
+            "TemplateData/fruit-defense-host.js",
+        };
 
         public static void Build()
         {
+            ValidateTemplateSource();
+            PlayerSettings.WebGL.template = WebGlTemplate;
+            if (PlayerSettings.WebGL.template != WebGlTemplate)
+                throw new InvalidOperationException(
+                    $"WebGL template selection failed: {PlayerSettings.WebGL.template}");
+
             var scenes = EditorBuildSettings.scenes
                 .Where(scene => scene.enabled)
                 .Select(scene => scene.path)
@@ -50,6 +65,7 @@ namespace FruitDefense.Editor
                 throw new InvalidOperationException(
                     $"Web build failed: {report.summary.result}, errors={report.summary.totalErrors}");
 
+            ValidateBuiltTemplate(outputPath);
             var indexPath = Path.Combine(outputPath, "index.html");
             var indexHtml = File.ReadAllText(indexPath);
             var buildDirectory = Path.Combine(outputPath, "Build");
@@ -100,7 +116,88 @@ namespace FruitDefense.Editor
                     + $":size={new FileInfo(path).Length}"));
             Debug.Log(
                 $"FRUIT_DEFENSE_WEB_BUILD_OK path={outputPath} compression=BrotliFallback "
-                + $"stripping=High size={outputSize} payloads=[{payloadSummary}]");
+                + $"stripping=High template={WebGlTemplate} host={TemplateHostId} "
+                + $"size={outputSize} payloads=[{payloadSummary}]");
+        }
+
+        internal static void ValidateTemplateSource()
+        {
+            var templatePath = Path.GetFullPath(TemplateDirectory);
+            var indexPath = Path.Combine(templatePath, "index.html");
+            if (!File.Exists(indexPath))
+                throw new InvalidOperationException(
+                    $"Project-owned WebGL template entry is missing: {indexPath}");
+
+            var index = File.ReadAllText(indexPath);
+            RequireSourceToken(index, $"data-fruit-defense-host=\"portrait-contain-v1\"", indexPath);
+            RequireSourceToken(index, "TemplateData/fruit-defense-host.css", indexPath);
+            RequireSourceToken(index, "TemplateData/fruit-defense-host.js", indexPath);
+            RequireSourceToken(index, "matchWebGLToCanvasSize: !host.usesFixedRenderTarget", indexPath);
+            RequireSourceToken(index, "}).then((unityInstance) => {", indexPath);
+
+            foreach (var relativePath in ByteStableTemplateFiles)
+            {
+                var sourcePath = Path.Combine(
+                    templatePath,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(sourcePath))
+                    throw new InvalidOperationException(
+                        $"Project-owned WebGL template source is missing: {sourcePath}");
+                if (new FileInfo(sourcePath).Length == 0)
+                    throw new InvalidOperationException(
+                        $"Project-owned WebGL template source is empty: {sourcePath}");
+            }
+
+            var cssPath = Path.Combine(templatePath, "TemplateData", "fruit-defense-host.css");
+            var css = File.ReadAllText(cssPath);
+            RequireSourceToken(css, "overflow: hidden", cssPath);
+            RequireSourceToken(css, "place-items: center", cssPath);
+            RequireSourceToken(css, "#unity-canvas", cssPath);
+
+            var scriptPath = Path.Combine(templatePath, "TemplateData", "fruit-defense-host.js");
+            var script = File.ReadAllText(scriptPath);
+            RequireSourceToken(script, $"const HOST_ID = \"{TemplateHostId}\"", scriptPath);
+            RequireSourceToken(script, "const LOGICAL_WIDTH = 402", scriptPath);
+            RequireSourceToken(script, "const LOGICAL_HEIGHT = 874", scriptPath);
+            RequireSourceToken(
+                script,
+                "Math.min(viewport.width / LOGICAL_WIDTH, viewport.height / LOGICAL_HEIGHT)",
+                scriptPath);
+            RequireSourceToken(script, "getBoundingClientRect()", scriptPath);
+            RequireSourceToken(script, "armDevicePixelRatioListener", scriptPath);
+        }
+
+        private static void ValidateBuiltTemplate(string outputPath)
+        {
+            var sourceRoot = Path.GetFullPath(TemplateDirectory);
+            foreach (var relativePath in ByteStableTemplateFiles)
+            {
+                var normalizedPath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+                var sourcePath = Path.Combine(sourceRoot, normalizedPath);
+                var builtPath = Path.Combine(outputPath, normalizedPath);
+                if (!File.Exists(builtPath))
+                    throw new InvalidOperationException(
+                        $"Built WebGL host file is missing: {builtPath}");
+                if (!File.ReadAllBytes(sourcePath).SequenceEqual(File.ReadAllBytes(builtPath)))
+                    throw new InvalidOperationException(
+                        $"Built WebGL host file differs from its project-owned source: {relativePath}");
+            }
+
+            var indexPath = Path.Combine(outputPath, "index.html");
+            var builtIndex = File.ReadAllText(indexPath);
+            RequireSourceToken(
+                builtIndex,
+                "data-fruit-defense-host=\"portrait-contain-v1\"",
+                indexPath);
+            RequireSourceToken(builtIndex, "TemplateData/fruit-defense-host.css", indexPath);
+            RequireSourceToken(builtIndex, "TemplateData/fruit-defense-host.js", indexPath);
+        }
+
+        private static void RequireSourceToken(string source, string token, string path)
+        {
+            if (!source.Contains(token, StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    $"WebGL host contract token is missing from {path}: {token}");
         }
 
         private static string CreateContentVersion(string payloadPath)

@@ -283,7 +283,8 @@ namespace FruitDefense.Editor
                     resolved.Value.BattleContent.Header.contentVersion);
                 host.ConfigureBattlefieldTerrain(new[] { missingSquareGrass });
                 var initialization = host.Initialize(request, navigator,
-                    new AcceptingResultSink(), resolved.Value);
+                    new AcceptingResultSink(), ProjectSetup.RequireReleaseRuntimeUiTheme(),
+                    resolved.Value);
                 Assert(initialization.Success && host.IsInitialized && host.Simulation != null,
                     "missing terrain presentation does not destroy non-terrain gameplay initialization");
                 Assert(!host.IsTerrainPresentationAvailable

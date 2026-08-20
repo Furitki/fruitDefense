@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="marker.selected">
+  <title>marker.selected</title>
+  <ellipse cx="48" cy="48" rx="28.56" ry="28.56" fill="#FFD24D" fill-opacity="1.0000" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="4"/>
+  <polyline points="32.04,48.84 43.8,60.6 65.64,35.4" fill="none" stroke="#6F482F" stroke-opacity="1.0000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

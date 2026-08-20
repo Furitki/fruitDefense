@@ -19,12 +19,15 @@ const mimeTypes = {
   '.wasm': 'application/wasm',
 }
 
-const getContentHash = (filePath) => {
-  let hash = contentHashes.get(filePath)
-  if (!hash) {
-    hash = createHash('sha256').update(readFileSync(filePath)).digest('hex')
-    contentHashes.set(filePath, hash)
+const getContentHash = (filePath, stats) => {
+  const fingerprint = `${stats.size}:${stats.mtimeMs}`
+  const cached = contentHashes.get(filePath)
+  if (cached?.fingerprint === fingerprint) {
+    return cached.hash
   }
+
+  const hash = createHash('sha256').update(readFileSync(filePath)).digest('hex')
+  contentHashes.set(filePath, { fingerprint, hash })
   return hash
 }
 
@@ -35,7 +38,7 @@ const sendFile = (request, response, filePath, url) => {
     ? extname(basename(filePath, compressionExtension))
     : extname(filePath)
   const stats = statSync(filePath)
-  const contentHash = getContentHash(filePath)
+  const contentHash = getContentHash(filePath, stats)
   const etag = `"${contentHash}"`
   const isBuildFile = filePath === buildRoot || filePath.startsWith(`${buildRoot}${sep}`)
   const isVersionedBuildAsset = isBuildFile

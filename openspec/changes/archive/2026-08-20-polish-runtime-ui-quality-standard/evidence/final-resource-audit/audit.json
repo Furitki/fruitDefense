@@ -1,0 +1,189 @@
+{
+  "schema": "fruit-defense.final-resource-audit.v1",
+  "mode": "read-only; no Unity, browser, exporter, or build was started",
+  "status": "PASS",
+  "production_sets": {
+    "sunny-orchard": {
+      "revision": "1",
+      "slots": 49,
+      "slots_exact_0_to_48": true,
+      "semantic_ids_unique": true,
+      "manifest_unique_local_exports": 38,
+      "local_binding_rows": 40,
+      "resolved_unique_runtime_exports": 47,
+      "shared_binding_rows": 9,
+      "shared_owner": "sunny-orchard-painted",
+      "manifest": "Assets/UI/Art/Sources/sunny-orchard/art_manifest.json",
+      "manifest_sha256": "E0868850188983EB3FDE1165D34CAFD81ECE095980D755220C28CF5C5A399E24",
+      "art_set": "Assets/UI/Art/Sets/SunnyOrchardRuntimeUiArtSet.asset",
+      "art_set_sha256": "DD2B6269BF6AC2A6C101EA6EF53A7FC8173DD87E9B8A0F2D1394E0BC5475E85C",
+      "art_set_guid": "12cc0c638d174040bb0384d7bf17ea92",
+      "manifest_hashes_match": true,
+      "art_set_bindings_match_manifest": true,
+      "runtime_meta_guids_match_manifest": true,
+      "importer_contract_failures": 0
+    },
+    "sunny-orchard-painted": {
+      "revision": "1",
+      "slots": 49,
+      "slots_exact_0_to_48": true,
+      "semantic_ids_unique": true,
+      "manifest_unique_local_exports": 47,
+      "local_binding_rows": 49,
+      "resolved_unique_runtime_exports": 47,
+      "shared_binding_rows": 0,
+      "manifest": "Assets/UI/Art/Sources/sunny-orchard-painted/art_manifest.json",
+      "manifest_sha256": "DC4EFE349E068E240C483513BA564EBF77A27D6CEE64650CABD7031E65AAF69C",
+      "art_set": "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset",
+      "art_set_sha256": "95F04AB82E5FE5F23E9A70CE948EB14C986014931CA549DB04A1A070271C2A62",
+      "art_set_guid": "91aa538ae02449cba8c971ffe4d427eb",
+      "manifest_hashes_match": true,
+      "art_set_bindings_match_manifest": true,
+      "runtime_meta_guids_match_manifest": true,
+      "importer_contract_failures": 0
+    }
+  },
+  "release_theme": {
+    "path": "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset",
+    "sha256": "ECD23FBAB1EE206A23203C2BF8507A9AD737E5364ED7D0F66578F5920055867B",
+    "guid": "932a9783b6b3eee45970ab3ef84a4c39",
+    "theme_id": "ui.sunny-orchard",
+    "revision": 1,
+    "active_art_set_guid": "91aa538ae02449cba8c971ffe4d427eb",
+    "active_art_set": "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "active_identity_correct": true
+  },
+  "ownership_and_references": {
+    "physical_runtime_pngs": 85,
+    "manifest_owned_runtime_pngs": 85,
+    "unbound_runtime_pngs": [],
+    "physical_source_png_or_svg_masters": 85,
+    "manifest_owned_source_png_or_svg_masters": 85,
+    "unbound_source_art": [],
+    "art_set_bindings_outside_runtime_roots": [],
+    "assets_meta_guid_count": 954,
+    "duplicate_meta_guids": [],
+    "approved_or_review_asset_guids_checked": 3,
+    "release_theme_artset_scene_or_prefab_review_reference_hits": []
+  },
+  "pixel_and_optical_contract": {
+    "runtime_pngs_with_visible_exact_ff00ff": [],
+    "required_opaque_asset_failures": [],
+    "required_transparent_outer_edge_failures": [],
+    "safe_inset_failures": [],
+    "sunny_orchard_common_unique_icons": 21,
+    "sunny_orchard_major_alpha_range_px": [60, 71],
+    "sunny_orchard_max_abs_centroid_offset_px": 3.945,
+    "sunny_orchard_painted_common_unique_icons": 21,
+    "sunny_orchard_painted_major_alpha_range_px": [70, 71],
+    "sunny_orchard_painted_max_abs_centroid_offset_px": 3.909,
+    "drag_cues": [
+      {
+        "set": "sunny-orchard",
+        "semantic": "indicator.drag-legal",
+        "alpha_bbox_px": [64, 64],
+        "centroid_px": [0.491, 0.819],
+        "logical_bbox_at_28": [18.667, 18.667],
+        "seven_px_alpha_stroke_witness": true
+      },
+      {
+        "set": "sunny-orchard",
+        "semantic": "indicator.drag-illegal",
+        "alpha_bbox_px": [64, 64],
+        "centroid_px": [0.125, 0.128],
+        "logical_bbox_at_28": [18.667, 18.667],
+        "seven_px_alpha_stroke_witness": true
+      },
+      {
+        "set": "sunny-orchard-painted",
+        "semantic": "indicator.drag-legal",
+        "alpha_bbox_px": [66, 71],
+        "centroid_px": [-0.492, 3.021],
+        "logical_bbox_at_28": [19.25, 20.708],
+        "seven_px_alpha_stroke_witness": true
+      },
+      {
+        "set": "sunny-orchard-painted",
+        "semantic": "indicator.drag-illegal",
+        "alpha_bbox_px": [70, 71],
+        "centroid_px": [1.023, -0.32],
+        "logical_bbox_at_28": [20.417, 20.708],
+        "seven_px_alpha_stroke_witness": true
+      }
+    ],
+    "note": "ornament.screen-corner is the intentional validator exception to the common-icon 60-72px family range; its transparent padding remains validated"
+  },
+  "stale_and_generated_scan": {
+    "scope": [
+      "Assets/UI",
+      "openspec/changes/polish-runtime-ui-quality-standard/evidence"
+    ],
+    "production_named_raw_rejected_temp_fixture_debug_probe_assets": [],
+    "ui_or_change_evidence_pycache_or_pyc": [],
+    "generated_invalid_paths": [],
+    "server_stdout_or_stderr_logs": []
+  },
+  "determinism": {
+    "painted_evidence": "openspec/changes/polish-runtime-ui-quality-standard/evidence/resource-polish/export-determinism.json",
+    "painted_evidence_sha256": "7C5B7A4EE135E58A7971FEDA9F9E08D6C18231238BF3BEB14DDCF6B2805AFA6C",
+    "painted_current_hash_mismatches": [],
+    "sunny_orchard_evidence": "openspec/changes/polish-runtime-ui-quality-standard/evidence/old-set-resource-polish/README.md",
+    "sunny_orchard_evidence_sha256": "5A65A7C5BECBF33322370FAB1F8A8BCD628A749A84ACD136F0676F95E40ED677",
+    "release_validator_log": "Logs/polish-ui-2.5-resource-validator-final.log",
+    "release_validator_log_sha256": "5843E62CD21D25112126320ECC9472AD31EFA261938A63C5006CC285B8E60416",
+    "release_validator_result": "Valid (0 warnings), exit 0",
+    "aggregate_p0_log": "Logs/polish-ui-p0-final.log",
+    "aggregate_p0_log_sha256": "175F2430B4402CCBA9D6AF535BCBE7520B514EDF5A17EA01FD68D7C241F92AE9",
+    "aggregate_p0_marker": "FRUIT_DEFENSE_P0_RELEASE_GATE_OK"
+  },
+  "replaceability": {
+    "slot_contract_differences": [],
+    "same_49_semantic_geometry_slice_safe_inset_and_scale_contract": true,
+    "sunny_orchard_shared_rows_are_explicit": true,
+    "filename_lookup_or_fallback_required": false,
+    "scene_route_or_layout_change_required": false,
+    "release_remains_sunny_orchard_painted": true,
+    "conclusion": "Both ArtSets resolve the exact 49-slot contract and are interchangeable through the ArtSet reference. sunny-orchard explicitly shares slots 40-48 from the painted production owner; it does not inherit missing bindings."
+  },
+  "review_and_provenance_boundary": {
+    "raw_imagegen_or_rejected_assets_inside_production": [],
+    "raw_imagegen_evidence_retained_outside_production": [
+      "openspec/changes/polish-runtime-ui-quality-standard/evidence/resource-polish/imagegen-indicator-drag-legal-selected-raw.png"
+    ],
+    "retained_production_authoring_provenance": [
+      "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json",
+      "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json.meta",
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/prompt-record.md",
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/prompt-record.md.meta",
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/alignment-audit.md",
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/alignment-audit.md.meta"
+    ]
+  },
+  "retention_decision": {
+    "authority": "../4.4-cleanup.md",
+    "status": "complete",
+    "release_reference_hits": [],
+    "raw_or_rejected_production_art": [],
+    "items": [
+    {
+      "paths": [
+        "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json",
+        "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json.meta",
+        "Assets/UI/Art/Sources/sunny-orchard-painted/icons/prompt-record.md",
+        "Assets/UI/Art/Sources/sunny-orchard-painted/icons/prompt-record.md.meta",
+        "Assets/UI/Art/Sources/sunny-orchard-painted/icons/alignment-audit.md",
+        "Assets/UI/Art/Sources/sunny-orchard-painted/icons/alignment-audit.md.meta"
+      ],
+      "decision": "retain",
+      "reason": "Stable prompt and optical authoring provenance for reproducible painted masters; declared by the owning source README, classified as manifest ancillary/resource-inventory content, and isolated from release dependencies."
+    },
+    {
+      "paths": [
+        "openspec/changes/polish-runtime-ui-quality-standard/evidence/resource-inventory/build_inventory.py"
+      ],
+      "decision": "retain",
+      "reason": "README-linked reproducible collector for the machine-readable resource inventory; evidence tooling rather than a runtime or disposable Unity Editor helper."
+    }
+    ]
+  }
+}

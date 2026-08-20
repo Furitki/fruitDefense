@@ -1,0 +1,453 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.19f1 (7689f4515d75) revision 7768564'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Channel LicenseClient-18163 doesn't exist
+OS: 'Windows 10  (10.0.19045) 64bit Professional' Language: 'zh' Physical Memory: 32679 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-08-18T16:38:41Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 28824)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe
+-batchmode
+-nographics
+-quit
+-projectPath
+E:/project/unity/furitDefense
+-executeMethod
+FruitDefense.Editor.RuntimeUiVisualSystemActivation.ValidateReleaseAndWorkflowOrThrow
+-logFile
+E:/project/unity/furitDefense/openspec/changes/unify-runtime-ui-visual-system/evidence/interchange-candidate/unity-preview-validation.log
+Successfully changed project path to: E:/project/unity/furitDefense
+E:/project/unity/furitDefense
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [15572]  Target information:
+
+Player connection [15572]  * "[IP] 192.168.3.10 [Port] 55504 [Flags] 2 [Guid] 2740025051 [EditorId] 2740025051 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-02DUQIQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [15572]  * "[IP] 169.254.219.203 [Port] 55504 [Flags] 2 [Guid] 2740025051 [EditorId] 2740025051 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-02DUQIQ) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [15572] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [15572] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-18163" at "2026-08-18T16:38:41.7214927Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 28824, path: "C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Package Manager] Connected to IPC stream "Upm-8396" after 0.3 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              0c1cf473f46d4ee4a6d0f6051159f089
+  Correlation Id:          23d756bd3886e9217aff7baf9f791f6d
+  External correlation Id: 8810746271555174483
+  Machine Id:              45/sxUmrq84w1DGaAIO3nlH4R54=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-18163" (connect: 0.37s, validation: 0.27s, handshake: 0.04s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-18163-notifications" at "2026-08-18T16:38:42.0294957Z"
+[Licensing::Module] Connected to LicensingClient (PId: 28824, launch time: 0.01, total connection time: 0.68s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-PJMF-AXN2-R4YC-DCT2-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: 2026-08-28T17:35:57Z
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.73s
+[Licensing::Module] Licensing is initialized (took 0.27s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 0.20 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.19f1 (7689f4515d75)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path E:/project/unity/furitDefense/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56396
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.19f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.002502 seconds.
+- Loaded All Assemblies, in  0.403 seconds
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.354 seconds
+Domain Reload Profiling: 754ms
+	BeginReloadAssembly (154ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (30ms)
+	RebuildCommonClasses (34ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (45ms)
+	LoadAllAssembliesAndSetupDomain (155ms)
+		LoadAssemblies (122ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (152ms)
+			TypeCache.Refresh (151ms)
+				TypeCache.ScanAssembly (137ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (354ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (322ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (47ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (69ms)
+			ProcessInitializeOnLoadAttributes (132ms)
+			ProcessInitializeOnLoadMethodAttributes (71ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 33 packages:
+  Built-in packages:
+    com.unity.modules.ai@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vehicles@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: E:\project\unity\furitDefense\Library\PackageCache\com.unity.modules.hierarchycore)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/2000b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: E:/project/unity/furitDefense
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s63ms
+*** Tundra build success (0.03 seconds), 0 items updated, 157 evaluated
+AssetDatabase: script compilation time: 0.374096s
+Begin MonoManager ReloadAssembly
+Total cache size 31377775
+Total cache size after purge 31377775, took 00:00:00.0305136
+- Loaded All Assemblies, in  0.386 seconds
+Refreshing native plugins compatible for Editor in 0.15 ms, found 0 plugins.
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.453 seconds
+Domain Reload Profiling: 834ms
+	BeginReloadAssembly (269ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (79ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (50ms)
+	RebuildCommonClasses (46ms)
+	RebuildNativeTypeToScriptingClass (16ms)
+	initialDomainReloadingComplete (28ms)
+	LoadAllAssembliesAndSetupDomain (21ms)
+		LoadAssemblies (113ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (14ms)
+			TypeCache.Refresh (10ms)
+				TypeCache.ScanAssembly (4ms)
+			BuildScriptInfoCaches (2ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (453ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (285ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (31ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (110ms)
+			ProcessInitializeOnLoadAttributes (101ms)
+			ProcessInitializeOnLoadMethodAttributes (32ms)
+			AfterProcessingInitializeOnLoad (8ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (27ms)
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/export_orchard_woodcraft.py using Guid(53dcf2703ce64b47a419b09a53b69aaf) (DefaultImporter) -> (artifact id: '73c94ca129650167aae99ce42fb4c5dc') in 0.021497 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/action-primary.png using Guid(a05628f93879cdf962f524c65036b524) (TextureImporter) -> (artifact id: '3cc2e70ceddda6bb541474dd660a69e7') in 0.0055222 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-resource-sun.png using Guid(e0535cba76a884b4e991562193a9480d) (TextureImporter) -> (artifact id: '5145951e007a3d00c41e7f23c9671c51') in 0.0020785 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-panel-raised.png using Guid(224c14e58821fbc5803c24544939a1bd) (TextureImporter) -> (artifact id: '8944a5e8e259d017da0f1383b1ecc485') in 0.0018678 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-status.png using Guid(929fd0ab35cf5b0a3afa4065b3d8a305) (TextureImporter) -> (artifact id: '90ad3007fe765642122154ea58e46857') in 0.0018246 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-warning.png using Guid(f246211d9672616c737cbdbf682a0f44) (TextureImporter) -> (artifact id: '65644ac59b8b4fc6a8d3c7931de0f703') in 0.0017791 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-close.png using Guid(638702941a304d4193a9062a59aec936) (TextureImporter) -> (artifact id: 'b871a85506bdfc6f2130a9cb9e74a4ec') in 0.0017828 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/marker-selected.png using Guid(83ac04d4bb5cc44f72cb1e6e5ba0dff4) (TextureImporter) -> (artifact id: '163eeb0d8409559c9296b7912f3debdc') in 0.0017593 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/slot-tool.png using Guid(93de1f23b564d4a3ef87cd087ba2c12d) (TextureImporter) -> (artifact id: '64fd9dabe702abe1c3304e0b479edcdb') in 0.0017953 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-swap.png using Guid(0466dcb93bda9a54f710e75ab18a70a6) (TextureImporter) -> (artifact id: '91097c6bd7e05b9c1a045f329bc19753') in 0.0021309 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-drag-illegal.png using Guid(24349d1787ced1a5865f198add37d8f4) (TextureImporter) -> (artifact id: 'a89921fd4682b015071982b1b9441c3c') in 0.0026552 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-metric.png using Guid(840e551d50bd08fefed2612507672a76) (TextureImporter) -> (artifact id: '8a911493fb9b6cde65243373a8eedd17') in 0.0018563 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-resource-core.png using Guid(b47f1795fe1beca47dce9f2dde31893e) (TextureImporter) -> (artifact id: 'bad81d73daa70709f81556736d178e82') in 0.0021702 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-error.png using Guid(05354310b68631294a8b501830275c75) (TextureImporter) -> (artifact id: '9297db0557b70343913cc71ecf0e8971') in 0.0017652 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-success.png using Guid(c576a58e7fdb81efd971645266ba359d) (TextureImporter) -> (artifact id: '452c0a61dba4df57bbf39058288698e5') in 0.0018118 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-retry.png using Guid(c558abbcabe08a98b907b6b5daef19e9) (TextureImporter) -> (artifact id: '31b3a4e484cde33abe547e26d52b0a65') in 0.0019175 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-return.png using Guid(d545e4840b2fa48859f775e231bfc3e7) (TextureImporter) -> (artifact id: '695a9e127a23cd92cbf1ccb16e05bad5') in 0.0019524 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-safe-area.png using Guid(06275ed66788047a11b557b6f726d0c5) (TextureImporter) -> (artifact id: '83fcea5a45aaf5cfd47cc0fdb4c12b74') in 0.0018836 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-loading.png using Guid(96488657ab0511f20a24a9282de02e18) (TextureImporter) -> (artifact id: '923fca4b65a344fa3563ec4c81fd3dce') in 0.00184 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/action-danger.png using Guid(b69375218c7d4f622462f43d6ea9f61f) (TextureImporter) -> (artifact id: '05f2951c4daf9872a09914e83d5aa84b') in 0.0018202 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-speed.png using Guid(273ebef0576117a522eb7f12172fcd4d) (TextureImporter) -> (artifact id: '5dc406dc6b89519937c4be481cd888de') in 0.001801 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-continue.png using Guid(b7c667edc7f808d9cc29217247180fbd) (TextureImporter) -> (artifact id: '52b947ca960658e455fcd04d6289217f') in 0.0017674 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/slot-nursery.png using Guid(e74f12240b73c536d9e634b5c702bcf6) (TextureImporter) -> (artifact id: '1b5aa81a922f649771bd0ff0e5fdd0ad') in 0.0018537 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-refresh.png using Guid(98e38ffdb09d258e6a40c123b78697ff) (TextureImporter) -> (artifact id: '24a2a84ff30dcb36faf8be87e45ca08d') in 0.0019363 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-disabled.png using Guid(d8cd01f4f6e995e5cde3325cccb6e7f3) (TextureImporter) -> (artifact id: '6e82301f14c1d56b821a80ffc962389c') in 0.0017665 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-modal.png using Guid(6a02996b329e9ca39d44febb866deca5) (TextureImporter) -> (artifact id: '56c4ff760da5be762ccbf7fef3d74c8f') in 0.0018286 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-tool-pot.png using Guid(ead0abd252ad327f7e9a15f51fb7d31d) (TextureImporter) -> (artifact id: 'baa45bb84225fb66ae349d32bfbff53d') in 0.0017474 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/action-quiet.png using Guid(facf60825983cf248ddf1d7d799a92e2) (TextureImporter) -> (artifact id: 'deb98c3ec2c914aca00e58b591bf9071') in 0.0020979 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-screen-background.png using Guid(0b885b575f676b9519d17f54bc2954d3) (TextureImporter) -> (artifact id: '653e1ec9d2512efdf25fd41eb5bc805d') in 0.0026125 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-merge.png using Guid(ab62e727acbeb357597247c7f7d5b0c5) (TextureImporter) -> (artifact id: '207f5ef37aea56af9a8646a5255ceaf9') in 0.001727 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/action-secondary.png using Guid(6c7c7970cf5d16548126c65ffc41b5b6) (TextureImporter) -> (artifact id: '17c7c9107dad59f620fecd06c755342a') in 0.0019528 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-result.png using Guid(7c300e5b3fb4ac1ff4e54fe0255e0246) (TextureImporter) -> (artifact id: '864da797327625d8eb24938f4f8fbc5f') in 0.0018642 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/indicator-drag-legal.png using Guid(ac4346421c1af7d86b5e8b53b78c9b0b) (TextureImporter) -> (artifact id: 'd126054fd525a662c15b33cacd1dc34d') in 0.0017788 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-scrim.png using Guid(dca8e3b026b3e45c6ea57e30ab4e5967) (TextureImporter) -> (artifact id: 'd09ed30c28a01c4cf64f9f12668984df') in 0.0014796 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-panel-standard.png using Guid(5d796a4143fad22d9add520c06026836) (TextureImporter) -> (artifact id: 'd04b857afb97eedf185ad817b6962e8a') in 0.001888 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-resource-wave.png using Guid(dd084200d19bc105928098bb32d31f25) (TextureImporter) -> (artifact id: '8e17181c3c59cedcc9ed9d47fab317d1') in 0.0018855 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-detail.png using Guid(0ea1995c2afbccf9fa6f0b90c1ec1b5a) (TextureImporter) -> (artifact id: 'c07a21acb67cfac300e6ac38075f474d') in 0.001889 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/surface-card-selectable.png using Guid(7e83da96188927c06411140860b6c266) (TextureImporter) -> (artifact id: '938ca595f4f2f2854f359666974a0808') in 0.0018411 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/icon-control-pause.png using Guid(aeed0a9e830b9f670ceee925be0a53a1) (TextureImporter) -> (artifact id: '6cf28222f5bd976faa6f4c0f3404d250') in 0.0018503 seconds
+Start importing Assets/UI/Art/Sets/OrchardWoodcraftRuntimeUiArtSet.asset using Guid(6f4a78a849e74f4798e42b71a1239056) (NativeFormatImporter) -> (artifact id: 'ebab8ed9be212bcc51f65970bbb653f0') in 0.013536 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/slot-nursery.svg using Guid(406aa83790501c4c214ae587090cdf1a) (ScriptedImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+ -> (artifact id: '3f52c8a8d9bc93e46662e2b3072a4ad4') in 0.2877629 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-drag-legal.svg using Guid(b000de66933d06965800c2e197bbdcfd) (ScriptedImporter) -> (artifact id: '947a941c5343f1e80bbd41def0c0717f') in 0.0050467 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-continue.svg using Guid(21ca07045ccd7ccb5949f2386ac70ee5) (ScriptedImporter) -> (artifact id: '0bdf3ec6bfdf35db7db8f8135be29004') in 0.0046109 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-resource-sun.svg using Guid(716d1ad0bfddbcc4b8ee8183a01d8562) (ScriptedImporter) -> (artifact id: '064d441e50481177088693ec8a897229') in 0.0091692 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/action-primary.svg using Guid(b10e9d49e669c4b19ff428660de70943) (ScriptedImporter) -> (artifact id: '7fab187137fc8845ef4185531bb26106') in 0.0052576 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-close.svg using Guid(42d2282851f34fe020f19e8d67e308fd) (ScriptedImporter) -> (artifact id: 'b4efe5122e70486ba49781dfd789de5c') in 0.0037963 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-detail.svg using Guid(c28ba8f998bf63818cf4dd6fb54d852c) (ScriptedImporter) -> (artifact id: '061996b6c19048bfca9b55fd87b981a5') in 0.0037702 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/README.md using Guid(f2da5421bcdf48e9984bf3812986c110) (TextScriptImporter) -> (artifact id: '7e2ee5055f3476bc6f82ad57bc6c9df1') in 0.0013702 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-panel-raised.svg using Guid(c3cc0a998a85620dde5542f467859aef) (ScriptedImporter) -> (artifact id: '6d68ba5a0523fdf21c09d4d19649a31a') in 0.0048254 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-modal.svg using Guid(54b71be9f4554ef22f1f99ebe93f5d20) (ScriptedImporter) -> (artifact id: 'd61100681dc9569f03f821bfc75581b2') in 0.0037654 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-loading.svg using Guid(746cb97c77191d62f8aeb9ce2c1a0ec9) (ScriptedImporter) -> (artifact id: '988bc0b5ac21b6843c34f6efa857259d') in 0.0030672 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/marker-selected.svg using Guid(9477604a147190d32188621c1c72f95f) (ScriptedImporter) -> (artifact id: '43da9542e1d60166e75ec412e7dcfbe1') in 0.003151 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-safe-area.svg using Guid(1502dd55ed4868d7df070caf27c3e92b) (ScriptedImporter) -> (artifact id: '2fb7f0648281de63bc2de86da28a7ab6') in 0.0061854 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/art_manifest.json using Guid(85b2325e5363d12000f941e3d790cc76) (TextScriptImporter) -> (artifact id: '1f6bc914effea6df79e2ed82476eee44') in 0.0012491 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-refresh.svg using Guid(b5918bbd0705ffe655177af875f56d29) (ScriptedImporter) -> (artifact id: '99ae4c63fa018bfee264ae76757e635c') in 0.003201 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/action-danger.svg using Guid(e5551eb8158c3fff47c82aa8f586194e) (ScriptedImporter) -> (artifact id: '8f37380b8fbaef7141a6dbd4d3b07ad1') in 0.003269 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-warning.svg using Guid(164326c0d908d1c451fc88de16c23a01) (ScriptedImporter) -> (artifact id: '3d30c849b75887eae7414b9d1eebb586') in 0.0038833 seconds
+Start importing Assets/UI/Art/Runtime/orchard-woodcraft/README.md using Guid(8652c4f190174a8ea1bceba9be9bbb82) (TextScriptImporter) -> (artifact id: 'b6b4d821cdd0f7da07be7577c091c114') in 0.0012349 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-pause.svg using Guid(d689e1c4b72d743a91f91fe079dbf1e9) (ScriptedImporter) -> (artifact id: 'bb2e2f598ab72de4ad12b3b0bbea57c5') in 0.0030746 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-disabled.svg using Guid(679aee6517d86f16d383d41583603d7f) (ScriptedImporter) -> (artifact id: 'b58714d4ad824c5516b3c88865731f79') in 0.00306 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-success.svg using Guid(0897352417db93b82d64a55d8a17c011) (ScriptedImporter) -> (artifact id: 'b4325dc5bbadaaceae19c593d8231114') in 0.0035968 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-return.svg using Guid(384865b21c0dc8f582d4b89021f32d29) (ScriptedImporter) -> (artifact id: 'fb57bf30e3312b5fedf29455828cd5c3') in 0.0032926 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-resource-core.svg using Guid(0aec78c9c662a8a277893743ba5ae8be) (ScriptedImporter) -> (artifact id: 'fcce89fa3339c66f579403d9e7ed4c03') in 0.0033812 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-status.svg using Guid(2afc2997b064e4e14486e1f027cba06e) (ScriptedImporter) -> (artifact id: 'ca56394291a8d9df9eaa773e9f531df7') in 0.0037523 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-retry.svg using Guid(faece5923bc1841593ae6734eef40e3e) (ScriptedImporter) -> (artifact id: '475ea856299b633ef0bd9ebd47b0130d') in 0.0039649 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/action-quiet.svg using Guid(0b2e867d97ee7f81fd743b65f4e4e45a) (ScriptedImporter) -> (artifact id: '2536927a6cf82d41882a70f705c359c0') in 0.0037626 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-result.svg using Guid(5b4b1efeeb4452f4f85cd60e61c69261) (ScriptedImporter) -> (artifact id: 'a03750518023142e6323b9ff6ee490d0') in 0.0038349 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-scrim.svg using Guid(7b15db4d0543f7e615ec3c974b1eaa6a) (ScriptedImporter) -> (artifact id: '0576ce24b3501b32142d36f9b274fb3c') in 0.0036235 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-drag-illegal.svg using Guid(4cf71b2115a1e152ae2ff39a93e32c78) (ScriptedImporter) -> (artifact id: '3d8e2dae2d4907c67240faf2f1f00055') in 0.0033087 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-card-selectable.svg using Guid(1dbca66d5674e1d68664c2b5c4a9793a) (ScriptedImporter) -> (artifact id: 'c84e3d142e860352438324e964ad42dd') in 0.003438 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-resource-wave.svg using Guid(5deeb9b4d393668df803e9fdfcc2cf4e) (ScriptedImporter) -> (artifact id: 'e11aefd3bc61b884918db030ff5d0794') in 0.0032994 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-merge.svg using Guid(cde7af5439c831b6a15bbc1fde71bf7f) (ScriptedImporter) -> (artifact id: '7cb14fea55494690ba7c20b43e43227a') in 0.004243 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-swap.svg using Guid(fd50c94130d32b5f30bf05dc49180d1d) (ScriptedImporter) -> (artifact id: 'a7ff63d77e3cc565af4463b085ef3d24') in 0.0032776 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/slot-tool.svg using Guid(0e77f688df6e988988375b607c910a7d) (ScriptedImporter) -> (artifact id: '89645d915d031124eec9e75137db9f95') in 0.0038882 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-screen-background.svg using Guid(2edcc52a800dd87532e3d5e21dbdaeb4) (ScriptedImporter) -> (artifact id: 'a22ecdd7527c5bfcedd9f6ab2187cb78') in 0.0036426 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/action-secondary.svg using Guid(6ee5245d203818bfb75ff98ba9fe3ce5) (ScriptedImporter) -> (artifact id: '5cec6db04ecb23610dbc24ac11628c74') in 0.0064204 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-tool-pot.svg using Guid(ced1d55987cb67f250f33dc1bd412ebf) (ScriptedImporter) -> (artifact id: '2e78d746bb7f1171309c1ac63c500847') in 0.003789 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-metric.svg using Guid(deeed0922b1a13d46e729ffa8f193440) (ScriptedImporter) -> (artifact id: 'e1294a173eb1a51f7eb74c5b8e2ef511') in 0.0038715 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/icon-control-speed.svg using Guid(fe83435867f1630184022b64f9e48d0b) (ScriptedImporter) -> (artifact id: '93d281526da97145fe19092ac6c781ed') in 0.0045767 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/surface-panel-standard.svg using Guid(1f78cb4c6e8ea56c76b422c97ae0defd) (ScriptedImporter) -> (artifact id: '8fa3a73cecb6b8fe29957108f28aa45d') in 0.0036166 seconds
+Start importing Assets/UI/Art/Sources/orchard-woodcraft/indicator-error.svg using Guid(4f1564c314f2befdda8e221ea70a0b6b) (ScriptedImporter) -> (artifact id: '08e7ab55448e4545666fa650047d45ca') in 0.0037332 seconds
+Refreshing native plugins compatible for Editor in 0.19 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=a528a3fff2c655048a0d5afe8f1a75f7): Total: 1.956 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=81 (actual=81, local cache=0, cache server=0)
+		Asset DB Process Time: managed=5 ms, native=1111 ms
+		Asset DB Callback time: managed=52 ms, native=17 ms
+		Scripting: domain reloads=1, domain reload time=386 ms, compile time=376 ms, other=7 ms
+		Project Asset Count: scripts=163, non-scripts=755
+		Asset File Changes: new=81, changed=81, moved=0, deleted=1
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.002ms
+	InvokePackagesCallback: 15.398ms
+	ApplyChangesToAssetFolders: 0.326ms
+	Scan: 24.002ms
+	OnSourceAssetsModified: 0.910ms
+	CategorizeAssetsWithTransientArtifact: 0.409ms
+	ProcessAssetsWithTransientArtifactChanges: 2.224ms
+	UnregisterDeletedAssets: 0.003ms
+	CategorizeAssets: 4.696ms
+	ImportOutOfDateAssets: 1030.271ms (79.922ms without children)
+		ImportManagerImport: 574.326ms (2.704ms without children)
+			ImportInProcess: 571.280ms
+			UpdateCategorizedAssets: 0.342ms
+		CompileScripts: 375.608ms
+		ReloadNativeAssets: 0.000ms
+		UnloadImportedAssets: 0.097ms
+		ReloadImportedAssets: 0.007ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.076ms
+		InitializingProgressBar: 0.005ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.228ms
+	PostProcessAllAssets: 53.781ms
+	Hotreload: 1.308ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.002ms
+	UnloadStreamsBegin: 0.892ms
+	PersistCurrentRevisions: 0.203ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 0.071ms
+	Untracked: 821.947ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 13.185ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-水果塔防
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 133 unused Assets / (0.6 MB). Loaded Objects now: 777.
+Memory consumption went from 140.2 MB to 139.6 MB.
+Total: 5.116700 ms (FindLiveObjects: 0.063300 ms CreateObjectMapping: 0.010200 ms MarkObjects: 4.756400 ms  DeleteObjects: 0.285900 ms)
+
+Opening scene 'Assets/Scenes/Bootstrap.unity additively'
+Loaded scene 'Assets/Scenes/Bootstrap.unity'
+	Deserialize:            0.786 ms
+	Integration:            0.322 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.006 ms
+	Total Operation Time:   1.116 ms
+Opening scene 'Assets/Scenes/Lobby.unity additively'
+Loaded scene 'Assets/Scenes/Lobby.unity'
+	Deserialize:            0.468 ms
+	Integration:            0.096 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.007 ms
+	Total Operation Time:   0.571 ms
+Opening scene 'Assets/Scenes/Battle.unity additively'
+Loaded scene 'Assets/Scenes/Battle.unity'
+	Deserialize:            49.647 ms
+	Integration:            0.177 ms
+	Integration of assets:  1.024 ms
+	Thread Wait Time:       0.005 ms
+	Total Operation Time:   50.852 ms
+Opening scene 'Assets/Scenes/Settlement.unity additively'
+Loaded scene 'Assets/Scenes/Settlement.unity'
+	Deserialize:            0.809 ms
+	Integration:            0.090 ms
+	Integration of assets:  0.001 ms
+	Thread Wait Time:       0.006 ms
+	Total Operation Time:   0.905 ms
+Runtime UI visual system validation passed. Valid (0 warning(s)).
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FruitDefense.Editor.RuntimeUiVisualSystemValidator:ValidateReleaseOrThrow () (at Assets/Editor/Tools/RuntimeUiVisualSystemValidator.cs:179)
+FruitDefense.Editor.RuntimeUiVisualSystemActivation:ValidateReleaseAndWorkflowOrThrow () (at Assets/Editor/Tools/RuntimeUiVisualSystemWindow.cs:76)
+
+(Filename: Assets/Editor/Tools/RuntimeUiVisualSystemValidator.cs Line: 179)
+
+Runtime UI preview isolation, valid activation, invalid rejection and single-group Undo passed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FruitDefense.Editor.RuntimeUiVisualSystemActivation:ValidateReleaseAndWorkflowOrThrow () (at Assets/Editor/Tools/RuntimeUiVisualSystemWindow.cs:126)
+
+(Filename: Assets/Editor/Tools/RuntimeUiVisualSystemWindow.cs Line: 126)
+
+Batchmode quit successfully invoked - shutting down!
+Curl error 42: Callback aborted
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-18163-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-18163 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

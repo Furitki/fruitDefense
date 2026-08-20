@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#e64034"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#49b85a"/></marker>
+  </defs>
+  <rect width="1280" height="720" fill="#2b241f"/>
+  <rect x="0" y="0" width="1280" height="720" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <text x="20" y="34" fill="#ffffff" font-family="sans-serif" font-size="22" font-weight="700">实际宿主 1280×720 — 先于路由验收的 Blocker</text>
+  <rect x="439" y="-98.4" width="402" height="874" fill="#e64034" fill-opacity="0.10" stroke="#ff5a4f" stroke-width="4" stroke-dasharray="12 8"/>
+  <text x="852" y="66" fill="#ff8178" font-family="sans-serif" font-size="18">当前固定 canvas 402×874</text>
+  <text x="852" y="92" fill="#ff8178" font-family="sans-serif" font-size="18">DOM y = -98.4</text>
+  <line x1="841" y1="4" x2="845" y2="4" stroke="#e64034" stroke-width="3" marker-end="url(#arrow-red)"/>
+  <rect x="474.4165" y="0" width="331.167" height="720" fill="#49b85a" fill-opacity="0.14" stroke="#78e388" stroke-width="4"/>
+  <line x1="474.4165" y1="360" x2="805.5835" y2="360" stroke="#78e388" stroke-width="1" stroke-dasharray="6 6"/>
+  <line x1="640" y1="0" x2="640" y2="720" stroke="#78e388" stroke-width="1" stroke-dasharray="6 6"/>
+  <text x="20" y="650" fill="#9ff0aa" font-family="sans-serif" font-size="18">目标：scale=720/874=0.823798627</text>
+  <text x="20" y="678" fill="#9ff0aa" font-family="sans-serif" font-size="18">canvas=(474.4165,0,331.167,720)，四边完整可见、无滚动</text>
+  <line x1="388" y1="666" x2="468" y2="666" stroke="#49b85a" stroke-width="3" marker-end="url(#arrow-green)"/>
+  <rect x="439" y="0" width="402" height="98.4" fill="#ffdf61" fill-opacity="0.28"/>
+  <rect x="439" y="664.4" width="402" height="55.6" fill="#ffdf61" fill-opacity="0.28"/>
+  <text x="450" y="30" fill="#ffdf61" font-family="sans-serif" font-size="16">上裁 98.4px</text>
+  <text x="450" y="704" fill="#ffdf61" font-family="sans-serif" font-size="16">下裁 55.6px</text>
+</svg>

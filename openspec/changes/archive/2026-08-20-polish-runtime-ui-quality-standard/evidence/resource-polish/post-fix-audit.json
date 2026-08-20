@@ -1,0 +1,461 @@
+{
+  "schema": "fruit-defense.resource-polish-post-fix.v1",
+  "sourceChanged": [
+    "Assets/UI/Art/Sources/sunny-orchard-painted/icons/icon-control-speed.png",
+    "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-drag-legal.png",
+    "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-error.png",
+    "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-warning.png",
+    "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-safe-area.png"
+  ],
+  "runtimeChanged": [
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-refresh.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-return.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-speed.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-drag-legal.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-error.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-loading.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-warning.png",
+    "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/surface-safe-area.png"
+  ],
+  "sourceUnchangedCount": 42,
+  "runtimeUnchangedCount": 39,
+  "runtimeMetaChanged": [],
+  "targetMetrics": {
+    "surface.safe-area": {
+      "size": [
+        128,
+        128
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        6,
+        11,
+        123,
+        127
+      ],
+      "alphaBboxSize": [
+        117,
+        116
+      ],
+      "centroidOffset": [
+        0.1716,
+        4.6418
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "indicator.loading": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        14,
+        13,
+        82,
+        83
+      ],
+      "alphaBboxSize": [
+        68,
+        70
+      ],
+      "centroidOffset": [
+        -0.4735,
+        -1.8642
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "icon.control-return": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        13,
+        13,
+        83,
+        83
+      ],
+      "alphaBboxSize": [
+        70,
+        70
+      ],
+      "centroidOffset": [
+        0.5034,
+        3.6101
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "icon.control-refresh": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        17,
+        13,
+        79,
+        83
+      ],
+      "alphaBboxSize": [
+        62,
+        70
+      ],
+      "centroidOffset": [
+        -0.1961,
+        0.0891
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "icon.control-speed": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        14,
+        26,
+        84,
+        70
+      ],
+      "alphaBboxSize": [
+        70,
+        44
+      ],
+      "centroidOffset": [
+        -3.9093,
+        0.1222
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "indicator.warning": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        13,
+        16,
+        83,
+        78
+      ],
+      "alphaBboxSize": [
+        70,
+        62
+      ],
+      "centroidOffset": [
+        0.0488,
+        3.8499
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "indicator.error": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        13,
+        14,
+        83,
+        80
+      ],
+      "alphaBboxSize": [
+        70,
+        66
+      ],
+      "centroidOffset": [
+        0.0095,
+        3.5196
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "indicator.drag-legal": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        15,
+        12,
+        81,
+        83
+      ],
+      "alphaBboxSize": [
+        66,
+        71
+      ],
+      "centroidOffset": [
+        -0.4922,
+        3.021
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    },
+    "indicator.drag-illegal": {
+      "size": [
+        96,
+        96
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "alphaBbox": [
+        12,
+        12,
+        82,
+        83
+      ],
+      "alphaBboxSize": [
+        70,
+        71
+      ],
+      "centroidOffset": [
+        1.0232,
+        -0.32
+      ],
+      "visibleKeyMagenta": [],
+      "outerVisible": 0
+    }
+  },
+  "allRuntimeVisibleKeyMagenta": [],
+  "allProductionSourceVisibleKeyMagenta": [
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/slot-tool.png",
+      "pixels": [
+        [
+          234,
+          141,
+          1
+        ],
+        [
+          220,
+          222,
+          1
+        ]
+      ],
+      "count": 2
+    },
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-card-selectable.png",
+      "pixels": [
+        [
+          244,
+          80,
+          1
+        ]
+      ],
+      "count": 1
+    },
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-metric.png",
+      "pixels": [
+        [
+          22,
+          229,
+          1
+        ]
+      ],
+      "count": 1
+    },
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-modal.png",
+      "pixels": [
+        [
+          79,
+          18,
+          1
+        ],
+        [
+          25,
+          217,
+          1
+        ],
+        [
+          239,
+          218,
+          1
+        ]
+      ],
+      "count": 3
+    },
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-panel-raised.png",
+      "pixels": [
+        [
+          232,
+          124,
+          1
+        ],
+        [
+          232,
+          158,
+          1
+        ],
+        [
+          232,
+          178,
+          1
+        ],
+        [
+          232,
+          179,
+          1
+        ],
+        [
+          232,
+          181,
+          1
+        ],
+        [
+          232,
+          191,
+          1
+        ],
+        [
+          232,
+          192,
+          1
+        ],
+        [
+          232,
+          193,
+          1
+        ],
+        [
+          232,
+          194,
+          1
+        ]
+      ],
+      "count": 9
+    },
+    {
+      "path": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-panel-standard.png",
+      "pixels": [
+        [
+          20,
+          239,
+          1
+        ]
+      ],
+      "count": 1
+    }
+  ],
+  "protected": {
+    "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset": {
+      "before": "95F04AB82E5FE5F23E9A70CE948EB14C986014931CA549DB04A1A070271C2A62",
+      "after": "95F04AB82E5FE5F23E9A70CE948EB14C986014931CA549DB04A1A070271C2A62",
+      "unchanged": true
+    },
+    "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset": {
+      "before": "ECD23FBAB1EE206A23203C2BF8507A9AD737E5364ED7D0F66578F5920055867B",
+      "after": "ECD23FBAB1EE206A23203C2BF8507A9AD737E5364ED7D0F66578F5920055867B",
+      "unchanged": true
+    }
+  },
+  "hashes": {
+    "source": {
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/icon-control-speed.png": {
+        "before": "E916915341E5A19AB75D61780C990C7239E7ABA078199CE44E9039023C4BBA0E",
+        "after": "005B111987CABFF2A8FF81077B02EFEA9BB2B5F156CE822690FA755B705C37D9"
+      },
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-drag-legal.png": {
+        "before": "0F569E09379E3C8A00115B1C5404BC34B04DB58285B6F1BD36795699A58AE53C",
+        "after": "87802785B1D95BAC02E358CEAD3CF7A9F80E8CDD8B863E262896C12ABD442DC6"
+      },
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-error.png": {
+        "before": "2233CE77974E78A594176AF32E54EB403F59431F1194FE227F00B12E97C31284",
+        "after": "A323287686FDF0368B4ADB11EA186FBB6B8D0778BA70E7BF7F9ABAB213439C99"
+      },
+      "Assets/UI/Art/Sources/sunny-orchard-painted/icons/indicator-warning.png": {
+        "before": "CF25B3539468E3D7E2CEC0314136F59646C68EFDFB347A03B26E5F956F6919BD",
+        "after": "656624BF7A743EBBCB25866E145765CEC4688E42633D4EBAAED585B6CB426F03"
+      },
+      "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/surface-safe-area.png": {
+        "before": "07833D06372B90D0A5677C4E4A61C6069B68BA3E77B09C4C90B998C4CAF4DFA8",
+        "after": "F1A7CF4BAA6DCC2557EBAAEBAE02FD6A90A4C12EA18F2C50E2615F290C8EBAD0"
+      }
+    },
+    "runtime": {
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-refresh.png": {
+        "before": "493500FB4BBAB613B1ED2432185C27B664F6F06BBE14E00AE0B8C30403FD05CD",
+        "after": "93DF8523A03D621CA48028C27DBA1E16F56C7B3EB052D7B79B1E69AA5E16EC32"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-return.png": {
+        "before": "B473A7B6B49F12F18EF08B691BAF9C859CEBDA2209E6258B7256462CE3B29303",
+        "after": "6C3947AB86ED1C6AB4AFD80A181AC747D4B1868D395569517680F828717EE7CA"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-control-speed.png": {
+        "before": "E156F7D5606AE8C1331D3E10FEBCF14B7BF88CAB526FAB1A992C079CBBC8681B",
+        "after": "330A32271A274C615D67477F3BF18BE2CB0F355E9A736754272DF583DB018605"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-drag-legal.png": {
+        "before": "2D5CA19035E96901F2684CCCE31256ACE795FBCBBF58ED817C910857CCF09E85",
+        "after": "A504B653DBF19F1A468EEF3BB073DE990681E11E4CFBC0FC1201554F5EF07A04"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-error.png": {
+        "before": "AA41AA89E435B5ADD3621BC43654692FA183A10E479249B4969EE4825138682C",
+        "after": "AB86245C406F2C7124923A74EE7E7109801C5C6572611B4976D5C76C5B18B715"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-loading.png": {
+        "before": "8F040F59A4292099D87BE54AC6D565AAAA0442CD775E6C4EADA14E1C36D34ACA",
+        "after": "E86AFDA180A11AB09B364EE08F8653439CB4D1E1D0A50AE05B7A902EC23F67A0"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/indicator-warning.png": {
+        "before": "E8EC1B8DEC8473246C56A29FA84AEC3121820A2568033BA369A3B7FEC217AEE0",
+        "after": "CFC089104DBEC6F2053CD11B26CB17FC23D58059CE36E98023F1955682447CCD"
+      },
+      "Assets/UI/Art/Runtime/sunny-orchard-painted/surfaces/surface-safe-area.png": {
+        "before": "9862ED4A22D0A634DD25699A68036B6ADA64A0A7C718F1340384DDB8437CBC29",
+        "after": "91AD6C09D4C4184140E9517D887E572553F140F3E190B9A314AFBD72723136F1"
+      }
+    },
+    "manifest": {
+      "before": "DE7BD45D1173ABBD469FE33BDCD697FA1C28F4AD774834F746696E51C01CD0D9",
+      "after": "DC4EFE349E068E240C483513BA564EBF77A27D6CEE64650CABD7031E65AAF69C"
+    },
+    "reviewGallery": {
+      "before": "5AB0655189DC8ED6A62830BFA8A081B295F1896272D2E65B9241CC51084685C2",
+      "after": "CA83304A1F2362436D5036993A4E6F8023CB44AE74F0659042AF55E0616C38D6"
+    }
+  }
+}

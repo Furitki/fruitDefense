@@ -1,0 +1,170 @@
+{
+  "schema": "fruit-defense.runtime-ui-redline-audit.v1",
+  "status": "rework-required",
+  "score": null,
+  "scoreReason": "The previous 100/100 result is invalidated pending user-alignment rework; this audit intentionally does not assign a replacement aesthetic score.",
+  "referenceViewport": { "width": 402, "height": 874 },
+  "host": {
+    "viewport": { "width": 1280, "height": 720 },
+    "current": {
+      "canvasRect": { "x": 439.0, "y": -98.4, "width": 402.0, "height": 874.0 },
+      "xSource": "computed from the centered 402px fixed canvas in the release template",
+      "ySource": "live DOM measurement supplied for the actual 1280x720 host",
+      "topClip": 98.4,
+      "bottomClip": 55.6,
+      "uniformScale": 1.0,
+      "result": "fail"
+    },
+    "target": {
+      "scaleFormula": "min(availableWidth / 402, availableHeight / 874)",
+      "scale": 0.823798627,
+      "canvasRect": { "x": 474.4165, "y": 0.0, "width": 331.1670, "height": 720.0 },
+      "containmentToleranceCssPx": 0.5,
+      "centerToleranceCssPx": 1.0,
+      "uniformScaleTolerance": 0.001,
+      "pageScrollWidthToleranceCssPx": 0.5,
+      "pointerLogicalTolerance": 0.5
+    }
+  },
+  "sharedVisualGroups": {
+    "action": {
+      "renderedInkCenterToleranceLogical": 2.0,
+      "iconTextVisibleGapMinLogical": 4.0,
+      "iconTextVisibleGapMaxLogical": 8.0,
+      "visibleStrokeInsetMinLogical": 4.0,
+      "requiredCallers": [
+        "Bootstrap Retry",
+        "Lobby Start",
+        "Battle Wave",
+        "Battle Refresh",
+        "Battle modal primary and secondary",
+        "Settlement Retry",
+        "Settlement Return"
+      ],
+      "currentException": "Lobby Start already requests centered anatomy; the other icon-plus-label callers still use leading-icon anatomy."
+    },
+    "repeatedMetric": {
+      "peerBaselineToleranceLogical": 1.0,
+      "peerIconCenterToleranceLogical": 1.0,
+      "renderedGroupCenterToleranceLogical": 2.0,
+      "iconAlphaInsetMinLogical": 8.0,
+      "labelValueGapMinLogical": 4.0
+    }
+  },
+  "lobby": {
+    "current": {
+      "title": [16, 30, 370, 56],
+      "cards": [[16, 98, 370, 136], [16, 246, 370, 136], [16, 394, 370, 136]],
+      "start": [16, 562, 370, 64],
+      "status": [16, 642, 370, 58],
+      "normalOccupiedBounds": [16, 30, 370, 596],
+      "normalOccupiedCenterY": 328,
+      "lowerBlankLogical": 248,
+      "result": "fail"
+    },
+    "target": {
+      "title": [16, 54, 370, 56],
+      "cards": [[16, 130, 370, 176], [16, 318, 370, 176], [16, 506, 370, 176]],
+      "start": [16, 702, 370, 72],
+      "status": [16, 790, 370, 58],
+      "normalOccupiedBounds": [16, 54, 370, 720],
+      "normalOccupiedCenterY": 414,
+      "normalOccupiedCenterDeltaFromSafeCenter": 23,
+      "lowerBlankLogical": 100,
+      "cardAnatomyRelative": {
+        "thumbnailFrame": [12, 36, 164, 104],
+        "thumbnailContentInset": 6,
+        "title": [196, 34, 162, 44],
+        "body": [196, 90, 162, 44],
+        "selectedMarkerSize": 48,
+        "transientIndicatorSize": 28,
+        "combinedHorizontalVisualCenterToleranceLogical": 2
+      }
+    }
+  },
+  "battle": {
+    "protectedProjection": {
+      "board": [0, 72, 402, 500],
+      "mapViewport": [0, 72, 402, 438],
+      "grid": [8, 122.125, 386, 337.75],
+      "guttersRelativeToMapViewport": { "left": 8, "right": 8, "top": 50.125, "bottom": 50.125 },
+      "oppositeGutterToleranceLogical": 1.0,
+      "minimumOuterGutterLogical": 8.0,
+      "result": "pass-and-protect"
+    },
+    "header": {
+      "title": [16, 12, 96, 20],
+      "metrics": [[16, 36, 82, 26], [106, 36, 76, 26], [190, 36, 72, 26]],
+      "dividers": [[98, 41, 8, 16], [182, 41, 8, 16]],
+      "metricCenterY": 49,
+      "peerBaselineToleranceLogical": 1.0
+    },
+    "statusAndTray": {
+      "boardStatus": [8, 522, 386, 48],
+      "boardStatusWithWave": [16, 522, 186, 48],
+      "waveAction": [210, 526, 184, 44],
+      "toolTray": [8, 580, 386, 68],
+      "statusToTrayGap": 10,
+      "toolTrayTitle": [16, 584, 180, 16],
+      "nurseryTrayTitle": [16, 660, 180, 16],
+      "titleInkToStrokeMinLogical": 4,
+      "titleInkToFirstSlotMinLogical": 4
+    },
+    "interactionBoundary": "Do not change cell, route, pot, plant, drag, or command authority. Any visual projection adjustment must keep the single BattlefieldProjection as draw and hit authority."
+  },
+  "settlement": {
+    "current": {
+      "title": [16, 30, 370, 56],
+      "resultCard": [16, 104, 370, 340],
+      "vista": [32, 212, 144, 81],
+      "metricRows": [[188, 204, 182, 56], [188, 272, 182, 56], [188, 340, 182, 56]],
+      "retry": [16, 488, 370, 64],
+      "return": [16, 568, 370, 58],
+      "status": [16, 642, 370, 58],
+      "normalOccupiedBounds": [16, 30, 370, 596],
+      "normalOccupiedCenterY": 328,
+      "lowerBlankLogical": 248,
+      "result": "fail"
+    },
+    "target": {
+      "title": [16, 54, 370, 56],
+      "resultCard": [16, 130, 370, 474],
+      "resultBanner": [58, 146, 286, 72],
+      "outcome": [98, 156, 206, 52],
+      "resultIndicator": [308, 168, 28, 28],
+      "vista": [32, 234, 338, 190],
+      "metricRows": [[32, 436, 338, 48], [32, 492, 338, 48], [32, 548, 338, 48]],
+      "metricDividers": "remove the two former 8x12 route draws; the three row surfaces and 8-point rhythm own separation",
+      "retry": [16, 624, 370, 72],
+      "return": [16, 712, 370, 64],
+      "status": [16, 792, 370, 58],
+      "normalOccupiedBounds": [16, 54, 370, 722],
+      "normalOccupiedCenterY": 415,
+      "normalOccupiedCenterDeltaFromSafeCenter": 22,
+      "lowerBlankLogical": 98,
+      "vistaAspectRatio": 1.778,
+      "vistaAspectErrorMax": 0.01,
+      "metricRowIconAlphaInsetMinLogical": 8
+    }
+  },
+  "terminal": {
+    "modal": [28, 270, 346, 320],
+    "title": [48, 292, 306, 56],
+    "resultBanner": [70, 352, 262, 64],
+    "resultBannerTextTarget": [102, 360, 198, 48],
+    "resultBannerFiniteCopy": { "victory": "胜利", "defeat": "失败" },
+    "vista": [56, 424, 112, 63],
+    "message": [180, 420, 142, 64],
+    "indicator": [328, 438, 24, 24],
+    "action": [90, 510, 222, 52],
+    "rule": "The result banner may not be drawn empty. It owns one finite outcome line; this is the terminal separator semantic requirement. Title, banner, vista, message, indicator, and action remain non-overlapping and their rendered union centers within 2 logical points of the modal."
+  },
+  "severity": [
+    { "id": "R-01", "level": "Blocker", "owner": "Host/Foundation", "finding": "The actual 1280x720 host clips both top and bottom of the fixed 402x874 canvas." },
+    { "id": "R-02", "level": "High", "owner": "Foundation", "finding": "Most icon-plus-label actions center the label region independently from a leading icon instead of centering the rendered group." },
+    { "id": "R-03", "level": "High", "owner": "Foundation", "finding": "Lobby meaningful content ends at y=626 and remains visually top-heavy; card proportions are flatter than the approved proof." },
+    { "id": "R-04", "level": "High", "owner": "Foundation", "finding": "Settlement metric icons press the row/card edge, the vista is visually subordinate, and meaningful controls end at y=626." },
+    { "id": "R-05", "level": "High", "owner": "Foundation", "finding": "The Battle terminal draws a prominent empty result banner with no semantic content." },
+    { "id": "R-06", "level": "Guard", "owner": "Foundation", "finding": "BattlefieldProjection currently has symmetric opposite gutters; preserve its single draw/hit authority while fixing surrounding optical groups." }
+  ]
+}

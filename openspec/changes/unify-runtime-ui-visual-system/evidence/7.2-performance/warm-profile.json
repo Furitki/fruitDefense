@@ -1,0 +1,77 @@
+{
+    "unityVersion": "6000.3.19f1",
+    "viewport": "402x874",
+    "environment": "Unity Editor batchmode, D3D11, warm EditorWindow IMGUI proxy",
+    "boundary": "Shared RuntimeUiGui chrome only. Battle world/simulation and browser overhead are excluded. The ordinary release WebGL build is non-development and exposes no Unity Profiler stream.",
+    "gcCounter": "GC Allocated In Frame",
+    "mainThreadCounter": "Main Thread",
+    "guiCounter": "unavailable-in-batch-editor-window",
+    "renderCounters": "unavailable-in-batch-editor-window",
+    "scenarios": [
+        {
+            "scenario": "lobby-idle",
+            "repaintSamples": 45,
+            "gcAllocatedBytesMedian": 3330,
+            "gcAllocatedBytesP95": 4290,
+            "mainThreadNanosecondsMedian": 678900,
+            "mainThreadNanosecondsP95": 987300,
+            "guiRepaintNanosecondsMedian": -1,
+            "guiRepaintNanosecondsP95": -1,
+            "drawCallsMedian": -1,
+            "batchesMedian": -1,
+            "setPassCallsMedian": -1
+        },
+        {
+            "scenario": "battle-ready",
+            "repaintSamples": 45,
+            "gcAllocatedBytesMedian": 2754,
+            "gcAllocatedBytesP95": 2754,
+            "mainThreadNanosecondsMedian": 1075100,
+            "mainThreadNanosecondsP95": 1347500,
+            "guiRepaintNanosecondsMedian": -1,
+            "guiRepaintNanosecondsP95": -1,
+            "drawCallsMedian": -1,
+            "batchesMedian": -1,
+            "setPassCallsMedian": -1
+        },
+        {
+            "scenario": "battle-dense",
+            "repaintSamples": 45,
+            "gcAllocatedBytesMedian": 2820,
+            "gcAllocatedBytesP95": 2820,
+            "mainThreadNanosecondsMedian": 1092000,
+            "mainThreadNanosecondsP95": 1328500,
+            "guiRepaintNanosecondsMedian": -1,
+            "guiRepaintNanosecondsP95": -1,
+            "drawCallsMedian": -1,
+            "batchesMedian": -1,
+            "setPassCallsMedian": -1
+        },
+        {
+            "scenario": "battle-pause",
+            "repaintSamples": 45,
+            "gcAllocatedBytesMedian": 3108,
+            "gcAllocatedBytesP95": 3108,
+            "mainThreadNanosecondsMedian": 1245000,
+            "mainThreadNanosecondsP95": 1492400,
+            "guiRepaintNanosecondsMedian": -1,
+            "guiRepaintNanosecondsP95": -1,
+            "drawCallsMedian": -1,
+            "batchesMedian": -1,
+            "setPassCallsMedian": -1
+        },
+        {
+            "scenario": "settlement",
+            "repaintSamples": 45,
+            "gcAllocatedBytesMedian": 2988,
+            "gcAllocatedBytesP95": 2988,
+            "mainThreadNanosecondsMedian": 743500,
+            "mainThreadNanosecondsP95": 820000,
+            "guiRepaintNanosecondsMedian": -1,
+            "guiRepaintNanosecondsP95": -1,
+            "drawCallsMedian": -1,
+            "batchesMedian": -1,
+            "setPassCallsMedian": -1
+        }
+    ]
+}

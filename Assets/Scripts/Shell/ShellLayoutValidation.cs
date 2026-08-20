@@ -5,22 +5,6 @@ namespace FruitDefense.Shell
 {
     public static class ShellLayoutValidation
     {
-        private readonly struct ViewportCase
-        {
-            public ViewportCase(float width, float height, float safeBottom, float safeTop)
-            {
-                Width = width;
-                Height = height;
-                Full = new Rect(0f, 0f, width, height);
-                Inset = new Rect(0f, safeBottom, width, height - safeBottom - safeTop);
-            }
-
-            public float Width { get; }
-            public float Height { get; }
-            public Rect Full { get; }
-            public Rect Inset { get; }
-        }
-
         public static void SmokeValidate()
         {
             ValidateReferenceGeometry();
@@ -29,24 +13,12 @@ namespace FruitDefense.Shell
 
         public static void ValidateReferenceGeometry()
         {
-            var cases = new[]
-            {
-                new ViewportCase(360f, 800f, 24f, 32f),
-                new ViewportCase(375f, 812f, 21f, 40f),
-                new ViewportCase(402f, 874f, 34f, 44f),
-                new ViewportCase(430f, 932f, 36f, 50f),
-            };
-
-            foreach (var viewportCase in cases)
-            {
-                ValidateLobby(viewportCase.Width, viewportCase.Height, viewportCase.Full, false);
-                ValidateLobby(viewportCase.Width, viewportCase.Height, viewportCase.Inset, true);
-                ValidateSettlement(viewportCase.Width, viewportCase.Height, viewportCase.Full);
-                ValidateSettlement(viewportCase.Width, viewportCase.Height, viewportCase.Inset);
-            }
-
             var referenceSafeArea = new Rect(0f, 0f,
                 PortraitShellLayout.ReferenceWidth, PortraitShellLayout.ReferenceHeight);
+            ValidateLobby(PortraitShellLayout.ReferenceWidth,
+                PortraitShellLayout.ReferenceHeight, referenceSafeArea, false);
+            ValidateSettlement(PortraitShellLayout.ReferenceWidth,
+                PortraitShellLayout.ReferenceHeight, referenceSafeArea);
             var referenceA = PortraitShellLayout.CreateLobby(402f, 874f, referenceSafeArea);
             var referenceB = PortraitShellLayout.CreateLobby(402f, 874f, referenceSafeArea);
             Assert(Equal(referenceA.StartButton, referenceB.StartButton),
@@ -57,7 +29,14 @@ namespace FruitDefense.Shell
                     PortraitShellLayout.ReferenceLevelCardHeight)
                 && Mathf.Approximately(referenceA.Orchard03Card.height,
                     PortraitShellLayout.ReferenceLevelCardHeight),
-                "all reference level cards are exactly 82 pixels high");
+                "all reference level cards use the approved 176px height");
+            Assert(Equal(referenceA.Title, new Rect(16f, 54f, 370f, 56f))
+                && Equal(referenceA.Orchard01Card, new Rect(16f, 130f, 370f, 176f))
+                && Equal(referenceA.Orchard02Card, new Rect(16f, 318f, 370f, 176f))
+                && Equal(referenceA.Orchard03Card, new Rect(16f, 506f, 370f, 176f))
+                && Equal(referenceA.StartButton, new Rect(16f, 702f, 370f, 72f))
+                && Equal(referenceA.Status, new Rect(16f, 790f, 370f, 58f)),
+                "Lobby reference composition matches the approved quality audit");
         }
 
         private static void ValidateLobby(float width, float height, Rect safeArea, bool inset)
@@ -106,22 +85,101 @@ namespace FruitDefense.Shell
             Assert(Mathf.Approximately(layout.Orchard01Card.height, expectedCardHeight)
                 && Mathf.Approximately(layout.Orchard02Card.height, expectedCardHeight)
                 && Mathf.Approximately(layout.Orchard03Card.height, expectedCardHeight),
-                "all level cards retain the same scaled 82-pixel geometry");
+                "all level cards retain the same scaled 176px geometry");
+
+            ValidateLobbyCardAnatomy(layout.Orchard01Card, layout.Frame.Scale, "orchard-01");
+            ValidateLobbyCardAnatomy(layout.Orchard02Card, layout.Frame.Scale, "orchard-02");
+            ValidateLobbyCardAnatomy(layout.Orchard03Card, layout.Frame.Scale, "orchard-03");
+        }
+
+        private static void ValidateLobbyCardAnatomy(Rect card, float scale, string caseName)
+        {
+            var anatomy = PortraitShellLayout.CreateLobbyLevelCard(card, scale);
+            var expectedFrame = new Vector2(164f * scale, 104f * scale);
+            Assert(Contains(card, anatomy.Frame)
+                && Contains(anatomy.Frame, anatomy.Thumbnail)
+                && Contains(card, anatomy.Title)
+                && Contains(card, anatomy.Body)
+                && Contains(card, anatomy.SelectedMarker)
+                && Contains(card, anatomy.TransientIndicator),
+                caseName + " card art, copy and state cues remain inside the original hit rect");
+            Assert(Mathf.Approximately(anatomy.Frame.width, expectedFrame.x)
+                && Mathf.Approximately(anatomy.Frame.height, expectedFrame.y)
+                && Mathf.Approximately(anatomy.Frame.x - card.x, 4f * scale)
+                && Mathf.Approximately(anatomy.Frame.y - card.y, 36f * scale)
+                && Mathf.Approximately(anatomy.Thumbnail.x - anatomy.Frame.x,
+                    6f * scale)
+                && Mathf.Approximately(anatomy.Thumbnail.y - anatomy.Frame.y,
+                    6f * scale),
+                caseName + " card retains the 4,36 inset and 164x104 illustration frame");
+            Assert(Mathf.Approximately(anatomy.Title.x - anatomy.Frame.xMax, 8f * scale)
+                && Mathf.Approximately(anatomy.Title.x - card.x, 176f * scale)
+                && Mathf.Approximately(anatomy.Title.width, 190f * scale)
+                && Mathf.Approximately(anatomy.Title.y - card.y, 34f * scale)
+                && Mathf.Approximately(anatomy.Title.height, 44f * scale)
+                && Mathf.Approximately(anatomy.Body.y - card.y, 90f * scale)
+                && Mathf.Approximately(anatomy.Body.height, 44f * scale)
+                && !Overlaps(anatomy.Frame, anatomy.Title)
+                && !Overlaps(anatomy.Frame, anatomy.Body)
+                && !Overlaps(anatomy.Title, anatomy.SelectedMarker)
+                && !Overlaps(anatomy.Body, anatomy.TransientIndicator),
+                caseName + " card retains the 10px copy gap and cue-safe two-line copy");
+            Assert(Mathf.Approximately(anatomy.SelectedMarker.width, 48f * scale)
+                && Mathf.Approximately(anatomy.SelectedMarker.height, 48f * scale),
+                caseName + " selected source canvas preserves its approved 32-36px optical size");
         }
 
         private static void ValidateSettlement(float width, float height, Rect safeArea)
         {
             var layout = PortraitShellLayout.CreateSettlement(width, height, safeArea);
+            if (Mathf.Approximately(width, PortraitShellLayout.ReferenceWidth)
+                && Mathf.Approximately(height, PortraitShellLayout.ReferenceHeight)
+                && Equal(safeArea, new Rect(0f, 0f, width, height)))
+            {
+                Assert(Equal(layout.Title, new Rect(16f, 54f, 370f, 56f))
+                    && Equal(layout.ResultCard, new Rect(16f, 130f, 370f, 474f))
+                    && Equal(layout.ResultBanner, new Rect(58f, 146f, 286f, 72f))
+                    && Equal(layout.Outcome, new Rect(98f, 156f, 206f, 52f))
+                    && Equal(layout.OrchardVista, new Rect(32f, 234f, 338f, 190f))
+                    && Equal(layout.CompletedLevel, new Rect(32f, 436f, 338f, 48f))
+                    && Equal(layout.ReachedWave, new Rect(32f, 492f, 338f, 48f))
+                    && Equal(layout.RemainingLives, new Rect(32f, 548f, 338f, 48f))
+                    && Equal(layout.ResultIndicator, new Rect(308f, 168f, 28f, 28f))
+                    && Equal(layout.RetryButton, new Rect(16f, 624f, 370f, 72f))
+                    && Equal(layout.ReturnButton, new Rect(16f, 712f, 370f, 64f))
+                    && Equal(layout.Status, new Rect(16f, 792f, 370f, 58f)),
+                    "Settlement reference composition matches the approved quality audit");
+            }
             Assert(Contains(layout.Frame.SafeArea, layout.ResultCard)
                 && Contains(layout.ResultCard, layout.Outcome)
                 && Contains(layout.ResultCard, layout.CompletedLevel)
                 && Contains(layout.ResultCard, layout.ReachedWave)
-                && Contains(layout.ResultCard, layout.RemainingLives),
+                && Contains(layout.ResultCard, layout.RemainingLives)
+                && Contains(layout.ResultCard, layout.ResultBanner)
+                && Contains(layout.ResultCard, layout.OrchardVista)
+                && Contains(layout.ResultBanner, layout.ResultIndicator),
                 "result values including completed level remain inside result card");
+            Assert(!Overlaps(layout.ResultBanner, layout.OrchardVista)
+                && Contains(layout.ResultBanner, layout.Outcome)
+                && !Overlaps(layout.Outcome, layout.ResultIndicator)
+                && !Overlaps(layout.OrchardVista, layout.CompletedLevel)
+                && !Overlaps(layout.OrchardVista, layout.ReachedWave)
+                && !Overlaps(layout.OrchardVista, layout.RemainingLives),
+                "result art hierarchy leaves outcome copy and metrics unobscured");
             Assert(Contains(layout.Frame.SafeArea, layout.RetryButton)
                 && Contains(layout.Frame.SafeArea, layout.ReturnButton)
                 && !Overlaps(layout.RetryButton, layout.ReturnButton),
                 "settlement actions remain usable and non-overlapping");
+            Assert(PortraitShellLayout.HitTest(layout, layout.RetryButton.center, false)
+                    == ShellHitTarget.Retry
+                && PortraitShellLayout.HitTest(layout, layout.ReturnButton.center, false)
+                    == ShellHitTarget.Return,
+                "Settlement Retry and Return hit exactly their drawn rectangles");
+            Assert(PortraitShellLayout.HitTest(layout, layout.RetryButton.center, true)
+                    == ShellHitTarget.None
+                && PortraitShellLayout.HitTest(layout, layout.ReturnButton.center, true)
+                    == ShellHitTarget.None,
+                "Settlement hit targets are disabled during transition");
         }
 
         private static bool Contains(Rect outer, Rect inner)

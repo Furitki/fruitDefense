@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="804" height="874" viewBox="0 0 804 874">
+  <rect width="804" height="874" fill="#211d19"/>
+  <image href="../4.2-preflight/canonical/battle-402x874-full/17-battle-terminal-victory.png" x="0" y="0" width="402" height="874"/>
+  <rect x="28" y="270" width="346" height="320" fill="none" stroke="#00b7ff" stroke-width="2"/>
+  <rect x="48" y="292" width="306" height="56" fill="none" stroke="#60e875" stroke-width="2"/>
+  <rect x="70" y="352" width="262" height="64" fill="#e64034" fill-opacity="0.16" stroke="#ff5a4f" stroke-width="3"/>
+  <rect x="102" y="360" width="198" height="48" fill="#ffcf5a" fill-opacity="0.10" stroke="#ffcf5a" stroke-width="2"/>
+  <rect x="56" y="424" width="112" height="63" fill="none" stroke="#60e875" stroke-width="2"/>
+  <rect x="180" y="420" width="142" height="64" fill="none" stroke="#60e875" stroke-width="2"/>
+  <rect x="328" y="438" width="24" height="24" fill="none" stroke="#60e875" stroke-width="2"/>
+  <rect x="90" y="510" width="222" height="52" fill="none" stroke="#ffcf5a" stroke-width="2"/>
+  <line x1="201" y1="270" x2="201" y2="590" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="6 5"/>
+  <text x="412" y="42" fill="#ffffff" font-family="sans-serif" font-size="21" font-weight="700">Terminal 红线</text>
+  <text x="412" y="82" fill="#ff8178" font-family="sans-serif" font-size="17">High：ResultBanner 当前空绘</text>
+  <text x="412" y="108" fill="#ff8178" font-family="sans-serif" font-size="17">不可作为无语义separator保留</text>
+  <text x="412" y="158" fill="#ffcf5a" font-family="sans-serif" font-size="17">目标 BannerText=(102,360,198,48)</text>
+  <text x="412" y="184" fill="#ffcf5a" font-family="sans-serif" font-size="17">victory=`胜利` / defeat=`失败`</text>
+  <text x="412" y="234" fill="#60e875" font-family="sans-serif" font-size="17">其余modal Rect已不重叠，可保留</text>
+  <text x="412" y="260" fill="#60e875" font-family="sans-serif" font-size="17">rendered content union center≤2</text>
+  <text x="412" y="312" fill="#ffffff" font-family="sans-serif" font-size="16">Restart同步共享action group居中，</text>
+  <text x="412" y="338" fill="#ffffff" font-family="sans-serif" font-size="16">hit Rect仍为(90,510,222,52)。</text>
+</svg>

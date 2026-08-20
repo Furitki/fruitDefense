@@ -6,6 +6,7 @@ using FruitDefense.App.Services;
 using FruitDefense.Battle;
 using FruitDefense.Content;
 using FruitDefense.Shell;
+using FruitDefense.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,6 +37,34 @@ namespace FruitDefense.App
         public const string LevelResolutionFailed = "battle-level-resolution-failed";
         public const string StoredLevelUnavailable = "stored-level-unavailable";
         public const string ProfileSelectionSaveFailed = "profile-selection-save-failed";
+        public const string RuntimeUiThemeInvalid = "runtime-ui-theme-invalid";
+
+        public readonly struct BootstrapPresentationLayout
+        {
+            public BootstrapPresentationLayout(Rect screen, Rect safeArea, Rect modal,
+                Rect title, Rect status, Rect retryAction, Rect recoverableStatus, float scale)
+            {
+                Screen = screen;
+                SafeArea = safeArea;
+                Modal = modal;
+                Title = title;
+                Status = status;
+                RetryAction = retryAction;
+                RecoverableStatus = recoverableStatus;
+                Scale = scale;
+            }
+
+            public Rect Screen { get; }
+            public Rect SafeArea { get; }
+            public Rect Modal { get; }
+            public Rect Title { get; }
+            public Rect Status { get; }
+            public Rect RetryAction { get; }
+            public Rect RecoverableStatus { get; }
+            public float Scale { get; }
+        }
+
+        [SerializeField] private RuntimeUiTheme runtimeUiTheme;
 
         private AppBootstrap _bootstrap;
         private IPlayerProfileStore _profileStore;
@@ -54,6 +83,14 @@ namespace FruitDefense.App
         private string _selectedLevelId = string.Empty;
         private bool _profileSaveRoutineActive;
         private bool _profileSavePending;
+        private bool _runtimeUiPresentationReady;
+        private RuntimeUiDrawContext _runtimeUiDrawContext;
+        private RuntimeUiFeedbackPulse _bootstrapTransitionPulse;
+        private RuntimeUiFeedbackPulse _bootstrapStatusPulse;
+        private RuntimeUiFeedbackPulse _retryFocusPulse;
+        private RuntimeUiFeedbackPulse _retryPressPulse;
+        private string _observedBlockingError = string.Empty;
+        private string _observedRecoverableError = string.Empty;
 
         public IAppNavigator Navigator => _bootstrap == null ? null : _bootstrap.Navigator;
         public string BundledContentVersion { get; private set; } = string.Empty;
@@ -70,6 +107,7 @@ namespace FruitDefense.App
             ? Array.Empty<LevelDefinition>()
             : _levelCatalog.PlayableLevels;
         public string SelectedLevelId => _selectedLevelId;
+        public RuntimeUiTheme RuntimeUiTheme => runtimeUiTheme;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -100,6 +138,21 @@ namespace FruitDefense.App
             _startupRoutineActive = true;
             _compositionReady = false;
             _blockingError = string.Empty;
+            _runtimeUiPresentationReady = false;
+            _bootstrapTransitionPulse = default;
+
+            var themeValidation = runtimeUiTheme == null ? null : runtimeUiTheme.Validate();
+            if (themeValidation == null || !themeValidation.IsValid)
+            {
+                _blockingError = RuntimeUiThemeInvalid + ":" + (themeValidation == null
+                    ? "theme-required"
+                    : themeValidation.Issues[0].Code);
+                _startupRoutineActive = false;
+                yield break;
+            }
+            _runtimeUiPresentationReady = true;
+            _bootstrapTransitionPulse = RuntimeUiFeedbackPulse.Begin(
+                Time.unscaledTime, runtimeUiTheme.Feedback.UnscaledTransitionSeconds);
 
             while (AppBootstrap.Instance == null) yield return null;
             _bootstrap = AppBootstrap.Instance;
@@ -455,7 +508,8 @@ namespace FruitDefense.App
                     return;
                 }
 
-                var initialization = host.Initialize(request, Navigator, this, resolvedLevel);
+                var initialization = host.Initialize(
+                    request, Navigator, this, runtimeUiTheme, resolvedLevel);
                 if (!initialization.Success)
                 {
                     RecoverAfterRouteFailure(initialization.ErrorCode);
@@ -500,7 +554,7 @@ namespace FruitDefense.App
                     return;
                 }
                 _lastRecoverableError = ShellFlowError.None;
-                presenter.Initialize(this);
+                presenter.Initialize(this, runtimeUiTheme);
                 SignalAcceptanceRouteReady(AppRoute.Settlement);
             });
         }
@@ -558,7 +612,7 @@ namespace FruitDefense.App
                 _blockingError = LobbyPresenterMissing;
                 return false;
             }
-            presenter.Initialize(this);
+            presenter.Initialize(this, runtimeUiTheme);
             return true;
         }
 
@@ -726,34 +780,237 @@ namespace FruitDefense.App
             return false;
         }
 
+        public static BootstrapPresentationLayout CreateBootstrapPresentationLayout(
+            float viewportWidth, float viewportHeight, Rect screenSafeArea,
+            bool hasRetryAction = false)
+        {
+            if (viewportWidth <= 0f || viewportHeight <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(viewportWidth),
+                    "Viewport dimensions must be positive.");
+
+            var screen = new Rect(0f, 0f, viewportWidth, viewportHeight);
+            var xMin = Mathf.Max(screen.xMin, screenSafeArea.xMin);
+            var yMin = Mathf.Max(screen.yMin, screenSafeArea.yMin);
+            var xMax = Mathf.Min(screen.xMax, screenSafeArea.xMax);
+            var yMax = Mathf.Min(screen.yMax, screenSafeArea.yMax);
+            var safeArea = Rect.MinMaxRect(
+                xMin, yMin, Mathf.Max(xMin, xMax), Mathf.Max(yMin, yMax));
+            if (safeArea.width <= 0f || safeArea.height <= 0f)
+                safeArea = screen;
+            safeArea = PortraitShellLayout.ToGuiSafeArea(viewportHeight, safeArea);
+
+            var scale = Mathf.Max(.001f, Mathf.Min(
+                safeArea.width / PortraitShellLayout.ReferenceWidth,
+                safeArea.height / PortraitShellLayout.ReferenceHeight));
+            var horizontalMargin = 16f * scale;
+            var width = Mathf.Min(360f * scale,
+                Mathf.Max(0f, safeArea.width - horizontalMargin * 2f));
+            var modalHeight = (hasRetryAction ? 190f : 142f) * scale;
+            var modalY = safeArea.y + 262f * scale;
+            modalHeight = Mathf.Min(modalHeight,
+                Mathf.Max(0f, safeArea.yMax - modalY - 8f * scale));
+            var modal = new Rect(
+                safeArea.x + (safeArea.width - width) * .5f,
+                modalY,
+                width,
+                modalHeight);
+
+            var contentX = modal.x + 20f * scale;
+            var contentWidth = Mathf.Max(0f, modal.width - 40f * scale);
+            var title = new Rect(contentX, modal.y + 16f * scale,
+                contentWidth, 34f * scale);
+            var status = new Rect(contentX, modal.y + 56f * scale,
+                contentWidth, 45f * scale);
+            var retryAction = hasRetryAction
+                ? new Rect(contentX, modal.y + 105f * scale,
+                    contentWidth, 52f * scale)
+                : default;
+            var recoverableStatus = new Rect(
+                safeArea.x + horizontalMargin,
+                safeArea.yMax - 60f * scale,
+                Mathf.Max(0f, safeArea.width - horizontalMargin * 2f),
+                52f * scale);
+
+            return new BootstrapPresentationLayout(screen, safeArea, modal,
+                title, status, retryAction, recoverableStatus, scale);
+        }
+
+        public static string FormatBootstrapBlockingError(string rawError)
+        {
+            if (HasErrorCode(rawError, LevelResolutionFailed))
+                return RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapLevelUnavailable).Text;
+
+            if (HasErrorCode(rawError, RuntimeConfigInvalid)
+                || HasErrorCode(rawError, RuntimeUiThemeInvalid))
+            {
+                return RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapConfigurationUnavailable).Text;
+            }
+
+            if (HasErrorCode(rawError, BundledContentInvalid)
+                || HasErrorCode(rawError, BundledLevelCatalogInvalid)
+                || HasErrorCode(rawError, BundledContentMismatch))
+            {
+                return RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapContentUnavailable).Text;
+            }
+
+            if (HasErrorCode(rawError, SceneUnavailable)
+                || HasErrorCode(rawError, SceneLoadFailed)
+                || HasErrorCode(rawError, BattleHostMissing)
+                || HasErrorCode(rawError, LobbyPresenterMissing)
+                || HasErrorCode(rawError, SettlementPresenterMissing))
+            {
+                return RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapPageUnavailable).Text;
+            }
+
+            return RuntimeUiCopyCatalog.Get(
+                RuntimeUiCopyId.BootstrapUnknownFailure).Text;
+        }
+
+        private static bool HasErrorCode(string rawError, string code)
+        {
+            return string.Equals(rawError, code, StringComparison.Ordinal)
+                || (!string.IsNullOrEmpty(rawError)
+                    && rawError.StartsWith(code + ":", StringComparison.Ordinal));
+        }
+
         private void OnGUI()
         {
+            if (!_runtimeUiPresentationReady) return;
+
+            var unscaledTime = Time.unscaledTime;
+            RefreshBootstrapFeedback(unscaledTime);
+
+            var hasBlockingError = !string.IsNullOrEmpty(_blockingError);
+            var hasRetryAction = hasBlockingError
+                && _bootstrap != null
+                && _bootstrap.IsInitialized
+                && !_bootstrap.InitializationResult.Success;
+            var layout = CreateBootstrapPresentationLayout(
+                Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent(),
+                hasRetryAction);
+            _runtimeUiDrawContext = RuntimeUiGui.RequireContext(
+                _runtimeUiDrawContext, runtimeUiTheme, layout.Scale);
+
             if (_compositionReady && string.IsNullOrEmpty(_blockingError))
             {
                 if (!_lastRecoverableError.IsEmpty)
-                    GUI.Label(new Rect(16f, Mathf.Max(8f, Screen.height - 44f), Screen.width - 32f, 32f),
-                        "\u53ef\u6062\u590d\u9519\u8bef\uff1a" + _lastRecoverableError.Code);
+                {
+                    var recoverableCopy = RuntimeUiCopyCatalog.Get(
+                        RuntimeUiCopyId.BootstrapRecoverableError);
+                    RuntimeUiGui.DrawStatus(_runtimeUiDrawContext,
+                        layout.RecoverableStatus,
+                        RuntimeUiCopyCatalog.FormatBootstrapRecoverableError(
+                            _lastRecoverableError.Code),
+                        RuntimeUiInteractionState.Warning,
+                        recoverableCopy.Role,
+                        RuntimeUiCopyCatalog.StatusTextMode(recoverableCopy),
+                        _bootstrapStatusPulse.IsActive(unscaledTime));
+                }
                 return;
             }
 
-            var width = Mathf.Min(360f, Screen.width - 32f);
-            var panel = new Rect((Screen.width - width) * .5f, Mathf.Max(24f, Screen.height * .3f), width, 190f);
-            GUI.Box(panel, string.Empty);
-            GUI.Label(new Rect(panel.x + 20f, panel.y + 20f, panel.width - 40f, 54f),
-                string.IsNullOrEmpty(_blockingError) ? "\u6b63\u5728\u542f\u52a8\u679c\u56ed\u9632\u7ebf" : "\u542f\u52a8\u5931\u8d25\uff1a" + _blockingError);
+            var presentationState = hasBlockingError
+                ? RuntimeUiInteractionState.Error
+                : RuntimeUiInteractionState.Loading;
+            RuntimeUiGui.DrawScreenBackground(_runtimeUiDrawContext, layout.Screen);
+            RuntimeUiGui.DrawSafeArea(_runtimeUiDrawContext, layout.SafeArea);
+            RuntimeUiGui.DrawScreenCorners(_runtimeUiDrawContext, layout.SafeArea);
+            RuntimeUiGui.DrawBlockingModal(_runtimeUiDrawContext,
+                layout.Screen, layout.Modal, RuntimeUiInteractionState.Normal);
+            var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.ProductTitle);
+            RuntimeUiGui.DrawSingleLineText(_runtimeUiDrawContext, layout.Title,
+                titleCopy.Text, titleCopy.Role, titleCopy.Tone,
+                titleCopy.Alignment,
+                presentationState);
+            var statusCopy = RuntimeUiCopyCatalog.Get(hasBlockingError
+                ? RuntimeUiCopyId.BootstrapUnknownFailure
+                : RuntimeUiCopyId.BootstrapLoading);
+            RuntimeUiGui.DrawStatus(_runtimeUiDrawContext, layout.Status,
+                hasBlockingError
+                    ? FormatBootstrapBlockingError(_blockingError)
+                    : statusCopy.Text,
+                presentationState, statusCopy.Role,
+                RuntimeUiCopyCatalog.StatusTextMode(statusCopy),
+                hasBlockingError
+                    ? _bootstrapStatusPulse.IsActive(unscaledTime)
+                    : _bootstrapTransitionPulse.IsActive(unscaledTime));
 
-            if (!string.IsNullOrEmpty(_blockingError)
-                && _bootstrap != null
-                && _bootstrap.IsInitialized
-                && !_bootstrap.InitializationResult.Success
-                && GUI.Button(new Rect(panel.x + 20f, panel.y + 105f, panel.width - 40f, 52f), "\u91cd\u8bd5"))
+            if (hasRetryAction)
             {
+                var retryHovered = ContainsPointer(layout.RetryAction);
+                if (retryHovered)
+                {
+                    _retryFocusPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                        runtimeUiTheme.Feedback.UnscaledFocusSeconds);
+                }
+                var retryPressed = IsPointerPress(layout.RetryAction)
+                    || _retryPressPulse.IsActive(unscaledTime);
+                var retryState = retryPressed
+                    ? RuntimeUiInteractionState.Pressed
+                    : retryHovered || _retryFocusPulse.IsActive(unscaledTime)
+                        ? RuntimeUiInteractionState.HoveredOrFocused
+                        : RuntimeUiInteractionState.Normal;
+                var retryCopy = RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapRetry);
+                if (!RuntimeUiGui.DrawAction(_runtimeUiDrawContext,
+                    layout.RetryAction,
+                    retryCopy.Text,
+                    RuntimeUiActionKind.Primary,
+                    retryState,
+                    RuntimeUiArtSlot.IconControlRetry))
+                    return;
+
+                _retryPressPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                    runtimeUiTheme.Feedback.UnscaledPressSeconds);
                 if (_bootstrap.TryRetryInitialization())
                 {
                     _blockingError = string.Empty;
+                    _bootstrapTransitionPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                        runtimeUiTheme.Feedback.UnscaledTransitionSeconds);
                     BeginStartup();
                 }
             }
+        }
+
+        private void RefreshBootstrapFeedback(float unscaledTime)
+        {
+            if (!string.Equals(_observedBlockingError, _blockingError,
+                    StringComparison.Ordinal))
+            {
+                _observedBlockingError = _blockingError ?? string.Empty;
+                if (!string.IsNullOrEmpty(_observedBlockingError))
+                {
+                    _bootstrapStatusPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                        runtimeUiTheme.Feedback.UnscaledStatusSeconds);
+                }
+            }
+
+            var recoverableError = _lastRecoverableError.Code ?? string.Empty;
+            if (string.Equals(_observedRecoverableError, recoverableError,
+                    StringComparison.Ordinal))
+                return;
+            _observedRecoverableError = recoverableError;
+            if (!string.IsNullOrEmpty(recoverableError))
+            {
+                _bootstrapStatusPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                    runtimeUiTheme.Feedback.UnscaledStatusSeconds);
+            }
+        }
+
+        private static bool ContainsPointer(Rect rect)
+        {
+            return Event.current != null && rect.Contains(Event.current.mousePosition);
+        }
+
+        private static bool IsPointerPress(Rect rect)
+        {
+            return ContainsPointer(rect) && Event.current.button == 0
+                && (Event.current.rawType == EventType.MouseDown
+                    || Event.current.rawType == EventType.MouseDrag);
         }
 
         private readonly struct SceneLoadResult
