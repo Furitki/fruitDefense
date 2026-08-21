@@ -26,3 +26,9 @@
 - [x] 4.2 Remove the dedicated framed surface from the shared read-only metric primitive and verify Battle/Settlement composition remains legible.
 - [x] 4.3 Add Editor and WebGL final-raster checks for outcome glyph containment and borderless Settlement information rows.
 - [x] 4.4 Rebuild ordinary WebGL and recapture 402x874 full victory plus inset defeat evidence.
+
+## 5. Typography-led ornament contract
+
+- [x] 5.1 Codify emphasis typography, true-outline, optical occupancy, padding, information-chrome, and final-raster acceptance constraints.
+- [ ] 5.2 Implement one shared true-outline path for approved emphasis roles and raise the Settlement outcome's final ink envelope into the 28–32px reference range without shrinking its banner breathing room.
+- [ ] 5.3 Extend Editor and WebGL evidence to measure outline visibility, final ink occupancy, four-side padding, and top/bottom balance for victory and defeat.

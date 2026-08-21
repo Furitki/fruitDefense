@@ -21,3 +21,10 @@ Canonical WebGL visual acceptance SHALL measure the approved Lobby and Settlemen
 #### Scenario: New backdrop is missing or stale
 - **WHEN** the live build does not contain the expected route illustration hash or the screenshot lacks the declared backdrop layer
 - **THEN** acceptance fails and does not sign screenshots from an older payload
+
+### Requirement: Emphasis typography final-raster evidence
+Canonical WebGL visual acceptance SHALL measure emphasis typography from the composited live canvas, including the distinct outline, and SHALL compare its actual ink envelope with the decorative backing's significant-alpha envelope.
+
+#### Scenario: Settlement outcome evidence is recorded
+- **WHEN** victory and defeat are captured at the 402×874 reference viewport
+- **THEN** the manifest records fill-plus-outline glyph bounds, outline thickness/visibility, banner significant-alpha bounds, vertical occupancy, four-side padding, and top/bottom imbalance, and fails any out-of-range value instead of accepting nominal font size or owner-rect containment as proof
