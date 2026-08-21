@@ -52,6 +52,14 @@ namespace FruitDefense.UI
             var iconSafeTop = 0f;
             var iconSafeRight = 0f;
             var iconSafeBottom = 0f;
+            var hasMicroIconReference = false;
+            var microIconPixelsPerLogicalUnit = 0f;
+            var microIconLogicalWidth = 0f;
+            var microIconLogicalHeight = 0f;
+            var microIconSafeLeft = 0f;
+            var microIconSafeTop = 0f;
+            var microIconSafeRight = 0f;
+            var microIconSafeBottom = 0f;
             for (var index = 0; index < bindings.Length; index++)
             {
                 var binding = bindings[index];
@@ -85,11 +93,22 @@ namespace FruitDefense.UI
                     && RuntimeUiNumbers.IsFinite(binding.PixelsPerLogicalUnit)
                     && binding.PixelsPerLogicalUnit > 0f)
                 {
-                    AppendIconSetConsistency(result, binding, field,
-                        ref hasIconReference, ref iconPixelsPerLogicalUnit,
-                        ref iconLogicalWidth, ref iconLogicalHeight,
-                        ref iconSafeLeft, ref iconSafeTop,
-                        ref iconSafeRight, ref iconSafeBottom);
+                    if (RuntimeUiArtSlots.IsMicroIcon(binding.Slot))
+                    {
+                        AppendIconSetConsistency(result, binding, field,
+                            ref hasMicroIconReference, ref microIconPixelsPerLogicalUnit,
+                            ref microIconLogicalWidth, ref microIconLogicalHeight,
+                            ref microIconSafeLeft, ref microIconSafeTop,
+                            ref microIconSafeRight, ref microIconSafeBottom);
+                    }
+                    else
+                    {
+                        AppendIconSetConsistency(result, binding, field,
+                            ref hasIconReference, ref iconPixelsPerLogicalUnit,
+                            ref iconLogicalWidth, ref iconLogicalHeight,
+                            ref iconSafeLeft, ref iconSafeTop,
+                            ref iconSafeRight, ref iconSafeBottom);
+                    }
                 }
             }
 

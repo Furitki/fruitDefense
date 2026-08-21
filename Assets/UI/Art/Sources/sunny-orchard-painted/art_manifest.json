@@ -2,10 +2,10 @@
   "schema": "fruit-defense.runtime-ui-art-manifest.v2",
   "setId": "sunny-orchard-painted",
   "revision": "1",
-  "approvedDirection": "Sunny Orchard Painted v2",
+  "approvedDirection": "Sunny Orchard Painted v3 target-size hierarchy",
   "sourceScale": 2.0,
-  "slotCount": 49,
-  "uniqueExportCount": 47,
+  "slotCount": 53,
+  "uniqueExportCount": 51,
   "sharedBindings": {
     "icon.control-continue": [
       "icon.control-continue",
@@ -1140,6 +1140,98 @@
       },
       "pixels_per_logical_unit": 2.0,
       "slot": 48
+    },
+    {
+      "stem": "icon-resource-sun-micro",
+      "semantic_id": "icon.resource-sun-micro",
+      "geometry": "icon",
+      "size": 18,
+      "width": 18,
+      "height": 18,
+      "source": "Assets/UI/Art/Sources/sunny-orchard-painted/icons/icon-resource-sun.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-resource-sun-micro.png",
+      "sourceSha256": "6568D1FDD2BD8572B6C6C617EB58572106148923E60CCE005DF75A0D4110EB8A",
+      "runtimeSha256": "D581DAECE65DD9AFBE576FB6F7E86A4E562BCF174CC8B095CD676E3D3D93C9AD",
+      "guid": "37d97d20919870249a56ba93f2e67b64",
+      "slice_border": 0,
+      "safe_inset": 1,
+      "optical_inset": {
+        "left": 1,
+        "top": 1,
+        "right": 1,
+        "bottom": 1
+      },
+      "pixels_per_logical_unit": 1.0,
+      "slot": 49
+    },
+    {
+      "stem": "icon-resource-core-micro",
+      "semantic_id": "icon.resource-core-micro",
+      "geometry": "icon",
+      "size": 18,
+      "width": 18,
+      "height": 18,
+      "source": "Assets/UI/Art/Sources/sunny-orchard-painted/icons/icon-resource-core.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-resource-core-micro.png",
+      "sourceSha256": "EF301418DDC5F356CC687C78BE0044B4FF384E0E070C412A40763BDF546003E5",
+      "runtimeSha256": "210F2858130465BCF407ACC6CB922BF512359B6A749CF906E0EC8910FAAA04A2",
+      "guid": "8f358b289859b6649b7e19de1c9976d0",
+      "slice_border": 0,
+      "safe_inset": 1,
+      "optical_inset": {
+        "left": 1,
+        "top": 1,
+        "right": 1,
+        "bottom": 1
+      },
+      "pixels_per_logical_unit": 1.0,
+      "slot": 50
+    },
+    {
+      "stem": "icon-resource-wave-micro",
+      "semantic_id": "icon.resource-wave-micro",
+      "geometry": "icon",
+      "size": 18,
+      "width": 18,
+      "height": 18,
+      "source": "Assets/UI/Art/Sources/sunny-orchard-painted/icons/icon-resource-wave.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/icons/icon-resource-wave-micro.png",
+      "sourceSha256": "7E3965CA3C4902ED392856A5149EFF1D5C2373EA710BF21EC9DB9493546F31B2",
+      "runtimeSha256": "2B3E5A01B4F7AD8DDCBFAA9B69ED7517FCD907F6CCCEDCB49748BB4E88298997",
+      "guid": "90b92cf4a859b2240ab148c64dcc3c72",
+      "slice_border": 0,
+      "safe_inset": 1,
+      "optical_inset": {
+        "left": 1,
+        "top": 1,
+        "right": 1,
+        "bottom": 1
+      },
+      "pixels_per_logical_unit": 1.0,
+      "slot": 51
+    },
+    {
+      "stem": "illustration-shell-orchard-depth",
+      "semantic_id": "illustration.shell-orchard-depth",
+      "geometry": "stretch",
+      "size": 0,
+      "width": 402,
+      "height": 874,
+      "source": "Assets/UI/Art/Sources/sunny-orchard-painted/illustrations/illustration-shell-orchard-depth.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard-painted/illustrations/illustration-shell-orchard-depth.png",
+      "sourceSha256": "D7C552381F217F1DAC66211A20013D9A77AF7044E27713F178F458B50612AAB2",
+      "runtimeSha256": "B1256861516C56A61D86AEF9627C535BFA986892D1812FF4D21F402C5C5CE2B6",
+      "guid": "3a04cc4292a9de6449065a7539975b86",
+      "slice_border": 0,
+      "safe_inset": 0,
+      "optical_inset": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "pixels_per_logical_unit": 2.0,
+      "slot": 52
     }
   ],
   "importContract": {

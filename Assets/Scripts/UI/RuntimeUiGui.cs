@@ -607,6 +607,14 @@ namespace FruitDefense.UI
                 RuntimeUiArtSlot.SurfaceSafeArea, RuntimeUiInteractionState.Normal);
         }
 
+        public static void DrawShellOrchardDepth(RuntimeUiDrawContext context, Rect rect,
+            float opacity)
+        {
+            DrawAspectFillSlotArt(Require(context), rect,
+                RuntimeUiArtSlot.IllustrationShellOrchardDepth,
+                RuntimeUiInteractionState.Normal, Mathf.Clamp01(opacity));
+        }
+
         public static void DrawScreenCorners(RuntimeUiDrawContext context, Rect safeRect)
         {
             context = Require(context);
@@ -658,9 +666,9 @@ namespace FruitDefense.UI
 
         public static void DrawOrchardVista(RuntimeUiDrawContext context, Rect rect)
         {
-            DrawAspectFitSlotArt(Require(context), rect,
+            DrawAspectFillSlotArt(Require(context), rect,
                 RuntimeUiArtSlot.IllustrationOrchardVista,
-                RuntimeUiInteractionState.Normal);
+                RuntimeUiInteractionState.Normal, 1f);
         }
 
         public static void DrawLobbyThumbnail(RuntimeUiDrawContext context, Rect rect,
@@ -1557,6 +1565,45 @@ namespace FruitDefense.UI
             DrawSlotArt(context, fitted, slot, state);
         }
 
+        private static void DrawAspectFillSlotArt(RuntimeUiDrawContext context,
+            Rect destination, RuntimeUiArtSlot slot, RuntimeUiInteractionState state,
+            float opacityMultiplier)
+        {
+            var binding = context.RequiredBinding(slot);
+            ResolveSource(binding, out var texture, out var source);
+            if (source.width <= 0f || source.height <= 0f
+                || destination.width <= 0f || destination.height <= 0f)
+                return;
+
+            var sourceRatio = source.width / source.height;
+            var destinationRatio = destination.width / destination.height;
+            if (sourceRatio > destinationRatio)
+            {
+                var width = source.height * destinationRatio;
+                source.x += (source.width - width) * .5f;
+                source.width = width;
+            }
+            else
+            {
+                var height = source.width / destinationRatio;
+                source.y += (source.height - height) * .5f;
+                source.height = height;
+            }
+
+            var previousColor = GUI.color;
+            try
+            {
+                var tint = context.Tint(state);
+                tint.a *= context.Opacity(state) * opacityMultiplier;
+                GUI.color = tint;
+                DrawSourceRect(destination, texture, source);
+            }
+            finally
+            {
+                GUI.color = previousColor;
+            }
+        }
+
         private static void DrawSourceRect(Rect destination, Texture texture, Rect sourcePixels,
             bool mirrorX = false, bool mirrorY = false)
         {
@@ -1910,7 +1957,10 @@ namespace FruitDefense.UI
         {
             if (slot != RuntimeUiArtSlot.IconResourceSun
                 && slot != RuntimeUiArtSlot.IconResourceCore
-                && slot != RuntimeUiArtSlot.IconResourceWave)
+                && slot != RuntimeUiArtSlot.IconResourceWave
+                && slot != RuntimeUiArtSlot.IconResourceSunMicro
+                && slot != RuntimeUiArtSlot.IconResourceCoreMicro
+                && slot != RuntimeUiArtSlot.IconResourceWaveMicro)
             {
                 throw new ArgumentException("Metric components require a resource icon slot.",
                     nameof(slot));

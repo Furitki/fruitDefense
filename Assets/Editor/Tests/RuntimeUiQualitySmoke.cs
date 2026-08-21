@@ -570,11 +570,11 @@ namespace FruitDefense.Editor
             switch (target)
             {
                 case RuntimeUiTextInspectionTarget.BattleSunMetric:
-                    return RuntimeUiArtSlot.IconResourceSun;
+                    return RuntimeUiArtSlot.IconResourceSunMicro;
                 case RuntimeUiTextInspectionTarget.BattleCoreMetric:
-                    return RuntimeUiArtSlot.IconResourceCore;
+                    return RuntimeUiArtSlot.IconResourceCoreMicro;
                 case RuntimeUiTextInspectionTarget.BattleWaveMetric:
-                    return RuntimeUiArtSlot.IconResourceWave;
+                    return RuntimeUiArtSlot.IconResourceWaveMicro;
                 case RuntimeUiTextInspectionTarget.SettlementCompletedLevel:
                     return RuntimeUiArtSlot.IconResourceSun;
                 case RuntimeUiTextInspectionTarget.SettlementReachedWave:
@@ -859,9 +859,9 @@ namespace FruitDefense.Editor
             var values = new[] { "999", "99", "15" };
             var icons = new[]
             {
-                RuntimeUiArtSlot.IconResourceSun,
-                RuntimeUiArtSlot.IconResourceCore,
-                RuntimeUiArtSlot.IconResourceWave,
+                RuntimeUiArtSlot.IconResourceSunMicro,
+                RuntimeUiArtSlot.IconResourceCoreMicro,
+                RuntimeUiArtSlot.IconResourceWaveMicro,
             };
             var style = bundle.BattleContext.Styles.SingleLineText(
                 RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);
@@ -898,7 +898,10 @@ namespace FruitDefense.Editor
                         + RuntimeUiQualityProfile.GeometryTolerance
                         >= RuntimeUiQualityProfile.MinimumContentInset,
                     suffix + "/battle.metric-" + index
-                    + " has finite compact icon/label/value anatomy");
+                    + " has finite compact icon/label/value anatomy; owner=" + rects[index]
+                    + " icon=" + layout.IconRect + " visual=" + layout.IconVisualRect
+                    + " label=" + layout.LabelRect + " value=" + layout.ValueRect
+                    + " group=" + layout.GroupRect);
                 AssertSingleLineFits(style, labels[index], layout.LabelRect,
                     suffix + "/battle.metric-" + index + ".label");
                 AssertSingleLineFits(style, values[index], layout.ValueRect,
@@ -1062,17 +1065,35 @@ namespace FruitDefense.Editor
                     ? RuntimeUiQualityProfile.LobbyThumbnailMinimumHeight
                     : RuntimeUiQualityProfile.ResultVistaMinimumHeight)
                 * context.Scale;
+            var fillsDestination = true;
+            if (lobbyThumbnail)
+            {
+                fillsDestination = (destination.width - fittedWidth) * .5f
+                        <= RuntimeUiQualityProfile.IllustrationUnusedBarMaximum
+                            * context.Scale + RuntimeUiQualityProfile.GeometryTolerance
+                    && (destination.height - fittedHeight) * .5f
+                        <= RuntimeUiQualityProfile.IllustrationUnusedBarMaximum
+                            * context.Scale + RuntimeUiQualityProfile.GeometryTolerance;
+            }
+            else
+            {
+                var sourceWidth = binding.Texture.width;
+                var sourceHeight = binding.Texture.height;
+                var coverScale = Mathf.Max(destination.width / sourceWidth,
+                    destination.height / sourceHeight);
+                var cropX = (sourceWidth * coverScale - destination.width) * .5f;
+                var cropY = (sourceHeight * coverScale - destination.height) * .5f;
+                fillsDestination = cropX <= RuntimeUiQualityProfile.ResultVistaCropMaximum
+                            * context.Scale + RuntimeUiQualityProfile.GeometryTolerance
+                    && cropY <= RuntimeUiQualityProfile.ResultVistaCropMaximum
+                            * context.Scale + RuntimeUiQualityProfile.GeometryTolerance;
+            }
             Assert(destination.width + RuntimeUiQualityProfile.GeometryTolerance
                     >= minimumWidth
                 && destination.height + RuntimeUiQualityProfile.GeometryTolerance
                     >= minimumHeight
-                && (destination.width - fittedWidth) * .5f
-                    <= RuntimeUiQualityProfile.IllustrationUnusedBarMaximum
-                        * context.Scale + RuntimeUiQualityProfile.GeometryTolerance
-                && (destination.height - fittedHeight) * .5f
-                    <= RuntimeUiQualityProfile.IllustrationUnusedBarMaximum
-                        * context.Scale + RuntimeUiQualityProfile.GeometryTolerance,
-                caseName + " uses its destination without a decorative dead axis");
+                && fillsDestination,
+                caseName + " fills its destination without bars or excessive crop");
         }
 
         private static void ValidateEffectiveContrast(RuntimeUiTheme theme)
@@ -1209,6 +1230,9 @@ namespace FruitDefense.Editor
                 "Bootstrap keeps the modal neutral and assigns the sole state cue to status");
             Assert(battle.Contains("compactInline: true")
                 && battle.Contains("BattleUiLayout.HeaderMetricIconSize")
+                && battle.Contains("RuntimeUiArtSlot.IconResourceSunMicro")
+                && battle.Contains("RuntimeUiArtSlot.IconResourceCoreMicro")
+                && battle.Contains("RuntimeUiArtSlot.IconResourceWaveMicro")
                 && battle.Contains("DrawControlledTwoLineText")
                 && battle.Contains("layout.ModalResultBannerText")
                 && battle.Contains("content.ResultBannerText")
@@ -1216,6 +1240,10 @@ namespace FruitDefense.Editor
                 && !battle.Contains("layout.SpeedActionIcon")
                 && !battle.Contains("layout.SpeedActionValue"),
                 "Battle consumes compact metric and controlled terminal-copy anatomy");
+            Assert(lobby.Contains("RuntimeUiGui.DrawShellOrchardDepth")
+                && settlement.Contains("RuntimeUiGui.DrawShellOrchardDepth")
+                && !battle.Contains("RuntimeUiGui.DrawShellOrchardDepth"),
+                "Shell routes own the orchard depth layer while Battle preserves board clarity");
             Assert(!settlement.Contains("DrawMetricDivider")
                 && !settlement.Contains("FirstMetricDivider")
                 && !settlement.Contains("SecondMetricDivider"),

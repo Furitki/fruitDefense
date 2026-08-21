@@ -67,6 +67,7 @@ namespace FruitDefense.Editor
         public const int LobbyThumbnailMinimumHeight = 46;
         public const int ResultVistaMinimumWidth = 128;
         public const int ResultVistaMinimumHeight = 72;
+        public const int ResultVistaCropMaximum = 24;
         public const byte TransparentEdgeRequiredAlpha = 0;
         public const byte NineSliceSignificantAlphaLow = 16;
         public const byte NineSliceSignificantAlphaHigh = 48;
@@ -93,6 +94,14 @@ namespace FruitDefense.Editor
         public const int CommonIconOpticalShortEdgeMinimum = 16;
         public const int CommonIconOpticalMajorEdgeMinimum = 18;
         public const int CommonIconStrokeMinimum = 2;
+        public const int MicroIconCanvasSize = 18;
+        public const int MicroIconSafeInset = 1;
+        public const int MicroIconAlphaDimensionMinimum = 15;
+        public const int MicroIconAlphaDimensionMaximum = 16;
+        public const int MicroIconSignificantPixelMinimum = 40;
+        public const int MicroIconSignificantPixelMaximum = 210;
+        public const float MicroIconOpticalCenterTolerance = 1.5f;
+        public const float MicroIconSilhouetteIouMaximum = .8f;
         public const int NineSliceCanvasSize = 128;
         public const int NineSliceBorder = 32;
         public const int NineSliceSafeInset = 20;
@@ -101,7 +110,7 @@ namespace FruitDefense.Editor
         public const int NineSliceSeamToleranceDevicePixels = 0;
         public const int ProductionPixelsPerLogicalUnit = 2;
         public const int ProductionImporterPixelsPerUnit = 100;
-        public const int PaintedUniqueExportCount = 47;
+        public const int PaintedUniqueExportCount = 51;
 
         public static int MinimumFontSize(RuntimeUiTypographyRole role)
         {

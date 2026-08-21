@@ -46,7 +46,7 @@ SETS_DIR = ART_DIR / "Sets"
 EVIDENCE_DIR = ROOT / "openspec" / "changes" / "unify-runtime-ui-visual-system" / "evidence" / "production-art"
 SHARED_OWNER_SET_ID = "sunny-orchard-painted"
 SHARED_OWNER_MANIFEST = ART_DIR / "Sources" / SHARED_OWNER_SET_ID / "art_manifest.json"
-SHARED_SLOT_RANGE = range(40, 49)
+SHARED_SLOT_RANGE = range(40, 53)
 
 
 def stable_guid(namespace: str, name: str) -> str:
@@ -674,7 +674,7 @@ def build_art_set_asset(bindings: list[dict]) -> str:
             f"      top: {optical['top']}",
             f"      right: {optical['right']}",
             f"      bottom: {optical['bottom']}",
-            f"    pixelsPerLogicalUnit: {SOURCE_SCALE:g}",
+            f"    pixelsPerLogicalUnit: {item['pixels_per_logical_unit']:g}",
         ])
     return "\n".join(lines) + "\n"
 
@@ -812,7 +812,7 @@ def main():
         entry["semantic_id"] = semantic_id
         bindings.append(entry)
 
-    # The finite 49-slot contract keeps A complete by explicitly sharing the
+    # The finite 53-slot contract keeps A complete by explicitly sharing the
     # approved painted ornaments/illustrations. The owner manifest remains the
     # single source/runtime authority; no duplicate PNG is generated here.
     owner_manifest = json.loads(SHARED_OWNER_MANIFEST.read_text(encoding="utf-8"))

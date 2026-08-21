@@ -30,12 +30,12 @@ namespace FruitDefense.Shell
                 && Mathf.Approximately(referenceA.Orchard03Card.height,
                     PortraitShellLayout.ReferenceLevelCardHeight),
                 "all reference level cards use the approved 176px height");
-            Assert(Equal(referenceA.Title, new Rect(16f, 54f, 370f, 56f))
-                && Equal(referenceA.Orchard01Card, new Rect(16f, 130f, 370f, 176f))
-                && Equal(referenceA.Orchard02Card, new Rect(16f, 318f, 370f, 176f))
-                && Equal(referenceA.Orchard03Card, new Rect(16f, 506f, 370f, 176f))
-                && Equal(referenceA.StartButton, new Rect(16f, 702f, 370f, 72f))
-                && Equal(referenceA.Status, new Rect(16f, 790f, 370f, 58f)),
+            Assert(Equal(referenceA.Title, new Rect(16f, 42f, 370f, 64f))
+                && Equal(referenceA.Orchard01Card, new Rect(16f, 118f, 370f, 176f))
+                && Equal(referenceA.Orchard02Card, new Rect(16f, 304f, 370f, 176f))
+                && Equal(referenceA.Orchard03Card, new Rect(16f, 490f, 370f, 176f))
+                && Equal(referenceA.StartButton, new Rect(16f, 708f, 370f, 76f))
+                && Equal(referenceA.Status, new Rect(16f, 790f, 370f, 60f)),
                 "Lobby reference composition matches the approved quality audit");
         }
 
@@ -136,18 +136,18 @@ namespace FruitDefense.Shell
                 && Mathf.Approximately(height, PortraitShellLayout.ReferenceHeight)
                 && Equal(safeArea, new Rect(0f, 0f, width, height)))
             {
-                Assert(Equal(layout.Title, new Rect(16f, 54f, 370f, 56f))
-                    && Equal(layout.ResultCard, new Rect(16f, 130f, 370f, 474f))
-                    && Equal(layout.ResultBanner, new Rect(58f, 146f, 286f, 72f))
-                    && Equal(layout.Outcome, new Rect(98f, 156f, 206f, 52f))
-                    && Equal(layout.OrchardVista, new Rect(32f, 234f, 338f, 190f))
-                    && Equal(layout.CompletedLevel, new Rect(32f, 436f, 338f, 48f))
-                    && Equal(layout.ReachedWave, new Rect(32f, 492f, 338f, 48f))
-                    && Equal(layout.RemainingLives, new Rect(32f, 548f, 338f, 48f))
-                    && Equal(layout.ResultIndicator, new Rect(308f, 168f, 28f, 28f))
-                    && Equal(layout.RetryButton, new Rect(16f, 624f, 370f, 72f))
-                    && Equal(layout.ReturnButton, new Rect(16f, 712f, 370f, 64f))
-                    && Equal(layout.Status, new Rect(16f, 792f, 370f, 58f)),
+                Assert(Equal(layout.Title, new Rect(16f, 42f, 370f, 64f))
+                    && Equal(layout.ResultCard, new Rect(16f, 122f, 370f, 500f))
+                    && Equal(layout.ResultBanner, new Rect(58f, 138f, 286f, 72f))
+                    && Equal(layout.Outcome, new Rect(98f, 148f, 206f, 52f))
+                    && Equal(layout.OrchardVista, new Rect(32f, 222f, 338f, 216f))
+                    && Equal(layout.CompletedLevel, new Rect(32f, 450f, 338f, 48f))
+                    && Equal(layout.ReachedWave, new Rect(32f, 506f, 338f, 48f))
+                    && Equal(layout.RemainingLives, new Rect(32f, 562f, 338f, 48f))
+                    && Equal(layout.ResultIndicator, new Rect(308f, 160f, 28f, 28f))
+                    && Equal(layout.RetryButton, new Rect(16f, 638f, 370f, 72f))
+                    && Equal(layout.ReturnButton, new Rect(16f, 722f, 370f, 64f))
+                    && Equal(layout.Status, new Rect(16f, 798f, 370f, 58f)),
                     "Settlement reference composition matches the approved quality audit");
             }
             Assert(Contains(layout.Frame.SafeArea, layout.ResultCard)

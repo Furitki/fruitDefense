@@ -162,13 +162,13 @@ function Convert-ShellReferencePoint {
 }
 
 $referenceControls = [ordered]@{
-  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 218 }
-  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 406 }
-  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 594 }
-  lobbyStart = [ordered]@{ x = 201; y = 738 }
-  settlementRetry = [ordered]@{ x = 201; y = 660 }
-  settlementReturn = [ordered]@{ x = 201; y = 744 }
-  headerPause = [ordered]@{ x = 300; y = 38 }
+  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 206 }
+  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 392 }
+  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 578 }
+  lobbyStart = [ordered]@{ x = 201; y = 746 }
+  settlementRetry = [ordered]@{ x = 201; y = 674 }
+  settlementReturn = [ordered]@{ x = 201; y = 754 }
+  headerPause = [ordered]@{ x = 300; y = 46 }
   waveAction = [ordered]@{ x = 302; y = 548 }
   pauseContinue = [ordered]@{ x = 125; y = 492 }
   pauseRestart = [ordered]@{ x = 277; y = 492 }
@@ -194,14 +194,14 @@ if (-not $controls.Contains($levelCardControlName)) {
 }
 $lobbyStartRect = [ordered]@{
   xMin = [Math]::Floor($shellContentX)
-  yMin = [Math]::Floor($shellContentY + 684.0 * $referenceScale)
+  yMin = [Math]::Floor($shellContentY + 690.0 * $referenceScale)
   xMax = [Math]::Ceiling($shellContentX + $shellContentWidth)
-  yMax = [Math]::Ceiling($shellContentY + (684.0 + 72.0) * $referenceScale)
+  yMax = [Math]::Ceiling($shellContentY + (690.0 + 76.0) * $referenceScale)
 }
 $lobbyLevelCardOffset = switch ($LevelId) {
-  'orchard-01' { 112.0 }
-  'orchard-02' { 300.0 }
-  'orchard-03' { 488.0 }
+  'orchard-01' { 100.0 }
+  'orchard-02' { 286.0 }
+  'orchard-03' { 472.0 }
   default { throw "No Lobby card rect is defined for level '$LevelId'." }
 }
 $lobbyAlternateCardRect = [ordered]@{

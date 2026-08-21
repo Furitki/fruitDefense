@@ -1,0 +1,116 @@
+{
+  "schema": "fruit-defense.runtime-ui-visual-hierarchy-evidence.v1",
+  "accepted": true,
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "fullSafeArea": { "top": 0, "bottom": 0 },
+    "insetSafeArea": { "top": 44, "bottom": 34 }
+  },
+  "build": {
+    "url": "http://127.0.0.1:41873/?build=3ff58edba777",
+    "loader": {
+      "version": "9d9cf0cf4f3f",
+      "bytes": 117893,
+      "sha256": "9d9cf0cf4f3f7d90637fb28eaca6e1ff2f85b8f38da71c8d394ee36bb34e39a3"
+    },
+    "data": {
+      "version": "3ff58edba777",
+      "bytes": 6155603,
+      "sha256": "3ff58edba777c04d7d140acb2a3398f3dd45a578570982f8fc1b021971c1b690"
+    },
+    "framework": {
+      "version": "7b327fa58679",
+      "bytes": 69007,
+      "sha256": "7b327fa58679f432556f6e697714cc69e39e7a273715bf34497dbafdb19ea473"
+    },
+    "wasm": {
+      "version": "ddf8cd141907",
+      "bytes": 3897451,
+      "sha256": "ddf8cd141907f81c7f0c7fedf2faedd82e4915e8609242d59d775a1c81ff0555"
+    }
+  },
+  "payloadComparison": {
+    "baselineDataVersion": "78d62a3c45c5",
+    "baselinePayloadBytes": 9665911,
+    "currentPayloadBytes": 10239954,
+    "deltaBytes": 574043,
+    "deltaPercent": 5.9388,
+    "dataDeltaBytes": 572251,
+    "dataDeltaPercent": 10.2492
+  },
+  "microTargetRaster": {
+    "canvas": [18, 18],
+    "significantAlphaThreshold": 48,
+    "cleanupAlphaThreshold": 96,
+    "minimumCriticalFeaturePixels": 2,
+    "icons": {
+      "sun": {
+        "bbox": [1, 1, 17, 17],
+        "significantPixels": 154,
+        "centroidOffset": [-0.0251, 0.0496],
+        "runtimeSha256": "d581daece65dd9afbe576fb6f7e86a4e562bcf174cc8b095cd676e3d3d93c9ad"
+      },
+      "core": {
+        "bbox": [1, 1, 17, 17],
+        "significantPixels": 193,
+        "centroidOffset": [-0.0113, 0.9741],
+        "runtimeSha256": "210f2858130465bcf407acc6cb922bf512359b6a749cf906e0ec8910faaa04a2"
+      },
+      "wave": {
+        "bbox": [1, 1, 17, 17],
+        "significantPixels": 183,
+        "centroidOffset": [-0.0486, 0.3923],
+        "runtimeSha256": "2b3e5a01b4f7ad8ddcbfaa9b69ed7517fcd907f6cccedcb49748bb4e88298997"
+      }
+    },
+    "pairwiseSilhouetteIou": {
+      "sunCore": 0.7264,
+      "sunWave": 0.652,
+      "coreWave": 0.757,
+      "maximumAllowed": 0.8
+    },
+    "liveCanvas": {
+      "screenshot": "full-402x874-battle/01-ready.png",
+      "drawScale": 1,
+      "sunColorFeatureBounds": [22, 48, 38, 64],
+      "corePrimaryColorFeatureBounds": [111, 50, 127, 67],
+      "waveColorFeatureBounds": [201, 49, 216, 64],
+      "headerContainment": "pass"
+    }
+  },
+  "shellDepth": {
+    "master": {
+      "size": [856, 1837],
+      "bytes": 1665466,
+      "sha256": "d7c552381f217f1dac66211a20013d9a77af7044e27713f178f458b50612aab2"
+    },
+    "runtime": {
+      "size": [402, 874],
+      "bytes": 456123,
+      "sha256": "b1256861516c56a61d86aef9627c535bfa986892d1812ff4d21f402c5c5ce2b6"
+    },
+    "fullLobbyMeanLuma": {
+      "sky": 0.9059,
+      "orchard": 0.7647,
+      "foreground": 0.5812
+    },
+    "insetLobbyMeanLuma": {
+      "sky": 0.9127,
+      "orchard": 0.7923,
+      "foreground": 0.6329
+    },
+    "battleBackdropExcluded": true
+  },
+  "interaction": {
+    "pauseTitleCenterDeltaLogical": 0.0708,
+    "pauseHintIconCopyCenterDeltaLogical": 0.5572,
+    "pausePairedSurfaceMaximumEdgeDeltaPixels": 1,
+    "pressedActionsContained": true,
+    "slowOvershootScaleAllowed": false
+  },
+  "determinism": {
+    "mechanicalFilesCompared": 112,
+    "changedOnConsecutiveExport": 0
+  }
+}

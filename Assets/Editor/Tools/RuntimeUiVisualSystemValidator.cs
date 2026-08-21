@@ -529,7 +529,17 @@ namespace FruitDefense.Editor
                 ValidateManifestRow(report, artSet, binding, row, manifest, manifestPath,
                     ownedRuntimePaths, ownedSourcePaths);
                 ValidateImportedBinding(report, artSet, binding, row, manifest);
-                if (referencePpu < 0f) referencePpu = binding.PixelsPerLogicalUnit;
+                if (RuntimeUiArtSlots.IsMicroIcon(binding.Slot))
+                {
+                    if (!Nearly(binding.PixelsPerLogicalUnit, 1f))
+                    {
+                        report.Error("art-set.ppu.micro", AssetDatabase.GetAssetPath(artSet),
+                            RuntimeUiArtSlots.SemanticId(binding.Slot)
+                            + " must use one source pixel per logical point.",
+                            "Re-export the micro tier at its final 18px canvas.");
+                    }
+                }
+                else if (referencePpu < 0f) referencePpu = binding.PixelsPerLogicalUnit;
                 else if (!Nearly(binding.PixelsPerLogicalUnit, referencePpu))
                 {
                     report.Error("art-set.ppu.inconsistent", AssetDatabase.GetAssetPath(artSet),
@@ -551,7 +561,7 @@ namespace FruitDefense.Editor
                 report.Error("manifest.export-count.painted", manifestPath,
                     "The painted production set must own exactly "
                     + RuntimeUiQualityProfile.PaintedUniqueExportCount
-                    + " unique runtime exports for 49 semantic bindings.",
+                    + " unique runtime exports for 53 semantic bindings.",
                     "Restore the reviewed continue/start/start-wave sharing contract.");
             }
             ValidateNoUnownedFiles(report, RuntimeUiArtSetRegistry.RuntimeDirectory(artSet), "*.png",
@@ -561,6 +571,7 @@ namespace FruitDefense.Editor
             ValidateNoUnownedFiles(report, RuntimeUiArtSetRegistry.SourceDirectory(artSet), "*.png",
                 ownedSourcePaths, "source");
             ValidateProductionAncillaryFiles(report, artSet);
+            ValidateMicroSilhouetteFamily(report, artSet);
         }
 
         private static void ValidateManifestRow(RuntimeUiVisualValidationReport report,
@@ -585,7 +596,7 @@ namespace FruitDefense.Editor
                 && !string.IsNullOrEmpty(sharedOwner))
             {
                 report.Error("manifest.shared-owner.painted", manifestPath,
-                    "The painted owner set must keep all 49 bindings local.",
+                    "The painted owner set must keep all 53 bindings local.",
                     "Remove shared_from_set from the painted manifest.");
             }
             else if (string.Equals(artSet.SetId, SharedConsumerSetId,
@@ -595,9 +606,9 @@ namespace FruitDefense.Editor
                              StringComparison.Ordinal))))
             {
                 report.Error("manifest.shared-owner.policy", manifestPath,
-                    "sunny-orchard may share only slots 40-48 directly from "
+                    "sunny-orchard may share only slots 40-52 directly from "
                     + PaintedSetId + ".",
-                    "Keep slots 0-39 local and declare painted as the direct owner for 40-48.");
+                    "Keep slots 0-39 local and declare painted as the direct owner for 40-52.");
             }
             else if (!string.Equals(artSet.SetId, SharedConsumerSetId,
                          StringComparison.Ordinal)
@@ -615,8 +626,7 @@ namespace FruitDefense.Editor
             if (row.semantic_id != semantic || row.geometry != GeometryName(binding.Geometry)
                 || !runtime.StartsWith(expectedRuntimeDirectory + "/", StringComparison.Ordinal)
                 || !source.StartsWith(expectedSourceDirectory + "/", StringComparison.Ordinal)
-                || !Nearly(row.pixels_per_logical_unit, binding.PixelsPerLogicalUnit)
-                || !Nearly(manifest.sourceScale, binding.PixelsPerLogicalUnit))
+                || !Nearly(row.pixels_per_logical_unit, binding.PixelsPerLogicalUnit))
             {
                 report.Error("manifest.binding.contract", manifestPath,
                     "Manifest row " + row.slot + " does not match " + semantic
@@ -794,7 +804,8 @@ namespace FruitDefense.Editor
                 || manifest.importContract.pixelsPerUnit
                     != RuntimeUiQualityProfile.ProductionImporterPixelsPerUnit
                 || !Nearly(binding.PixelsPerLogicalUnit,
-                    RuntimeUiQualityProfile.ProductionPixelsPerLogicalUnit);
+                    RuntimeUiArtSlots.IsMicroIcon(binding.Slot)
+                        ? 1f : RuntimeUiQualityProfile.ProductionPixelsPerLogicalUnit);
             var standaloneOverride = importer.GetPlatformTextureSettings("Standalone");
             var webGlOverride = importer.GetPlatformTextureSettings("WebGL");
             wrong |= standaloneOverride.overridden || webGlOverride.overridden;
@@ -909,7 +920,10 @@ namespace FruitDefense.Editor
                 {
                     ValidateTransparentPadding(report, assetPath, binding, pixels,
                         texture.width, texture.height);
-                    if (binding.Slot != RuntimeUiArtSlot.OrnamentScreenCorner)
+                    if (RuntimeUiArtSlots.IsMicroIcon(binding.Slot))
+                        ValidateMicroIconOptics(report, assetPath, binding,
+                            pixels, texture.width, texture.height);
+                    else if (binding.Slot != RuntimeUiArtSlot.OrnamentScreenCorner)
                         ValidateCommonIconOptics(report, assetPath, binding,
                             pixels, texture.width, texture.height);
                 }
@@ -970,7 +984,8 @@ namespace FruitDefense.Editor
                 || slot == RuntimeUiArtSlot.IllustrationOrchardVista
                 || slot == RuntimeUiArtSlot.IllustrationLobbyOrchard01
                 || slot == RuntimeUiArtSlot.IllustrationLobbyOrchard02
-                || slot == RuntimeUiArtSlot.IllustrationLobbyOrchard03;
+                || slot == RuntimeUiArtSlot.IllustrationLobbyOrchard03
+                || slot == RuntimeUiArtSlot.IllustrationShellOrchardDepth;
         }
 
         private static bool RequiresTransparentOuterEdge(RuntimeUiArtBinding binding)
@@ -1109,6 +1124,117 @@ namespace FruitDefense.Editor
                         + "-point minimum at the authoritative cue draw size.",
                         "Thicken the reviewed drag-cue mark while preserving its semantic shape.");
                 }
+            }
+        }
+
+        private static void ValidateMicroIconOptics(
+            RuntimeUiVisualValidationReport report, string assetPath,
+            RuntimeUiArtBinding binding, Color32[] pixels, int width, int height)
+        {
+            if (width != RuntimeUiQualityProfile.MicroIconCanvasSize
+                || height != RuntimeUiQualityProfile.MicroIconCanvasSize
+                || binding.SafeInset.Left != RuntimeUiQualityProfile.MicroIconSafeInset
+                || binding.SafeInset.Right != RuntimeUiQualityProfile.MicroIconSafeInset
+                || binding.SafeInset.Top != RuntimeUiQualityProfile.MicroIconSafeInset
+                || binding.SafeInset.Bottom != RuntimeUiQualityProfile.MicroIconSafeInset)
+            {
+                report.Error("icon.micro.canvas", assetPath,
+                    "Micro resource art must use the final 18x18 canvas with a 1px edge.",
+                    "Run the target-size micro exporter.");
+                return;
+            }
+
+            if (!TryAlphaMetrics(pixels, width, height, out var bounds, out var centroid))
+            {
+                report.Error("icon.micro.empty", assetPath,
+                    "Micro icon has no significant alpha mass.",
+                    "Restore the reviewed resource master and re-export.");
+                return;
+            }
+
+            var major = Mathf.Max(bounds.width, bounds.height);
+            var significant = pixels.Count(pixel =>
+                pixel.a >= RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh);
+            if (major < RuntimeUiQualityProfile.MicroIconAlphaDimensionMinimum
+                || major > RuntimeUiQualityProfile.MicroIconAlphaDimensionMaximum
+                || significant < RuntimeUiQualityProfile.MicroIconSignificantPixelMinimum
+                || significant > RuntimeUiQualityProfile.MicroIconSignificantPixelMaximum
+                || !HasVisibleSquare(pixels, width, height, 2,
+                    RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh))
+            {
+                report.Error("icon.micro.envelope", assetPath,
+                    "Micro icon target envelope is " + bounds.width + "x" + bounds.height
+                    + " with " + significant + " significant pixels.",
+                    "Keep a two-pixel critical feature and re-export the silhouette at the final 18px target.");
+            }
+
+            var center = new Vector2((width - 1f) * .5f, (height - 1f) * .5f);
+            var offset = centroid - center;
+            if (Mathf.Abs(offset.x) > RuntimeUiQualityProfile.MicroIconOpticalCenterTolerance
+                || Mathf.Abs(offset.y)
+                    > RuntimeUiQualityProfile.MicroIconOpticalCenterTolerance)
+            {
+                report.Error("icon.micro.centroid", assetPath,
+                    "Micro alpha centroid offset is (" + offset.x.ToString("0.###") + ", "
+                    + offset.y.ToString("0.###") + ").",
+                    "Correct optical placement in the target-size exporter.");
+            }
+        }
+
+        private static void ValidateMicroSilhouetteFamily(
+            RuntimeUiVisualValidationReport report, RuntimeUiArtSet artSet)
+        {
+            var slots = new[]
+            {
+                RuntimeUiArtSlot.IconResourceSunMicro,
+                RuntimeUiArtSlot.IconResourceCoreMicro,
+                RuntimeUiArtSlot.IconResourceWaveMicro,
+            };
+            var masks = new List<(RuntimeUiArtSlot Slot, string Path, bool[] Mask)>();
+            foreach (var slot in slots)
+            {
+                if (!artSet.TryGetBinding(slot, out var binding) || binding?.Texture == null)
+                    continue;
+                var path = RuntimeUiArtSetRegistry.Normalize(
+                    AssetDatabase.GetAssetPath(binding.Texture));
+                var texture = DecodePng(report, path, "icon.micro.decode");
+                try
+                {
+                    if (texture == null
+                        || texture.width != RuntimeUiQualityProfile.MicroIconCanvasSize
+                        || texture.height != RuntimeUiQualityProfile.MicroIconCanvasSize)
+                        continue;
+                    var pixels = texture.GetPixels32();
+                    masks.Add((slot, path, pixels.Select(pixel =>
+                        pixel.a >= RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh)
+                        .ToArray()));
+                }
+                finally
+                {
+                    if (texture != null) Object.DestroyImmediate(texture);
+                }
+            }
+
+            for (var firstIndex = 0; firstIndex < masks.Count; firstIndex++)
+            for (var secondIndex = firstIndex + 1; secondIndex < masks.Count; secondIndex++)
+            {
+                var first = masks[firstIndex];
+                var second = masks[secondIndex];
+                var intersection = 0;
+                var union = 0;
+                for (var pixelIndex = 0; pixelIndex < first.Mask.Length; pixelIndex++)
+                {
+                    if (first.Mask[pixelIndex] && second.Mask[pixelIndex]) intersection++;
+                    if (first.Mask[pixelIndex] || second.Mask[pixelIndex]) union++;
+                }
+                var iou = union == 0 ? 1f : intersection / (float)union;
+                if (iou < RuntimeUiQualityProfile.MicroIconSilhouetteIouMaximum)
+                    continue;
+                report.Error("icon.micro.silhouette-confusion", first.Path,
+                    RuntimeUiArtSlots.SemanticId(first.Slot) + " and "
+                    + RuntimeUiArtSlots.SemanticId(second.Slot)
+                    + " have silhouette IoU " + iou.ToString("0.###") + ".",
+                    "Redesign the target-size silhouette rather than relying on color.");
             }
         }
 
@@ -1346,6 +1472,11 @@ namespace FruitDefense.Editor
                 expectedWidth = 256;
                 expectedHeight = 72;
             }
+            else if (binding.Slot == RuntimeUiArtSlot.IllustrationShellOrchardDepth)
+            {
+                expectedWidth = 402;
+                expectedHeight = 874;
+            }
             else return;
 
             if (binding.Geometry != RuntimeUiArtGeometry.Stretch
@@ -1367,7 +1498,8 @@ namespace FruitDefense.Editor
         {
             if (!RequiresOpaquePixels(binding.Slot)
                 || binding.Slot == RuntimeUiArtSlot.SurfaceScreenBackground
-                || binding.Slot == RuntimeUiArtSlot.SurfaceScrim)
+                || binding.Slot == RuntimeUiArtSlot.SurfaceScrim
+                || binding.Slot == RuntimeUiArtSlot.IllustrationShellOrchardDepth)
                 return;
             var sourcePath = RuntimeUiArtSetRegistry.Normalize(row.source);
             var runtimePath = RuntimeUiArtSetRegistry.Normalize(row.runtime);

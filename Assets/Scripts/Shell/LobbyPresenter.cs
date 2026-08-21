@@ -173,6 +173,8 @@ namespace FruitDefense.Shell
             RuntimeUiGui.DrawScreenBackground(_drawContext,
                 new Rect(0f, 0f, Screen.width, Screen.height));
             RuntimeUiGui.DrawSafeArea(_drawContext, layout.Frame.SafeArea);
+            RuntimeUiGui.DrawShellOrchardDepth(_drawContext,
+                layout.Frame.SafeArea, .56f);
             RuntimeUiGui.DrawScreenCorners(_drawContext, layout.Frame.SafeArea);
             var titleMotion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
                 _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 0);

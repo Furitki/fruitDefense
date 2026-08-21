@@ -188,12 +188,12 @@ namespace FruitDefense.Shell
 
             return new LobbyShellLayout(
                 frame,
-                RectAt(x, y + 36f * scale, width, 56f * scale),
-                RectAt(x, y + 112f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 300f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 488f * scale, width, ReferenceLevelCardHeight * scale),
-                RectAt(x, y + 684f * scale, width, 72f * scale),
-                RectAt(x, y + 772f * scale, width, 58f * scale));
+                RectAt(x, y + 24f * scale, width, 64f * scale),
+                RectAt(x, y + 100f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 286f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 472f * scale, width, ReferenceLevelCardHeight * scale),
+                RectAt(x, y + 690f * scale, width, 76f * scale),
+                RectAt(x, y + 772f * scale, width, 60f * scale));
         }
 
         public static SettlementShellLayout CreateSettlement(float viewportWidth, float viewportHeight, Rect safeArea)
@@ -204,28 +204,28 @@ namespace FruitDefense.Shell
             var y = frame.Content.y;
             var scale = frame.Scale;
 
-            var resultCard = RectAt(x, y + 112f * scale, width, 474f * scale);
+            var resultCard = RectAt(x, y + 104f * scale, width, 500f * scale);
             var metricX = x + 16f * scale;
             var metricWidth = 338f * scale;
-            var resultBanner = RectAt(x + 42f * scale, y + 128f * scale,
+            var resultBanner = RectAt(x + 42f * scale, y + 120f * scale,
                 286f * scale, 72f * scale);
             return new SettlementShellLayout(
                 frame,
-                RectAt(x, y + 36f * scale, width, 56f * scale),
+                RectAt(x, y + 24f * scale, width, 64f * scale),
                 resultCard,
-                RectAt(x + 82f * scale, y + 138f * scale,
+                RectAt(x + 82f * scale, y + 130f * scale,
                     206f * scale, 52f * scale),
-                RectAt(metricX, y + 418f * scale, metricWidth, 48f * scale),
-                RectAt(metricX, y + 474f * scale, metricWidth, 48f * scale),
-                RectAt(metricX, y + 530f * scale, metricWidth, 48f * scale),
+                RectAt(metricX, y + 432f * scale, metricWidth, 48f * scale),
+                RectAt(metricX, y + 488f * scale, metricWidth, 48f * scale),
+                RectAt(metricX, y + 544f * scale, metricWidth, 48f * scale),
                 resultBanner,
-                RectAt(x + 16f * scale, y + 216f * scale,
-                    338f * scale, 190f * scale),
-                RectAt(x + 292f * scale, y + 150f * scale,
+                RectAt(x + 16f * scale, y + 204f * scale,
+                    338f * scale, 216f * scale),
+                RectAt(x + 292f * scale, y + 142f * scale,
                     28f * scale, 28f * scale),
-                RectAt(x, y + 606f * scale, width, 72f * scale),
-                RectAt(x, y + 694f * scale, width, 64f * scale),
-                RectAt(x, y + 774f * scale, width, 58f * scale));
+                RectAt(x, y + 620f * scale, width, 72f * scale),
+                RectAt(x, y + 704f * scale, width, 64f * scale),
+                RectAt(x, y + 780f * scale, width, 58f * scale));
         }
 
         public static ShellHitTarget HitTest(LobbyShellLayout layout, Vector2 guiPoint, bool isTransitioning)

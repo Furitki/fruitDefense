@@ -57,6 +57,10 @@ namespace FruitDefense.UI
         IllustrationLobbyOrchard01 = 46,
         IllustrationLobbyOrchard02 = 47,
         IllustrationLobbyOrchard03 = 48,
+        IconResourceSunMicro = 49,
+        IconResourceCoreMicro = 50,
+        IconResourceWaveMicro = 51,
+        IllustrationShellOrchardDepth = 52,
     }
 
     public enum RuntimeUiArtGeometry
@@ -163,6 +167,10 @@ namespace FruitDefense.UI
             RuntimeUiArtSlot.IllustrationLobbyOrchard01,
             RuntimeUiArtSlot.IllustrationLobbyOrchard02,
             RuntimeUiArtSlot.IllustrationLobbyOrchard03,
+            RuntimeUiArtSlot.IconResourceSunMicro,
+            RuntimeUiArtSlot.IconResourceCoreMicro,
+            RuntimeUiArtSlot.IconResourceWaveMicro,
+            RuntimeUiArtSlot.IllustrationShellOrchardDepth,
         };
 
         private static readonly ReadOnlyCollection<RuntimeUiArtSlot> ReadOnlyRequiredSlots =
@@ -175,12 +183,19 @@ namespace FruitDefense.UI
         {
             var value = (int)slot;
             return value >= (int)RuntimeUiArtSlot.SurfaceScreenBackground
-                && value <= (int)RuntimeUiArtSlot.IllustrationLobbyOrchard03;
+                && value <= (int)RuntimeUiArtSlot.IllustrationShellOrchardDepth;
         }
 
         public static int RequiredIndex(RuntimeUiArtSlot slot)
         {
             return IsRequired(slot) ? (int)slot : -1;
+        }
+
+        public static bool IsMicroIcon(RuntimeUiArtSlot slot)
+        {
+            return slot == RuntimeUiArtSlot.IconResourceSunMicro
+                || slot == RuntimeUiArtSlot.IconResourceCoreMicro
+                || slot == RuntimeUiArtSlot.IconResourceWaveMicro;
         }
 
         public static RuntimeUiArtGeometry Geometry(RuntimeUiArtSlot slot)
@@ -199,6 +214,7 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard01:
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard02:
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard03:
+                case RuntimeUiArtSlot.IllustrationShellOrchardDepth:
                     return RuntimeUiArtGeometry.Stretch;
                 case RuntimeUiArtSlot.SurfaceSafeArea:
                 case RuntimeUiArtSlot.SurfacePanelStandard:
@@ -242,6 +258,9 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IconControlStart:
                 case RuntimeUiArtSlot.IconControlRefresh:
                 case RuntimeUiArtSlot.OrnamentScreenCorner:
+                case RuntimeUiArtSlot.IconResourceSunMicro:
+                case RuntimeUiArtSlot.IconResourceCoreMicro:
+                case RuntimeUiArtSlot.IconResourceWaveMicro:
                     return RuntimeUiArtGeometry.Icon;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(slot), slot,
@@ -302,6 +321,10 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard01: return "illustration.lobby-orchard-01";
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard02: return "illustration.lobby-orchard-02";
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard03: return "illustration.lobby-orchard-03";
+                case RuntimeUiArtSlot.IconResourceSunMicro: return "icon.resource-sun-micro";
+                case RuntimeUiArtSlot.IconResourceCoreMicro: return "icon.resource-core-micro";
+                case RuntimeUiArtSlot.IconResourceWaveMicro: return "icon.resource-wave-micro";
+                case RuntimeUiArtSlot.IllustrationShellOrchardDepth: return "illustration.shell-orchard-depth";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(slot), slot,
                         "The UI art slot is not part of the finite runtime contract.");

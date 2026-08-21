@@ -946,3 +946,79 @@ MonoBehaviour:
       right: 0
       bottom: 0
     pixelsPerLogicalUnit: 2
+  - slot: 49
+    texture: {fileID: 2800000, guid: 37d97d20919870249a56ba93f2e67b64, type: 3}
+    sprite: {fileID: 21300000, guid: 37d97d20919870249a56ba93f2e67b64, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    opticalInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    pixelsPerLogicalUnit: 1
+  - slot: 50
+    texture: {fileID: 2800000, guid: 8f358b289859b6649b7e19de1c9976d0, type: 3}
+    sprite: {fileID: 21300000, guid: 8f358b289859b6649b7e19de1c9976d0, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    opticalInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    pixelsPerLogicalUnit: 1
+  - slot: 51
+    texture: {fileID: 2800000, guid: 90b92cf4a859b2240ab148c64dcc3c72, type: 3}
+    sprite: {fileID: 21300000, guid: 90b92cf4a859b2240ab148c64dcc3c72, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    opticalInset:
+      left: 1
+      top: 1
+      right: 1
+      bottom: 1
+    pixelsPerLogicalUnit: 1
+  - slot: 52
+    texture: {fileID: 2800000, guid: 3a04cc4292a9de6449065a7539975b86, type: 3}
+    sprite: {fileID: 21300000, guid: 3a04cc4292a9de6449065a7539975b86, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    opticalInset:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    pixelsPerLogicalUnit: 2

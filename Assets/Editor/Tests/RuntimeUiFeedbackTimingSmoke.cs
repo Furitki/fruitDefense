@@ -140,7 +140,7 @@ namespace FruitDefense.Editor
             var battle = new BattleUiLayout(GameConfig.DefaultBattlefield);
             Assert(Approximately(battle.WaveAction, new Rect(210f, 526f, 184f, 44f))
                 && Approximately(battle.RefreshAction, new Rect(8f, 744f, 386f, 44f))
-                && Approximately(battle.PauseAction, new Rect(274f, 16f, 52f, 44f)),
+                && Approximately(battle.PauseAction, new Rect(274f, 20f, 52f, 52f)),
                 "Battle feedback keeps the authoritative action geometry");
         }
 

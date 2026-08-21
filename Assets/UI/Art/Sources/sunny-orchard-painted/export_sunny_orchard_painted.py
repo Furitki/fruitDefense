@@ -22,6 +22,7 @@ SET_ID = "sunny-orchard-painted"
 REVISION = "1"
 SOURCE_SCALE = 2.0
 OPTICAL_ALPHA_THRESHOLD = 48
+MICRO_ALPHA_CLEANUP_THRESHOLD = 96
 ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
 
 
@@ -31,6 +32,7 @@ class Slot:
     stem: str
     semantic_id: str
     geometry: str
+    source_stem: str | None = None
 
 
 SLOTS = (
@@ -83,6 +85,14 @@ SLOTS = (
     Slot(46, "illustration-lobby-orchard-01", "illustration.lobby-orchard-01", "stretch"),
     Slot(47, "illustration-lobby-orchard-02", "illustration.lobby-orchard-02", "stretch"),
     Slot(48, "illustration-lobby-orchard-03", "illustration.lobby-orchard-03", "stretch"),
+    Slot(49, "icon-resource-sun-micro", "icon.resource-sun-micro", "icon",
+         "icon-resource-sun"),
+    Slot(50, "icon-resource-core-micro", "icon.resource-core-micro", "icon",
+         "icon-resource-core"),
+    Slot(51, "icon-resource-wave-micro", "icon.resource-wave-micro", "icon",
+         "icon-resource-wave"),
+    Slot(52, "illustration-shell-orchard-depth", "illustration.shell-orchard-depth",
+         "stretch"),
 )
 
 
@@ -91,6 +101,10 @@ def sha256(path: Path) -> str:
 
 
 def target_size(slot: Slot) -> tuple[int, int]:
+    if 49 <= slot.index <= 51:
+        return (18, 18)
+    if slot.index == 52:
+        return (402, 874)
     if slot.index == 0:
         return (256, 256)
     if slot.index == 10:
@@ -112,9 +126,27 @@ def subdirectory(slot: Slot) -> str:
         return "surfaces"
     if slot.index in (40, 43, 44):
         return "ornaments"
-    if slot.index >= 45:
+    if 45 <= slot.index <= 48 or slot.index == 52:
         return "illustrations"
     return "icons"
+
+
+def source_stem(slot: Slot) -> str:
+    return slot.source_stem or slot.stem
+
+
+def pixels_per_logical_unit(slot: Slot) -> float:
+    return 1.0 if 49 <= slot.index <= 51 else SOURCE_SCALE
+
+
+def safe_inset(slot: Slot) -> int:
+    if slot.geometry == "nine-slice":
+        return 20
+    if 49 <= slot.index <= 51:
+        return 1
+    if slot.geometry == "icon":
+        return 12
+    return 0
 
 
 def alpha_safe_resize(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -210,6 +242,52 @@ def normalize_action_surface(image: Image.Image) -> Image.Image:
     return canvas
 
 
+def normalize_micro_icon(image: Image.Image) -> Image.Image:
+    """Build one final-size 18px icon with a 1px protected edge."""
+    rgba = clear_low_alpha_fringe(image.convert("RGBA"))
+    bbox = significant_alpha_bbox(rgba)
+    if bbox is None:
+        raise RuntimeError("Micro icon master has no significant alpha")
+    crop = rgba.crop(bbox)
+    scale = min(16.0 / crop.width, 16.0 / crop.height)
+    fitted_size = (max(1, round(crop.width * scale)),
+                   max(1, round(crop.height * scale)))
+    fitted = clear_low_alpha_fringe(
+        alpha_safe_resize(crop, fitted_size), MICRO_ALPHA_CLEANUP_THRESHOLD)
+    canvas = Image.new("RGBA", (18, 18), (0, 0, 0, 0))
+    offset = ((18 - fitted.width) // 2, (18 - fitted.height) // 2)
+    canvas.alpha_composite(fitted, offset)
+    return canvas
+
+
+def cover_crop(image: Image.Image, size: tuple[int, int]) -> Image.Image:
+    """Center-crop an opaque master to the declared portrait aspect, then resize."""
+    rgba = image.convert("RGBA")
+    target_ratio = size[0] / size[1]
+    source_ratio = rgba.width / rgba.height
+    if source_ratio > target_ratio:
+        crop_width = max(1, round(rgba.height * target_ratio))
+        left = (rgba.width - crop_width) // 2
+        crop = rgba.crop((left, 0, left + crop_width, rgba.height))
+    else:
+        crop_height = max(1, round(rgba.width / target_ratio))
+        top = (rgba.height - crop_height) // 2
+        crop = rgba.crop((0, top, rgba.width, top + crop_height))
+    return alpha_safe_resize(crop, size)
+
+
+def silhouette_iou(first: Image.Image, second: Image.Image) -> float:
+    first_mask = first.convert("RGBA").getchannel("A").point(
+        lambda alpha: 255 if alpha >= OPTICAL_ALPHA_THRESHOLD else 0)
+    second_mask = second.convert("RGBA").getchannel("A").point(
+        lambda alpha: 255 if alpha >= OPTICAL_ALPHA_THRESHOLD else 0)
+    intersection = ImageChops.multiply(first_mask, second_mask)
+    union = ImageChops.lighter(first_mask, second_mask)
+    intersection_count = sum(1 for value in intersection.get_flattened_data() if value)
+    union_count = sum(1 for value in union.get_flattened_data() if value)
+    return intersection_count / union_count if union_count else 1.0
+
+
 def clear_visible_key_magenta(image: Image.Image) -> Image.Image:
     """Remove only leaked background-key pixels; preserve ordinary painted antialiasing."""
     rgba = image.convert("RGBA")
@@ -239,6 +317,42 @@ def unity_guid(meta_path: Path) -> str:
     if match is None:
         raise RuntimeError(f"No Unity GUID in {meta_path}")
     return match.group(1)
+
+
+def normalize_target_import_meta(
+        slot: Slot, runtime_path: Path, runtime_root: Path) -> None:
+    """Give newly introduced target-tier PNGs the established Sprite importer contract.
+
+    The production set already owns a reviewed importer template. Reusing it keeps
+    this exporter focused on sizing and metadata, while preserving each new PNG's
+    Unity GUID across repeated exports.
+    """
+    if slot.index < 49:
+        return
+    meta_path = runtime_path.with_suffix(".png.meta")
+    if not meta_path.exists():
+        raise RuntimeError(
+            f"Import {runtime_path} once to allocate its stable Unity GUID")
+    template_path = runtime_root / "icons" / "icon-resource-sun.png.meta"
+    template = template_path.read_text(encoding="utf-8")
+    guid = unity_guid(meta_path)
+    maximum_size = 18 if slot.index <= 51 else 1024
+    sprite_id = hashlib.sha256(
+        f"{SET_ID}:{slot.semantic_id}:sprite".encode("utf-8")).hexdigest()[:32]
+    normalized = re.sub(
+        r"(?m)^guid:\s*[0-9a-f]{32}\s*$", f"guid: {guid}", template)
+    normalized = re.sub(
+        r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+        rf"\g<1> {maximum_size}", normalized)
+    normalized = re.sub(
+        r"(?m)^(\s*spriteID:)\s*[0-9a-f]*\s*$",
+        rf"\g<1> {sprite_id}", normalized)
+    normalized = re.sub(
+        r"(?m)^\s*userData:.*$",
+        "  userData: ui-art-set=" + SET_ID + ";slot=" + slot.semantic_id
+        + ";target-size=" + str(target_size(slot)[0]) + "x"
+        + str(target_size(slot)[1]), normalized)
+    meta_path.write_text(normalized, encoding="utf-8")
 
 
 def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
@@ -288,14 +402,14 @@ def build_art_set_asset(bindings: list[dict]) -> str:
             f"      top: {optical['top']}",
             f"      right: {optical['right']}",
             f"      bottom: {optical['bottom']}",
-            f"    pixelsPerLogicalUnit: {SOURCE_SCALE:g}",
+            f"    pixelsPerLogicalUnit: {item['pixels_per_logical_unit']:g}",
         ])
     return "\n".join(lines) + "\n"
 
 
 def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
     folder = subdirectory(slot)
-    source_path = source_root / folder / f"{slot.stem}.png"
+    source_path = source_root / folder / f"{source_stem(slot)}.png"
     runtime_path = runtime_root / folder / f"{slot.stem}.png"
     if not source_path.is_file():
         raise RuntimeError(f"Missing approved master: {source_path}")
@@ -307,15 +421,19 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         size = target_size(slot)
         if 11 <= slot.index <= 14:
             exported = normalize_action_surface(rgba)
+        elif 49 <= slot.index <= 51:
+            exported = normalize_micro_icon(rgba)
+        elif slot.index == 52:
+            exported = cover_crop(rgba, size)
         elif slot.index in (43, 44):
             exported = fit_alpha_content(rgba, size, 4 if slot.index == 43 else 8)
         else:
             exported = (alpha_safe_resize(rgba, size)
                         if slot.index >= 40
                         else rgba.resize(size, Image.Resampling.LANCZOS))
-        if slot.index >= 40:
+        if slot.index >= 40 and not (49 <= slot.index <= 51):
             exported = clear_low_alpha_fringe(exported)
-        if slot.geometry == "icon":
+        if slot.geometry == "icon" and not (49 <= slot.index <= 51):
             bbox = alpha_bbox(exported)
             if bbox is None:
                 raise RuntimeError(f"Icon has no visible pixels: {source_path}")
@@ -337,7 +455,8 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
                 exported = safe_canvas
         # A second pass is required after the optional icon safe-box resize,
         # whose Lanczos ringing can otherwise recreate an alpha-1 key pixel.
-        post_resize_bbox = alpha_bbox(exported) if slot.geometry == "icon" else None
+        post_resize_bbox = (alpha_bbox(exported)
+                            if slot.geometry == "icon" and slot.index < 49 else None)
         if (post_resize_bbox is not None
                 and (post_resize_bbox[0] < 12 or post_resize_bbox[1] < 12
                      or post_resize_bbox[2] > 84 or post_resize_bbox[3] > 84)):
@@ -354,10 +473,19 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             raise RuntimeError("Screen background must be fully opaque")
         if slot.index == 10 and rgba.getpixel((0, 0)) != (255, 255, 255, 255):
             raise RuntimeError("Scrim must remain neutral opaque white")
-        if slot.geometry == "icon":
+        if slot.geometry == "icon" and slot.index < 49:
             bbox = alpha_bbox(rgba)
             if bbox is None or bbox[0] < 12 or bbox[1] < 12 or bbox[2] > 84 or bbox[3] > 84:
                 raise RuntimeError(f"Icon exceeds 12 px safe inset: {runtime_path} {bbox}")
+        if 49 <= slot.index <= 51:
+            bbox = significant_alpha_bbox(rgba)
+            if bbox is None or bbox[0] < 1 or bbox[1] < 1 or bbox[2] > 17 or bbox[3] > 17:
+                raise RuntimeError(f"Micro icon exceeds 1 px edge: {runtime_path} {bbox}")
+            major = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
+            if major < 15:
+                raise RuntimeError(f"Micro icon under-fills target canvas: {runtime_path} {bbox}")
+        if slot.index == 52 and rgba.getchannel("A").getextrema() != (255, 255):
+            raise RuntimeError("Shell orchard depth illustration must be fully opaque")
         if 11 <= slot.index <= 14:
             bbox = significant_alpha_bbox(rgba)
             if bbox != (4, 4, 124, 124):
@@ -378,11 +506,13 @@ def main() -> None:
         unique.setdefault(slot.stem, slot)
     for slot in unique.values():
         export_unique(slot, source_root, runtime_root)
+        runtime_path = runtime_root / subdirectory(slot) / f"{slot.stem}.png"
+        normalize_target_import_meta(slot, runtime_path, runtime_root)
 
     bindings = []
     for slot in SLOTS:
         folder = subdirectory(slot)
-        source_path = source_root / folder / f"{slot.stem}.png"
+        source_path = source_root / folder / f"{source_stem(slot)}.png"
         runtime_path = runtime_root / folder / f"{slot.stem}.png"
         with Image.open(runtime_path) as runtime:
             measured_optical_inset = optical_inset(runtime)
@@ -400,18 +530,31 @@ def main() -> None:
                 "runtimeSha256": sha256(runtime_path),
                 "guid": unity_guid(runtime_path.with_suffix(".png.meta")),
                 "slice_border": 32 if slot.geometry == "nine-slice" else 0,
-                "safe_inset": 20 if slot.geometry == "nine-slice" else (12 if slot.geometry == "icon" else 0),
+                "safe_inset": safe_inset(slot),
                 "optical_inset": measured_optical_inset,
-                "pixels_per_logical_unit": SOURCE_SCALE,
+                "pixels_per_logical_unit": pixels_per_logical_unit(slot),
                 "slot": slot.index,
             }
         )
+
+    micro_images = []
+    for slot in SLOTS[49:52]:
+        with Image.open(runtime_root / "icons" / f"{slot.stem}.png") as image:
+            micro_images.append((slot.semantic_id, image.convert("RGBA")))
+    for first_index in range(len(micro_images)):
+        for second_index in range(first_index + 1, len(micro_images)):
+            first_id, first = micro_images[first_index]
+            second_id, second = micro_images[second_index]
+            overlap = silhouette_iou(first, second)
+            if overlap >= 0.80:
+                raise RuntimeError(
+                    f"Micro silhouettes are confusable: {first_id} vs {second_id} IoU={overlap:.3f}")
 
     manifest = {
         "schema": "fruit-defense.runtime-ui-art-manifest.v2",
         "setId": SET_ID,
         "revision": REVISION,
-        "approvedDirection": "Sunny Orchard Painted v2",
+        "approvedDirection": "Sunny Orchard Painted v3 target-size hierarchy",
         "sourceScale": SOURCE_SCALE,
         "slotCount": len(SLOTS),
         "uniqueExportCount": len(unique),
@@ -491,7 +634,7 @@ def build_gallery(source_root: Path, runtime_root: Path) -> None:
         draw.rectangle((cell_x, cell_y,
                         (column + 1) * cell_width - 1, (row + 1) * cell_height - 1),
                        outline=(139, 94, 60, 96), width=1)
-    gallery.save(review_root / "sunny-orchard-painted-49-gallery.png",
+    gallery.save(review_root / "sunny-orchard-painted-53-gallery.png",
                  format="PNG", optimize=True, compress_level=9)
 
 

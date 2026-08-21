@@ -17,7 +17,7 @@ namespace FruitDefense.Presentation
         public const float MergeHintMinimumWidth = 92f;
         public const float MergeHintMaximumWidth = 160f;
         public const float MergeHintHeight = 24f;
-        public const float HeaderMetricIconSize = 13f;
+        public const float HeaderMetricIconSize = 18f;
 
         private const float ToolGap = 5f;
         private const float NurseryGap = 5f;
@@ -27,9 +27,9 @@ namespace FruitDefense.Presentation
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             Design = new Rect(0f, 0f, DesignWidth, DesignHeight);
-            Header = new Rect(8f, 8f, 386f, 60f);
-            BattleSurface = new Rect(0f, 72f, 402f, 798f);
-            Board = new Rect(0f, 72f, 402f, 500f);
+            Header = new Rect(8f, 8f, 386f, 76f);
+            BattleSurface = new Rect(0f, 88f, 402f, 782f);
+            Board = new Rect(0f, 88f, 402f, 484f);
             ToolTray = new Rect(8f, 580f, 386f, 68f);
             NurseryTray = new Rect(8f, 656f, 386f, 80f);
             RefreshAction = new Rect(8f, 744f, 386f, 44f);
@@ -37,14 +37,14 @@ namespace FruitDefense.Presentation
             Modal = new Rect(36f, 300f, 330f, 244f);
             TerminalModal = new Rect(28f, 270f, 346f, 320f);
 
-            HeaderTitle = new Rect(16f, 12f, 96f, 20f);
-            SunMetric = new Rect(16f, 36f, 82f, 26f);
-            LivesMetric = new Rect(106f, 36f, 76f, 26f);
-            WaveMetric = new Rect(190f, 36f, 72f, 26f);
-            FirstMetricDivider = new Rect(98f, 41f, 8f, 16f);
-            SecondMetricDivider = new Rect(182f, 41f, 8f, 16f);
-            PauseAction = new Rect(274f, 16f, 52f, 44f);
-            SpeedAction = new Rect(334f, 16f, 52f, 44f);
+            HeaderTitle = new Rect(16f, 12f, 246f, 24f);
+            SunMetric = new Rect(16f, 40f, 84f, 32f);
+            LivesMetric = new Rect(108f, 40f, 78f, 32f);
+            WaveMetric = new Rect(194f, 40f, 76f, 32f);
+            FirstMetricDivider = new Rect(100f, 44f, 8f, 24f);
+            SecondMetricDivider = new Rect(186f, 44f, 8f, 24f);
+            PauseAction = new Rect(274f, 20f, 52f, 52f);
+            SpeedAction = new Rect(334f, 20f, 52f, 52f);
 
             ToolTrayTitle = new Rect(ToolTray.x + 8f, ToolTray.y + 4f, 180f, 16f);
             NurseryTrayTitle = new Rect(NurseryTray.x + 8f, NurseryTray.y + 4f, 180f, 16f);

@@ -95,9 +95,9 @@ namespace FruitDefense.Editor
 
         private static void ValidateFinitePaintedSlotContract()
         {
-            Assert(RuntimeUiArtSlots.RequiredCount == 49
-                && RuntimeUiArtSlots.Required.Count == 49,
-                "runtime visual contract owns exactly 49 required semantic slots");
+            Assert(RuntimeUiArtSlots.RequiredCount == 53
+                && RuntimeUiArtSlots.Required.Count == 53,
+                "runtime visual contract owns exactly 53 required semantic slots");
             for (var index = 0; index < RuntimeUiArtSlots.Required.Count; index++)
             {
                 Assert((int)RuntimeUiArtSlots.Required[index] == index,
@@ -127,10 +127,22 @@ namespace FruitDefense.Editor
                 new KeyValuePair<RuntimeUiArtSlot, string>(
                     RuntimeUiArtSlot.IllustrationLobbyOrchard03,
                     "illustration.lobby-orchard-03"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconResourceSunMicro,
+                    "icon.resource-sun-micro"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconResourceCoreMicro,
+                    "icon.resource-core-micro"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconResourceWaveMicro,
+                    "icon.resource-wave-micro"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IllustrationShellOrchardDepth,
+                    "illustration.shell-orchard-depth"),
             };
             for (var index = 0; index < added.Length; index++)
             {
-                var expectedGeometry = index == 0
+                var expectedGeometry = index == 0 || index >= 9 && index <= 11
                     ? RuntimeUiArtGeometry.Icon
                     : index == 1 || index == 2
                         ? RuntimeUiArtGeometry.NineSlice
@@ -146,6 +158,7 @@ namespace FruitDefense.Editor
             var requiredApis = new[]
             {
                 "public static void DrawScreenCorners(",
+                "public static void DrawShellOrchardDepth(",
                 "public static void DrawSectionRibbon(",
                 "public static void DrawIllustrationFrame(",
                 "public static void DrawMetricDivider(",

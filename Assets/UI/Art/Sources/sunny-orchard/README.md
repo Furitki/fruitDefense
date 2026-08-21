@@ -2,7 +2,7 @@
 
 This is the owned master location for the approved A「阳光果园」production direction.
 
-The 38 checked-in SVG files are the independent editable masters for the original 40 semantic bindings. `icon.control-continue`, `icon.control-start-wave`, and `icon.control-start` intentionally share the same play-symbol master and Sprite. The current 49-slot manifest explicitly lists the nine shared painted composition bindings; every slot remains independently serialized and validated.
+The 38 checked-in SVG files are the independent editable masters for the original 40 semantic bindings. `icon.control-continue`, `icon.control-start-wave`, and `icon.control-start` intentionally share the same play-symbol master and Sprite. The current 53-slot manifest explicitly lists the 13 shared painted composition and target-tier bindings; every slot remains independently serialized and validated.
 
 - `art_manifest.json` records every slot, owned master/export path, SHA-256, stable GUID, dimensions, source scale, geometry, slice border, safe inset, and final-PNG optical inset.
 - `export_sunny_orchard.py` is the dependency-light deterministic export pipeline. It renders the SVG recipes to antialiased PNG with Pillow, creates stable Unity importer metadata only when it is missing, updates the ArtSet asset, and creates the review gallery. Existing `.meta` files are never rewritten.

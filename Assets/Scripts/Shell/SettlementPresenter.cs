@@ -175,6 +175,8 @@ namespace FruitDefense.Shell
             RuntimeUiGui.DrawScreenBackground(_drawContext,
                 new Rect(0f, 0f, Screen.width, Screen.height));
             RuntimeUiGui.DrawSafeArea(_drawContext, layout.Frame.SafeArea);
+            RuntimeUiGui.DrawShellOrchardDepth(_drawContext,
+                layout.Frame.SafeArea, .66f);
             RuntimeUiGui.DrawScreenCorners(_drawContext, layout.Frame.SafeArea);
             var titleMotion = RuntimeUiMotion.Evaluate(_routeRevealPulse, unscaledTime,
                 _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 0);
@@ -209,6 +211,8 @@ namespace FruitDefense.Shell
             RuntimeUiGui.DrawResultBanner(_drawContext,
                 TransformInside(layout.ResultBanner, layout.ResultCard, resultCardRect));
             RuntimeUiGui.DrawOrchardVista(_drawContext,
+                TransformInside(layout.OrchardVista, layout.ResultCard, resultCardRect));
+            RuntimeUiGui.DrawIllustrationFrame(_drawContext,
                 TransformInside(layout.OrchardVista, layout.ResultCard, resultCardRect));
             GUI.color = previousResultColor;
 

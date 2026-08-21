@@ -29,23 +29,23 @@ namespace FruitDefense.Editor
         {
             Assert(Approximately(layout.Design, new Rect(0f, 0f, 402f, 874f)),
                 "design geometry changed");
-            Assert(Approximately(layout.Header, new Rect(8f, 8f, 386f, 60f))
-                && Approximately(layout.BattleSurface, new Rect(0f, 72f, 402f, 798f))
-                && Approximately(layout.Board, new Rect(0f, 72f, 402f, 500f)),
+            Assert(Approximately(layout.Header, new Rect(8f, 8f, 386f, 76f))
+                && Approximately(layout.BattleSurface, new Rect(0f, 88f, 402f, 782f))
+                && Approximately(layout.Board, new Rect(0f, 88f, 402f, 484f)),
                 "top-level Battle chrome changed");
             Assert(Approximately(layout.ToolTray, new Rect(8f, 580f, 386f, 68f))
                 && Approximately(layout.NurseryTray, new Rect(8f, 656f, 386f, 80f))
                 && Approximately(layout.RefreshAction, new Rect(8f, 744f, 386f, 44f))
                 && Approximately(layout.Detail, new Rect(8f, 796f, 386f, 70f)),
                 "embedded control chrome changed");
-            Assert(Approximately(layout.PauseAction, new Rect(274f, 16f, 52f, 44f))
-                && Approximately(layout.SpeedAction, new Rect(334f, 16f, 52f, 44f))
-                && Approximately(layout.HeaderTitle, new Rect(16f, 12f, 96f, 20f))
-                && Approximately(layout.SunMetric, new Rect(16f, 36f, 82f, 26f))
-                && Approximately(layout.LivesMetric, new Rect(106f, 36f, 76f, 26f))
-                && Approximately(layout.WaveMetric, new Rect(190f, 36f, 72f, 26f))
-                && Approximately(layout.FirstMetricDivider, new Rect(98f, 41f, 8f, 16f))
-                && Approximately(layout.SecondMetricDivider, new Rect(182f, 41f, 8f, 16f)),
+            Assert(Approximately(layout.PauseAction, new Rect(274f, 20f, 52f, 52f))
+                && Approximately(layout.SpeedAction, new Rect(334f, 20f, 52f, 52f))
+                && Approximately(layout.HeaderTitle, new Rect(16f, 12f, 246f, 24f))
+                && Approximately(layout.SunMetric, new Rect(16f, 40f, 84f, 32f))
+                && Approximately(layout.LivesMetric, new Rect(108f, 40f, 78f, 32f))
+                && Approximately(layout.WaveMetric, new Rect(194f, 40f, 76f, 32f))
+                && Approximately(layout.FirstMetricDivider, new Rect(100f, 44f, 8f, 24f))
+                && Approximately(layout.SecondMetricDivider, new Rect(186f, 44f, 8f, 24f)),
                 "header action targets changed");
             Assert(Approximately(layout.BoardStatus, new Rect(8f, 522f, 386f, 48f))
                 && Approximately(layout.BoardStatusWithWaveAction,
@@ -82,9 +82,9 @@ namespace FruitDefense.Editor
             Assert(Approximately(layout.Battlefield.BoardRect, layout.Board),
                 "layout and battlefield projection do not share the authoritative board rectangle");
             Assert(Approximately(layout.Battlefield.MapViewportRect,
-                    new Rect(0f, 72f, 402f, 438f))
+                    new Rect(0f, 88f, 402f, 422f))
                 && Approximately(layout.Battlefield.GridRect,
-                    new Rect(8f, 122.125f, 386f, 337.75f)),
+                    new Rect(8f, 130.125f, 386f, 337.75f)),
                 "Battlefield grid composition changed inside the map viewport");
             var left = layout.Battlefield.GridRect.xMin
                 - layout.Battlefield.MapViewportRect.xMin;
@@ -97,7 +97,7 @@ namespace FruitDefense.Editor
             Assert(Mathf.Abs(left - right) <= 1f
                 && Mathf.Abs(top - bottom) <= 1f
                 && Mathf.Approximately(left, 8f)
-                && Mathf.Approximately(top, 50.125f),
+                && Mathf.Approximately(top, 42.125f),
                 "Battlefield grid has symmetric visual gutters relative to MapViewportRect");
         }
 
