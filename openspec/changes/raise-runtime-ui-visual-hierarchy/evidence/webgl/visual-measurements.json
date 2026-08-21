@@ -8,16 +8,16 @@
     "insetSafeArea": { "top": 44, "bottom": 34 }
   },
   "build": {
-    "url": "http://127.0.0.1:41873/?build=3ff58edba777",
+    "url": "http://127.0.0.1:41873/?build=bc210cc4a4b5",
     "loader": {
-      "version": "9d9cf0cf4f3f",
+      "version": "1aadd40e5a5e",
       "bytes": 117893,
-      "sha256": "9d9cf0cf4f3f7d90637fb28eaca6e1ff2f85b8f38da71c8d394ee36bb34e39a3"
+      "sha256": "1aadd40e5a5ec764743171f9cbfa982c6b108af259d270aa1d057fe58bc7c41d"
     },
     "data": {
-      "version": "3ff58edba777",
-      "bytes": 6155603,
-      "sha256": "3ff58edba777c04d7d140acb2a3398f3dd45a578570982f8fc1b021971c1b690"
+      "version": "bc210cc4a4b5",
+      "bytes": 6157258,
+      "sha256": "bc210cc4a4b56159f0b9acb4dfad24a54ed9b0ea943b49c57dd9f6375d299a76"
     },
     "framework": {
       "version": "7b327fa58679",
@@ -25,19 +25,19 @@
       "sha256": "7b327fa58679f432556f6e697714cc69e39e7a273715bf34497dbafdb19ea473"
     },
     "wasm": {
-      "version": "ddf8cd141907",
-      "bytes": 3897451,
-      "sha256": "ddf8cd141907f81c7f0c7fedf2faedd82e4915e8609242d59d775a1c81ff0555"
+      "version": "d045287bba48",
+      "bytes": 3899437,
+      "sha256": "d045287bba486756d7809a2e713b4e00c4c3b1a464cf497948702d59a7864c3b"
     }
   },
   "payloadComparison": {
     "baselineDataVersion": "78d62a3c45c5",
     "baselinePayloadBytes": 9665911,
-    "currentPayloadBytes": 10239954,
-    "deltaBytes": 574043,
-    "deltaPercent": 5.9388,
-    "dataDeltaBytes": 572251,
-    "dataDeltaPercent": 10.2492
+    "currentPayloadBytes": 10243595,
+    "deltaBytes": 577684,
+    "deltaPercent": 5.9765,
+    "dataDeltaBytes": 573906,
+    "dataDeltaPercent": 10.2789
   },
   "microTargetRaster": {
     "canvas": [18, 18],
@@ -108,6 +108,23 @@
     "pausePairedSurfaceMaximumEdgeDeltaPixels": 1,
     "pressedActionsContained": true,
     "slowOvershootScaleAllowed": false
+  },
+  "settlementOpticalFraming": {
+    "sourceCanvas": [256, 72],
+    "sourceSignificantAlphaBounds": [8, 20, 248, 52],
+    "declaredOpticalTargetLogical": [330, 44],
+    "fullVictory": {
+      "visibleBannerBounds": [32, 148, 370, 200],
+      "outcomeGlyphBounds": [173, 162, 228, 187],
+      "outcomePaddingPixels": [141, 14, 142, 13],
+      "metricMaximumClosedBorderRunFraction": 0.0
+    },
+    "insetDefeat": {
+      "visibleBannerBounds": [47, 179, 355, 226],
+      "outcomeGlyphBounds": [175, 192, 227, 215],
+      "outcomePaddingPixels": [128, 13, 128, 11],
+      "metricMaximumClosedBorderRunFraction": 0.0
+    }
   },
   "determinism": {
     "mechanicalFilesCompared": 112,

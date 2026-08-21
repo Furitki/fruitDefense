@@ -19,3 +19,10 @@
 - [x] 3.3 Run `FruitDefense.Editor.ProjectSetup.SmokeValidate` and focused runtime UI editor suites to green.
 - [x] 3.4 Build ordinary WebGL with `FruitDefense.Editor.WebBuild.Build` and capture live 402x874 full/inset Lobby, Battle ready/paused, and Settlement victory/defeat evidence.
 - [x] 3.5 Record actual build identity, target-raster checks, route occupancy/depth results, payload delta, and remaining manual-review observations.
+
+## 4. Optical framing and information chrome
+
+- [x] 4.1 Resolve text-bearing ornament drawing from final-raster optical bounds and enlarge the Settlement result banner around the approved title typography.
+- [x] 4.2 Remove the dedicated framed surface from the shared read-only metric primitive and verify Battle/Settlement composition remains legible.
+- [x] 4.3 Add Editor and WebGL final-raster checks for outcome glyph containment and borderless Settlement information rows.
+- [x] 4.4 Rebuild ordinary WebGL and recapture 402x874 full victory plus inset defeat evidence.

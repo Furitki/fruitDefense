@@ -163,6 +163,7 @@ namespace FruitDefense.Editor
                 "public static void DrawIllustrationFrame(",
                 "public static void DrawMetricDivider(",
                 "public static void DrawResultBanner(",
+                "public static Rect ResolveOpticalEnvelopeDrawRect(",
                 "public static void DrawOrchardVista(",
                 "public static void DrawLobbyThumbnail(",
                 "public static RuntimeUiMetricContentLayout ResolveCompactInlineMetricContentLayout(",
@@ -174,7 +175,9 @@ namespace FruitDefense.Editor
             Assert(!gui.Contains("Resources.Load")
                 && !gui.Contains("AssetDatabase")
                 && !gui.Contains("Texture2D.whiteTexture")
-                && !gui.Contains("GUI.skin"),
+                && !gui.Contains("GUI.skin")
+                && !gui.Contains(
+                    "DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric"),
                 "painted hierarchy renderer has no path, resource, default-skin or white fallback");
 
             var lobby = File.ReadAllText(Path.Combine(

@@ -660,7 +660,7 @@ namespace FruitDefense.UI
 
         public static void DrawResultBanner(RuntimeUiDrawContext context, Rect rect)
         {
-            DrawAspectFitSlotArt(Require(context), rect,
+            DrawOpticalEnvelopeFitSlotArt(Require(context), rect,
                 RuntimeUiArtSlot.OrnamentResultBanner, RuntimeUiInteractionState.Normal);
         }
 
@@ -958,8 +958,6 @@ namespace FruitDefense.UI
             var previousColor = ApplyMotionAlpha(motion);
             try
             {
-                DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric, state);
-
                 if (compactInline)
                 {
                     var compactLayout = ResolveCompactInlineMetricContentLayout(
@@ -1565,6 +1563,17 @@ namespace FruitDefense.UI
             DrawSlotArt(context, fitted, slot, state);
         }
 
+        private static void DrawOpticalEnvelopeFitSlotArt(RuntimeUiDrawContext context,
+            Rect opticalDestination, RuntimeUiArtSlot slot,
+            RuntimeUiInteractionState state)
+        {
+            var drawRect = ResolveOpticalEnvelopeDrawRect(
+                context, slot, opticalDestination);
+            if (drawRect.width <= 0f || drawRect.height <= 0f)
+                return;
+            DrawSlotArt(context, drawRect, slot, state);
+        }
+
         private static void DrawAspectFillSlotArt(RuntimeUiDrawContext context,
             Rect destination, RuntimeUiArtSlot slot, RuntimeUiInteractionState state,
             float opacityMultiplier)
@@ -1832,6 +1841,37 @@ namespace FruitDefense.UI
                 iconRect.y + iconRect.height * top,
                 Mathf.Max(0f, iconRect.width * (1f - left - right)),
                 Mathf.Max(0f, iconRect.height * (1f - top - bottom)));
+        }
+
+        public static Rect ResolveOpticalEnvelopeDrawRect(RuntimeUiDrawContext context,
+            RuntimeUiArtSlot slot, Rect opticalDestination)
+        {
+            context = Require(context);
+            var binding = context.RequiredBinding(slot);
+            var source = binding.Sprite.rect;
+            if (source.width <= 0f || source.height <= 0f
+                || opticalDestination.width <= 0f
+                || opticalDestination.height <= 0f)
+                return default;
+
+            var optical = binding.OpticalInset;
+            var opticalWidth = source.width - optical.Left - optical.Right;
+            var opticalHeight = source.height - optical.Top - optical.Bottom;
+            if (opticalWidth <= 0f || opticalHeight <= 0f)
+                throw new InvalidOperationException(
+                    "Runtime UI optical envelope must have positive dimensions for slot '"
+                    + RuntimeUiArtSlots.SemanticId(slot) + "'.");
+
+            var scale = Mathf.Min(opticalDestination.width / opticalWidth,
+                opticalDestination.height / opticalHeight);
+            var drawWidth = source.width * scale;
+            var drawHeight = source.height * scale;
+            var opticalCenterX = (optical.Left + opticalWidth * .5f) * scale;
+            var opticalCenterY = (optical.Top + opticalHeight * .5f) * scale;
+            return new Rect(
+                opticalDestination.center.x - opticalCenterX,
+                opticalDestination.center.y - opticalCenterY,
+                drawWidth, drawHeight);
         }
 
         private static Rect Union(Rect first, Rect second)

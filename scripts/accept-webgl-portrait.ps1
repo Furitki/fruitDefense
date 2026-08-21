@@ -161,6 +161,16 @@ function Convert-ShellReferencePoint {
   }
 }
 
+function Convert-ShellReferenceRect {
+  param([double]$X, [double]$Y, [double]$Width, [double]$Height)
+  return [ordered]@{
+    xMin = $shellContentX + ($X - 16.0) * $referenceScale
+    yMin = $SafeTop + $Y * $referenceScale
+    xMax = $shellContentX + ($X - 16.0 + $Width) * $referenceScale
+    yMax = $SafeTop + ($Y + $Height) * $referenceScale
+  }
+}
+
 $referenceControls = [ordered]@{
   lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 206 }
   lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 392 }
@@ -225,6 +235,15 @@ $pauseHintCopyRegion = Convert-ReferenceRect -X 130 -Y 398 -Width 176 -Height 36
 $pauseContinueRect = Convert-ReferenceRect -X 54 -Y 466 -Width 142 -Height 52
 $pauseRestartRect = Convert-ReferenceRect -X 206 -Y 466 -Width 142 -Height 52
 $pauseActionBandRect = Convert-ReferenceRect -X 36 -Y 454 -Width 330 -Height 70
+$settlementResultBannerRect = Convert-ShellReferenceRect `
+  -X 36 -Y 152 -Width 330 -Height 44
+$settlementOutcomeInkRegion = Convert-ShellReferenceRect `
+  -X 140 -Y 158 -Width 122 -Height 34
+$settlementMetricRects = @(
+  (Convert-ShellReferenceRect -X 32 -Y 450 -Width 338 -Height 48),
+  (Convert-ShellReferenceRect -X 32 -Y 506 -Width 338 -Height 48),
+  (Convert-ShellReferenceRect -X 32 -Y 562 -Width 338 -Height 48)
+)
 $hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
 $hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
 $formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
@@ -407,7 +426,9 @@ function Get-UnityDeliveryMetadata {
     $cacheControl = [string]$response.Headers['Cache-Control']
     $contentEncoding = [string]$response.Headers['Content-Encoding']
     $contentType = [string]$response.Headers['Content-Type']
-    $contentLength = [long]$response.Headers['Content-Length']
+    $contentLengthHeader = @($response.Headers['Content-Length']) |
+      Select-Object -First 1
+    $contentLength = [long]$contentLengthHeader
     if ($response.StatusCode -ne 200) {
       throw "WebGL $name asset returned HTTP $($response.StatusCode): $assetUri"
     }
@@ -1138,7 +1159,7 @@ function Get-ColorMaskEvidence {
   param(
     [object]$Bitmap,
     [object]$Region,
-    [ValidateSet('title-ink', 'hint-icon', 'hint-copy', 'primary-surface', 'danger-surface')]
+    [ValidateSet('title-ink', 'hint-icon', 'hint-copy', 'primary-surface', 'danger-surface', 'result-banner')]
     [string]$Mask
   )
   $xMin = [Math]::Max(0, [int]$Region.xMin)
@@ -1181,6 +1202,16 @@ function Get-ColorMaskEvidence {
             $pixel.R -gt ($pixel.B + 55) -and $pixel.R -gt 145
           break
         }
+        'result-banner' {
+          $warmRibbon = $pixel.R -gt 170 -and $pixel.G -gt 85 -and
+            $pixel.G -lt 235 -and $pixel.B -lt 170 -and
+            $pixel.R -gt ($pixel.B + 35)
+          $greenFoliage = $pixel.G -gt 70 -and
+            $pixel.G -gt ($pixel.B + 25) -and
+            $pixel.G -gt ($pixel.R - 30)
+          $pixel.A -gt 200 -and ($warmRibbon -or $greenFoliage)
+          break
+        }
       }
       if (-not $matches) { continue }
       $count++
@@ -1193,7 +1224,7 @@ function Get-ColorMaskEvidence {
     }
   }
   if ($count -eq 0) {
-    throw "Paused-modal optical mask '$Mask' found no final-raster pixels."
+    throw "Final-raster optical mask '$Mask' found no matching pixels."
   }
   return [ordered]@{
     mask = $Mask
@@ -1306,6 +1337,124 @@ function Get-PausedModalOpticalEvidence {
       primaryLocalInsets = $primaryLocal
       dangerLocalInsets = $dangerLocal
       pairedMaximumEdgeDeltaCapturePixels = $pairedMaximumEdgeDelta
+    }
+  }
+  finally { $bitmap.Dispose() }
+}
+
+function Get-SettlementMetricBorderEvidence {
+  param([object]$Bitmap, [object]$Region)
+  $xMin = [Math]::Max(0, [int][Math]::Floor($Region.xMin))
+  $yMin = [Math]::Max(0, [int][Math]::Floor($Region.yMin))
+  $xMax = [Math]::Min($Bitmap.Width, [int][Math]::Ceiling($Region.xMax))
+  $yMax = [Math]::Min($Bitmap.Height, [int][Math]::Ceiling($Region.yMax))
+  $band = [Math]::Max(2, [int][Math]::Ceiling(7 * $referenceScale))
+  $maxHorizontalRun = 0
+  $maxVerticalRun = 0
+
+  foreach ($range in @(
+    [ordered]@{ yMin = $yMin; yMax = [Math]::Min($yMax, $yMin + $band) },
+    [ordered]@{ yMin = [Math]::Max($yMin, $yMax - $band); yMax = $yMax })) {
+    for ($y = $range.yMin; $y -lt $range.yMax; $y++) {
+      $run = 0
+      for ($x = $xMin; $x -lt $xMax; $x++) {
+        $pixel = $Bitmap.GetPixel($x, $y)
+        $border = $pixel.A -gt 200 -and $pixel.R -ge 70 -and
+          $pixel.R -lt 195 -and $pixel.G -lt 160 -and $pixel.B -lt 125 -and
+          $pixel.R -gt ($pixel.G + 8)
+        if ($border) {
+          $run++
+          $maxHorizontalRun = [Math]::Max($maxHorizontalRun, $run)
+        }
+        else { $run = 0 }
+      }
+    }
+  }
+
+  foreach ($range in @(
+    [ordered]@{ xMin = $xMin; xMax = [Math]::Min($xMax, $xMin + $band) },
+    [ordered]@{ xMin = [Math]::Max($xMin, $xMax - $band); xMax = $xMax })) {
+    for ($x = $range.xMin; $x -lt $range.xMax; $x++) {
+      $run = 0
+      for ($y = $yMin; $y -lt $yMax; $y++) {
+        $pixel = $Bitmap.GetPixel($x, $y)
+        $border = $pixel.A -gt 200 -and $pixel.R -ge 70 -and
+          $pixel.R -lt 195 -and $pixel.G -lt 160 -and $pixel.B -lt 125 -and
+          $pixel.R -gt ($pixel.G + 8)
+        if ($border) {
+          $run++
+          $maxVerticalRun = [Math]::Max($maxVerticalRun, $run)
+        }
+        else { $run = 0 }
+      }
+    }
+  }
+
+  $width = [Math]::Max(1, $xMax - $xMin)
+  $height = [Math]::Max(1, $yMax - $yMin)
+  return [ordered]@{
+    region = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
+    edgeBandPixels = $band
+    maximumHorizontalBrownRunPixels = $maxHorizontalRun
+    maximumVerticalBrownRunPixels = $maxVerticalRun
+    maximumHorizontalRunFraction = $maxHorizontalRun / [double]$width
+    maximumVerticalRunFraction = $maxVerticalRun / [double]$height
+  }
+}
+
+function Get-SettlementOpticalEvidence {
+  param([string]$Path)
+  Add-Type -AssemblyName System.Drawing
+  $bitmap = [Drawing.Bitmap]::FromFile($Path)
+  try {
+    $bannerSearchRegion = [ordered]@{
+      xMin = $settlementResultBannerRect.xMin - 4 * $referenceScale
+      yMin = $settlementResultBannerRect.yMin - 4 * $referenceScale
+      xMax = $settlementResultBannerRect.xMax + 4 * $referenceScale
+      yMax = $settlementResultBannerRect.yMax + 4 * $referenceScale
+    }
+    $banner = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $bannerSearchRegion -Mask 'result-banner'
+    $outcome = Get-ColorMaskEvidence -Bitmap $bitmap `
+      -Region $settlementOutcomeInkRegion -Mask 'title-ink'
+    $padding = [ordered]@{
+      left = $outcome.bounds.xMin - $banner.bounds.xMin
+      top = $outcome.bounds.yMin - $banner.bounds.yMin
+      right = $banner.bounds.xMax - $outcome.bounds.xMax
+      bottom = $banner.bounds.yMax - $outcome.bounds.yMax
+    }
+    $minimumPadding = [Math]::Max(1, [int][Math]::Floor(2 * $referenceScale))
+    if ($padding.left -lt $minimumPadding -or
+        $padding.top -lt $minimumPadding -or
+        $padding.right -lt $minimumPadding -or
+        $padding.bottom -lt $minimumPadding) {
+      throw (
+        'Settlement outcome glyphs are not contained by the banner optical pixels: ' +
+        ($padding | ConvertTo-Json -Compress))
+    }
+
+    $metricRows = @()
+    foreach ($rect in $settlementMetricRects) {
+      $row = Get-SettlementMetricBorderEvidence -Bitmap $bitmap -Region $rect
+      if ($row.maximumHorizontalRunFraction -gt 0.45 -or
+          $row.maximumVerticalRunFraction -gt 0.45) {
+        throw (
+          'Settlement read-only metric row still has a closed border signature: ' +
+          ($row | ConvertTo-Json -Compress))
+      }
+      $metricRows += $row
+    }
+
+    return [ordered]@{
+      thresholds = [ordered]@{
+        minimumOutcomePaddingCapturePixels = $minimumPadding
+        maximumMetricBorderRunFraction = 0.45
+      }
+      banner = $banner
+      expectedBannerOpticalRect = $settlementResultBannerRect
+      outcomeGlyphs = $outcome
+      outcomePaddingCapturePixels = $padding
+      metricRows = $metricRows
     }
   }
   finally { $bitmap.Dispose() }
@@ -2375,6 +2524,8 @@ try {
     }
     $flowScreenshots.settlement = (Save-StableScreenshot `
       -Name "03-settlement-$SettlementOutcome" -RequireHud $false).Path
+    $settlementOpticalEvidence = Get-SettlementOpticalEvidence `
+      -Path $flowScreenshots.settlement
 
     Invoke-CanvasClick -X $controls.settlementReturn.x -Y $controls.settlementReturn.y
     Wait-AppRoute -Route 0
@@ -2452,6 +2603,8 @@ try {
         returnSelectionPreserved = 'pass'
         retryFreshSessionAndSeed = 'pass'
         settlementMotionCheckpoint = if ($InteractionPolishEvidence) { 'pass' } else { 'not-requested' }
+        settlementOutcomeOpticalContainment = 'pass'
+        settlementReadOnlyMetricsBorderless = 'pass'
         requestedViewportAndCanvas = 'pass'
         safeAreaQueryApplied = 'pass'
         noBlackOrTransparentFrames = 'pass'
@@ -2465,6 +2618,9 @@ try {
       routeIdentities = $flowIdentities
       screenshots = $flowScreenshots
       imageMetrics = $flowMetrics
+      opticalMeasurements = [ordered]@{
+        settlement = $settlementOpticalEvidence
+      }
       interactionPolishEvidence = if ($InteractionPolishEvidence) {
         [ordered]@{ settlementMotionDifference = $settlementMotionDifference }
       } else {

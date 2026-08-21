@@ -13,7 +13,14 @@ Lobby, Battle, terminal, and Settlement SHALL use intentional occupied-content b
 
 #### Scenario: Settlement fills a tall portrait canvas
 - **WHEN** Settlement victory or defeat is shown at a supported full or inset height
-- **THEN** the outcome banner and large result illustration form the hero region, the three metric rows share one rhythm, and primary/secondary actions visibly close the composition
+- **THEN** the outcome banner and large result illustration form the hero region, the outcome glyphs fit inside the banner's significant-alpha envelope, the three borderless metric rows share one rhythm, and primary/secondary actions visibly close the composition
+
+### Requirement: Information is not styled as interaction
+Read-only route information SHALL default to borderless icon-and-copy composition inside an existing structural parent, while closed bordered surfaces SHALL be reserved for actionable, selectable, input, modal, or explicitly grouped status regions.
+
+#### Scenario: Settlement metrics are rendered
+- **WHEN** completed level, reached wave, and remaining lives are shown
+- **THEN** the three rows use spacing and aligned icon/copy groups without drawing individual button-like or input-like borders
 
 ## ADDED Requirements
 

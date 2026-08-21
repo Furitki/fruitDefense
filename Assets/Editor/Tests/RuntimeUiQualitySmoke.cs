@@ -780,6 +780,21 @@ namespace FruitDefense.Editor
             Assert(Contains(bundle.Battle.ModalResultBanner,
                     bundle.Battle.ModalResultBannerText),
                 suffix + " Battle terminal outcome copy remains inside its semantic banner");
+            var settlementBannerDraw = RuntimeUiGui.ResolveOpticalEnvelopeDrawRect(
+                bundle.SettlementContext, RuntimeUiArtSlot.OrnamentResultBanner,
+                bundle.Settlement.ResultBanner);
+            var settlementBannerVisual = RuntimeUiGui.ResolveOpticalVisualRect(
+                bundle.SettlementContext, RuntimeUiArtSlot.OrnamentResultBanner,
+                settlementBannerDraw);
+            var settlementOutcomeText = RuntimeUiGui.ResolveSingleLineTextRect(
+                bundle.SettlementContext, bundle.Settlement.Outcome,
+                RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleCenter,
+                RuntimeUiInteractionState.Success);
+            Assert(Contains(bundle.Settlement.ResultCard, settlementBannerDraw)
+                && Contains(bundle.Settlement.ResultBanner, settlementBannerVisual)
+                && Contains(settlementBannerVisual, bundle.Settlement.ResultBanner)
+                && Contains(settlementBannerVisual, settlementOutcomeText),
+                suffix + " Settlement outcome typography is contained by the banner's actual optical pixels");
             var pauseHint = RuntimeUiGui.ResolveInlineContentLayout(
                 bundle.BattleContext, bundle.Battle.ModalPauseHint,
                 RuntimeUiArtSlot.IndicatorWarning,
@@ -1191,6 +1206,7 @@ namespace FruitDefense.Editor
                 Application.dataPath, "Scripts/UI/RuntimeUiGui.cs"));
             Assert(runtimeGui.Contains("ResolveActionContentLayout(")
                 && runtimeGui.Contains("ResolveMetricContentLayout(")
+                && runtimeGui.Contains("ResolveOpticalEnvelopeDrawRect(")
                 && runtimeGui.Contains("TryResolveStateIndicatorRect(")
                 && runtimeGui.Contains("IconVisualRect")
                 && runtimeGui.Contains("GroupRect")
@@ -1217,6 +1233,12 @@ namespace FruitDefense.Editor
                 && !MethodBodyContains(runtimeGui,
                     "public static void DrawResultCard(", "DrawStateIndicator("),
                 "modal/result surfaces do not auto-own a duplicate state badge");
+            Assert(MethodBodyContains(runtimeGui,
+                    "public static void DrawResultBanner(",
+                    "DrawOpticalEnvelopeFitSlotArt(")
+                && !MethodBodyContains(runtimeGui,
+                    "public static void DrawMetric(", "SurfaceMetric"),
+                "text-bearing ornaments use optical pixels and read-only metrics remain borderless");
             Assert(CountOccurrences(settlement,
                        "RuntimeUiGui.DrawIndicator(_drawContext, indicatorRect") == 1
                 && CountOccurrences(settlement,

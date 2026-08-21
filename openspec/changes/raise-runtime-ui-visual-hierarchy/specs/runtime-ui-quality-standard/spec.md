@@ -28,3 +28,17 @@ Route artwork SHALL separate background atmosphere, structural UI surfaces, and 
 #### Scenario: Route page is composed
 - **WHEN** Lobby or Settlement is drawn
 - **THEN** the route illustration remains behind opaque readable content surfaces and the combined page exposes at least three intentional value/depth planes without obscuring player information
+
+### Requirement: Optical envelope owns text-bearing ornament fit
+Text-bearing ornament layout SHALL use the final runtime raster's significant-alpha optical envelope as its available visual area instead of treating transparent canvas pixels as usable framing space.
+
+#### Scenario: Outcome copy is composed on a result banner
+- **WHEN** the approved SectionTitle glyphs require more visual height than the banner's current significant-alpha envelope
+- **THEN** the banner raster is uniformly enlarged from its optical envelope until the intended visible bounds contain the glyphs with padding, and the typography size is not reduced to compensate
+
+### Requirement: Read-only metrics are borderless by default
+The shared metric primitive SHALL draw its icon and copy without a dedicated closed surface unless a separate structural component explicitly owns that grouping.
+
+#### Scenario: A metric appears inside a header or result card
+- **WHEN** the parent already provides grouping and contrast
+- **THEN** the metric does not draw `surface.metric` or otherwise resemble an actionable control

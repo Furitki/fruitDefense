@@ -14,6 +14,10 @@ Canonical WebGL visual acceptance SHALL measure the approved Lobby and Settlemen
 - **WHEN** Lobby default/alternate, Battle ready/paused, and Settlement victory/defeat states are captured
 - **THEN** each route records its occupied-content bounds, required visual anchor, safe-area containment, backdrop presence, and absence of clipped, stretched, low-contrast, or top-heavy composition
 
+#### Scenario: Settlement outcome and metrics are captured
+- **WHEN** stable victory and defeat frames are captured at 402×874 full and inset
+- **THEN** the acceptance result measures outcome glyph containment against the banner's significant-alpha bounds and verifies that the three read-only metric rows have no independent closed borders
+
 #### Scenario: New backdrop is missing or stale
 - **WHEN** the live build does not contain the expected route illustration hash or the screenshot lacks the declared backdrop layer
 - **THEN** acceptance fails and does not sign screenshots from an older payload

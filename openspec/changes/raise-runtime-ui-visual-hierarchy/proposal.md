@@ -9,6 +9,8 @@
 - 重排大厅关卡卡片和结算结果卡，使缩略图/结果插画成为视觉锚点，并用重复行节奏、明确主次按钮和下部构图消除“上重下空”。
 - 引入路由专属的背景/前景组合层，沿用 Sunny Orchard 风格但建立远景、内容层、前景压边三个明度层；文字和交互资源不烘焙进插画。
 - 将生成图只作为高清母版；导出器按目标尺寸完成显著 Alpha 裁切、预乘 Alpha 缩放、光学居中和确定性分档导出，并对目标像素规格执行硬校验。
+- 装饰底图承载文字时以显著 Alpha 的实际像素包络而非透明画布尺寸参与布局；文字保持已批准字号，空间不足时放大装饰底图的有效像素。
+- 纯信息展示默认取消独立边框与按钮式表面，只在已有结构容器中绘制图标、文字和必要的轻量分隔。
 - 扩展编辑器与 WebGL 验收，覆盖 micro 剪影混淆、最小特征、页面明度层级、实际画布首屏构图、按压 containment 和全/内缩安全区矩阵。
 - 不改变战斗规则、数值、关卡、存档、导航流程或交互命中区域语义。
 
@@ -26,6 +28,6 @@
 
 ## Impact
 
-- 影响 `RuntimeUiArtSlot`/ArtSet/manifest、Sunny Orchard Painted 母版与导出器、共享运行时绘制工具、`PortraitShellLayout`、`BattleUiLayout`、Lobby/Battle/Settlement presenter 和相关 Editor/WebGL 验收。
+- 影响 `RuntimeUiArtSlot`/ArtSet/manifest、Sunny Orchard Painted 母版与导出器、共享运行时绘制工具、装饰光学包络解析、`PortraitShellLayout`、`BattleUiLayout`、Lobby/Battle/Settlement presenter 和相关 Editor/WebGL 验收。
 - 生产 ArtSet 的有限资源合同会增加 micro 与路由组合资源，所有生产主题必须在同一提交中补齐；不保留旧槽位数量的兼容路径。
 - 新位图母版进入 `Assets/UI/Art/Sources/`，运行时只引用确定性导出的 `Assets/UI/Art/Runtime/` 资源，并保留提示词、目标尺寸和哈希记录。

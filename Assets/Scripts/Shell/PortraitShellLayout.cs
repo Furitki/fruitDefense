@@ -207,14 +207,17 @@ namespace FruitDefense.Shell
             var resultCard = RectAt(x, y + 104f * scale, width, 500f * scale);
             var metricX = x + 16f * scale;
             var metricWidth = 338f * scale;
-            var resultBanner = RectAt(x + 42f * scale, y + 120f * scale,
-                286f * scale, 72f * scale);
+            // ResultBanner is the intended significant-alpha envelope, not the
+            // ornament's transparent 256x72 canvas. RuntimeUiGui expands the
+            // complete raster around this 330x44 visible target.
+            var resultBanner = RectAt(x + 20f * scale, y + 134f * scale,
+                330f * scale, 44f * scale);
             return new SettlementShellLayout(
                 frame,
                 RectAt(x, y + 24f * scale, width, 64f * scale),
                 resultCard,
-                RectAt(x + 82f * scale, y + 130f * scale,
-                    206f * scale, 52f * scale),
+                RectAt(x + 82f * scale, y + 136f * scale,
+                    206f * scale, 40f * scale),
                 RectAt(metricX, y + 432f * scale, metricWidth, 48f * scale),
                 RectAt(metricX, y + 488f * scale, metricWidth, 48f * scale),
                 RectAt(metricX, y + 544f * scale, metricWidth, 48f * scale),
