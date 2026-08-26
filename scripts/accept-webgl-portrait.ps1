@@ -95,7 +95,11 @@ if (-not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath) -and $ownsProfile)
 if ($CacheSeedOnly -and -not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath)) {
   throw 'Cache seed mode cannot consume another cache seed manifest.'
 }
-if ((@($Flow, $ShellVisual, $ShellError, $CombatFeedbackEvidence) | Where-Object { $_ }).Count -gt 1) {
+$selectedAcceptanceModes = @(
+  @($Flow, $ShellVisual, $ShellError, $CombatFeedbackEvidence) |
+    Where-Object { $_ }
+)
+if ($selectedAcceptanceModes.Count -gt 1) {
   throw '-Flow, -ShellVisual, -ShellError, and -CombatFeedbackEvidence are distinct acceptance modes and cannot be combined.'
 }
 if ($ShellVisual -and $LevelId -eq 'orchard-01') {
