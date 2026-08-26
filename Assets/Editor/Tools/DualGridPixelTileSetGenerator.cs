@@ -194,6 +194,28 @@ namespace FruitDefense.Editor
                 + profilePaths.Count);
         }
 
+        public static void EnsureValidationEvidence()
+        {
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            var profileGuids = AssetDatabase.FindAssets("t:DualGridPixelTerrainProfile");
+            var profilePaths = new List<string>(profileGuids.Length);
+            foreach (var guid in profileGuids)
+                profilePaths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            profilePaths.Sort(StringComparer.Ordinal);
+            foreach (var profilePath in profilePaths)
+            {
+                var profile = AssetDatabase.LoadAssetAtPath<DualGridPixelTerrainProfile>(
+                    profilePath);
+                if (profile == null)
+                    throw new InvalidOperationException(
+                        "Pixel terrain profile could not be loaded: " + profilePath);
+                var validationPath = ToAbsolutePath(projectRoot,
+                    GetValidationEvidencePath(profile));
+                var atlasPath = ToAbsolutePath(projectRoot, GetAtlasEvidencePath(profile));
+                if (!File.Exists(validationPath) || !File.Exists(atlasPath)) Bake(profile);
+            }
+        }
+
         public static string GetTileSetAssetPath(DualGridPixelTerrainProfile profile)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));

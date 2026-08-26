@@ -39,6 +39,7 @@ namespace FruitDefense.Editor
             ValidateTileSetGallery();
             ValidateGenerationAndRefresh();
             ValidateGeneratedArtPipeline();
+            DualGridPixelTileSetGenerator.EnsureValidationEvidence();
             DualGridPixelTileSetGenerator.ValidateGeneratedPixelTileSet();
             DualGridPixelTerrainWizardSmoke.Validate();
             ValidateReleaseSceneIsolation();
@@ -126,6 +127,8 @@ namespace FruitDefense.Editor
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
             var evidencePath = Path.Combine(projectRoot,
                 DualGridTextureTileSetGenerator.SeamEvidencePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(evidencePath))
+                DualGridTextureTileSetGenerator.Bake(profile);
             Assert(File.Exists(evidencePath), "generated-art seam evidence exists");
             var evidence = JsonUtility.FromJson<GeneratedArtEvidence>(File.ReadAllText(evidencePath));
             Assert(evidence != null

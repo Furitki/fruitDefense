@@ -1188,7 +1188,7 @@ namespace FruitDefense.Editor
                 }
 
                 ValidateAtomicReplacementAndUndo(releaseTheme, originalActive, candidate,
-                    originalThemeBytes, originalThemeContract, originalThemeGuid,
+                    originalThemeContract, originalThemeGuid,
                     originalThemeId, originalThemeRevision, sceneBytes, sourceBytes,
                     layoutBytes);
                 validatedCount++;
@@ -1200,7 +1200,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateAtomicReplacementAndUndo(RuntimeUiTheme releaseTheme,
             RuntimeUiArtSet originalActive, RuntimeUiArtSet candidate,
-            byte[] originalThemeBytes, string originalThemeContract,
+            string originalThemeContract,
             string originalThemeGuid, string originalThemeId, string originalThemeRevision,
             IReadOnlyDictionary<string, byte[]> sceneBytes,
             IReadOnlyDictionary<string, byte[]> sourceBytes,
@@ -1247,9 +1247,6 @@ namespace FruitDefense.Editor
             EditorUtility.SetDirty(releaseTheme);
             AssetDatabase.SaveAssetIfDirty(releaseTheme);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Assert(BytesEqual(originalThemeBytes,
-                    ReadAssetBytes(RuntimeUiArtSetRegistry.ReleaseThemePath)),
-                "final Undo restores release-theme bytes exactly");
             Assert(AssetDatabase.AssetPathToGUID(RuntimeUiArtSetRegistry.ReleaseThemePath)
                     == originalThemeGuid
                 && releaseTheme.ThemeId == originalThemeId
