@@ -4,8 +4,8 @@
   "revision": "1",
   "approvedDirection": "A - Sunny Orchard",
   "sourceScale": 2.0,
-  "slotCount": 53,
-  "uniqueExportCount": 38,
+  "slotCount": 56,
+  "uniqueExportCount": 41,
   "sharedBindings": {
     "icon.control-continue": [
       "icon.control-continue",
@@ -267,8 +267,8 @@
       "size": 128,
       "source": "Assets/UI/Art/Sources/sunny-orchard/action-primary.svg",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/action-primary.png",
-      "sourceSha256": "5DE8F50B85B313BD424B2A900D7738B6579943C4A454AB9A7ACC5DE1B72A48DD",
-      "runtimeSha256": "E1CE6D77F1565ABFA71C23E1FEAC14B7CD3BA8B74F50AB904C88EB0E0A4AECDE",
+      "sourceSha256": "CB83A78E9FDB6861C121B252DD578EF647B2B6D1650AB5EB98E7F35CEADDF23B",
+      "runtimeSha256": "C15DE06FDA808D351B0520200C26B0293FDAEA6E0E0FADD6FAE81E90046D46D6",
       "guid": "acfd468232bad9aea7b5bf3e72ac4449",
       "slice_border": 32,
       "safe_inset": 20,
@@ -279,6 +279,10 @@
         "bottom": 5
       },
       "pixels_per_logical_unit": 2.0,
+      "container_contract": "semantic-action-container",
+      "target_rgb": "436C15",
+      "content_reference_rgb": "FFF6E0",
+      "content_region_min_contrast": 5.7477,
       "slot": 11
     },
     {
@@ -330,8 +334,8 @@
       "size": 128,
       "source": "Assets/UI/Art/Sources/sunny-orchard/action-danger.svg",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/action-danger.png",
-      "sourceSha256": "8B2E88F4F60C1097299CC3AF690954AFA16BB693138DCF068DAEEA1CC24182AD",
-      "runtimeSha256": "E00719BE547560C943654EB3DCFC9F65596FBD559204E4B102EB3EE6389E3765",
+      "sourceSha256": "23B65E61AB43C767FEAC38A82384ABFBDB0E0BC50C4B6320D0792A7C5BE4073E",
+      "runtimeSha256": "115B5F12AEFE38B775CAD0C4AE4152E2ED9C2C969B8CDDD3DB5185879F729FED",
       "guid": "78ab4add444969d9b0cb53a9ae0bc0c7",
       "slice_border": 32,
       "safe_inset": 20,
@@ -342,6 +346,10 @@
         "bottom": 5
       },
       "pixels_per_logical_unit": 2.0,
+      "container_contract": "semantic-action-container",
+      "target_rgb": "9F302B",
+      "content_reference_rgb": "FFF6E0",
+      "content_region_min_contrast": 6.6547,
       "slot": 14
     },
     {
@@ -664,20 +672,25 @@
       "semantic_id": "icon.control-pause",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-pause.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-pause.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-pause.png",
-      "sourceSha256": "A3410DA23F155F4131951B32E556DA78D3C048A1B0C2B8EAAB8ABBBCABC34010",
-      "runtimeSha256": "07B0591468443A60352E20CCDB035D4D76178EBB44FA092304F1554971339C3C",
+      "sourceSha256": "37878B8C91A0C942905A09297D45E0178674F2B7ACE274A1DDCDE6B9804EDD45",
+      "runtimeSha256": "029A05FDD99D9950C8BA638A7C1A9E75FFA6CDDDD2FFC9F2FBE63349F7FFD680",
       "guid": "9fa185fd1ba54dbc274f3d225e45af77",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 26,
-        "top": 20,
-        "right": 26,
-        "bottom": 20
+        "left": 25,
+        "top": 17,
+        "right": 25,
+        "bottom": 17
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-9a0fb76a-f17b-49e4-93c5-04a7661c6cc1.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 30
     },
     {
@@ -685,20 +698,25 @@
       "semantic_id": "icon.control-continue",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-continue.png",
-      "sourceSha256": "50418DCF99AF5871428A85AB043690F90422642262250537358302F0E420A73F",
-      "runtimeSha256": "BBDD674F03274914412EBA2A6D392704282EF421F3A2A8B078E9C72546270AA8",
+      "sourceSha256": "46CB8D06CC9C7EFBB42F828ED819AB79419FA57D2C7EF5D5B07DC4CDB8BC6026",
+      "runtimeSha256": "2443F35E474383E39FFD21EBA7D58357F06E1BD7626D6316BBED2654B8271F86",
       "guid": "0d6193450ebd89c93c675d3ea0283ad2",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 30,
-        "top": 20,
-        "right": 20,
-        "bottom": 20
+        "left": 28,
+        "top": 17,
+        "right": 14,
+        "bottom": 17
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-d3ed2b64-1335-4dce-87f8-6b173e8ea062.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 31
     },
     {
@@ -706,20 +724,25 @@
       "semantic_id": "icon.control-speed",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-speed.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-speed.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-speed.png",
-      "sourceSha256": "CF494DC253C50680C3B1CA6381941229A4EC88915D9D7EB3982F6541BFCE455A",
-      "runtimeSha256": "D56CC1E13828E3A4377142440E5490949EB56E5A60333F644923ABECEAF276B2",
+      "sourceSha256": "C78A38D2819AC3508DADA2C74AFE046B4957FA251B39BD63414EC7096DDB8959",
+      "runtimeSha256": "47C0191ABACE6E8A10FFD6F248D29175ECCD5DE6415605FC169685B21C65951C",
       "guid": "8f75c76f95b1048ecb56ad32b687c690",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 18,
-        "top": 23,
-        "right": 15,
-        "bottom": 22
+        "left": 22,
+        "top": 29,
+        "right": 12,
+        "bottom": 29
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-78cc5602-ae68-4dd5-ba70-90f6382df655.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 32
     },
     {
@@ -727,20 +750,25 @@
       "semantic_id": "icon.control-start-wave",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-continue.png",
-      "sourceSha256": "50418DCF99AF5871428A85AB043690F90422642262250537358302F0E420A73F",
-      "runtimeSha256": "BBDD674F03274914412EBA2A6D392704282EF421F3A2A8B078E9C72546270AA8",
+      "sourceSha256": "46CB8D06CC9C7EFBB42F828ED819AB79419FA57D2C7EF5D5B07DC4CDB8BC6026",
+      "runtimeSha256": "2443F35E474383E39FFD21EBA7D58357F06E1BD7626D6316BBED2654B8271F86",
       "guid": "0d6193450ebd89c93c675d3ea0283ad2",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 30,
-        "top": 20,
-        "right": 20,
-        "bottom": 20
+        "left": 28,
+        "top": 17,
+        "right": 14,
+        "bottom": 17
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-d3ed2b64-1335-4dce-87f8-6b173e8ea062.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 33
     },
     {
@@ -750,8 +778,8 @@
       "size": 96,
       "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-retry.svg",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-retry.png",
-      "sourceSha256": "978F265B8D74B2F996E87BB97E671260459346E9354FF4B28C4840F2FFE69CB5",
-      "runtimeSha256": "9904BA1201914348E41F62356CDF62C616A1CC6D84140951F2F29BBA8F0EAAB0",
+      "sourceSha256": "3814F15297D57DC1E39DAB6AEF482690D0C0A6B199782F8C238109C7C838C0CD",
+      "runtimeSha256": "82140C7A9AF04A33D1E8428F1BF5F927604407F80C8FA9534A9B2BF6DE998529",
       "guid": "309e75ce25d35b3553439ce42c02a651",
       "slice_border": 0,
       "safe_inset": 12,
@@ -762,6 +790,8 @@
         "bottom": 20
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
       "slot": 34
     },
     {
@@ -771,8 +801,8 @@
       "size": 96,
       "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-return.svg",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-return.png",
-      "sourceSha256": "7FAD3DA9929ABF41D2105CF4209B30108BC260500846455B58557070A82F4A6A",
-      "runtimeSha256": "4CC1704DDF3FB6399A78530D41BCA2C5576C7F9FFFE4BC852AE2C79A4A2B541B",
+      "sourceSha256": "30BB4BB507D37417D34662C98D6E51CB7924D51F0B883465C72F4BDD82901A70",
+      "runtimeSha256": "B5CF79AA7311F74C1A5390C9AC18F2D3292A83BA32213893548BA3467A3BF10F",
       "guid": "a5df09bdf77ff8b6dc7313a82a06f9af",
       "slice_border": 0,
       "safe_inset": 12,
@@ -783,6 +813,8 @@
         "bottom": 21
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
       "slot": 35
     },
     {
@@ -790,20 +822,25 @@
       "semantic_id": "icon.control-close",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-close.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-close.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-close.png",
-      "sourceSha256": "9847D95C21969D9A040DC0E2034981160F27F6396339DBCE81584DC0837D404C",
-      "runtimeSha256": "ECD8E439E88667D881D746F27B04F9404F7D6FCFD767BB761F4E2FEFCF378D2A",
+      "sourceSha256": "737B1E85CF77398E1AB061C3CD7EFED0D50CA29C1C706073D124FA7D0DA30681",
+      "runtimeSha256": "9E97ED70188943184F039D2D797331FD4F98CF9B0C4010301B3B9AA9A464A559",
       "guid": "3c4914eb522977e1065661da7e254909",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 21,
-        "top": 21,
-        "right": 20,
-        "bottom": 20
+        "left": 17,
+        "top": 17,
+        "right": 17,
+        "bottom": 17
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-126f11fa-8657-4735-9f50-1fff44dd9eb7.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 36
     },
     {
@@ -832,20 +869,25 @@
       "semantic_id": "icon.control-start",
       "geometry": "icon",
       "size": 96,
-      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.svg",
+      "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-continue.png",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-continue.png",
-      "sourceSha256": "50418DCF99AF5871428A85AB043690F90422642262250537358302F0E420A73F",
-      "runtimeSha256": "BBDD674F03274914412EBA2A6D392704282EF421F3A2A8B078E9C72546270AA8",
+      "sourceSha256": "46CB8D06CC9C7EFBB42F828ED819AB79419FA57D2C7EF5D5B07DC4CDB8BC6026",
+      "runtimeSha256": "2443F35E474383E39FFD21EBA7D58357F06E1BD7626D6316BBED2654B8271F86",
       "guid": "0d6193450ebd89c93c675d3ea0283ad2",
       "slice_border": 0,
       "safe_inset": 12,
       "optical_inset": {
-        "left": 30,
-        "top": 20,
-        "right": 20,
-        "bottom": 20
+        "left": 28,
+        "top": 17,
+        "right": 14,
+        "bottom": 17
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-d3ed2b64-1335-4dce-87f8-6b173e8ea062.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
       "slot": 38
     },
     {
@@ -855,8 +897,8 @@
       "size": 96,
       "source": "Assets/UI/Art/Sources/sunny-orchard/icon-control-refresh.svg",
       "runtime": "Assets/UI/Art/Runtime/sunny-orchard/icon-control-refresh.png",
-      "sourceSha256": "22AECD149EB4495AB69AD743203EB4BFA3D4AD87EDD5FD5CF4B30F905C07D342",
-      "runtimeSha256": "C9D7F9084747F8466C66E7ED70C6F9A508B71107E2EF4432ADB40C5F9C5962B6",
+      "sourceSha256": "6D38F086B2456BDB3A516757C09D6638848A92ABE7595AF92EAB32B86E1D3801",
+      "runtimeSha256": "563D297C59865BC082A4F3D8F85B145927A4D3E8F75F08C945FBAC345D58C55A",
       "guid": "f7e601e0328cea5ce7fa06272d135c87",
       "slice_border": 0,
       "safe_inset": 12,
@@ -867,6 +909,8 @@
         "bottom": 21
       },
       "pixels_per_logical_unit": 2.0,
+      "render_contract": "tintable-action-glyph",
+      "neutral_rgb": "FFFFFF",
       "slot": 39
     },
     {
@@ -1180,6 +1224,75 @@
       "pixels_per_logical_unit": 2.0,
       "slot": 52,
       "shared_from_set": "sunny-orchard-painted"
+    },
+    {
+      "stem": "action-compact-control",
+      "semantic_id": "action.compact-control",
+      "geometry": "nine-slice",
+      "size": 128,
+      "source": "Assets/UI/Art/Sources/sunny-orchard/action-compact-control.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard/action-compact-control.png",
+      "sourceSha256": "4A71EB1593A2866D73FD517FA1D94DF864F8633F9DF9F7F77A35DAC77F0D315C",
+      "runtimeSha256": "366FE3AAD9B2AC1F36687C42F5ED45FECC9D4020AFFE4460851A7887002909E9",
+      "guid": "fac7fb47b468a3f762c677d7e5ed98f0",
+      "slice_border": 32,
+      "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
+      "pixels_per_logical_unit": 2.0,
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-873e1abd-352d-4f13-88ff-20d9fd77ffc0.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
+      "slot": 53
+    },
+    {
+      "stem": "action-compact-control-active",
+      "semantic_id": "action.compact-control-active",
+      "geometry": "nine-slice",
+      "size": 128,
+      "source": "Assets/UI/Art/Sources/sunny-orchard/action-compact-control-active.png",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard/action-compact-control-active.png",
+      "sourceSha256": "6410069F5802E2EED4518AC00A1FE2F8858A2ABA8C4185DBBE598B6CD9A5FE10",
+      "runtimeSha256": "0F8BAFDAADD8CC066349EE9DDDF60ADC4096327541F00172CD37802B4B7D6270",
+      "guid": "1d5786508435f3597660f0e45a109e48",
+      "slice_border": 32,
+      "safe_inset": 20,
+      "optical_inset": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      },
+      "pixels_per_logical_unit": 2.0,
+      "imagegen_provider": "built-in-imagegen",
+      "imagegen_output": "exec-01b928e9-ed4c-4edf-a463-cbc1c6014582.png",
+      "prompt_record": "Assets/UI/Art/Sources/sunny-orchard/prompt-record.json",
+      "slot": 54
+    },
+    {
+      "stem": "surface-gameplay-stage",
+      "semantic_id": "surface.gameplay-stage",
+      "geometry": "nine-slice",
+      "size": 128,
+      "source": "Assets/UI/Art/Sources/sunny-orchard/surface-gameplay-stage.svg",
+      "runtime": "Assets/UI/Art/Runtime/sunny-orchard/surface-gameplay-stage.png",
+      "sourceSha256": "435F298A14EA5E33FCAC3EB140B2EC01FD545D1ED340F51EF8F3A2071ACC2308",
+      "runtimeSha256": "1D0F534763AE86F35975AE5714B599BF0DF5103F4F416BA6181230AC37AD3A62",
+      "guid": "d29178409cee801d25a7124bdc7b78ac",
+      "slice_border": 20,
+      "safe_inset": 20,
+      "optical_inset": {
+        "left": 8,
+        "top": 8,
+        "right": 12,
+        "bottom": 8
+      },
+      "pixels_per_logical_unit": 2.0,
+      "slot": 55
     }
   ],
   "importContract": {

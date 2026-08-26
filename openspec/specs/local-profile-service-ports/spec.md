@@ -44,9 +44,9 @@ P0 SHALL provide immutable bundled configuration with schema version, config ver
 - **THEN** Bootstrap receives the bundled configuration and can enter Lobby without a network request
 
 ### Requirement: No automatic battle resume in P0
-P0 profile services MUST NOT automatically persist or restore a running Battle.
+P0 profile services MUST NOT automatically persist or restore a running Battle, regardless of the current battle snapshot schema or session API.
 
 #### Scenario: Profile save during battle
 - **WHEN** settings or shell profile data is saved while Battle exists
-- **THEN** no `BattleSnapshotV1` payload is written by the profile store
+- **THEN** no `BattleSnapshot` or current-session snapshot payload is written by the profile store
 

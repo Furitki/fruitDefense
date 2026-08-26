@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FruitDefense.Content;
 using UnityEngine;
 
 namespace FruitDefense.App.Services
@@ -12,7 +13,7 @@ namespace FruitDefense.App.Services
         public int schemaVersion = CurrentSchemaVersion;
         public string configVersion = "config.bundled.v1";
         public string contentChannel = "bundled";
-        public string bundledContentVersion = "1.0.0";
+        public string bundledContentVersion = BattleContentSchema.BundledContentVersion;
         public bool cloudProfileEnabled;
         public bool remoteContentEnabled;
         public bool codeUpdateEnabled;

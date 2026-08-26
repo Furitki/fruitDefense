@@ -6,6 +6,75 @@ using UnityEngine;
 
 namespace FruitDefense.UI
 {
+    public enum RuntimeUiActionKind
+    {
+        Primary = 0,
+        Secondary = 1,
+        Quiet = 2,
+        Danger = 3,
+    }
+
+    public enum RuntimeUiActionContentForm
+    {
+        Text = 0,
+        IconLabel = 1,
+        IconOnly = 2,
+        CompactMultiplier = 3,
+    }
+
+    public enum RuntimeUiActionBehavior
+    {
+        Instantaneous = 0,
+        PersistentMode = 1,
+    }
+
+    public readonly struct RuntimeUiActionSpec
+    {
+        public RuntimeUiActionSpec(RuntimeUiActionKind role,
+            RuntimeUiActionContentForm contentForm,
+            RuntimeUiActionBehavior behavior)
+        {
+            if (!Enum.IsDefined(typeof(RuntimeUiActionKind), role))
+                throw new ArgumentOutOfRangeException(nameof(role), role, null);
+            if (!Enum.IsDefined(typeof(RuntimeUiActionContentForm), contentForm))
+                throw new ArgumentOutOfRangeException(nameof(contentForm), contentForm, null);
+            if (!Enum.IsDefined(typeof(RuntimeUiActionBehavior), behavior))
+                throw new ArgumentOutOfRangeException(nameof(behavior), behavior, null);
+            if (behavior == RuntimeUiActionBehavior.PersistentMode
+                && (role != RuntimeUiActionKind.Quiet
+                    || (contentForm != RuntimeUiActionContentForm.IconOnly
+                        && contentForm != RuntimeUiActionContentForm.CompactMultiplier)))
+            {
+                throw new ArgumentException(
+                    "Persistent modes must be Quiet icon-only or compact-multiplier actions.");
+            }
+            if (behavior == RuntimeUiActionBehavior.Instantaneous
+                && contentForm == RuntimeUiActionContentForm.CompactMultiplier)
+            {
+                throw new ArgumentException(
+                    "Compact multipliers are persistent mode actions.");
+            }
+
+            Role = role;
+            ContentForm = contentForm;
+            Behavior = behavior;
+        }
+
+        public RuntimeUiActionKind Role { get; }
+        public RuntimeUiActionContentForm ContentForm { get; }
+        public RuntimeUiActionBehavior Behavior { get; }
+    }
+
+    public enum RuntimeUiActionVisualRole
+    {
+        Primary = 0,
+        Secondary = 1,
+        Quiet = 2,
+        Danger = 3,
+        ModeActive = 4,
+        Disabled = 5,
+    }
+
     public enum RuntimeUiArtSlot
     {
         SurfaceScreenBackground = 0,
@@ -61,6 +130,9 @@ namespace FruitDefense.UI
         IconResourceCoreMicro = 50,
         IconResourceWaveMicro = 51,
         IllustrationShellOrchardDepth = 52,
+        ActionCompactControl = 53,
+        ActionCompactControlActive = 54,
+        SurfaceGameplayStage = 55,
     }
 
     public enum RuntimeUiArtGeometry
@@ -171,6 +243,9 @@ namespace FruitDefense.UI
             RuntimeUiArtSlot.IconResourceCoreMicro,
             RuntimeUiArtSlot.IconResourceWaveMicro,
             RuntimeUiArtSlot.IllustrationShellOrchardDepth,
+            RuntimeUiArtSlot.ActionCompactControl,
+            RuntimeUiArtSlot.ActionCompactControlActive,
+            RuntimeUiArtSlot.SurfaceGameplayStage,
         };
 
         private static readonly ReadOnlyCollection<RuntimeUiArtSlot> ReadOnlyRequiredSlots =
@@ -183,7 +258,7 @@ namespace FruitDefense.UI
         {
             var value = (int)slot;
             return value >= (int)RuntimeUiArtSlot.SurfaceScreenBackground
-                && value <= (int)RuntimeUiArtSlot.IllustrationShellOrchardDepth;
+                && value <= (int)RuntimeUiArtSlot.SurfaceGameplayStage;
         }
 
         public static int RequiredIndex(RuntimeUiArtSlot slot)
@@ -233,6 +308,9 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.SlotNursery:
                 case RuntimeUiArtSlot.SurfaceSectionRibbon:
                 case RuntimeUiArtSlot.SurfaceIllustrationFrame:
+                case RuntimeUiArtSlot.ActionCompactControl:
+                case RuntimeUiArtSlot.ActionCompactControlActive:
+                case RuntimeUiArtSlot.SurfaceGameplayStage:
                     return RuntimeUiArtGeometry.NineSlice;
                 case RuntimeUiArtSlot.MarkerSelected:
                 case RuntimeUiArtSlot.IndicatorDisabled:
@@ -325,6 +403,9 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IconResourceCoreMicro: return "icon.resource-core-micro";
                 case RuntimeUiArtSlot.IconResourceWaveMicro: return "icon.resource-wave-micro";
                 case RuntimeUiArtSlot.IllustrationShellOrchardDepth: return "illustration.shell-orchard-depth";
+                case RuntimeUiArtSlot.ActionCompactControl: return "action.compact-control";
+                case RuntimeUiArtSlot.ActionCompactControlActive: return "action.compact-control-active";
+                case RuntimeUiArtSlot.SurfaceGameplayStage: return "surface.gameplay-stage";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(slot), slot,
                         "The UI art slot is not part of the finite runtime contract.");
@@ -466,8 +547,6 @@ namespace FruitDefense.UI
         [SerializeField] private Color edgeBackground;
         [SerializeField] private Color baseSurface;
         [SerializeField] private Color raisedSurface;
-        [SerializeField] private Color primaryAction;
-        [SerializeField] private Color secondaryAction;
         [SerializeField] private Color selectionAccent;
         [SerializeField] private Color success;
         [SerializeField] private Color warning;
@@ -481,8 +560,6 @@ namespace FruitDefense.UI
         public Color EdgeBackground => edgeBackground;
         public Color BaseSurface => baseSurface;
         public Color RaisedSurface => raisedSurface;
-        public Color PrimaryAction => primaryAction;
-        public Color SecondaryAction => secondaryAction;
         public Color SelectionAccent => selectionAccent;
         public Color Success => success;
         public Color Warning => warning;
@@ -500,8 +577,6 @@ namespace FruitDefense.UI
                 edgeBackground = new Color32(245, 221, 174, 255),
                 baseSurface = new Color32(255, 246, 224, 255),
                 raisedSurface = new Color32(255, 231, 163, 255),
-                primaryAction = new Color32(85, 154, 57, 255),
-                secondaryAction = new Color32(143, 191, 116, 255),
                 selectionAccent = new Color32(255, 210, 77, 255),
                 success = new Color32(109, 190, 75, 255),
                 warning = new Color32(255, 185, 66, 255),
@@ -519,8 +594,6 @@ namespace FruitDefense.UI
             RuntimeUiNumbers.ValidateColor(result, field + ".edgeBackground", edgeBackground);
             RuntimeUiNumbers.ValidateColor(result, field + ".baseSurface", baseSurface);
             RuntimeUiNumbers.ValidateColor(result, field + ".raisedSurface", raisedSurface);
-            RuntimeUiNumbers.ValidateColor(result, field + ".primaryAction", primaryAction);
-            RuntimeUiNumbers.ValidateColor(result, field + ".secondaryAction", secondaryAction);
             RuntimeUiNumbers.ValidateColor(result, field + ".selectionAccent", selectionAccent);
             RuntimeUiNumbers.ValidateColor(result, field + ".success", success);
             RuntimeUiNumbers.ValidateColor(result, field + ".warning", warning);
@@ -531,6 +604,132 @@ namespace FruitDefense.UI
             RuntimeUiNumbers.ValidateColor(result, field + ".secondaryText", secondaryText);
             RuntimeUiNumbers.ValidateColor(result, field + ".inverseText", inverseText);
         }
+    }
+
+    [Serializable]
+    public struct RuntimeUiActionColorPair
+    {
+        [SerializeField] private Color container;
+        [SerializeField] private Color content;
+
+        public RuntimeUiActionColorPair(Color container, Color content)
+        {
+            this.container = container;
+            this.content = content;
+        }
+
+        public Color Container => container;
+        public Color Content => content;
+
+        internal void AppendValidation(RuntimeUiValidationResult result, string field)
+        {
+            RuntimeUiNumbers.ValidateColor(result, field + ".container", container);
+            RuntimeUiNumbers.ValidateColor(result, field + ".content", content);
+            if (container.a < .999f || content.a < .999f)
+            {
+                result.Add("theme.action-color.opacity", field,
+                    "Action container/content colors must be opaque resolved tokens.");
+                return;
+            }
+
+            var contrast = RuntimeUiNumbers.ContrastRatio(container, content);
+            if (contrast + .001f < 4.5f)
+            {
+                result.Add("theme.action-color.contrast", field,
+                    "Action container/content contrast must be at least 4.5:1; resolved "
+                    + contrast.ToString("0.00") + ":1.");
+            }
+        }
+    }
+
+    [Serializable]
+    public struct RuntimeUiActionStyleTokens
+    {
+        [SerializeField] private RuntimeUiActionColorPair primary;
+        [SerializeField] private RuntimeUiActionColorPair secondary;
+        [SerializeField] private RuntimeUiActionColorPair quiet;
+        [SerializeField] private RuntimeUiActionColorPair danger;
+        [SerializeField] private RuntimeUiActionColorPair modeActive;
+        [SerializeField] private RuntimeUiActionColorPair disabled;
+
+        public RuntimeUiActionColorPair Primary => primary;
+        public RuntimeUiActionColorPair Secondary => secondary;
+        public RuntimeUiActionColorPair Quiet => quiet;
+        public RuntimeUiActionColorPair Danger => danger;
+        public RuntimeUiActionColorPair ModeActive => modeActive;
+        public RuntimeUiActionColorPair Disabled => disabled;
+
+        public RuntimeUiActionColorPair For(RuntimeUiActionVisualRole role)
+        {
+            switch (role)
+            {
+                case RuntimeUiActionVisualRole.Primary: return primary;
+                case RuntimeUiActionVisualRole.Secondary: return secondary;
+                case RuntimeUiActionVisualRole.Quiet: return quiet;
+                case RuntimeUiActionVisualRole.Danger: return danger;
+                case RuntimeUiActionVisualRole.ModeActive: return modeActive;
+                case RuntimeUiActionVisualRole.Disabled: return disabled;
+                default: throw new ArgumentOutOfRangeException(nameof(role), role, null);
+            }
+        }
+
+        public static RuntimeUiActionStyleTokens SunnyOrchardDefault()
+        {
+            return new RuntimeUiActionStyleTokens
+            {
+                primary = new RuntimeUiActionColorPair(
+                    new Color32(67, 108, 21, 255), new Color32(255, 246, 224, 255)),
+                secondary = new RuntimeUiActionColorPair(
+                    new Color32(245, 221, 174, 255), new Color32(85, 55, 32, 255)),
+                quiet = new RuntimeUiActionColorPair(
+                    new Color32(255, 246, 224, 255), new Color32(111, 90, 69, 255)),
+                danger = new RuntimeUiActionColorPair(
+                    new Color32(159, 48, 43, 255), new Color32(255, 246, 224, 255)),
+                modeActive = new RuntimeUiActionColorPair(
+                    new Color32(255, 185, 66, 255), new Color32(61, 42, 32, 255)),
+                disabled = new RuntimeUiActionColorPair(
+                    new Color32(224, 214, 195, 255), new Color32(92, 84, 75, 255)),
+            };
+        }
+
+        internal void AppendValidation(RuntimeUiValidationResult result, string field)
+        {
+            primary.AppendValidation(result, field + ".primary");
+            secondary.AppendValidation(result, field + ".secondary");
+            quiet.AppendValidation(result, field + ".quiet");
+            danger.AppendValidation(result, field + ".danger");
+            modeActive.AppendValidation(result, field + ".modeActive");
+            disabled.AppendValidation(result, field + ".disabled");
+        }
+    }
+
+    public readonly struct RuntimeUiResolvedActionStyle
+    {
+        internal RuntimeUiResolvedActionStyle(RuntimeUiActionSpec spec,
+            RuntimeUiInteractionState interactionState,
+            RuntimeUiActionVisualRole visualRole,
+            RuntimeUiArtSlot containerSlot, RuntimeUiActionColorPair colors,
+            Color outlineColor, bool modeActive)
+        {
+            Spec = spec;
+            InteractionState = interactionState;
+            VisualRole = visualRole;
+            ContainerSlot = containerSlot;
+            ContainerColor = colors.Container;
+            ContentColor = colors.Content;
+            OutlineColor = outlineColor;
+            ModeActive = modeActive;
+        }
+
+        public RuntimeUiActionSpec Spec { get; }
+        public RuntimeUiInteractionState InteractionState { get; }
+        public RuntimeUiActionVisualRole VisualRole { get; }
+        public RuntimeUiArtSlot ContainerSlot { get; }
+        public Color ContainerColor { get; }
+        public Color ContentColor { get; }
+        public Color OutlineColor { get; }
+        public bool ModeActive { get; }
+        public bool Disabled => VisualRole == RuntimeUiActionVisualRole.Disabled;
     }
 
     [Serializable]
@@ -657,6 +856,8 @@ namespace FruitDefense.UI
         [SerializeField, Min(0f)] private float unscaledRevealSeconds;
         [SerializeField, Min(0f)] private float unscaledStaggerSeconds;
         [SerializeField, Range(0f, 44f)] private float dragCancelDistance;
+        [SerializeField, Range(.08f, .24f)] private float compactControlActivateSeconds;
+        [SerializeField, Range(.08f, .2f)] private float compactControlDeactivateSeconds;
         [SerializeField] private bool reducedMotion;
 
         public float NormalOpacity => normalOpacity;
@@ -679,6 +880,8 @@ namespace FruitDefense.UI
         public float UnscaledRevealSeconds => unscaledRevealSeconds;
         public float UnscaledStaggerSeconds => unscaledStaggerSeconds;
         public float DragCancelDistance => dragCancelDistance;
+        public float CompactControlActivateSeconds => compactControlActivateSeconds;
+        public float CompactControlDeactivateSeconds => compactControlDeactivateSeconds;
         public bool ReducedMotion => reducedMotion;
 
         public static RuntimeUiFeedbackTokens SunnyOrchardDefault()
@@ -705,6 +908,8 @@ namespace FruitDefense.UI
                 unscaledRevealSeconds = .34f,
                 unscaledStaggerSeconds = .055f,
                 dragCancelDistance = 10f,
+                compactControlActivateSeconds = .16f,
+                compactControlDeactivateSeconds = .12f,
                 reducedMotion = false,
             };
         }
@@ -738,6 +943,10 @@ namespace FruitDefense.UI
                 field + ".unscaledStaggerSeconds", unscaledStaggerSeconds);
             ValidateRange(result, field + ".dragCancelDistance",
                 dragCancelDistance, 0f, 44f);
+            ValidateRange(result, field + ".compactControlActivateSeconds",
+                compactControlActivateSeconds, .08f, .24f);
+            ValidateRange(result, field + ".compactControlDeactivateSeconds",
+                compactControlDeactivateSeconds, .08f, .2f);
         }
 
         private static void ValidateScale(RuntimeUiValidationResult result,
@@ -901,6 +1110,29 @@ namespace FruitDefense.UI
                 result.Add("theme.color.range", field,
                     "Semantic color channels must be finite values in the 0..1 range.");
             }
+        }
+
+        internal static float ContrastRatio(Color first, Color second)
+        {
+            var firstLuminance = RelativeLuminance(first);
+            var secondLuminance = RelativeLuminance(second);
+            var lighter = Mathf.Max(firstLuminance, secondLuminance);
+            var darker = Mathf.Min(firstLuminance, secondLuminance);
+            return (lighter + .05f) / (darker + .05f);
+        }
+
+        private static float RelativeLuminance(Color color)
+        {
+            return .2126f * LinearizeSrgb(color.r)
+                + .7152f * LinearizeSrgb(color.g)
+                + .0722f * LinearizeSrgb(color.b);
+        }
+
+        private static float LinearizeSrgb(float value)
+        {
+            return value <= .04045f
+                ? value / 12.92f
+                : Mathf.Pow((value + .055f) / 1.055f, 2.4f);
         }
 
         internal static void ValidateOpacity(RuntimeUiValidationResult result, string field, float value)

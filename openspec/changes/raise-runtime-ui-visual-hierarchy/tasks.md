@@ -3,7 +3,7 @@
 - [x] 1.1 Add the three 18px micro resource slots and one portrait depth-illustration slot to the finite runtime art contract.
 - [x] 1.2 Generate, review, and save the text-free Sunny Orchard portrait depth master with its final prompt and target-size contract.
 - [x] 1.3 Extend both production exporters for tier-specific sizes, deterministic portrait crop, micro optical normalization, hashes, manifests, ArtSets, and galleries.
-- [x] 1.4 Export all 53 bindings with stable runtime GUIDs and verify consecutive exporter runs are byte-identical.
+- [x] 1.4 Export all 56 finite-contract bindings with stable runtime GUIDs and verify consecutive exporter runs are byte-identical.
 
 ## 2. Route composition
 
@@ -30,5 +30,5 @@
 ## 5. Typography-led ornament contract
 
 - [x] 5.1 Codify emphasis typography, true-outline, optical occupancy, padding, information-chrome, and final-raster acceptance constraints.
-- [ ] 5.2 Implement one shared true-outline path for approved emphasis roles and raise the Settlement outcome's final ink envelope into the 28–32px reference range without shrinking its banner breathing room.
-- [ ] 5.3 Extend Editor and WebGL evidence to measure outline visibility, final ink occupancy, four-side padding, and top/bottom balance for victory and defeat.
+- [x] 5.2 Implement one shared opaque true-outline path for explicitly approved emphasis compositions and raise the Settlement outcome's final ink envelope into the 28–32px reference range without shrinking its banner breathing room.
+- [x] 5.3 Extend Editor and WebGL evidence to measure outline visibility, final ink occupancy, four-side padding, and top/bottom balance for victory and defeat.

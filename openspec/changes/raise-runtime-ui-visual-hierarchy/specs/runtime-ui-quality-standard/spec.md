@@ -37,11 +37,15 @@ Text-bearing ornament layout SHALL use the final runtime raster's significant-al
 - **THEN** the banner raster is uniformly enlarged from its optical envelope until the intended visible bounds contain the glyphs with padding, and the typography size is not reduced to compensate
 
 ### Requirement: Emphasis typography owns ornament scale
-Hero result, page-title, and section-title compositions SHALL select readable bold typography and a true contrasting outline before sizing their decorative backing, and SHALL validate the composited fill-plus-outline glyph envelope at the final raster rather than inferring readability from nominal font size or layout rectangles.
+Explicitly approved emphasis compositions selected from hero-result, page-title, or section-title roles SHALL use readable bold typography and a true contrasting outline before sizing their decorative backing, and SHALL validate the composited fill-plus-outline glyph envelope at the final raster rather than inferring readability from nominal font size or layout rectangles. A typography role alone SHALL NOT opt an ordinary title into the heavy outline path; this change approves only the Settlement hero outcome.
 
 #### Scenario: Settlement outcome is rendered at the reference viewport
 - **WHEN** a two-to-four-character Settlement outcome is captured at 402×874
 - **THEN** its fill-plus-outline glyph envelope is 28–32 capture pixels high, uses a visually distinct 2 capture-pixel outline, occupies 52%–64% of the banner's significant-alpha height, leaves at least 8 capture pixels above and below, and has no more than 2 capture pixels of top/bottom padding imbalance
+
+#### Scenario: Settlement outcome crosses its reveal boundary
+- **WHEN** the Settlement outcome has not completed its designated stagger reveal
+- **THEN** neither fill nor outline is drawn in the outcome region; at the deterministic reveal boundary both layers appear together as one opaque composition, and any subsequent StrongPop changes geometry without fading repeated outline passes
 
 #### Scenario: Emphasis copy exceeds the current ornament safe field
 - **WHEN** approved emphasis typography or localized copy cannot fit the ornament with the required padding
@@ -50,6 +54,10 @@ Hero result, page-title, and section-title compositions SHALL select readable bo
 #### Scenario: Supporting information is rendered
 - **WHEN** body copy, supplemental guidance, or a read-only metric appears inside an already-readable parent
 - **THEN** it does not inherit the heavy emphasis outline or a new closed border solely to simulate hierarchy
+
+#### Scenario: An ordinary title uses an outline-capable typography role
+- **WHEN** a page or section title has not been explicitly approved as an emphasis composition
+- **THEN** it continues through the regular text path and does not gain a heavy outline solely because its typography role is outline-capable
 
 ### Requirement: Read-only metrics are borderless by default
 The shared metric primitive SHALL draw its icon and copy without a dedicated closed surface unless a separate structural component explicitly owns that grouping.

@@ -282,4 +282,132 @@ namespace FruitDefense.Tilemaps
             return true;
         }
     }
+
+    public static class BattlefieldTerrainGuiRenderer
+    {
+        private const float TileSeamOverlap = .75f;
+
+        public static void DrawValidated(BattlefieldMapDefinition map,
+            BattlefieldProjection projection, BattlefieldTerrainPalette palette)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (projection == null) throw new ArgumentNullException(nameof(projection));
+            if (palette == null) throw new ArgumentNullException(nameof(palette));
+
+            var grid = projection.GridRect;
+            GUI.BeginGroup(grid);
+            var previous = GUI.color;
+            try
+            {
+                GUI.color = Color.white;
+                DrawBaseLayer(map, projection, grid, palette);
+                foreach (var binding in palette.LandformBindings)
+                    if (binding != null && binding.TileSet != null)
+                        DrawLandformLayer(map, projection, grid, binding.TileSet,
+                            binding.SurfaceId, binding.ContourStyleId);
+
+                foreach (var binding in palette.EdgeBindings)
+                    if (binding != null && binding.TileSet != null)
+                    {
+                        DrawEdgeLayer(map, projection, grid, binding.TileSet,
+                            binding.LandformSurfaceId, binding.BaseSurfaceId,
+                            binding.ContourStyleId, binding.EdgeStyleId, false);
+                        if (!palette.HasExactEdgeBinding(binding.BaseSurfaceId,
+                                binding.LandformSurfaceId, binding.ContourStyleId,
+                                binding.EdgeStyleId))
+                            DrawEdgeLayer(map, projection, grid, binding.TileSet,
+                                binding.BaseSurfaceId, binding.LandformSurfaceId,
+                                binding.ContourStyleId, binding.EdgeStyleId, true);
+                    }
+            }
+            finally
+            {
+                GUI.color = previous;
+                GUI.EndGroup();
+            }
+        }
+
+        private static void DrawBaseLayer(BattlefieldMapDefinition map,
+            BattlefieldProjection projection, Rect grid,
+            BattlefieldTerrainPalette palette)
+        {
+            var uniformSurfaceId = map.BaseSurfaceAt(Vector2Int.zero);
+            var uniformBase = true;
+            for (var cellY = 0; cellY < map.GridHeight && uniformBase; cellY++)
+            for (var cellX = 0; cellX < map.GridWidth; cellX++)
+                if (!string.Equals(map.BaseSurfaceAt(new Vector2Int(cellX, cellY)),
+                        uniformSurfaceId, StringComparison.Ordinal))
+                {
+                    uniformBase = false;
+                    break;
+                }
+
+            if (uniformBase && palette.TryGetBaseTexture(
+                    uniformSurfaceId, out var uniformTexture))
+            {
+                GUI.DrawTextureWithTexCoords(new Rect(0f, 0f, grid.width, grid.height),
+                    uniformTexture,
+                    BattlefieldDualGridTerrain.BaseTextureUv(map, null, uniformTexture), true);
+                return;
+            }
+
+            for (var cellY = 0; cellY < map.GridHeight; cellY++)
+            for (var cellX = 0; cellX < map.GridWidth; cellX++)
+            {
+                var cell = new Vector2Int(cellX, cellY);
+                if (!palette.TryGetBaseTexture(map.BaseSurfaceAt(cell),
+                        out var texture)) continue;
+                var rect = projection.CellRect(cell);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(rect, texture,
+                    BattlefieldDualGridTerrain.BaseCellUv(map, texture, cellX, cellY), true);
+            }
+        }
+
+        private static void DrawLandformLayer(BattlefieldMapDefinition map,
+            BattlefieldProjection projection, Rect grid, DualGridTileSet tileSet,
+            string surfaceId, string contourStyleId)
+        {
+            for (var vertexY = 0; vertexY <= map.GridHeight; vertexY++)
+            for (var vertexX = 0; vertexX <= map.GridWidth; vertexX++)
+            {
+                var mask = BattlefieldDualGridTerrain.ResolveLandformMask(
+                    map, vertexX, vertexY, surfaceId, contourStyleId);
+                if (mask == DualGridMask.Empty
+                    || !tileSet.TryGetSprite(mask, out var sprite)) continue;
+                var rect = BattlefieldDualGridTerrain.VisualTileRect(
+                    projection, vertexX, vertexY);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(Grow(rect, TileSeamOverlap), sprite.texture,
+                    BattlefieldDualGridTerrain.SpriteUv(sprite), true);
+            }
+        }
+
+        private static void DrawEdgeLayer(BattlefieldMapDefinition map,
+            BattlefieldProjection projection, Rect grid, DualGridTileSet tileSet,
+            string landformSurfaceId, string baseSurfaceId,
+            string contourStyleId, string edgeStyleId, bool complementMask)
+        {
+            for (var vertexY = 0; vertexY <= map.GridHeight; vertexY++)
+            for (var vertexX = 0; vertexX <= map.GridWidth; vertexX++)
+            {
+                var mask = BattlefieldDualGridTerrain.ResolveEdgeMask(map, vertexX, vertexY,
+                    landformSurfaceId, baseSurfaceId, contourStyleId, edgeStyleId);
+                if (!DualGridMaskUtility.TryResolveSharedEdgeMask(mask,
+                        complementMask, out mask)
+                    || !tileSet.TryGetSprite(mask, out var sprite)) continue;
+                var rect = BattlefieldDualGridTerrain.VisualTileRect(
+                    projection, vertexX, vertexY);
+                rect.position -= grid.position;
+                GUI.DrawTextureWithTexCoords(Grow(rect, TileSeamOverlap), sprite.texture,
+                    BattlefieldDualGridTerrain.SpriteUv(sprite), true);
+            }
+        }
+
+        private static Rect Grow(Rect rect, float amount)
+        {
+            return new Rect(rect.x - amount, rect.y - amount,
+                rect.width + amount * 2f, rect.height + amount * 2f);
+        }
+    }
 }

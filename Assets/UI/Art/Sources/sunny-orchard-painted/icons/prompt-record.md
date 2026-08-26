@@ -6,7 +6,7 @@
 - Style references only:
   - `Assets/UI/Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png`
   - `openspec/changes/unify-runtime-ui-visual-system/evidence/sunny-orchard-redo-proof/sunny-orchard-core-components-v2.png`
-- Shared prompt contract: one isolated, straight-on, centered orchard-cartoon UI glyph; soft gouache texture; controlled warm-brown outline; rounded readable silhouette; shallow depth; no text, backing tile, panel, button, scenery, logo, watermark, or cropped edge. True alpha was requested; the generator's baked neutral checker/white field was removed only by connected-background transparency cleanup. No geometry was drawn by script.
+- Shared generation contract: one isolated, straight-on, centered orchard-cartoon UI glyph on genuine alpha. The V3 compact-control glyphs were selected as minimum flat geometry with no backing plate, highlight, gradient, shadow, texture, leaf, decoration, text, scenery, logo, watermark, or cropped edge. No geometry was drawn by script. Production action-glyph masters are deterministic neutral-white derivatives of those selected silhouettes, as recorded below.
 - Export contract: each accepted generation was cleaned, cropped, proportionally scaled, and centered into its own 768×768 RGBA master. Runtime exports are independently derived 96×96 RGBA PNGs with alpha content constrained to the central 72×72 export box (12px safe inset). The 72px export box represents the approved 36px logical visual box at 2× art scale.
 
 ## Per-asset primary requests and generation outputs
@@ -26,16 +26,32 @@
 | `icon-resource-sun` | Golden sun with alternating rays and no face | `exec-d7c13804-57e4-4344-9e15-6b8039794dd9.png` |
 | `icon-resource-core` | Compact cluster of three orchard core fruits | `exec-ea33adc5-4543-4298-99d1-6340f5a58380.png` |
 | `icon-resource-wave` | Layered blue curling wave with cream foam | `exec-b14ede4b-c506-4d40-8643-69fc08b79d65.png` |
-| `icon-control-pause` | Two rounded cream pause bars with leaf accents | `exec-be473d31-15fc-4000-b3b7-aa454a2b3a27.png` |
-| `icon-control-continue` | Green play triangle with cream highlight and leaf accent | `exec-cea20160-bf0d-4574-a401-f01fabc448e1.png` |
-| `icon-control-speed` | Two green fast-forward triangles with amber motion tick | `exec-5466621c-3c34-4639-a057-60e49414a630.png` |
+| `icon-control-pause` | Two flat brown rounded bars only | `exec-2e5b3dbb-dc58-41a6-94b8-0d7eba8ad9d6.png` |
+| `icon-control-continue` | One flat brown right-pointing triangle only | `exec-c19e8f10-8869-427e-a72f-206406e73573.png` |
+| `icon-control-speed` | Two flat brown right-pointing triangles only | `exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png` |
 | `icon-control-retry` | Single clockwise retry arrow around one amber seed | `exec-8ce6c470-2c2b-4a37-81c6-73634559e378.png` |
 | `icon-control-return` | Compact orchard cottage/home silhouette | `exec-ce0b2322-cee9-4831-a2c6-46c9380c7d5c.png` |
-| `icon-control-close` | Rounded cream X with warm outline and leaf accent | `exec-a5629fa4-1a1a-43ee-9214-f3e6ae6bae05.png` |
+| `icon-control-close` | Two equal flat brown diagonal bars forming one X | `exec-344e3cd7-8d96-42e7-8065-7eddad406700.png` |
 | `icon-tool-pot` | Empty straight-on terracotta pot with soil opening | `exec-52030fbc-8e6c-46cc-9ee5-a7e7cde665d1.png` |
 | `icon-control-refresh` | Two green refresh arrows around a pair of amber seeds | `exec-946a8235-e01a-47bc-a82b-32e22954ae99.png` |
 
 `icon-control-continue.png` is intentionally the only unique art file for the Continue, Start Wave, and Start semantic bindings. The bindings remain separate in the ArtSet contract.
+
+## 2026-08-26 tintable action-glyph normalization
+
+The seven unique action-glyph PNG masters were normalized in place to the shared tintable contract: every pixel with `alpha > 0` has RGB `#FFFFFF`, every `alpha == 0` pixel is transparent black, and every source alpha byte and canvas dimension is unchanged. Runtime exports apply the same white-mask rule after their existing geometry pipeline, so no soil-brown, amber, green, gradient, highlight, shadow, or interaction-state color remains baked into the glyph. Unity GUIDs and importer geometry are preserved; the runtime action content resolver now owns final color.
+
+| Unique production master | Shared semantic bindings | Current source SHA-256 |
+|---|---|---|
+| `icon-control-pause.png` | `icon.control-pause` | `487E2EDAB4269934A6387A8DCFE38A1B9FCDF4326FE05FA9D75E85581183490B` |
+| `icon-control-continue.png` | `icon.control-continue`, `icon.control-start-wave`, `icon.control-start` | `1D92148CA17DD05684F98C657B6BD384BF6516BD6BFC389A7D57AA4C0071A150` |
+| `icon-control-speed.png` | `icon.control-speed` | `8E195A483D04BFA0F254AC01E9CEBF8CD94453A68ED3ED50F3D509E5750E8A71` |
+| `icon-control-retry.png` | `icon.control-retry` | `F5F6E79A7CEC66F8A2BA965CC8712DEFBFFE4834A0D0241378EBCDECAF26AF0E` |
+| `icon-control-return.png` | `icon.control-return` | `22F4D830C252E3B6179A0A17B219CCCA2290AC050FE89271D1CD5AA3D83EC24C` |
+| `icon-control-close.png` | `icon.control-close` | `AC98CDB08E561D953A6CE6626782835932D75018FF6CD9547E19F155F80F55FF` |
+| `icon-control-refresh.png` | `icon.control-refresh` | `F32C4F6E0D707E7CC9C0B722623ADF7BF73F58D075C3DB81AE21DBED30F0276B` |
+
+`icon-tool-pot.png` and `icon-resource-*` are deliberately excluded because they are content/resource art with intrinsic color, not action glyphs.
 
 ## 2026-08-20 quality-standard edit — legal drag cue
 

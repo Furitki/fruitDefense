@@ -13,11 +13,14 @@ namespace FruitDefense.Editor
     {
         private const string FixturePath =
             "Assets/Editor/Tests/Fixtures/battlefield-layered-pre-migration.json";
+        private const int FixtureSchemaVersion = 2;
+        private const int FixtureOutcomeProjectionVersion = 4;
 
         [Serializable]
         private sealed class BaselineFile
         {
             public int schemaVersion;
+            public int outcomeProjectionVersion;
             public MapBaseline[] maps = Array.Empty<MapBaseline>();
         }
 
@@ -180,7 +183,7 @@ namespace FruitDefense.Editor
             ExpectIssue(Copy(source, routes: source.Routes.Concat(new[]
             {
                 new BattlefieldRouteDefinition("route.alternate", source.Routes[0].Cells),
-            })), "execution.route-count", "unsupported multiple routes");
+            })), "execution.standard.route-count", "unsupported multiple routes");
         }
 
         private static void ValidateFingerprintBoundaries()
@@ -277,16 +280,24 @@ namespace FruitDefense.Editor
         {
             Assert(File.Exists(FixturePath), "pre-migration fixture is missing");
             var fixture = JsonUtility.FromJson<BaselineFile>(File.ReadAllText(FixturePath));
-            Assert(fixture != null && fixture.schemaVersion == 1 && fixture.maps.Length == 3,
+            // Fixture v2 intentionally accepts the private v4 sole-owner outcome projection.
+            // The transition removed duplicate enemy statuses and the compatibility sentinel;
+            // map structure and simulation counters remain independently compared below.
+            Assert(fixture != null
+                && fixture.schemaVersion == FixtureSchemaVersion
+                && fixture.outcomeProjectionVersion == FixtureOutcomeProjectionVersion
+                && fixture.maps.Length == 3,
                 "pre-migration fixture header is invalid");
             var catalog = BundledLevelCatalogFactory.CreateCompiled();
+            var mismatches = new List<string>();
             foreach (var expected in fixture.maps)
             {
                 var actual = Capture(catalog, expected.levelId, expected.outcomeStepCount);
-                Assert(JsonUtility.ToJson(expected) == JsonUtility.ToJson(actual),
-                    "layered migration differs from pre-migration fixture for " + expected.levelId
-                    + "\nExpected: " + JsonUtility.ToJson(expected)
-                    + "\nActual: " + JsonUtility.ToJson(actual));
+                if (JsonUtility.ToJson(expected) != JsonUtility.ToJson(actual))
+                    mismatches.Add(expected.levelId + " checksum old="
+                        + expected.outcomeChecksum + " new=" + actual.outcomeChecksum
+                        + "\nExpected: " + JsonUtility.ToJson(expected)
+                        + "\nActual: " + JsonUtility.ToJson(actual));
                 var map = catalog.Resolve(expected.levelId).Value.Map;
                 Assert(map.UsesLayeredMap && map.PrimaryRouteId == BattlefieldLayerIds.PrimaryRoute
                     && !string.IsNullOrWhiteSpace(map.GameplayFingerprint),
@@ -300,6 +311,9 @@ namespace FruitDefense.Editor
                     "bundled map migration must keep soil bases and no refined edge: "
                     + expected.levelId);
             }
+            Assert(mismatches.Count == 0,
+                "layered migration differs from pre-migration fixture:\n"
+                + string.Join("\n", mismatches.ToArray()));
         }
 
         private static MapBaseline Capture(CompiledLevelCatalog catalog, string levelId, int stepCount)
@@ -371,12 +385,14 @@ namespace FruitDefense.Editor
                     source.GridWidth, source.GridHeight, source.MapUnitsPerCell, source.PrimaryRouteId,
                     visualCells ?? source.VisualCells,
                     gameplay ?? source.GameplayCells, routes ?? source.Routes,
-                    groups ?? source.MarkerGroups, markers ?? source.Markers);
+                    groups ?? source.MarkerGroups, markers ?? source.Markers,
+                    source.ExecutionProfile);
             return new BattlefieldLayeredMapSource(schemaVersion ?? source.SchemaVersion,
                 source.MapId,
                 source.GridWidth, source.GridHeight, source.MapUnitsPerCell, source.PrimaryRouteId,
                 surfaces ?? source.VisualSurfaceIds, gameplay ?? source.GameplayCells,
-                routes ?? source.Routes, groups ?? source.MarkerGroups, markers ?? source.Markers);
+                routes ?? source.Routes, groups ?? source.MarkerGroups, markers ?? source.Markers,
+                source.ExecutionProfile);
         }
 
         private static CompiledBattlefieldMap Compile(BattlefieldLayeredMapSource source)

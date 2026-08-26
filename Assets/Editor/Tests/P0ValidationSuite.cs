@@ -13,8 +13,7 @@ namespace FruitDefense.Editor
             AppFrameworkValidation.SmokeValidate();
             LocalServicePortsSmoke.Run();
             DeterministicSimulationSmoke.Run();
-            ComposableBattleSkillsSmoke.Run();
-            BattleSnapshotV1Smoke.Run();
+            ComposableBattleAbilitiesSmoke.Run();
             ProjectSetup.SmokeValidate();
             Debug.Log("FRUIT_DEFENSE_P0_RELEASE_GATE_OK");
         }

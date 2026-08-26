@@ -11,7 +11,7 @@ namespace FruitDefense.Editor
     public static class BattleContentCatalogEditor
     {
         public const string AuthoringAssetPath = "Assets/Content/BundledBattleContent.asset";
-        public const string BundledJsonPath = "Assets/Resources/Content/battle-content-bundled.v1.json";
+        public const string BundledJsonPath = "Assets/Resources/Content/battle-content-bundled.v2.json";
 
         [MenuItem("Fruit Defense/Content/Rebuild Bundled Catalog")]
         public static void CreateOrRefreshBundledCatalog()

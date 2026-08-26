@@ -32,6 +32,7 @@ namespace FruitDefense.Editor
             var production = releaseTheme.ActiveArtSet;
             Assert(production != null && RuntimeUiArtSetRegistry.IsProductionSet(production),
                 "release theme starts with one production art set");
+            ValidatePanelFrameContract(production);
 
             var originalActive = production;
             var originalThemeBytes = ReadAssetBytes(RuntimeUiArtSetRegistry.ReleaseThemePath);
@@ -95,9 +96,9 @@ namespace FruitDefense.Editor
 
         private static void ValidateFinitePaintedSlotContract()
         {
-            Assert(RuntimeUiArtSlots.RequiredCount == 53
-                && RuntimeUiArtSlots.Required.Count == 53,
-                "runtime visual contract owns exactly 53 required semantic slots");
+            Assert(RuntimeUiArtSlots.RequiredCount == 56
+                && RuntimeUiArtSlots.Required.Count == 56,
+                "runtime visual contract owns exactly 56 required semantic slots");
             for (var index = 0; index < RuntimeUiArtSlots.Required.Count; index++)
             {
                 Assert((int)RuntimeUiArtSlots.Required[index] == index,
@@ -152,9 +153,16 @@ namespace FruitDefense.Editor
                     && RuntimeUiArtSlots.Geometry(added[index].Key) == expectedGeometry,
                     "painted hierarchy slot contract changed at " + (40 + index));
             }
+            Assert((int)RuntimeUiArtSlot.SurfaceGameplayStage == 55
+                && RuntimeUiArtSlots.SemanticId(
+                    RuntimeUiArtSlot.SurfaceGameplayStage)
+                    == "surface.gameplay-stage"
+                && RuntimeUiArtSlots.Geometry(
+                    RuntimeUiArtSlot.SurfaceGameplayStage)
+                    == RuntimeUiArtGeometry.NineSlice,
+                "gameplay-stage remains the appended slot 56 nine-slice contract");
 
-            var guiPath = Path.Combine(Application.dataPath, "Scripts/UI/RuntimeUiGui.cs");
-            var gui = File.ReadAllText(guiPath);
+            var gui = RuntimeUiSourceAuthority.ReadRuntimeGui();
             var requiredApis = new[]
             {
                 "public static void DrawScreenCorners(",
@@ -163,22 +171,36 @@ namespace FruitDefense.Editor
                 "public static void DrawIllustrationFrame(",
                 "public static void DrawMetricDivider(",
                 "public static void DrawResultBanner(",
+                "public static void DrawEmphasisText(",
+                "public static RuntimeUiEmphasisTextLayout ResolveEmphasisTextLayout(",
                 "public static Rect ResolveOpticalEnvelopeDrawRect(",
                 "public static void DrawOrchardVista(",
                 "public static void DrawLobbyThumbnail(",
+                "public static void DrawGameplayStage(",
                 "public static RuntimeUiMetricContentLayout ResolveCompactInlineMetricContentLayout(",
                 "private static RuntimeUiArtSlot LobbyThumbnailSlot(",
             };
             for (var index = 0; index < requiredApis.Length; index++)
                 Assert(gui.Contains(requiredApis[index]),
                     "shared renderer is missing explicit hierarchy API: " + requiredApis[index]);
+            var focusCueStart = gui.IndexOf(
+                "private static void DrawActionInteractionCue(",
+                StringComparison.Ordinal);
+            var focusCueEnd = gui.IndexOf(
+                "private static void RequireStandardActionContent(",
+                StringComparison.Ordinal);
+            var whitePrimitive = gui.IndexOf(
+                "Texture2D.whiteTexture", StringComparison.Ordinal);
             Assert(!gui.Contains("Resources.Load")
                 && !gui.Contains("AssetDatabase")
-                && !gui.Contains("Texture2D.whiteTexture")
+                && gui.Split(new[] { "Texture2D.whiteTexture" },
+                    StringSplitOptions.None).Length == 2
+                && focusCueStart >= 0 && focusCueEnd > focusCueStart
+                && whitePrimitive > focusCueStart && whitePrimitive < focusCueEnd
                 && !gui.Contains("GUI.skin")
                 && !gui.Contains(
                     "DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric"),
-                "painted hierarchy renderer has no path, resource, default-skin or white fallback");
+                "painted hierarchy renderer has one scoped focus primitive and no path, resource or default-skin fallback");
 
             var lobby = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/Shell/LobbyPresenter.cs"));
@@ -196,12 +218,15 @@ namespace FruitDefense.Editor
             Assert(settlement.Contains("RuntimeUiGui.DrawScreenCorners")
                 && settlement.Contains("RuntimeUiGui.DrawSectionRibbon")
                 && settlement.Contains("RuntimeUiGui.DrawResultBanner")
+                && settlement.Contains("RuntimeUiGui.DrawEmphasisText")
+                && settlement.Contains("SettlementOutcomeRevealPhase.Hidden")
+                && settlement.Contains("FruitDefensePublishSettlementOutcomeReveal")
+                && !settlement.Contains("previousOutcomeColor.a * resultMotion.Alpha")
                 && settlement.Contains("RuntimeUiGui.DrawOrchardVista")
                 && !settlement.Contains("RuntimeUiGui.DrawMetricDivider")
                 && settlement.Contains("compactInline: true"),
                 "Settlement hierarchy consumes its explicit result semantics");
-            var battle = File.ReadAllText(Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs"));
+            var battle = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             Assert(battle.Contains("RuntimeUiGui.DrawMetricDivider")
                 && battle.Contains("RuntimeUiGui.DrawSectionRibbon")
                 && battle.Contains("RuntimeUiGui.DrawResultBanner")
@@ -435,6 +460,115 @@ namespace FruitDefense.Editor
                 + " pre-fix-min-alpha=" + preFixMinimumAlpha);
         }
 
+        private static int CountOccurrences(string source, string token)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = source.IndexOf(token, index,
+                       StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += token.Length;
+            }
+            return count;
+        }
+
+        private static void ValidatePanelFrameContract(RuntimeUiArtSet production)
+        {
+            var acceptanceScript = RuntimeUiSourceAuthority.ReadAcceptanceRunner();
+            foreach (var requiredProbe in new[]
+                     {
+                         "function Get-BattlePanelGeometryEvidence",
+                         "function Get-BattleTextContainmentEvidence",
+                         "function Get-BattleOccupiedBalanceEvidence",
+                         "panelGeometry = $panelGeometry",
+                         "textContainment = $textContainment",
+                         "occupiedBalance = $occupiedBalance",
+                         "structuralFrameCount = 1",
+                         "legacyEnclosingFrameDetected = $false",
+                         "refreshLowerMarginLogical = $refreshLowerMarginLogical",
+                         "gameplayStage = $stage",
+                         "contextModes = [ordered]",
+                     })
+            {
+                Assert(acceptanceScript.Contains(requiredProbe),
+                    "WebGL acceptance records required structural/text evidence: "
+                    + requiredProbe);
+            }
+
+            var family = RuntimeUiVisualSystemValidator
+                .ValidatePanelFamilyMetadata(production);
+            Assert(family.IsValid,
+                "production panel family shares protected border and logical-scale metadata: "
+                + RuntimeUiVisualSystemValidator.FormatReport(family));
+
+            var battleHierarchy = RuntimeUiVisualSystemValidator
+                .ValidateBattleStructuralHierarchy(production);
+            Assert(battleHierarchy.IsValid,
+                "Battle owns one light standard family and one protected gameplay stage");
+
+            var invalidFamily = Object.Instantiate(production);
+            invalidFamily.hideFlags = HideFlags.HideAndDontSave;
+            try
+            {
+                var serialized = new SerializedObject(invalidFamily);
+                var bindings = Require(serialized, "bindings");
+                for (var index = 0; index < bindings.arraySize; index++)
+                {
+                    var binding = bindings.GetArrayElementAtIndex(index);
+                    if (binding.FindPropertyRelative("slot").intValue
+                        != (int)RuntimeUiArtSlot.SurfacePanelRaised)
+                        continue;
+                    binding.FindPropertyRelative("pixelsPerLogicalUnit").floatValue += .25f;
+                    binding.FindPropertyRelative("sliceBorder")
+                        .FindPropertyRelative("left").intValue += 1;
+                    break;
+                }
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var invalid = RuntimeUiVisualSystemValidator
+                    .ValidatePanelFamilyMetadata(invalidFamily);
+                Assert(!invalid.IsValid
+                    && invalid.Issues.Any(issue =>
+                        issue.Code == "panel-family.protected-border")
+                    && invalid.Issues.Any(issue =>
+                        issue.Code == "panel-family.logical-scale"),
+                    "panel family rejects mismatched border and PPU metadata");
+            }
+            finally
+            {
+                Object.DestroyImmediate(invalidFamily);
+            }
+
+            var invalidStage = Object.Instantiate(production);
+            invalidStage.hideFlags = HideFlags.HideAndDontSave;
+            try
+            {
+                var serialized = new SerializedObject(invalidStage);
+                var bindings = Require(serialized, "bindings");
+                for (var index = 0; index < bindings.arraySize; index++)
+                {
+                    var binding = bindings.GetArrayElementAtIndex(index);
+                    if (binding.FindPropertyRelative("slot").intValue
+                        != (int)RuntimeUiArtSlot.SurfaceGameplayStage)
+                        continue;
+                    binding.FindPropertyRelative("safeInset")
+                        .FindPropertyRelative("left").intValue = 19;
+                    break;
+                }
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var invalid = RuntimeUiVisualSystemValidator
+                    .ValidateBattleStructuralHierarchy(invalidStage);
+                Assert(!invalid.IsValid
+                    && invalid.Issues.Any(issue =>
+                        issue.Code == "battle-stage.protected-border"),
+                    "Battle hierarchy rejects a gameplay-stage protected-border drift");
+            }
+            finally
+            {
+                Object.DestroyImmediate(invalidStage);
+            }
+        }
+
         private static void AssertNineSliceSourceEdgesSeamSafe(Texture2D texture,
             RuntimeUiArtBinding binding, string caseName)
         {
@@ -451,7 +585,8 @@ namespace FruitDefense.Editor
                 && y0 < y1 && y1 < y2 && y2 < y3,
                 caseName + " owns a non-empty nine-slice source partition");
             var transparentCenterFrame =
-                binding.Slot == RuntimeUiArtSlot.SurfaceIllustrationFrame;
+                binding.Slot == RuntimeUiArtSlot.SurfaceIllustrationFrame
+                || binding.Slot == RuntimeUiArtSlot.SurfaceGameplayStage;
 
             for (var y = y1; y < y2; y++)
             {
@@ -536,9 +671,9 @@ namespace FruitDefense.Editor
                     == RuntimeUiInteractionState.Disabled,
                 "Disabled remains higher priority than emphasized Pressed feedback");
 
-            var fadedSurface = Composite(theme.Colors.PrimaryAction,
+            var fadedSurface = Composite(theme.ActionStyles.Primary.Container,
                 theme.Colors.BaseSurface, theme.Feedback.LoadingOpacity);
-            var fadedText = Composite(theme.Colors.InverseText,
+            var fadedText = Composite(theme.ActionStyles.Primary.Content,
                 fadedSurface, theme.Feedback.LoadingOpacity);
             var fadedContrast = Contrast(fadedText, fadedSurface);
             Assert(fadedContrast < RuntimeUiQualityProfile.LargeOrBoldTextContrast,
@@ -547,9 +682,9 @@ namespace FruitDefense.Editor
             var resolvedOpacity = primary == RuntimeUiInteractionState.Normal
                 ? theme.Feedback.NormalOpacity
                 : theme.Feedback.LoadingOpacity;
-            var resolvedSurface = Composite(theme.Colors.PrimaryAction,
+            var resolvedSurface = Composite(theme.ActionStyles.Primary.Container,
                 theme.Colors.BaseSurface, resolvedOpacity);
-            var resolvedText = Composite(theme.Colors.InverseText,
+            var resolvedText = Composite(theme.ActionStyles.Primary.Content,
                 resolvedSurface, resolvedOpacity);
             var resolvedContrast = Contrast(resolvedText, resolvedSurface);
             Assert(resolvedContrast + .001f

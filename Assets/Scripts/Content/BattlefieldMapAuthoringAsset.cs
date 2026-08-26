@@ -855,7 +855,8 @@ namespace FruitDefense.Content
                 (markerGroups ?? new List<BattlefieldMarkerGroupAuthoringRecord>())
                     .Select(group => group == null ? null : group.ToSource()),
                 (markers ?? new List<BattlefieldMarkerAuthoringRecord>())
-                    .Select(marker => marker == null ? null : marker.ToSource()));
+                    .Select(marker => marker == null ? null : marker.ToSource()),
+                BattlefieldExecutionProfile.StandardRelease);
         }
 
         public IReadOnlyList<BattlefieldMapAuthoringDiagnostic> CollectDiagnostics()

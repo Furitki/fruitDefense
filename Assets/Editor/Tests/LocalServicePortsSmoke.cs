@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using FruitDefense.App.Services;
+using FruitDefense.Content;
 using UnityEditor;
 using UnityEngine;
 
@@ -129,7 +130,8 @@ namespace FruitDefense.Editor
             }));
             Assert(callbackCount == 1 && config.Status == RemoteConfigLoadStatus.Success,
                 "bundled config completes once without network access");
-            Assert(config.Config.contentChannel == "bundled" && config.Config.bundledContentVersion == "1.0.0"
+            Assert(config.Config.contentChannel == "bundled"
+                && config.Config.bundledContentVersion == BattleContentSchema.BundledContentVersion
                 && !config.Config.cloudProfileEnabled && !config.Config.remoteContentEnabled,
                 "P0 bundled config exposes offline defaults");
         }

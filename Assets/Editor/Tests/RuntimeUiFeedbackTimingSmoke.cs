@@ -138,9 +138,9 @@ namespace FruitDefense.Editor
                 "Settlement timing does not create a second hit rectangle");
 
             var battle = new BattleUiLayout(GameConfig.DefaultBattlefield);
-            Assert(Approximately(battle.WaveAction, new Rect(210f, 526f, 184f, 44f))
-                && Approximately(battle.RefreshAction, new Rect(8f, 744f, 386f, 44f))
-                && Approximately(battle.PauseAction, new Rect(274f, 20f, 52f, 52f)),
+            Assert(Approximately(battle.WaveAction, new Rect(210f, 548f, 184f, 44f))
+                && Approximately(battle.RefreshAction, new Rect(8f, 784f, 386f, 52f))
+                && Approximately(battle.PauseAction, new Rect(274f, 12f, 52f, 52f)),
                 "Battle feedback keeps the authoritative action geometry");
         }
 
@@ -155,7 +155,7 @@ namespace FruitDefense.Editor
                 && pulseSource.Contains("unscaledTime < deadline"),
                 "feedback pulse consumes only caller-supplied unscaled time");
 
-            var sharedGui = ReadSource("Scripts/UI/RuntimeUiGui.cs");
+            var sharedGui = RuntimeUiSourceAuthority.ReadRuntimeGui();
             var action = Slice(sharedGui,
                 "public static bool DrawAction(", "public static void DrawMetric(");
             Assert(action.Contains("bool emphasized = false")
@@ -205,7 +205,7 @@ namespace FruitDefense.Editor
                 && !settlementGui.Contains("yield return"),
                 "Settlement commands remain in their click frame");
 
-            var battle = ReadSource("Scripts/FruitDefenseGame.cs");
+            var battle = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             AssertConsumes(battle, "Battle", "UnscaledFocusSeconds",
                 "UnscaledSelectionSeconds", "UnscaledStatusSeconds");
             Assert(!battle.Contains("_statusUntil")

@@ -1,11 +1,32 @@
 {
   "schema": "fruit-defense.imagegen-prompt-record.v1",
   "setId": "sunny-orchard-painted",
+  "provider": "built-in-imagegen",
   "references": [
     "Assets/UI/Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png",
     "openspec/changes/unify-runtime-ui-visual-system/evidence/sunny-orchard-redo-proof/sunny-orchard-core-components-v2.png"
   ],
-  "generationBoundary": "All visible forms were produced by built-in imagegen. Deterministic processing is limited to chroma-key connected-background alpha removal, low-alpha spill cleanup, premultiplied resize, declared target-size crop/aspect-fit, optical placement, gallery composition, and hashes.",
+  "generationBoundary": "All visible forms were produced by built-in imagegen. Deterministic processing is limited to connected-background alpha cleanup for legacy assets, action-glyph visible-RGB normalization to neutral white with alpha preserved byte-for-byte, semantic Primary/Danger content-ink median re-anchoring with texture deltas and alpha preserved, low-alpha cleanup, significant-alpha crop, premultiplied resize, declared target-size aspect-fit, centered 128px nine-slice or 96px glyph placement, optical placement, gallery composition, metadata, and hashes.",
+  "semanticContainerNormalization": [
+    {
+      "semanticId": "action.primary",
+      "targetRgb": "#436C15",
+      "contentReferenceRgb": "#FFF6E0",
+      "minimumContrast": 4.5,
+      "measuredContentRegionMinimumContrast": 5.2068,
+      "sourceSha256": "186C3BB10FEC589177F353316634219C720BB2B5BAB1D0376CF5BC05336B8A9D",
+      "deterministicTransform": "Re-anchor green content-ink channel medians while preserving per-pixel texture deltas, alpha bytes, outline, canvas, and nine-slice geometry."
+    },
+    {
+      "semanticId": "action.danger",
+      "targetRgb": "#9F302B",
+      "contentReferenceRgb": "#FFF6E0",
+      "minimumContrast": 4.5,
+      "measuredContentRegionMinimumContrast": 5.7689,
+      "sourceSha256": "2D9AE59E0FC3250801172940921E3E84FE29BE55515DA52B38241D20F843881F",
+      "deterministicTransform": "Re-anchor red content-ink channel medians while preserving per-pixel texture deltas, alpha bytes, outline, canvas, and nine-slice geometry."
+    }
+  ],
   "assets": [
     {
       "semanticId": "ornament.screen-corner",
@@ -60,6 +81,8 @@
       "semanticId": "action.primary",
       "generatedOutput": "exec-52fb463b-9dea-44f8-b66a-f0c0b3a97747.png",
       "chromaOutput": "exec-5fe6e775-c73d-40cd-8272-cbea83a621a5.png",
+      "sourceSha256": "186C3BB10FEC589177F353316634219C720BB2B5BAB1D0376CF5BC05336B8A9D",
+      "deterministicTransform": "Green content-ink median is re-anchored to #436C15 while texture deltas, alpha, outline, canvas, and nine-slice geometry remain unchanged.",
       "prompt": "Edit the existing painted primary nine-slice: preserve silhouette, border and brush texture; replace the broad empty center with deep matte leaf green visually centered near #477F2A; keep highlights thin and subdued for inverse CJK contrast; no ornament or text."
     },
     {
@@ -70,11 +93,112 @@
       "targetSize": "402x874",
       "compositionReference": "Unencrypted APK loading-page sample was used only for foreground/midground/background depth study; no snow, characters, buildings, or source pixels were transferred.",
       "prompt": "Original portrait Sunny Orchard route background for deterministic 402x874 export: low-noise pale cream-gold sky in the top 32%, subdued orchard hills and winding central path in the middle 48%, dark leaf-and-flower framing in the lower 20%; exactly three readable value planes; calm central 72% width for runtime UI; no text, buttons, panels, borders, icons, cards, characters, buildings, snow, logo, watermark, or baked interface geometry."
+    },
+    {
+      "semanticId": "icon.control-pause",
+      "generatedOutput": "exec-2e5b3dbb-dc58-41a6-94b8-0d7eba8ad9d6.png",
+      "selectedOutput": "exec-2e5b3dbb-dc58-41a6-94b8-0d7eba8ad9d6.png",
+      "sourceSha256": "487E2EDAB4269934A6387A8DCFE38A1B9FCDF4326FE05FA9D75E85581183490B",
+      "alphaContract": "Tintable RGBA derivative; all alpha>0 pixels are neutral white #FFFFFF, alpha==0 pixels are transparent black, and the selected output's canvas and alpha bytes are unchanged.",
+      "deterministicTransform": "Visible RGB normalized to #FFFFFF; hidden RGBA normalized to 0; canvas and alpha bytes preserved.",
+      "references": [],
+      "prompt": "Use case: logo-brand. Asset type: Sunny Orchard Painted pause glyph, transparent PNG. Exactly two identical vertical rounded rectangles, flat single brown silhouette with only a barely perceptible handmade edge. Center both bars with an even gap. No plate, badge, outline, gradient, highlight, shadow, texture, leaf, decoration, text, checkerboard, or watermark."
+    },
+    {
+      "semanticId": "icon.control-continue",
+      "generatedOutput": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
+      "selectedOutput": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
+      "sourceSha256": "1D92148CA17DD05684F98C657B6BD384BF6516BD6BFC389A7D57AA4C0071A150",
+      "alphaContract": "Tintable RGBA derivative; all alpha>0 pixels are neutral white #FFFFFF, alpha==0 pixels are transparent black, and the selected output's canvas and alpha bytes are unchanged.",
+      "deterministicTransform": "Visible RGB normalized to #FFFFFF; hidden RGBA normalized to 0; canvas and alpha bytes preserved.",
+      "references": [],
+      "prompt": "Use case: logo-brand. Asset type: Sunny Orchard Painted continue glyph, transparent PNG. Exactly one solid right-pointing triangle with gently rounded corners, flat single brown silhouette with only a barely perceptible handmade edge. No plate, badge, outline, second triangle, gradient, highlight, shadow, texture, leaf, decoration, text, checkerboard, or watermark."
+    },
+    {
+      "semanticId": "icon.control-speed",
+      "generatedOutput": "exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png",
+      "selectedOutput": "exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png",
+      "sourceSha256": "8E195A483D04BFA0F254AC01E9CEBF8CD94453A68ED3ED50F3D509E5750E8A71",
+      "alphaContract": "Tintable RGBA derivative; all alpha>0 pixels are neutral white #FFFFFF, alpha==0 pixels are transparent black, and the selected output's canvas and alpha bytes are unchanged.",
+      "deterministicTransform": "Visible RGB normalized to #FFFFFF; hidden RGBA normalized to 0; canvas and alpha bytes preserved.",
+      "references": [],
+      "prompt": "Use case: logo-brand. Asset type: Sunny Orchard Painted speed glyph, transparent PNG. Exactly two identical solid right-pointing triangles with one even gap, flat single brown silhouette with only a barely perceptible handmade edge. No plate, badge, outline, extra arrow, gradient, highlight, shadow, texture, leaf, decoration, text, checkerboard, or watermark."
+    },
+    {
+      "semanticId": "icon.control-close",
+      "generatedOutput": "exec-344e3cd7-8d96-42e7-8065-7eddad406700.png",
+      "selectedOutput": "exec-344e3cd7-8d96-42e7-8065-7eddad406700.png",
+      "sourceSha256": "AC98CDB08E561D953A6CE6626782835932D75018FF6CD9547E19F155F80F55FF",
+      "alphaContract": "Tintable RGBA derivative; all alpha>0 pixels are neutral white #FFFFFF, alpha==0 pixels are transparent black, and the selected output's canvas and alpha bytes are unchanged.",
+      "deterministicTransform": "Visible RGB normalized to #FFFFFF; hidden RGBA normalized to 0; canvas and alpha bytes preserved.",
+      "references": [],
+      "prompt": "Use case: logo-brand. Asset type: Sunny Orchard Painted close glyph, transparent PNG. Exactly one centered X made from two identical diagonal rounded-ended bars, flat single brown silhouette with only a barely perceptible handmade edge. No plate, badge, outline, extra line, gradient, highlight, shadow, texture, leaf, decoration, text, checkerboard, or watermark."
+    },
+    {
+      "semanticId": "action.compact-control",
+      "generatedOutput": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
+      "selectedOutput": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
+      "sourceSha256": "62A379B5F3D8AE2E81D4E26329F04DD7DBC3FE56F1DD80DD05C7BB5AF643E3AB",
+      "alphaContract": "Native RGBA; transparent outside one filled rounded square; runtime significant bbox [4,4,124,124).",
+      "references": [],
+      "prompt": "Use case: stylized-concept. Asset type: Sunny Orchard Painted compact-control source master. Create exactly one flat rounded-square button: warm cream solid fill enclosed by exactly one thin soil-brown outer outline. Allow only subpixel handmade edge wobble at the final 52px target. Fill 94% of the canvas with equal transparent padding. Avoid inner highlight, inner outline, second border, shadow, gradient, texture, bevel, depth, decoration, leaf, flower, dot, icon, text, checkerboard, watermark."
+    },
+    {
+      "semanticId": "action.compact-control-active",
+      "generatedOutput": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
+      "selectedOutput": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
+      "sourceSha256": "62C0276FAFEE8A33C1C878B6763772EC1A66C642FCE0766288A9AE0A1F87DBCE",
+      "alphaContract": "Native RGBA; transparent outside one filled rounded square; the complete Painted active surface is normalized to the same runtime bbox [4,4,124,124), 32px slice border and 2.0 pixels-per-logical-unit contract as its inactive surface.",
+      "references": [],
+      "prompt": "Strict flat 2D production game UI sprite on native transparent RGBA: one complete Painted Orchard ACTIVE compact-control surface. One centered filled rounded square. Interior is a perfectly uniform single solid warm-cream color near RGB (250,236,194) from edge to edge, with no tonal variation. Surround it with exactly one perfectly uniform single solid muted amber-orange outer contour near RGB (194,126,58). Simple symmetric geometry, front view, outer footprint about 94% of square canvas, rounded corner radius about 15%, contour thickness about 3.5% of canvas so it reads as 2-3px at 52x52. Cream directly meets amber. Exactly one contour. True alpha transparency outside. ABSOLUTELY NO central mark, vignette, lighting, shading, gradient, shadow, highlight, texture, brush pattern, noise, bevel, glow, brown under-edge, inner line, second rim, decoration, icon, text, background, or checkerboard. The entire cream center must be visually blank and calm. Return only the native transparent PNG."
+    }
+  ],
+  "rejectedAttempts": [],
+  "supersededAttempts": [
+    {
+      "semanticId": "action.compact-control",
+      "output": "exec-72e2db02-eec5-4462-bdf6-dda22e9172d2.png",
+      "reason": "User review rejected the inner rim, lower leaf decoration, and textured center because they competed with the 52×52 control icon."
+    },
+    {
+      "semanticId": "action.compact-control",
+      "output": "exec-0fac4d27-8bca-4503-8aa7-dae7451dd74f.png",
+      "reason": "Superseded after direct user review: the refined base still left an over-heavy frame in the retired layered active treatment."
+    }
+  ],
+  "revisionRejectedAttempts": [
+    {
+      "semanticId": "action.compact-control",
+      "output": "exec-96349a36-6449-46ab-9a3b-1da5e2bc5b01.png",
+      "reason": "Visual structure was accepted, but the output was RGB with a baked checkerboard."
+    },
+    {
+      "semanticId": "action.compact-control",
+      "output": "exec-9b08d70a-5a8c-4f79-a3de-b57ebb776803.png",
+      "reason": "First background-extraction edit remained RGB with a baked checkerboard."
+    },
+    {
+      "semanticId": "action.compact-control-active",
+      "output": "exec-4ef7aa94-dfb1-4acc-984b-ec931295dee6.png",
+      "reason": "Rejected because the Painted base-reference edit baked a checkerboard into an opaque RGB image."
+    },
+    {
+      "semanticId": "action.compact-control-active",
+      "output": "exec-174c1958-0d5f-4329-98c5-504d1b4c2df1.png",
+      "reason": "Rejected because the nominally flat active surface introduced a large visible center shadow and vignette."
     }
   ],
   "alphaProcess": {
     "method": "imagegen flat magenta background followed by deterministic connected-background removal; enclosed frame center additionally seeded; residual keyed spill and runtime alpha below 48 removed",
-    "nativeRgba": ["ornament.result-banner"],
+    "nativeRgba": [
+      "ornament.result-banner",
+      "icon.control-pause",
+      "icon.control-continue",
+      "icon.control-speed",
+      "icon.control-close",
+      "action.compact-control",
+      "action.compact-control-active"
+    ],
     "opaque": [
       "surface.section-ribbon",
       "illustration.orchard-vista",

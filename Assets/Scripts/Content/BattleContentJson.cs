@@ -41,8 +41,7 @@ namespace FruitDefense.Content
             Array.Sort(catalog.plants, ComparePlant);
             Array.Sort(catalog.enemies, CompareEnemy);
             Array.Sort(catalog.equipment, CompareEquipment);
-            Array.Sort(catalog.skills, CompareSkill);
-            Array.Sort(catalog.passives, ComparePassive);
+            Array.Sort(catalog.abilities, CompareAbility);
             Array.Sort(catalog.projectiles, CompareProjectile);
             Array.Sort(catalog.statuses, CompareStatus);
             Array.Sort(catalog.waves, CompareWave);
@@ -51,8 +50,7 @@ namespace FruitDefense.Content
             foreach (var plant in catalog.plants)
             {
                 if (plant == null) continue;
-                plant.skillIds = SortedStrings(plant.skillIds);
-                plant.passiveIds = SortedStrings(plant.passiveIds);
+                plant.abilityIds = SortedStrings(plant.abilityIds);
                 plant.tags = SortedStrings(plant.tags);
                 plant.allowedEquipmentIds = SortedStrings(plant.allowedEquipmentIds);
             }
@@ -60,32 +58,18 @@ namespace FruitDefense.Content
             foreach (var enemy in catalog.enemies)
             {
                 if (enemy == null) continue;
-                enemy.skillIds = SortedStrings(enemy.skillIds);
-                enemy.passiveIds = SortedStrings(enemy.passiveIds);
+                enemy.abilityIds = SortedStrings(enemy.abilityIds);
                 enemy.tags = SortedStrings(enemy.tags);
             }
 
             foreach (var equipment in catalog.equipment)
             {
                 if (equipment == null) continue;
-                equipment.skillIds = SortedStrings(equipment.skillIds);
-                equipment.statusIds = SortedStrings(equipment.statusIds);
                 equipment.compatiblePlantIds = SortedStrings(equipment.compatiblePlantIds);
-                equipment.grants = equipment.grants ?? Array.Empty<EquipmentSkillGrantDto>();
-                Array.Sort(equipment.grants, (left, right) => CompareIds(left == null ? null : left.skillId, right == null ? null : right.skillId));
-                equipment.modifiers = equipment.modifiers ?? Array.Empty<SkillModifierDefinitionDto>();
+                equipment.grants = equipment.grants ?? Array.Empty<AbilityGrantDefinitionDto>();
+                Array.Sort(equipment.grants, (left, right) => CompareIds(left == null ? null : left.abilityId, right == null ? null : right.abilityId));
+                equipment.modifiers = equipment.modifiers ?? Array.Empty<AbilityModifierDefinitionDto>();
                 Array.Sort(equipment.modifiers, (left, right) => CompareIds(left == null ? null : left.id, right == null ? null : right.id));
-                equipment.passiveIds = SortedStrings(equipment.passiveIds);
-                equipment.passiveGrants = equipment.passiveGrants ?? Array.Empty<EquipmentPassiveGrantDto>();
-                Array.Sort(equipment.passiveGrants, (left, right) => CompareIds(
-                    left == null ? null : left.passiveId, right == null ? null : right.passiveId));
-            }
-
-            foreach (var passive in catalog.passives)
-            {
-                if (passive == null) continue;
-                passive.tags = SortedStrings(passive.tags);
-                passive.effects = passive.effects ?? Array.Empty<SkillEffectDefinitionDto>();
             }
 
             foreach (var status in catalog.statuses)
@@ -95,11 +79,14 @@ namespace FruitDefense.Content
                 status.modifiers = status.modifiers ?? Array.Empty<StatusModifierDefinitionDto>();
             }
 
-            foreach (var skill in catalog.skills)
+            foreach (var ability in catalog.abilities)
             {
-                if (skill == null) continue;
-                skill.tags = SortedStrings(skill.tags);
-                skill.effects = skill.effects ?? Array.Empty<SkillEffectDefinitionDto>();
+                if (ability == null) continue;
+                ability.tags = SortedStrings(ability.tags);
+                ability.deliveries = ability.deliveries ?? Array.Empty<AbilityDeliveryDefinitionDto>();
+                foreach (var delivery in ability.deliveries)
+                    if (delivery != null) delivery.payload = delivery.payload
+                        ?? Array.Empty<AbilityPayloadEffectDefinitionDto>();
             }
 
             foreach (var wave in catalog.waves)
@@ -122,8 +109,7 @@ namespace FruitDefense.Content
             if (catalog.plants == null) catalog.plants = Array.Empty<PlantDefinitionDto>();
             if (catalog.enemies == null) catalog.enemies = Array.Empty<EnemyDefinitionDto>();
             if (catalog.equipment == null) catalog.equipment = Array.Empty<EquipmentDefinitionDto>();
-            if (catalog.skills == null) catalog.skills = Array.Empty<SkillDefinitionDto>();
-            if (catalog.passives == null) catalog.passives = Array.Empty<PassiveDefinitionDto>();
+            if (catalog.abilities == null) catalog.abilities = Array.Empty<AbilityDefinitionDto>();
             if (catalog.projectiles == null) catalog.projectiles = Array.Empty<ProjectileDefinitionDto>();
             if (catalog.statuses == null) catalog.statuses = Array.Empty<StatusDefinitionDto>();
             if (catalog.waves == null) catalog.waves = Array.Empty<WaveDefinitionDto>();
@@ -135,28 +121,19 @@ namespace FruitDefense.Content
             {
                 if (plant == null) continue;
                 if (plant.tags == null) plant.tags = Array.Empty<string>();
-                if (plant.passiveIds == null) plant.passiveIds = Array.Empty<string>();
+                if (plant.abilityIds == null) plant.abilityIds = Array.Empty<string>();
             }
             foreach (var enemy in catalog.enemies)
             {
                 if (enemy == null) continue;
-                if (enemy.skillIds == null) enemy.skillIds = Array.Empty<string>();
-                if (enemy.passiveIds == null) enemy.passiveIds = Array.Empty<string>();
+                if (enemy.abilityIds == null) enemy.abilityIds = Array.Empty<string>();
                 if (enemy.tags == null) enemy.tags = Array.Empty<string>();
             }
             foreach (var equipment in catalog.equipment)
             {
                 if (equipment == null) continue;
-                if (equipment.grants == null) equipment.grants = Array.Empty<EquipmentSkillGrantDto>();
-                if (equipment.modifiers == null) equipment.modifiers = Array.Empty<SkillModifierDefinitionDto>();
-                if (equipment.passiveIds == null) equipment.passiveIds = Array.Empty<string>();
-                if (equipment.passiveGrants == null) equipment.passiveGrants = Array.Empty<EquipmentPassiveGrantDto>();
-            }
-            foreach (var passive in catalog.passives)
-            {
-                if (passive == null) continue;
-                if (passive.tags == null) passive.tags = Array.Empty<string>();
-                if (passive.effects == null) passive.effects = Array.Empty<SkillEffectDefinitionDto>();
+                if (equipment.grants == null) equipment.grants = Array.Empty<AbilityGrantDefinitionDto>();
+                if (equipment.modifiers == null) equipment.modifiers = Array.Empty<AbilityModifierDefinitionDto>();
             }
             foreach (var status in catalog.statuses)
             {
@@ -166,11 +143,16 @@ namespace FruitDefense.Content
                 if (string.IsNullOrEmpty(status.polarityId)) status.polarityId = "polarity.neutral";
                 if (string.IsNullOrEmpty(status.periodicEffectId)) status.periodicEffectId = "periodic.none";
             }
-            foreach (var skill in catalog.skills)
+            foreach (var ability in catalog.abilities)
             {
-                if (skill == null) continue;
-                if (skill.tags == null) skill.tags = Array.Empty<string>();
-                if (skill.effects == null) skill.effects = Array.Empty<SkillEffectDefinitionDto>();
+                if (ability == null) continue;
+                if (ability.activation == null) ability.activation = new AbilityActivationDefinitionDto();
+                if (ability.timeline == null) ability.timeline = new AbilityTimelineDefinitionDto();
+                if (ability.tags == null) ability.tags = Array.Empty<string>();
+                if (ability.deliveries == null) ability.deliveries = Array.Empty<AbilityDeliveryDefinitionDto>();
+                foreach (var delivery in ability.deliveries)
+                    if (delivery != null && delivery.payload == null)
+                        delivery.payload = Array.Empty<AbilityPayloadEffectDefinitionDto>();
             }
         }
 
@@ -184,8 +166,7 @@ namespace FruitDefense.Content
         private static int ComparePlant(PlantDefinitionDto left, PlantDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareEnemy(EnemyDefinitionDto left, EnemyDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareEquipment(EquipmentDefinitionDto left, EquipmentDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
-        private static int CompareSkill(SkillDefinitionDto left, SkillDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
-        private static int ComparePassive(PassiveDefinitionDto left, PassiveDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
+        private static int CompareAbility(AbilityDefinitionDto left, AbilityDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareProjectile(ProjectileDefinitionDto left, ProjectileDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareStatus(StatusDefinitionDto left, StatusDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareWave(WaveDefinitionDto left, WaveDefinitionDto right) { return NullSafeInt(left == null ? int.MaxValue : left.index, right == null ? int.MaxValue : right.index); }

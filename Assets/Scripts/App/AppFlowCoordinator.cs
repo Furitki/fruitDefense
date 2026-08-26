@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+#if FRUIT_DEFENSE_ACCEPTANCE
 using System.Runtime.InteropServices;
+#endif
 using FruitDefense.App.Services;
 using FruitDefense.Battle;
 using FruitDefense.Content;
@@ -9,6 +12,9 @@ using FruitDefense.Shell;
 using FruitDefense.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using FruitDefense.Development.GmStress;
+#endif
 
 namespace FruitDefense.App
 {
@@ -109,7 +115,7 @@ namespace FruitDefense.App
         public string SelectedLevelId => _selectedLevelId;
         public RuntimeUiTheme RuntimeUiTheme => runtimeUiTheme;
 
-#if UNITY_WEBGL && !UNITY_EDITOR
+#if FRUIT_DEFENSE_ACCEPTANCE && UNITY_WEBGL && !UNITY_EDITOR
         [DllImport("__Internal")]
         private static extern void FruitDefenseAcceptanceReady(
             int route,
@@ -248,6 +254,18 @@ namespace FruitDefense.App
             _compositionReady = true;
             _startupRoutineActive = false;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (ShouldEnterGmStressBattle())
+            {
+                if (!TryStartGmStressBattle(
+                        "gm-stress-" + Guid.NewGuid().ToString("N"),
+                        20260826,
+                        out var gmError))
+                    _blockingError = gmError.Code + ":" + gmError.Detail;
+                yield break;
+            }
+#endif
+
             string publishedPlaytestLevelId;
             if (PublishedBattlefieldPlaytestRequest.TryConsume(out publishedPlaytestLevelId))
             {
@@ -264,6 +282,7 @@ namespace FruitDefense.App
                 yield break;
             }
 
+#if FRUIT_DEFENSE_ACCEPTANCE
             if (ShouldEnterAcceptanceBattle())
             {
                 var acceptanceLevelId = AcceptanceLevelId();
@@ -278,6 +297,7 @@ namespace FruitDefense.App
                 }
                 yield break;
             }
+#endif
 
             yield return LoadInitialLobby();
         }
@@ -294,7 +314,8 @@ namespace FruitDefense.App
             if (_currentRequest != null || _activeBattleHost != null)
                 return Fail(BattleRequestActive, out error);
 
-            var request = new BattleLaunchRequest(sessionId, levelId, seed, contentVersion);
+            var request = new BattleLaunchRequest(sessionId, levelId, seed, contentVersion,
+                BattleSessionMode.Standard);
             if (!request.TryValidate(out var requestError))
                 return Fail(requestError, out error);
             if (!string.Equals(contentVersion, BundledContentVersion, StringComparison.Ordinal))
@@ -307,10 +328,36 @@ namespace FruitDefense.App
             _currentRequest = request;
             _currentResolvedLevel = resolvedLevel;
             _currentResult = null;
-            StartCoroutine(LoadBattle(request, resolvedLevel));
+            StartCoroutine(LoadBattle(request));
             error = ShellFlowError.None;
             return true;
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public bool TryStartGmStressBattle(string sessionId, int seed,
+            out ShellFlowError error)
+        {
+            if (!_compositionReady || Navigator == null)
+                return Fail(FlowNotReady, out error);
+            if (_currentRequest != null || _activeBattleHost != null)
+                return Fail(BattleRequestActive, out error);
+
+            var request = new BattleLaunchRequest(sessionId,
+                GmStressBattleIds.LevelId, seed, BundledContentVersion,
+                BattleSessionMode.GmStress);
+            if (!request.TryValidate(out var requestError))
+                return Fail(requestError, out error);
+            if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
+                return Fail(navigationError, out error);
+
+            _currentRequest = request;
+            _currentResolvedLevel = null;
+            _currentResult = null;
+            StartCoroutine(LoadGmStressBattle(request));
+            error = ShellFlowError.None;
+            return true;
+        }
+#endif
 
         public bool TrySelectLevel(string levelId, out ShellFlowError error)
         {
@@ -329,12 +376,14 @@ namespace FruitDefense.App
             }
 
             error = ShellFlowError.None;
+#if FRUIT_DEFENSE_ACCEPTANCE
             if (Navigator != null
                 && Navigator.CurrentRoute == AppRoute.Lobby
                 && Navigator.TransitionState == AppTransitionState.Idle)
             {
                 SignalAcceptanceRouteReady(AppRoute.Lobby);
             }
+#endif
             return true;
         }
 
@@ -430,7 +479,8 @@ namespace FruitDefense.App
                 Guid.NewGuid().ToString("N"),
                 _currentResult.LevelId,
                 retrySeed,
-                _currentRequest.ContentVersion);
+                _currentRequest.ContentVersion,
+                BattleSessionMode.Standard);
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 return Fail(navigationError, out error);
 
@@ -438,7 +488,7 @@ namespace FruitDefense.App
             _currentResolvedLevel = retryLevel;
             _currentResult = null;
             _activeBattleHost = null;
-            StartCoroutine(LoadBattle(retry, retryLevel));
+            StartCoroutine(LoadBattle(retry));
             error = ShellFlowError.None;
             return true;
         }
@@ -457,7 +507,12 @@ namespace FruitDefense.App
                     _blockingError = result.ErrorCode;
                     return;
                 }
-                if (BindLobbyPresenter()) SignalAcceptanceRouteReady(AppRoute.Lobby);
+                if (BindLobbyPresenter())
+                {
+#if FRUIT_DEFENSE_ACCEPTANCE
+                    SignalAcceptanceRouteReady(AppRoute.Lobby);
+#endif
+                }
             });
         }
 
@@ -480,12 +535,16 @@ namespace FruitDefense.App
                 }
                 ClearCompletedSession();
                 _lastRecoverableError = ShellFlowError.None;
-                if (BindLobbyPresenter()) SignalAcceptanceRouteReady(AppRoute.Lobby);
+                if (BindLobbyPresenter())
+                {
+#if FRUIT_DEFENSE_ACCEPTANCE
+                    SignalAcceptanceRouteReady(AppRoute.Lobby);
+#endif
+                }
             });
         }
 
-        private IEnumerator LoadBattle(BattleLaunchRequest request,
-            ResolvedLevelDefinition resolvedLevel)
+        private IEnumerator LoadBattle(BattleLaunchRequest request)
         {
             yield return LoadScene(BattleScene, result =>
             {
@@ -502,14 +561,8 @@ namespace FruitDefense.App
                     return;
                 }
 
-                if (!ReferenceEquals(_currentResolvedLevel, resolvedLevel))
-                {
-                    RecoverAfterRouteFailure(BattleSessionInitializationResult.ResolvedLevelMismatch);
-                    return;
-                }
-
                 var initialization = host.Initialize(
-                    request, Navigator, this, runtimeUiTheme, resolvedLevel);
+                    request, Navigator, this, runtimeUiTheme, _levelCatalog);
                 if (!initialization.Success)
                 {
                     RecoverAfterRouteFailure(initialization.ErrorCode);
@@ -526,9 +579,65 @@ namespace FruitDefense.App
                 }
 
                 _lastRecoverableError = ShellFlowError.None;
+#if FRUIT_DEFENSE_ACCEPTANCE
                 SignalAcceptanceRouteReady(AppRoute.Battle);
+#endif
             });
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private IEnumerator LoadGmStressBattle(BattleLaunchRequest request)
+        {
+            yield return LoadScene(BattleScene, result =>
+            {
+                if (!result.Success)
+                {
+                    RecoverAfterRouteFailure(result.ErrorCode);
+                    return;
+                }
+
+                var releaseHost = FindFirstObjectByType<FruitDefenseGame>();
+                var terrainPalette = releaseHost == null
+                    ? null
+                    : releaseHost.BattlefieldTerrainPalettes.FirstOrDefault(value =>
+                        value != null && string.Equals(value.PaletteId,
+                            GmStressBattleIds.TerrainPaletteId,
+                            StringComparison.Ordinal));
+                if (releaseHost != null) releaseHost.enabled = false;
+                var root = new GameObject("GM Stress Battle Host");
+                var host = root.AddComponent<GmStressBattlePresenter>();
+                var initialization = host.InitializeGm(
+                    request, Navigator, this, runtimeUiTheme, terrainPalette);
+                if (!initialization.Success)
+                {
+                    Destroy(root);
+                    RecoverAfterRouteFailure(initialization.ErrorCode);
+                    return;
+                }
+
+                _activeBattleHost = host;
+                if (!Navigator.TryCompleteTransition(out var completeError))
+                {
+                    host.DisposeSession();
+                    _activeBattleHost = null;
+                    RecoverAfterRouteFailure(completeError);
+                    return;
+                }
+                _lastRecoverableError = ShellFlowError.None;
+            });
+        }
+
+        private bool ShouldEnterGmStressBattle()
+        {
+            if (GmStressBattleLaunchRequest.TryConsumeEditorOneShot()) return true;
+            var launch = _bootstrap?.PlatformAdapter?.LaunchContext;
+            if (launch == null
+                || !launch.TryGetQuery(GmStressBattleLaunchRequest.QueryKey,
+                    out var value)) return false;
+            return !string.Equals(value, "0", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
+        }
+#endif
 
         private IEnumerator LoadSettlement()
         {
@@ -555,7 +664,9 @@ namespace FruitDefense.App
                 }
                 _lastRecoverableError = ShellFlowError.None;
                 presenter.Initialize(this, runtimeUiTheme);
+#if FRUIT_DEFENSE_ACCEPTANCE
                 SignalAcceptanceRouteReady(AppRoute.Settlement);
+#endif
             });
         }
 
@@ -638,11 +749,12 @@ namespace FruitDefense.App
             _currentResult = null;
         }
 
+#if FRUIT_DEFENSE_ACCEPTANCE
         private bool ShouldEnterAcceptanceBattle()
         {
             var launch = _bootstrap.PlatformAdapter?.LaunchContext;
             return launch != null
-                && launch.TryGetQuery("acceptance", out _)
+                && AcceptanceLaunchQuery.IsEnabled(launch.LaunchUrl)
                 && launch.TryGetQuery("route", out var route)
                 && string.Equals(route, "battle", StringComparison.OrdinalIgnoreCase);
         }
@@ -660,30 +772,42 @@ namespace FruitDefense.App
 
         public void ConfigureAcceptanceFlow(string command)
         {
-            if (!IsAcceptanceLaunch() || string.IsNullOrWhiteSpace(command)) return;
+            if (!IsAcceptanceLaunch()) return;
+            if (string.IsNullOrWhiteSpace(command))
+            {
+                Debug.LogError(AcceptanceCommandResult.TerminalFixtureUnknown);
+                return;
+            }
+            AcceptanceTerminalFixture fixture;
             switch (command)
             {
                 case "victory":
-                    if (_activeBattleHost?.Simulation == null) return;
-                    _activeBattleHost.Simulation.State.Phase = global::FruitDefense.Core.GamePhase.Victory;
-                    _activeBattleHost.Simulation.State.WaveIndex =
-                        _activeBattleHost.Simulation.MaxWaves;
-                    _activeBattleHost.Simulation.State.Lives = 3;
-                    _activeBattleHost.TrySubmitTerminalResult();
+                    fixture = AcceptanceTerminalFixture.Victory;
                     break;
                 case "defeat":
-                    if (_activeBattleHost?.Simulation == null) return;
-                    _activeBattleHost.Simulation.State.Phase = global::FruitDefense.Core.GamePhase.Defeat;
-                    _activeBattleHost.Simulation.State.Lives = 0;
-                    _activeBattleHost.TrySubmitTerminalResult();
+                    fixture = AcceptanceTerminalFixture.Defeat;
                     break;
+                default:
+                    Debug.LogError(AcceptanceCommandResult.TerminalFixtureUnknown
+                        + ":" + command);
+                    return;
             }
+
+            var acceptancePort = _activeBattleHost as IAcceptanceBattlePort;
+            if (acceptancePort == null)
+            {
+                Debug.LogError(AcceptanceCommandResult.SessionUnavailable);
+                return;
+            }
+            var result = acceptancePort.TryConfigureTerminalFixture(fixture);
+            if (!result.Succeeded) Debug.LogError(result.ErrorCode);
         }
 
         private bool IsAcceptanceLaunch()
         {
             var launch = _bootstrap?.PlatformAdapter?.LaunchContext;
-            return launch != null && launch.TryGetQuery("acceptance", out _);
+            return launch != null
+                && AcceptanceLaunchQuery.IsEnabled(launch.LaunchUrl);
         }
 
         private void SignalAcceptanceRouteReady(AppRoute route)
@@ -711,6 +835,7 @@ namespace FruitDefense.App
                 identity?.ThemeId ?? string.Empty);
 #endif
         }
+#endif
 
         private static int CreateNonzeroSeed()
         {
@@ -959,7 +1084,9 @@ namespace FruitDefense.App
                 if (!RuntimeUiGui.DrawAction(_runtimeUiDrawContext,
                     layout.RetryAction,
                     retryCopy.Text,
-                    RuntimeUiActionKind.Primary,
+                    new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                        RuntimeUiActionContentForm.IconLabel,
+                        RuntimeUiActionBehavior.Instantaneous),
                     retryState,
                     RuntimeUiArtSlot.IconControlRetry))
                     return;

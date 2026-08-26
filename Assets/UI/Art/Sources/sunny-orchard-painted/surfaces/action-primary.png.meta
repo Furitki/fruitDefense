@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;group=surfaces;slot=action-primary;imagegen-master=1
+  userData: ui-art-source=sunny-orchard-painted;group=surfaces;slot=action-primary;imagegen-master=1;container=primary;target-rgb=436C15;content-reference=FFF6E0;minimum-contrast=4.5
   assetBundleName:
   assetBundleVariant:

@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using FruitDefense.Content;
 
 namespace FruitDefense.Core
 {
-    public enum PlantKind { Pea, Watermelon, Banana, Durian, Sunflower }
-    public enum WeaponKind { None, Gatling, Ice, Chili }
-    public enum ZombieKind { Normal, Runner, Armored, Boss }
     public enum GamePhase { Ready, Playing, BetweenWaves, Victory, Defeat }
     public enum PlantDropAction { Invalid, Cancel, Plant, Move, Swap, Merge }
-    public enum CombatEffectKind { PeaImpact, WatermelonBlast, DurianDrop, SunBurst, GatlingMuzzle, IceImpact, ChiliImpact, HitSpark }
+    public enum AbilityRuntimePhase { Idle, Windup, Recovery }
 
     public struct InteractionStatus
     {
@@ -41,32 +39,31 @@ namespace FruitDefense.Core
     [Serializable]
     public sealed class Plant : CombatEntityState
     {
-        public PlantKind Kind;
         public int Star = 1;
         public int PotId = -1;
         public int NurseryIndex = -1;
-        public WeaponKind Weapon;
-        public float AttackCooldown;
-        public float ProductionProgress;
         public float MoveCooldown;
-        public int BurstShotsRemaining;
-        public float BurstShotCooldown;
-        public Vector2 Facing = Vector2.right;
-        public float ActionStartedAt;
-        public float ActionUntil;
         public string EquipmentId = string.Empty;
         public override CombatFaction Faction { get { return CombatFaction.Player; } }
         public override bool IsAlive { get { return true; } }
     }
 
     [Serializable]
-    public sealed class SkillRuntimeState
+    public sealed class AbilityRuntimeState
     {
-        public string SkillId = string.Empty;
+        public string AbilityId = string.Empty;
+        public AbilityRuntimePhase Phase;
         public int CooldownTicks;
         public int PeriodicProgressTicks;
+        public int WindupTicksRemaining;
+        public int RecoveryTicksRemaining;
         public int BurstShotsRemaining;
         public int BurstIntervalTicks;
+        public int PendingSourceEntityId;
+        public int PendingTargetEntityId;
+        public float PendingEventMagnitude;
+        public long PendingRootEventSequence;
+        public long LastRootEventSequence;
     }
 
     [Serializable]
@@ -75,13 +72,6 @@ namespace FruitDefense.Core
         public int Id;
         public Vector2Int Cell;
         public bool Active = true;
-    }
-
-    [Serializable]
-    public sealed class BurnStack
-    {
-        public float Remaining;
-        public float DamagePerSecond;
     }
 
     [Serializable]
@@ -99,18 +89,13 @@ namespace FruitDefense.Core
     [Serializable]
     public sealed class Zombie : CombatEntityState
     {
-        public ZombieKind Kind;
+        public string RouteId = string.Empty;
         public float Hp;
         public float MaxHp;
         public float Speed;
         public float PathProgress;
         public int Reward;
         public int Threat;
-        public float SlowUntil;
-        public float FreezeUntil;
-        public float HitStunUntil;
-        public int IceHits;
-        public readonly List<BurnStack> Burns = new List<BurnStack>();
         public override CombatFaction Faction { get { return CombatFaction.Enemy; } }
         public override bool IsAlive { get { return Hp > 0f; } }
     }
@@ -119,10 +104,12 @@ namespace FruitDefense.Core
     public sealed class ProjectileFlash
     {
         public int Id;
-        public int PlantId;
+        public int SourceEntityId;
         public int TargetId = -1;
-        public PlantKind Kind;
-        public WeaponKind Weapon;
+        public string SourceDefinitionId = string.Empty;
+        public string SourceEquipmentId = string.Empty;
+        public string AbilityId = string.Empty;
+        public int DeliveryIndex;
         public Vector2 Origin;
         public Vector2 Position;
         public Vector2 TargetPoint;
@@ -130,13 +117,9 @@ namespace FruitDefense.Core
         public float MaxDistance;
         public float Progress;
         public bool Returning;
-        public float Damage;
-        public float Ttl;
+        public float DamageBasis;
         public readonly List<int> HitIds = new List<int>();
         public string ProjectileId = string.Empty;
-        public string VisualId = string.Empty;
-        public string ImpactCueId = string.Empty;
-        public BattleProjectileMode Mode;
         public int TicksRemaining;
         public int FlightTicks;
     }
@@ -144,31 +127,60 @@ namespace FruitDefense.Core
     [Serializable]
     public sealed class Inventory
     {
-        public int Gatling;
-        public int Ice;
-        public int Chili;
+        private readonly Dictionary<string, int> equipment =
+            new Dictionary<string, int>(StringComparer.Ordinal);
         public int Pots;
 
-        public int Get(WeaponKind kind)
+        public int Gatling
         {
-            switch (kind)
+            get { return Get(BattleContentIds.Equipment.Gatling); }
+            set { Set(BattleContentIds.Equipment.Gatling, value); }
+        }
+
+        public int Ice
+        {
+            get { return Get(BattleContentIds.Equipment.Ice); }
+            set { Set(BattleContentIds.Equipment.Ice, value); }
+        }
+
+        public int Chili
+        {
+            get { return Get(BattleContentIds.Equipment.Chili); }
+            set { Set(BattleContentIds.Equipment.Chili, value); }
+        }
+
+        public IReadOnlyList<KeyValuePair<string, int>> Equipment
+        {
+            get
             {
-                case WeaponKind.Gatling: return Gatling;
-                case WeaponKind.Ice: return Ice;
-                case WeaponKind.Chili: return Chili;
-                default: return 0;
+                return equipment.OrderBy(value => value.Key, StringComparer.Ordinal).ToArray();
             }
         }
 
-        public void Add(WeaponKind kind, int amount)
+        public int Get(string definitionId)
         {
-            switch (kind)
-            {
-                case WeaponKind.Gatling: Gatling += amount; break;
-                case WeaponKind.Ice: Ice += amount; break;
-                case WeaponKind.Chili: Chili += amount; break;
-            }
+            if (string.IsNullOrEmpty(definitionId)) return 0;
+            int count;
+            return equipment.TryGetValue(definitionId, out count) ? count : 0;
         }
+
+        public void Set(string definitionId, int count)
+        {
+            if (string.IsNullOrEmpty(definitionId))
+                throw new ArgumentException("Equipment definition ID is required.", nameof(definitionId));
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0) equipment.Remove(definitionId);
+            else equipment[definitionId] = count;
+        }
+
+        public void Add(string definitionId, int amount)
+        {
+            var next = Get(definitionId) + amount;
+            if (next < 0) throw new InvalidOperationException(
+                "Equipment inventory cannot become negative for '" + definitionId + "'.");
+            Set(definitionId, next);
+        }
+
     }
 
     [Serializable]
@@ -189,6 +201,7 @@ namespace FruitDefense.Core
         public int NextId = 1;
         public int RandomSeed;
         public int LogicTick;
+        public int EscapedEnemies;
         public int NextStatusSequence = 1;
         public long NextCombatEventSequence = 1;
         public readonly List<Plant> Plants = new List<Plant>();

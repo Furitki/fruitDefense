@@ -271,8 +271,8 @@ namespace FruitDefense.Editor
                     && reason.Contains(BattlefieldLayerIds.EdgeStyles.Refined),
                     "runtime rejects a material pair when neither ordered binding exists");
 
-                var resolved = BundledLevelCatalogFactory.CreateCompiled()
-                    .Resolve(BundledLevelCatalogIds.Levels.Orchard01);
+                var catalog = BundledLevelCatalogFactory.CreateCompiled();
+                var resolved = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard01);
                 Assert(resolved.Succeeded && resolved.Value != null,
                     "runtime terrain failure fixture resolves the bundled level");
                 var navigator = new AppNavigator();
@@ -280,12 +280,13 @@ namespace FruitDefense.Editor
                     && navigator.TryCompleteTransition(out reason), reason);
                 var request = new BattleLaunchRequest("terrain-failure-smoke",
                     resolved.Value.Identity.LevelId, 7319,
-                    resolved.Value.BattleContent.Header.contentVersion);
+                    resolved.Value.BattleContent.Header.contentVersion,
+                    BattleSessionMode.Standard);
                 host.ConfigureBattlefieldTerrain(new[] { missingSquareGrass });
                 var initialization = host.Initialize(request, navigator,
                     new AcceptingResultSink(), ProjectSetup.RequireReleaseRuntimeUiTheme(),
-                    resolved.Value);
-                Assert(initialization.Success && host.IsInitialized && host.Simulation != null,
+                    catalog);
+                Assert(initialization.Success && host.Status.IsInitialized,
                     "missing terrain presentation does not destroy non-terrain gameplay initialization");
                 Assert(!host.IsTerrainPresentationAvailable
                     && host.TerrainPresentationError.Contains(

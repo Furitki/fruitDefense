@@ -1,6 +1,6 @@
 # Runtime UI visual hierarchy WebGL evidence
 
-This branch is accepted against ordinary WebGL at `402x874` in both full and `44/34` inset safe-area profiles. The refreshed flow manifests resolve build identity loader `1aadd40e5a5e`, data `bc210cc4a4b5`, framework `7b327fa58679`, and wasm `d045287bba48`.
+The canonical branch matrix remains accepted at `402x874` in both full and `44/34` inset safe-area profiles, as recorded in `visual-measurements.json` and the existing full/inset route captures. The task 5.3 outcome-emphasis supplement uses full and `24/34` inset captures to exercise the same typography gate at a second non-zero top/bottom inset scale. These interactive fixture captures use the dedicated acceptance WebGL profile, and both retained manifests record `verifiedProfile=acceptance`. The frozen final build identity is loader `e34e92f59c48`, data `2ca8d78775e6`, framework `3cda7dcd6ad6`, and wasm `b07b062af21a`.
 
 ## What changed visibly
 
@@ -20,17 +20,36 @@ This branch is accepted against ordinary WebGL at `402x874` in both full and `44
 - [Inset Battle ready](inset-402x874-battle/01-ready.png)
 - [Inset paused modal](inset-402x874-battle/05-paused.png)
 - [Inset defeat settlement](inset-402x874-flow-defeat/03-settlement-defeat.png)
+- [Full victory emphasis](emphasis-full-victory/03-settlement-victory.png)
+- [Inset defeat emphasis](emphasis-inset-defeat/03-settlement-defeat.png)
+- [Full victory outcome hidden](emphasis-full-victory/03a-settlement-hidden-victory.png)
+- [Full victory outcome appearing](emphasis-full-victory/03a-settlement-motion-victory.png)
+- [Inset defeat outcome hidden](emphasis-inset-defeat/03a-settlement-hidden-defeat.png)
+- [Inset defeat outcome appearing](emphasis-inset-defeat/03a-settlement-motion-defeat.png)
+- [Full victory emphasis manifest](emphasis-full-victory/flow-acceptance.json)
+- [Inset defeat emphasis manifest](emphasis-inset-defeat/flow-acceptance.json)
 
-The machine-readable measurements are in [visual-measurements.json](visual-measurements.json). Canonical state, delivery, interaction, final-raster optical, and flow assertions are recorded in the adjacent `acceptance.json` and `flow-acceptance.json` files.
+The general hierarchy measurements and canonical `44/34` inset identity remain in [visual-measurements.json](visual-measurements.json). Canonical state, delivery, interaction, final-raster optical, and flow assertions are recorded in the adjacent `acceptance.json` and `flow-acceptance.json` files; the task 5.3 reveal and outline supplement is owned by the two linked emphasis manifests.
 
 ## Payload
 
-The four WebGL payloads total `10,243,595` bytes, up `577,684` bytes (`5.9765%`) from build `78d62a3c45c5`. Almost all growth remains the portrait illustration in the data payload; the optical-framing and borderless-metric follow-up adds only `3,641` bytes over the previous accepted hierarchy build.
+The dedicated acceptance build's four immutable Build payloads total `12,757,383` bytes: loader `117,893` bytes (`e34e92f59c48aadc2314e57e329f90aacee294b5f99a431bc1ed22bbb885113b`), data `6,623,142` bytes (`2ca8d78775e6be843a0ba9b5de678f2524a6989a3d97eea1b31fe4da40c59b05`), framework `71,639` bytes (`3cda7dcd6ad61f8b005b8570a733814e4206679574244f5afa2d2c395c74ec33`), and wasm `5,944,709` bytes (`b07b062af21ae7d4bc131bc2726ffd7c8fd045e4a30ce06ae6cf5510b2fbfb5b`). The complete acceptance output, including `index.html` and the project-owned host resources, totals `12,767,625` bytes. This includes the acceptance-only bridge and fixture surface, so it is evidence identity rather than a release-size comparison; release payload accounting belongs to the release build gate.
+
+## Automated validation
+
+- Editor quality: `RUNTIME_UI_QUALITY_OK cases=80 viewports=4`.
+- Editor visual system: `RUNTIME_UI_VISUAL_SYSTEM_SMOKE_OK`; release validator: `Valid (0 warning(s))`.
+- Acceptance runtime isolation: `FRUIT_DEFENSE_ACCEPTANCE_RUNTIME_ISOLATION_OK`.
+- Frozen WebGL build: `FRUIT_DEFENSE_ACCEPTANCE_WEB_BUILD_OK`; both browser runs: `FRUIT_DEFENSE_FLOW_ACCEPTANCE_OK`.
+- Script gates: `FRUIT_DEFENSE_ACCEPTANCE_SELF_CHECK_OK`, `FRUIT_DEFENSE_WEBGL_BUILD_PROFILE_PROBE_SELF_CHECK_OK`, and the route/session publisher behavior probe all pass. The URL profile self-check includes a dynamic host whose base URL reports `acceptance` but whose exact final query reports `release`; the portrait runner rejects it before Chrome or Unity messaging.
 
 ## Settlement final-raster gates
 
-- Full victory: rendered banner color envelope `338x52`, outcome glyphs `55x25`, top/bottom padding `14/13px`.
-- Inset defeat: rendered banner color envelope `308x47`, outcome glyphs `52x23`, top/bottom padding `13/11px`.
+- Full victory: rendered banner color envelope `338x52`; independent hidden-delta final outcome ink `61x31`; exact connected outline thickness `2px`; vertical occupancy `0.596154`; padding `138/11/139/10px` with `1px` top/bottom imbalance.
+- Inset defeat: rendered banner color envelope `316x49`; independent hidden-delta final outcome ink `58x29`; exact connected outline thickness `2px`; vertical occupancy `0.591837`; padding `129/10/129/10px` with `0px` top/bottom imbalance.
+- Final ink is derived independently from the stable screenshot against its hidden frame with a maximum-channel delta greater than `8`, not from `fillSupport OR outlineMap`. Full victory records `1617` final-ink pixels and `748/748/748/748` outline candidate/connected/connected-final-covered/candidate-final-covered pixels; inset defeat records `1364` and `651/651/651/651`. A synthetic candidate present in the stable color mask but absent from the independent delta mask fails closed.
+- The authoritative direct-cardinal gate requires every ring side to contain at least `8%` of that ring and every outer side to retain at least `20%` of the preceding ring. For the 2px outer ring, full victory requires at least `27` pixels per side and records `83/59/51/70` with minimum previous-ring retention `0.614458`; inset defeat requires at least `19` and records `38/44/31/41` with minimum retention `0.274336`. Bounding-box `expansionFromFill` remains an AA observation only. Detached candidates plus four-sided 1px, local-residual, and locally-gapped synthetic negatives are all rejected for their intended gate.
+- The outcome-only reveal gate is route- and session-bound: every accepted telemetry sample proves `fruitDefenseAppRoute=2`, identity route `2/settlement`, and a matching reveal-history entry with `route=2` and the current non-empty Settlement `sessionId`. Full victory records hidden/appearing/stable fill-and-outline counts `0/0 → 316/749 → 316/748`; inset defeat records `0/0 → 233/657 → 230/651`. Each cycle's retained history tail is exactly `hidden → appearing → stable` for one session. The outcome-only comparison windows record `1617` changed pixels with actual bounds `[170,159,231,190]` inside `[140,158,262,192]` full, and `1962` with `[144,172,258,203]` inside `[144,171,258,204]` inset.
 - All six measured metric-row edge bands have a maximum closed brown-border run fraction of `0.0`.
 
 ## Manual review

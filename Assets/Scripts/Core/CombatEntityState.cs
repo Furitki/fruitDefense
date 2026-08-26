@@ -16,23 +16,13 @@ namespace FruitDefense.Core
     public abstract class CombatEntityState
     {
         public int Id;
-        public string ContentId = string.Empty;
-        public readonly List<SkillRuntimeState> SkillRuntimes = new List<SkillRuntimeState>();
-        public readonly List<PassiveRuntimeState> PassiveRuntimes = new List<PassiveRuntimeState>();
+        public string DefinitionId = string.Empty;
+        public readonly List<AbilityRuntimeState> AbilityRuntimes = new List<AbilityRuntimeState>();
         public readonly List<StatusInstance> Statuses = new List<StatusInstance>();
 
         public int EntityId { get { return Id; } }
-        public string DefinitionId { get { return ContentId ?? string.Empty; } }
         public abstract CombatFaction Faction { get; }
         public abstract bool IsAlive { get; }
-    }
-
-    [Serializable]
-    public sealed class PassiveRuntimeState
-    {
-        public string PassiveId = string.Empty;
-        public int CooldownTicks;
-        public long LastRootEventSequence;
     }
 
     public readonly struct CombatEffectContext
@@ -90,7 +80,7 @@ namespace FruitDefense.Core
         private static float Clamp(CombatAttributeKind attribute, float value)
         {
             if (attribute == CombatAttributeKind.AttackInterval)
-                return Mathf.Max(BattleSkillTiming.FixedStepSeconds, value);
+                return Mathf.Max(BattleAbilityTiming.FixedStepSeconds, value);
             return Mathf.Max(0f, value);
         }
     }

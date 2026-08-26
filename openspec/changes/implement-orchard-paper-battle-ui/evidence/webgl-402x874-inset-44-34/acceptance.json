@@ -1,0 +1,2562 @@
+{
+  "accepted": true,
+  "capturedAtUtc": "2026-08-26T04:09:23.0151894+00:00",
+  "url": "http://127.0.0.1:59695/?acceptance=1&route=battle&levelId=orchard-01&safeTop=44&safeBottom=34",
+  "levelId": "orchard-01",
+  "expectedCompositeIdentity": {
+    "levelId": "orchard-01",
+    "mapId": "orchard-01",
+    "waveSetId": "waves.orchard-01.teaching",
+    "ruleSetId": "rules.orchard-01.baseline",
+    "themeId": "theme.orchard-01.day"
+  },
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 44,
+    "bottom": 34,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 44,
+      "width": 402,
+      "height": 796
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 0.9107551487414187,
+    "designOffset": {
+      "x": 17.93821510297485,
+      "y": 44.0
+    },
+    "shellContentRect": {
+      "x": 32.51029748283753,
+      "y": 60.39359267734554,
+      "width": 336.97940503432494,
+      "height": 763
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "2",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "1",
+    "display": "ui.sunny-orchard@2 / sunny-orchard-painted@1",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.174",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:59695/?acceptance=1&route=battle&levelId=orchard-01&safeTop=44&safeBottom=34",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 402,
+    "height": 874,
+    "cssWidth": 402,
+    "cssHeight": 874,
+    "innerWidth": 402,
+    "innerHeight": 874,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1787717276256,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 1,
+    "body": ""
+  },
+  "checks": {
+    "http": "pass",
+    "wasm": "pass",
+    "perAssetContentVersions": "pass",
+    "strongContentEtags": "pass",
+    "brotliFallbackDelivery": "pass",
+    "immutableBuildCache": "pass",
+    "revalidatableHtml": "pass",
+    "warmCacheReuse": "pass",
+    "crossReleaseCacheReuse": "not-requested",
+    "unityLoaded": "pass",
+    "directRouteLevelIdentity": "pass",
+    "compositeIdentity": "pass",
+    "requestedViewportAndCanvas": "pass",
+    "safeAreaQueryApplied": "pass",
+    "chineseHudInk": "pass",
+    "screenshotDimensions": "pass",
+    "requiredStates": "pass",
+    "contextualWaveLabels": "pass",
+    "waveActionContentContrast": "pass",
+    "refreshActionContentContrast": "pass",
+    "compactControlLifecycle": "pass",
+    "compactControlInstantClose": "pass",
+    "panelGeometry": "pass",
+    "textContainment": "pass",
+    "occupiedBalance": "pass",
+    "actionFocusCue": "pass",
+    "waveActionPressedBeforeRelease": "pass",
+    "pausedModalFinalRasterOpticalAlignment": "pass",
+    "pauseActionsPressedBeforeReleaseAndContained": "pass",
+    "oldBottomActionRowAbsent": "pass",
+    "noLargeNearBlackRegions": "pass",
+    "pauseContinuePreservesRun": "pass",
+    "pauseRestartProducesCleanReadyState": "pass",
+    "selectedToolState": "pass",
+    "selectedToolAvailableToClickedHashChanged": "pass",
+    "legalInteractionCue": "pass",
+    "illegalInteractionCue": "pass",
+    "inspectionClickInformationAndRange": "pass",
+    "destinationClickNoRelocation": "pass",
+    "dragRelocation": "pass",
+    "battleTerminalResultCard": "pass",
+    "terminalPreviewRestartReturnsReadyWithoutRouteSubmission": "pass"
+  },
+  "delivery": {
+    "assetVersions": {
+      "loader": "b61da1580fd1",
+      "data": "8757f066a683",
+      "framework": "d1263af7bd87",
+      "wasm": "d125043a3b8c"
+    },
+    "htmlCacheControl": "no-cache",
+    "assets": {
+      "loader": {
+        "url": "http://127.0.0.1:59695/Build/WebGL.loader.js?v=b61da1580fd1",
+        "version": "b61da1580fd1",
+        "contentType": "text/javascript; charset=utf-8",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 117893,
+        "etag": "\"b61da1580fd1a89fa79a90dfa0bd0266425b675a2ee7a2bdb9f576d472b1ec73\"",
+        "contentSha256": "b61da1580fd1a89fa79a90dfa0bd0266425b675a2ee7a2bdb9f576d472b1ec73"
+      },
+      "data": {
+        "url": "http://127.0.0.1:59695/Build/WebGL.data.unityweb?v=8757f066a683",
+        "version": "8757f066a683",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 6624262,
+        "etag": "\"8757f066a68321eeeb122262a571992967515563190a3493828c25eb9d13cbf8\"",
+        "contentSha256": "8757f066a68321eeeb122262a571992967515563190a3493828c25eb9d13cbf8"
+      },
+      "framework": {
+        "url": "http://127.0.0.1:59695/Build/WebGL.framework.js.unityweb?v=d1263af7bd87",
+        "version": "d1263af7bd87",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 71375,
+        "etag": "\"d1263af7bd8758d31f945e83d73c0835ea3d637d55d0f8c483c9af77df50d29a\"",
+        "contentSha256": "d1263af7bd8758d31f945e83d73c0835ea3d637d55d0f8c483c9af77df50d29a"
+      },
+      "wasm": {
+        "url": "http://127.0.0.1:59695/Build/WebGL.wasm.unityweb?v=d125043a3b8c",
+        "version": "d125043a3b8c",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 5891303,
+        "etag": "\"d125043a3b8c3c285fce6c36389fec12dbdbdb0cceeff9c17a07662ec497dce2\"",
+        "contentSha256": "d125043a3b8c3c285fce6c36389fec12dbdbdb0cceeff9c17a07662ec497dce2"
+      }
+    },
+    "cacheLimits": {
+      "perAssetTransferBytes": 16384,
+      "totalTransferBytes": 65536
+    },
+    "cacheRuns": {
+      "cold": {
+        "label": "cold",
+        "startedAtUtc": "2026-08-26T04:07:46.6194047+00:00",
+        "completedAtUtc": "2026-08-26T04:07:56.1860374+00:00",
+        "startupDurationMilliseconds": 9566.633,
+        "totalPayloadTransferSize": 12706033,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.loader.js?v=b61da1580fd1",
+            "startTimeMilliseconds": 1513.3,
+            "durationMilliseconds": 5.5,
+            "transferSize": 118193,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "data": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.data.unityweb?v=8757f066a683",
+            "startTimeMilliseconds": 2669.0,
+            "durationMilliseconds": 196.3,
+            "transferSize": 6624562,
+            "encodedBodySize": 6624262,
+            "decodedBodySize": 6624262,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.framework.js.unityweb?v=d1263af7bd87",
+            "startTimeMilliseconds": 1621.5,
+            "durationMilliseconds": 6.1,
+            "transferSize": 71675,
+            "encodedBodySize": 71375,
+            "decodedBodySize": 71375,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.wasm.unityweb?v=d125043a3b8c",
+            "startTimeMilliseconds": 1621.7,
+            "durationMilliseconds": 446.8,
+            "transferSize": 5891603,
+            "encodedBodySize": 5891303,
+            "decodedBodySize": 5891303,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          }
+        }
+      },
+      "warm": {
+        "label": "warm",
+        "startedAtUtc": "2026-08-26T04:07:56.2042106+00:00",
+        "completedAtUtc": "2026-08-26T04:08:02.2985642+00:00",
+        "startupDurationMilliseconds": 6094.354,
+        "totalPayloadTransferSize": 300,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.loader.js?v=b61da1580fd1",
+            "startTimeMilliseconds": 134.2,
+            "durationMilliseconds": 0.0,
+            "transferSize": 0,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": "http/1.1"
+          },
+          "data": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.data.unityweb?v=8757f066a683",
+            "startTimeMilliseconds": 681.4,
+            "durationMilliseconds": 6.6,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "responseStatus": 304,
+            "deliveryType": "cache",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.framework.js.unityweb?v=d1263af7bd87",
+            "startTimeMilliseconds": 174.5,
+            "durationMilliseconds": 19.9,
+            "transferSize": 0,
+            "encodedBodySize": 71375,
+            "decodedBodySize": 71375,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:59695/Build/WebGL.wasm.unityweb?v=d125043a3b8c",
+            "startTimeMilliseconds": 174.7,
+            "durationMilliseconds": 124.2,
+            "transferSize": 0,
+            "encodedBodySize": 5891303,
+            "decodedBodySize": 5891303,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          }
+        }
+      }
+    },
+    "releaseTransition": {
+      "state": "not-requested"
+    }
+  },
+  "routeIdentities": {
+    "battle": {
+      "route": 1,
+      "routeName": "battle",
+      "sessionId": "acceptance-cf519a7bd6234c4f960e86813e990ff8",
+      "seed": 20260714,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    }
+  },
+  "screenshots": {
+    "ready": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01-ready.png",
+    "speedHover": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01c-speed-hover-1x.png",
+    "speedPressed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01d-speed-pressed-1x.png",
+    "speedActivating": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01e-speed-activating-2x.png",
+    "speedActive": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01f-speed-active-2x.png",
+    "speedDeactivating": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01g-speed-deactivating-1x.png",
+    "speedInactive": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01h-speed-inactive-1x.png",
+    "waveActionHover": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\01a-wave-action-hover.png",
+    "waveActionPressed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\02a-wave-action-pressed.png",
+    "activeWave": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\02-active-wave.png",
+    "betweenWave": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\03-between-wave.png",
+    "immediateNextWave": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\04-immediate-next-wave.png",
+    "pauseActivating": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\04a-pause-activating.png",
+    "paused": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\05-paused.png",
+    "pauseContinueHover": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\05a-pause-continue-hover.png",
+    "pauseContinuePressed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\05b-pause-continue-pressed.png",
+    "pauseDeactivating": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\05c-pause-deactivating.png",
+    "continued": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\06-continued.png",
+    "pauseRestartHover": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\06a-pause-restart-hover.png",
+    "pauseRestartPressed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\06b-pause-restart-pressed.png",
+    "restarted": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\07-restarted.png",
+    "toolAvailable": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\08-tool-available.png",
+    "selectedTool": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\09-selected-tool.png",
+    "adjacentPots": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\10-adjacent-pots.png",
+    "legalDragCue": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\11-legal-drag-cue.png",
+    "illegalDragCue": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\12-illegal-drag-cue.png",
+    "denseBoard": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\13-dense-board.png",
+    "plantDetail": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\14-plant-detail.png",
+    "detailCloseHover": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\14a-detail-close-hover.png",
+    "detailClosePressed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\14b-detail-close-pressed.png",
+    "detailClosed": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\14c-detail-closed.png",
+    "destinationClickNoMove": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\15-destination-click-no-move.png",
+    "dragRelocation": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\16-after-drag-move.png",
+    "terminal": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\17-battle-terminal-victory.png",
+    "terminalPreviewRestarted": "E:\\project\\unity\\furitDefense\\Logs\\visual-acceptance\\orchard-paper-inset\\18-terminal-preview-restarted.png"
+  },
+  "imageMetrics": {
+    "ready": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7243722227132419,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7240532261774666,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7245841060475995,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedActivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7238103903325459,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedActive": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7238103903325459,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedDeactivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7240532261774666,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "speedInactive": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7243722227132419,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "waveActionHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7255330288405586,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "waveActionPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7249698917027242,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "activeWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7323916576085495,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "betweenWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 4.975371909050202E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.72925877736575,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "immediateNextWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.736237397431718,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseActivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 9.950743818100404E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.494042218235444,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "paused": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 9.950743818100404E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.4941029993688341,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseContinueHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 9.950743818100404E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.4954071532580643,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseContinuePressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 9.950743818100404E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.4946561839287925,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseDeactivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 4.975371909050202E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7365598123796863,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "continued": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 4.975371909050202E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7366498993121161,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseRestartHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 9.950743818100404E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.49517879769652523,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "pauseRestartPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.495258309407673,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "restarted": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.724376338965245,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "toolAvailable": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 9.950743818100404E-05,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.950743818100404E-05,
+      "averageLuma": 0.7292779525661554,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "selectedTool": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 9.950743818100404E-05,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.950743818100404E-05,
+      "averageLuma": 0.7282304758113866,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "adjacentPots": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.728185807351634,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "legalDragCue": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7271287367140358,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "illegalDragCue": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7267967949629592,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "denseBoard": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0004477834718145181,
+      "nearBlackFraction": 0.0017911338872580724,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0004477834718145181,
+      "averageLuma": 0.7148029586878161,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "plantDetail": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7298708273652992,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "detailCloseHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7294071277372814,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "detailClosePressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.72998761487497,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "detailClosed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7268711044252385,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "destinationClickNoMove": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7264774378200326,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "dragRelocation": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00014926115727150605,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7264932161486786,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "terminal": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 11221,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.5354590994186808,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    },
+    "terminalPreviewRestarted": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 378,
+      "headerLightPixels": 10432,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00039802975272401614,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.724376338965245,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 29,
+          "yMin": 54,
+          "xMax": 258,
+          "yMax": 103
+        },
+        "formerAction": {
+          "xMin": 25,
+          "yMin": 810,
+          "xMax": 377,
+          "yMax": 833
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 44,
+          "xMax": 402,
+          "yMax": 840
+        }
+      }
+    }
+  },
+  "panelGeometry": {
+    "passed": true,
+    "edgeToleranceCapturePixels": 1,
+    "alignedOwnerTrack": true,
+    "leftEdgeDeltaCapturePixels": 0,
+    "rightEdgeDeltaCapturePixels": 0,
+    "heavyFrameBandRangeCapturePixels": {
+      "minimum": 3,
+      "maximum": 5
+    },
+    "standardFrameBandMaximumCapturePixels": 2,
+    "structuralFrameCount": 1,
+    "legacyEnclosingFrameDetected": false,
+    "refreshLowerMarginLogical": 37.332,
+    "header": {
+      "name": "Header",
+      "owner": {
+        "xMin": 17,
+        "yMin": 51,
+        "xMax": 385,
+        "yMax": 139
+      },
+      "visibleEdges": {
+        "left": 22,
+        "right": 377,
+        "top": 58
+      },
+      "outlineBands": {
+        "left": 1,
+        "right": 1,
+        "top": 1
+      },
+      "thresholds": {
+        "minimumColumnPixels": 10,
+        "minimumRowPixels": 34,
+        "sideThicknessSampleY": 95
+      }
+    },
+    "gameplayStage": {
+      "name": "GameplayStage",
+      "owner": {
+        "xMin": 17,
+        "yMin": 142,
+        "xMax": 385,
+        "yMax": 585
+      },
+      "visibleEdges": {
+        "left": 22,
+        "right": 377,
+        "top": 146
+      },
+      "outlineBands": {
+        "left": 4,
+        "right": 3,
+        "top": 4
+      },
+      "thresholds": {
+        "minimumColumnPixels": 49,
+        "minimumRowPixels": 34,
+        "sideThicknessSampleY": 540
+      }
+    },
+    "contextTray": {
+      "name": "ContextTray",
+      "owner": {
+        "xMin": 25,
+        "yMin": 592,
+        "xMax": 377,
+        "yMax": 664
+      },
+      "visibleEdges": {
+        "left": 29,
+        "right": 370,
+        "top": 599
+      },
+      "outlineBands": {
+        "left": 1,
+        "right": 1,
+        "top": 1
+      },
+      "thresholds": {
+        "minimumColumnPixels": 8,
+        "minimumRowPixels": 32,
+        "sideThicknessSampleY": 628
+      }
+    },
+    "nurseryTray": {
+      "name": "NurseryTray",
+      "owner": {
+        "xMin": 25,
+        "yMin": 670,
+        "xMax": 377,
+        "yMax": 751
+      },
+      "visibleEdges": {
+        "left": 29,
+        "right": 370,
+        "top": 677
+      },
+      "outlineBands": {
+        "left": 1,
+        "right": 1,
+        "top": 1
+      },
+      "thresholds": {
+        "minimumColumnPixels": 9,
+        "minimumRowPixels": 32,
+        "sideThicknessSampleY": 710
+      }
+    }
+  },
+  "textContainment": {
+    "passed": true,
+    "policy": "final-raster primary-text ink must remain inside declared owner guard",
+    "owners": [
+      {
+        "name": "header-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 67,
+          "xMax": 257,
+          "yMax": 90
+        },
+        "palette": "light-surface",
+        "insideInkPixels": 366,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "header-metric-row",
+        "owner": {
+          "xMin": 32,
+          "yMin": 105,
+          "xMax": 370,
+          "yMax": 136
+        },
+        "palette": "light-surface",
+        "insideInkPixels": 432,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "tool-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 595,
+          "xMax": 197,
+          "yMax": 616
+        },
+        "palette": "light-surface",
+        "insideInkPixels": 157,
+        "outsideGuardInkPixels": 1,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "nursery-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 674,
+          "xMax": 197,
+          "yMax": 695
+        },
+        "palette": "light-surface",
+        "insideInkPixels": 343,
+        "outsideGuardInkPixels": 3,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "refresh-action",
+        "owner": {
+          "xMin": 54,
+          "yMin": 768,
+          "xMax": 355,
+          "yMax": 795
+        },
+        "palette": "dark-surface",
+        "insideInkPixels": 1224,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "detail-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 595,
+          "xMax": 326,
+          "yMax": 618
+        },
+        "palette": "dark-surface",
+        "insideInkPixels": 279,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "detail-body",
+        "owner": {
+          "xMin": 32,
+          "yMin": 625,
+          "xMax": 326,
+          "yMax": 646
+        },
+        "palette": "dark-surface",
+        "insideInkPixels": 76,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 7,
+        "guardPixels": 2,
+        "passed": true
+      }
+    ]
+  },
+  "occupiedBalance": {
+    "passed": true,
+    "requiredVerticalSpanFraction": 0.94,
+    "occupiedVerticalSpanFraction": 0.9484924623115578,
+    "stateCoverage": [
+      "ready",
+      "plant-detail"
+    ],
+    "contextModes": {
+      "ready": "tools",
+      "plantDetail": "selected-detail"
+    },
+    "regions": [
+      {
+        "name": "header",
+        "region": {
+          "xMin": 17,
+          "yMin": 51,
+          "xMax": 385,
+          "yMax": 139
+        },
+        "visualSamples": 3898,
+        "totalSamples": 8096,
+        "visualFraction": 0.4814723320158103,
+        "passed": true
+      },
+      {
+        "name": "board",
+        "region": {
+          "xMin": 17,
+          "yMin": 142,
+          "xMax": 385,
+          "yMax": 585
+        },
+        "visualSamples": 40684,
+        "totalSamples": 40848,
+        "visualFraction": 0.995985115550333,
+        "passed": true
+      },
+      {
+        "name": "context-tray-tools",
+        "region": {
+          "xMin": 25,
+          "yMin": 592,
+          "xMax": 377,
+          "yMax": 664
+        },
+        "visualSamples": 4500,
+        "totalSamples": 6336,
+        "visualFraction": 0.7102272727272727,
+        "passed": true
+      },
+      {
+        "name": "nursery-tray",
+        "region": {
+          "xMin": 25,
+          "yMin": 670,
+          "xMax": 377,
+          "yMax": 751
+        },
+        "visualSamples": 2754,
+        "totalSamples": 7216,
+        "visualFraction": 0.3816518847006652,
+        "passed": true
+      },
+      {
+        "name": "refresh-action",
+        "region": {
+          "xMin": 25,
+          "yMin": 758,
+          "xMax": 377,
+          "yMax": 806
+        },
+        "visualSamples": 4223,
+        "totalSamples": 4224,
+        "visualFraction": 0.9997632575757576,
+        "passed": true
+      },
+      {
+        "name": "contextual-detail",
+        "region": {
+          "xMin": 25,
+          "yMin": 592,
+          "xMax": 377,
+          "yMax": 664
+        },
+        "visualSamples": 6316,
+        "totalSamples": 6336,
+        "visualFraction": 0.9968434343434344,
+        "passed": true
+      }
+    ]
+  },
+  "opticalMeasurements": {
+    "pausedModal": {
+      "thresholds": {
+        "titleCenterLogical": 2.0,
+        "hintCenterLogical": 2.0,
+        "pairedActionCapturePixels": 2
+      },
+      "title": {
+        "mask": "title-ink",
+        "sampleRegion": {
+          "xMin": 99,
+          "yMin": 346,
+          "xMax": 301,
+          "yMax": 383
+        },
+        "pixels": 540,
+        "bounds": {
+          "xMin": 148,
+          "yMin": 353,
+          "xMax": 253,
+          "yMax": 377,
+          "width": 105,
+          "height": 24,
+          "centerX": 200.5,
+          "centerY": 365.0
+        },
+        "centroid": {
+          "x": 202.63888888888889,
+          "y": 364.6222222222222
+        }
+      },
+      "titleOwner": {
+        "xMin": 65,
+        "yMin": 340,
+        "xMax": 337,
+        "yMax": 389
+      },
+      "titleCenterDeltaLogical": 0.13419877163593955,
+      "hintIcon": {
+        "mask": "hint-icon",
+        "sampleRegion": {
+          "xMin": 110,
+          "yMin": 406,
+          "xMax": 135,
+          "yMax": 440
+        },
+        "pixels": 93,
+        "bounds": {
+          "xMin": 118,
+          "yMin": 416,
+          "xMax": 132,
+          "yMax": 429,
+          "width": 14,
+          "height": 13,
+          "centerX": 125.0,
+          "centerY": 422.5
+        },
+        "centroid": {
+          "x": 125.02688172043011,
+          "y": 423.63978494623655
+        }
+      },
+      "hintCopy": {
+        "mask": "hint-copy",
+        "sampleRegion": {
+          "xMin": 136,
+          "yMin": 406,
+          "xMax": 297,
+          "yMax": 440
+        },
+        "pixels": 857,
+        "bounds": {
+          "xMin": 140,
+          "yMin": 415,
+          "xMax": 284,
+          "yMax": 433,
+          "width": 144,
+          "height": 18,
+          "centerX": 212.0,
+          "centerY": 424.0
+        },
+        "centroid": {
+          "x": 212.71820303383896,
+          "y": 424.1394399066511
+        }
+      },
+      "hintOwner": {
+        "xMin": 72,
+        "yMin": 399,
+        "xMax": 330,
+        "yMax": 447
+      },
+      "hintUnion": {
+        "xMin": 118,
+        "yMin": 415,
+        "xMax": 284,
+        "yMax": 433
+      },
+      "hintIconCopyCenterDeltaLogical": 0.5486161248772776,
+      "hintGroupCenterDeltaLogical": {
+        "x": 0.0,
+        "y": 1.0979899497487438
+      },
+      "primarySurface": {
+        "mask": "primary-surface",
+        "sampleRegion": {
+          "xMin": 67,
+          "yMin": 468,
+          "xMax": 197,
+          "yMax": 516
+        },
+        "pixels": 4425,
+        "bounds": {
+          "xMin": 70,
+          "yMin": 471,
+          "xMax": 193,
+          "yMax": 513,
+          "width": 123,
+          "height": 42,
+          "centerX": 131.5,
+          "centerY": 492.0
+        },
+        "centroid": {
+          "x": 132.48237288135593,
+          "y": 491.84553672316383
+        }
+      },
+      "dangerSurface": {
+        "mask": "danger-surface",
+        "sampleRegion": {
+          "xMin": 205,
+          "yMin": 468,
+          "xMax": 335,
+          "yMax": 516
+        },
+        "pixels": 3908,
+        "bounds": {
+          "xMin": 209,
+          "yMin": 471,
+          "xMax": 332,
+          "yMax": 512,
+          "width": 123,
+          "height": 41,
+          "centerX": 270.5,
+          "centerY": 491.5
+        },
+        "centroid": {
+          "x": 271.37410440122824,
+          "y": 489.4825997952917
+        }
+      },
+      "primaryLocalInsets": {
+        "left": 3,
+        "top": 3,
+        "right": 4,
+        "bottom": 3
+      },
+      "dangerLocalInsets": {
+        "left": 4,
+        "top": 3,
+        "right": 3,
+        "bottom": 4
+      },
+      "pairedMaximumEdgeDeltaCapturePixels": 1.0
+    },
+    "waveActionContentContrast": {
+      "background": {
+        "r": 67,
+        "g": 108,
+        "b": 20,
+        "pixels": 1702
+      },
+      "foreground": {
+        "r": 253,
+        "g": 245,
+        "b": 222,
+        "pixels": 132
+      },
+      "ratio": 5.684591200644138,
+      "minimum": 4.5,
+      "polarity": "LightOnDark",
+      "passed": true,
+      "sampleRect": {
+        "xMin": 229,
+        "yMin": 550,
+        "xMax": 364,
+        "yMax": 577
+      }
+    },
+    "refreshActionContentContrast": {
+      "background": {
+        "r": 170,
+        "g": 185,
+        "b": 92,
+        "pixels": 2400
+      },
+      "foreground": {
+        "r": 86,
+        "g": 56,
+        "b": 33,
+        "pixels": 565
+      },
+      "ratio": 4.942898619167308,
+      "minimum": 4.5,
+      "polarity": "DarkOnLight",
+      "passed": true,
+      "sampleRect": {
+        "xMin": 53,
+        "yMin": 766,
+        "xMax": 349,
+        "yMax": 798
+      }
+    }
+  },
+  "interactionPolishEvidence": {
+    "waveActionRect": {
+      "xMin": 209,
+      "yMin": 543,
+      "xMax": 377,
+      "yMax": 584
+    },
+    "waveActionFocusDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 209,
+        "yMin": 543,
+        "xMax": 377,
+        "yMax": 584
+      },
+      "regionPixels": 6888,
+      "changedPixels": 656,
+      "changedFraction": 0.09523809523809523,
+      "edgeBandPixels": 3,
+      "edgePixels": 1218,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 213,
+        "yMin": 547,
+        "xMax": 373,
+        "yMax": 580
+      }
+    },
+    "waveActionPressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 209,
+        "yMin": 543,
+        "xMax": 377,
+        "yMax": 584
+      },
+      "regionPixels": 6888,
+      "changedPixels": 2024,
+      "changedFraction": 0.2938443670150987,
+      "edgeBandPixels": 3,
+      "edgePixels": 1218,
+      "changedEdgePixels": 220,
+      "changedBounds": {
+        "xMin": 211,
+        "yMin": 545,
+        "xMax": 375,
+        "yMax": 581
+      }
+    },
+    "waveActionPressInset": {
+      "region": {
+        "xMin": 209,
+        "yMin": 543,
+        "xMax": 377,
+        "yMax": 584
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 210,
+      "retreatedPixels": 32,
+      "retreatedFraction": 0.1523809523809524
+    },
+    "pauseContinueRect": {
+      "xMin": 67,
+      "yMin": 468,
+      "xMax": 197,
+      "yMax": 516
+    },
+    "pauseActionBandRect": {
+      "xMin": 50,
+      "yMin": 457,
+      "xMax": 352,
+      "yMax": 522
+    },
+    "pauseContinuePressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 50,
+        "yMin": 457,
+        "xMax": 352,
+        "yMax": 522
+      },
+      "regionPixels": 19630,
+      "changedPixels": 2423,
+      "changedFraction": 0.12343352012226184,
+      "edgeBandPixels": 3,
+      "edgePixels": 2166,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 69,
+        "yMin": 470,
+        "xMax": 194,
+        "yMax": 514
+      }
+    },
+    "pauseContinuePressInset": {
+      "region": {
+        "xMin": 67,
+        "yMin": 468,
+        "xMax": 197,
+        "yMax": 516
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 252,
+      "retreatedPixels": 38,
+      "retreatedFraction": 0.15079365079365079
+    },
+    "pauseRestartRect": {
+      "xMin": 205,
+      "yMin": 468,
+      "xMax": 335,
+      "yMax": 516
+    },
+    "pauseRestartPressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 50,
+        "yMin": 457,
+        "xMax": 352,
+        "yMax": 522
+      },
+      "regionPixels": 19630,
+      "changedPixels": 2342,
+      "changedFraction": 0.11930718288334183,
+      "edgeBandPixels": 3,
+      "edgePixels": 2166,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 208,
+        "yMin": 470,
+        "xMax": 333,
+        "yMax": 514
+      }
+    },
+    "pauseRestartPressInset": {
+      "region": {
+        "xMin": 205,
+        "yMin": 468,
+        "xMax": 335,
+        "yMax": 516
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 252,
+      "retreatedPixels": 38,
+      "retreatedFraction": 0.15079365079365079
+    },
+    "releaseAction": "StartWave-pass"
+  },
+  "compactControlEvidence": {
+    "state": "captured",
+    "speedRect": {
+      "xMin": 322,
+      "yMin": 54,
+      "xMax": 370,
+      "yMax": 103
+    },
+    "speedFocusDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 204,
+      "changedFraction": 0.08673469387755102,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 326,
+        "yMin": 59,
+        "xMax": 366,
+        "yMax": 99
+      }
+    },
+    "speedActivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 1785,
+      "changedFraction": 0.7589285714285714,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 32,
+      "changedBounds": {
+        "xMin": 324,
+        "yMin": 57,
+        "xMax": 367,
+        "yMax": 100
+      }
+    },
+    "speedActiveDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 1785,
+      "changedFraction": 0.7589285714285714,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 32,
+      "changedBounds": {
+        "xMin": 324,
+        "yMin": 57,
+        "xMax": 367,
+        "yMax": 100
+      }
+    },
+    "speedDeactivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 204,
+      "changedFraction": 0.08673469387755102,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 326,
+        "yMin": 59,
+        "xMax": 366,
+        "yMax": 99
+      }
+    },
+    "deactivatingSurfaceContract": "captured-complete-endpoint-or-active-variant",
+    "pauseRect": {
+      "xMin": 267,
+      "yMin": 54,
+      "xMax": 315,
+      "yMax": 103
+    },
+    "pauseActivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 267,
+        "yMin": 54,
+        "xMax": 315,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 2341,
+      "changedFraction": 0.9953231292517006,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 546,
+      "changedBounds": {
+        "xMin": 267,
+        "yMin": 54,
+        "xMax": 315,
+        "yMax": 103
+      }
+    },
+    "pauseDeactivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 267,
+        "yMin": 54,
+        "xMax": 315,
+        "yMax": 103
+      },
+      "regionPixels": 2352,
+      "changedPixels": 0,
+      "changedFraction": 0.0,
+      "edgeBandPixels": 3,
+      "edgePixels": 546,
+      "changedEdgePixels": 0,
+      "changedBounds": null
+    },
+    "detailCloseRect": {
+      "xMin": 333,
+      "yMin": 595,
+      "xMax": 374,
+      "yMax": 636
+    },
+    "detailClosePressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 333,
+        "yMin": 595,
+        "xMax": 374,
+        "yMax": 636
+      },
+      "regionPixels": 1681,
+      "changedPixels": 383,
+      "changedFraction": 0.22784057108863773,
+      "edgeBandPixels": 3,
+      "edgePixels": 456,
+      "changedEdgePixels": 46,
+      "changedBounds": {
+        "xMin": 335,
+        "yMin": 598,
+        "xMax": 371,
+        "yMax": 634
+      }
+    },
+    "detailCloseRemainsInstantCommand": true
+  },
+  "controls": {
+    "lobbyLevelOrchard01": {
+      "x": 201.0,
+      "y": 231.61556064073227
+    },
+    "lobbyLevelOrchard02": {
+      "x": 201.0,
+      "y": 401.0160183066361
+    },
+    "lobbyLevelOrchard03": {
+      "x": 201.0,
+      "y": 570.4164759725401
+    },
+    "lobbyStart": {
+      "x": 201.0,
+      "y": 723.4233409610983
+    },
+    "settlementRetry": {
+      "x": 201.0,
+      "y": 657.8489702517162
+    },
+    "settlementReturn": {
+      "x": 201.0,
+      "y": 730.7093821510297
+    },
+    "headerPause": {
+      "x": 291.1647597254005,
+      "y": 78.6086956521739
+    },
+    "headerSpeed": {
+      "x": 345.8100686498856,
+      "y": 78.6086956521739
+    },
+    "waveAction": {
+      "x": 292.98627002288333,
+      "y": 563.1304347826086
+    },
+    "pauseContinue": {
+      "x": 131.7826086956522,
+      "y": 492.091533180778
+    },
+    "pauseRestart": {
+      "x": 270.21739130434787,
+      "y": 492.091533180778
+    },
+    "terminalRestart": {
+      "x": 201.0,
+      "y": 532.1647597254005
+    },
+    "weaponGatling": {
+      "x": 72.58352402745997,
+      "y": 639.6338672768878
+    },
+    "nurserySlot0": {
+      "x": 64.3867276887872,
+      "y": 722.512585812357
+    },
+    "acceptanceCell0": {
+      "x": 47.08237986270025,
+      "y": 247.09839816933638
+    },
+    "acceptanceCell1": {
+      "x": 90.79862700228836,
+      "y": 247.09839816933638
+    },
+    "detailClose": {
+      "x": 353.0961098398169,
+      "y": 615.954233409611
+    }
+  },
+  "referenceControls": {
+    "lobbyLevelOrchard01": {
+      "x": 201,
+      "y": 206
+    },
+    "lobbyLevelOrchard02": {
+      "x": 201,
+      "y": 392
+    },
+    "lobbyLevelOrchard03": {
+      "x": 201,
+      "y": 578
+    },
+    "lobbyStart": {
+      "x": 201,
+      "y": 746
+    },
+    "settlementRetry": {
+      "x": 201,
+      "y": 674
+    },
+    "settlementReturn": {
+      "x": 201,
+      "y": 754
+    },
+    "headerPause": {
+      "x": 300,
+      "y": 38
+    },
+    "headerSpeed": {
+      "x": 360,
+      "y": 38
+    },
+    "waveAction": {
+      "x": 302,
+      "y": 570
+    },
+    "pauseContinue": {
+      "x": 125,
+      "y": 492
+    },
+    "pauseRestart": {
+      "x": 277,
+      "y": 492
+    },
+    "terminalRestart": {
+      "x": 201,
+      "y": 536
+    },
+    "weaponGatling": {
+      "x": 60,
+      "y": 654
+    },
+    "nurserySlot0": {
+      "x": 51,
+      "y": 745
+    },
+    "acceptanceCell0": {
+      "x": 32,
+      "y": 223
+    },
+    "acceptanceCell1": {
+      "x": 80,
+      "y": 223
+    },
+    "detailClose": {
+      "x": 368,
+      "y": 628
+    }
+  },
+  "pixelThresholds": {
+    "hudDarkPixels": 66,
+    "hudLightPixels": 4147,
+    "formerActionColorPixels": 12,
+    "formerActionColorSpanPixels": 71,
+    "framePixels": {
+      "sampleStepPixels": 4,
+      "nearBlackLuma": 0.08,
+      "maxBlackFraction": 0.01,
+      "maxNearBlackFraction": 0.05,
+      "maxInvalidFraction": 0.05
+    }
+  },
+  "sessionSequence": {
+    "labels": {
+      "ready": "开始波次",
+      "betweenWave": "立即开始下一波",
+      "pauseContinue": "继续游戏",
+      "pauseRestart": "重新开始"
+    },
+    "steps": [
+      "capture clean ready state and exact ready label",
+      "click battlefield wave action and capture active wave without a start action",
+      "capture deterministic between-wave countdown and exact immediate-start label",
+      "click immediate next wave and capture active wave two",
+      "pause active run and capture both modal actions",
+      "continue and capture the same active run",
+      "pause again, restart, and capture clean ready state"
+    ]
+  },
+  "interactionSequence": {
+    "source": {
+      "cell": [
+        0,
+        1
+      ],
+      "x": 47.08237986270025,
+      "y": 247.09839816933638
+    },
+    "destination": {
+      "cell": [
+        1,
+        1
+      ],
+      "x": 90.79862700228836,
+      "y": 247.09839816933638
+    },
+    "steps": [
+      "click source plant to inspect",
+      "click empty destination without relocation",
+      "drag source plant to destination to relocate"
+    ]
+  },
+  "terminalCapture": {
+    "outcome": "victory",
+    "state": "terminal-victory",
+    "routeBeforeScreenshot": 1,
+    "routeAfterScreenshot": 1,
+    "sha256": "E8437B6D98B236094DA643FFB1A0A8E71F02EC197A8EBCE25C948C00C06A22F5",
+    "previewOnly": true,
+    "productionSubmissionEvidence": "Flow mode / task 5.3",
+    "restart": {
+      "route": 1,
+      "sessionId": "acceptance-cf519a7bd6234c4f960e86813e990ff8",
+      "seed": 20260714,
+      "sameSession": true,
+      "resultCardDismissed": true
+    }
+  },
+  "selectedToolCapture": {
+    "state": "selected-tool",
+    "availableSha256": "1DFB6905D55286D0217E99EA26CC0B7BBBC70EC039C10B973CAD1CDB3C2FBD40",
+    "selectedSha256": "BDF5AC62F972351764349CA09A8D5EEC44D4681C97BA8F55E16F930C97755F35",
+    "realClick": {
+      "x": 72.58352402745997,
+      "y": 639.6338672768878
+    },
+    "changed": true
+  }
+}

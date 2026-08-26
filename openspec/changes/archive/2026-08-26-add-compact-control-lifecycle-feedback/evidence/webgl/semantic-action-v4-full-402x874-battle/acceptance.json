@@ -1,0 +1,2244 @@
+﻿{
+    "accepted":  true,
+    "capturedAtUtc":  "2026-08-25T17:48:26.3957894+00:00",
+    "url":  "http://127.0.0.1:59361/?acceptance=1\u0026route=battle\u0026levelId=orchard-01\u0026safeTop=0\u0026safeBottom=0",
+    "levelId":  "orchard-01",
+    "expectedCompositeIdentity":  {
+                                      "levelId":  "orchard-01",
+                                      "mapId":  "orchard-01",
+                                      "waveSetId":  "waves.orchard-01.teaching",
+                                      "ruleSetId":  "rules.orchard-01.baseline",
+                                      "themeId":  "theme.orchard-01.day"
+                                  },
+    "viewport":  {
+                     "width":  402,
+                     "height":  874,
+                     "coordinateSpace":  "css-pixel/top-left"
+                 },
+    "safeArea":  {
+                     "top":  0,
+                     "bottom":  0,
+                     "left":  0,
+                     "right":  0,
+                     "coordinateSpace":  "css-pixel/top-left",
+                     "contentRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  402,
+                                         "height":  874
+                                     },
+                     "designReference":  {
+                                             "width":  402,
+                                             "height":  874
+                                         },
+                     "designScale":  1,
+                     "designOffset":  {
+                                          "x":  0,
+                                          "y":  0
+                                      },
+                     "shellContentRect":  {
+                                              "x":  16,
+                                              "y":  18,
+                                              "width":  370,
+                                              "height":  838
+                                          }
+                 },
+    "runtimeUi":  {
+                      "themeId":  "ui.sunny-orchard",
+                      "themeRevision":  "2",
+                      "artSetId":  "sunny-orchard-painted",
+                      "artSetRevision":  "1",
+                      "display":  "ui.sunny-orchard@2 / sunny-orchard-painted@1",
+                      "themeAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+                      "artSetAsset":  "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+                      "activeArtSetGuid":  "91aa538ae02449cba8c971ffe4d427eb"
+                  },
+    "browser":  {
+                    "product":  "Chrome/151.0.7922.174",
+                    "userAgent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+                    "protocolVersion":  "1.3",
+                    "jsVersion":  "15.1.206.23",
+                    "executable":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                    "launchMode":  "external-headless-chrome-cdp"
+                },
+    "canvas":  {
+                   "href":  "http://127.0.0.1:59361/?acceptance=1\u0026route=battle\u0026levelId=orchard-01\u0026safeTop=0\u0026safeBottom=0",
+                   "title":  "水果塔防",
+                   "canvas":  true,
+                   "width":  402,
+                   "height":  874,
+                   "cssWidth":  402,
+                   "cssHeight":  874,
+                   "innerWidth":  402,
+                   "innerHeight":  874,
+                   "devicePixelRatio":  1,
+                   "timeOrigin":  1787680067085.8,
+                   "loading":  "none",
+                   "warning":  "",
+                   "acceptanceReady":  true,
+                   "appRoute":  1,
+                   "body":  ""
+               },
+    "checks":  {
+                   "http":  "pass",
+                   "wasm":  "pass",
+                   "perAssetContentVersions":  "pass",
+                   "strongContentEtags":  "pass",
+                   "brotliFallbackDelivery":  "pass",
+                   "immutableBuildCache":  "pass",
+                   "revalidatableHtml":  "pass",
+                   "warmCacheReuse":  "pass",
+                   "crossReleaseCacheReuse":  "not-requested",
+                   "unityLoaded":  "pass",
+                   "directRouteLevelIdentity":  "pass",
+                   "compositeIdentity":  "pass",
+                   "requestedViewportAndCanvas":  "pass",
+                   "safeAreaQueryApplied":  "pass",
+                   "chineseHudInk":  "pass",
+                   "screenshotDimensions":  "pass",
+                   "requiredStates":  "pass",
+                   "contextualWaveLabels":  "pass",
+                   "waveActionContentContrast":  "pass",
+                   "refreshActionContentContrast":  "pass",
+                   "compactControlLifecycle":  "pass",
+                   "compactControlInstantClose":  "pass",
+                   "actionFocusCue":  "pass",
+                   "waveActionPressedBeforeRelease":  "pass",
+                   "pausedModalFinalRasterOpticalAlignment":  "pass",
+                   "pauseActionsPressedBeforeReleaseAndContained":  "pass",
+                   "oldBottomActionRowAbsent":  "pass",
+                   "noLargeNearBlackRegions":  "pass",
+                   "pauseContinuePreservesRun":  "pass",
+                   "pauseRestartProducesCleanReadyState":  "pass",
+                   "selectedToolState":  "pass",
+                   "selectedToolAvailableToClickedHashChanged":  "pass",
+                   "legalInteractionCue":  "pass",
+                   "illegalInteractionCue":  "pass",
+                   "inspectionClickInformationAndRange":  "pass",
+                   "destinationClickNoRelocation":  "pass",
+                   "dragRelocation":  "pass",
+                   "battleTerminalResultCard":  "pass",
+                   "terminalPreviewRestartReturnsReadyWithoutRouteSubmission":  "pass"
+               },
+    "delivery":  {
+                     "assetVersions":  {
+                                           "loader":  "2ff7e34b04c4",
+                                           "data":  "b128cbb27ef7",
+                                           "framework":  "b12d22343ced",
+                                           "wasm":  "075137a24bb9"
+                                       },
+                     "htmlCacheControl":  "no-cache",
+                     "assets":  {
+                                    "loader":  {
+                                                   "url":  "http://127.0.0.1:59361/Build/WebGL.loader.js?v=2ff7e34b04c4",
+                                                   "version":  "2ff7e34b04c4",
+                                                   "contentType":  "text/javascript; charset=utf-8",
+                                                   "contentEncoding":  "",
+                                                   "cacheControl":  "public, max-age=31536000, immutable",
+                                                   "contentLength":  117893,
+                                                   "etag":  "\"2ff7e34b04c461e7ab64a68d36107a251d4a1bbf1d47d552e75f103f4be8c708\"",
+                                                   "contentSha256":  "2ff7e34b04c461e7ab64a68d36107a251d4a1bbf1d47d552e75f103f4be8c708"
+                                               },
+                                    "data":  {
+                                                 "url":  "http://127.0.0.1:59361/Build/WebGL.data.unityweb?v=b128cbb27ef7",
+                                                 "version":  "b128cbb27ef7",
+                                                 "contentType":  "application/octet-stream",
+                                                 "contentEncoding":  "",
+                                                 "cacheControl":  "public, max-age=31536000, immutable",
+                                                 "contentLength":  6128037,
+                                                 "etag":  "\"b128cbb27ef7b31a782bb276ea9fdb5f6dbb9453440871e7610e82cd69b6786c\"",
+                                                 "contentSha256":  "b128cbb27ef7b31a782bb276ea9fdb5f6dbb9453440871e7610e82cd69b6786c"
+                                             },
+                                    "framework":  {
+                                                      "url":  "http://127.0.0.1:59361/Build/WebGL.framework.js.unityweb?v=b12d22343ced",
+                                                      "version":  "b12d22343ced",
+                                                      "contentType":  "application/octet-stream",
+                                                      "contentEncoding":  "",
+                                                      "cacheControl":  "public, max-age=31536000, immutable",
+                                                      "contentLength":  69291,
+                                                      "etag":  "\"b12d22343ced5020f7f3075f34e8af1d9537eaf1002eac8fcd929f17afa61c97\"",
+                                                      "contentSha256":  "b12d22343ced5020f7f3075f34e8af1d9537eaf1002eac8fcd929f17afa61c97"
+                                                  },
+                                    "wasm":  {
+                                                 "url":  "http://127.0.0.1:59361/Build/WebGL.wasm.unityweb?v=075137a24bb9",
+                                                 "version":  "075137a24bb9",
+                                                 "contentType":  "application/octet-stream",
+                                                 "contentEncoding":  "",
+                                                 "cacheControl":  "public, max-age=31536000, immutable",
+                                                 "contentLength":  3941448,
+                                                 "etag":  "\"075137a24bb951f88cc75683a4d9a6d52b5235a7de06c248c65c3a7a7c138ecd\"",
+                                                 "contentSha256":  "075137a24bb951f88cc75683a4d9a6d52b5235a7de06c248c65c3a7a7c138ecd"
+                                             }
+                                },
+                     "cacheLimits":  {
+                                         "perAssetTransferBytes":  16384,
+                                         "totalTransferBytes":  65536
+                                     },
+                     "cacheRuns":  {
+                                       "cold":  {
+                                                    "label":  "cold",
+                                                    "startedAtUtc":  "2026-08-25T17:47:42.6655435+00:00",
+                                                    "completedAtUtc":  "2026-08-25T17:47:47.0637853+00:00",
+                                                    "startupDurationMilliseconds":  4398.242,
+                                                    "totalPayloadTransferSize":  10257869,
+                                                    "assets":  {
+                                                                   "loader":  {
+                                                                                  "url":  "http://127.0.0.1:59361/Build/WebGL.loader.js?v=2ff7e34b04c4",
+                                                                                  "startTimeMilliseconds":  172.9,
+                                                                                  "durationMilliseconds":  3.8,
+                                                                                  "transferSize":  118193,
+                                                                                  "encodedBodySize":  117893,
+                                                                                  "decodedBodySize":  117893,
+                                                                                  "responseStatus":  200,
+                                                                                  "deliveryType":  "",
+                                                                                  "nextHopProtocol":  "http/1.1"
+                                                                              },
+                                                                   "data":  {
+                                                                                "url":  "http://127.0.0.1:59361/Build/WebGL.data.unityweb?v=b128cbb27ef7",
+                                                                                "startTimeMilliseconds":  625.6,
+                                                                                "durationMilliseconds":  33.7,
+                                                                                "transferSize":  6128337,
+                                                                                "encodedBodySize":  6128037,
+                                                                                "decodedBodySize":  6128037,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            },
+                                                                   "framework":  {
+                                                                                     "url":  "http://127.0.0.1:59361/Build/WebGL.framework.js.unityweb?v=b12d22343ced",
+                                                                                     "startTimeMilliseconds":  552.8,
+                                                                                     "durationMilliseconds":  7.6,
+                                                                                     "transferSize":  69591,
+                                                                                     "encodedBodySize":  69291,
+                                                                                     "decodedBodySize":  69291,
+                                                                                     "responseStatus":  200,
+                                                                                     "deliveryType":  "",
+                                                                                     "nextHopProtocol":  "http/1.1"
+                                                                                 },
+                                                                   "wasm":  {
+                                                                                "url":  "http://127.0.0.1:59361/Build/WebGL.wasm.unityweb?v=075137a24bb9",
+                                                                                "startTimeMilliseconds":  553,
+                                                                                "durationMilliseconds":  27.5,
+                                                                                "transferSize":  3941748,
+                                                                                "encodedBodySize":  3941448,
+                                                                                "decodedBodySize":  3941448,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            }
+                                                               }
+                                                },
+                                       "warm":  {
+                                                    "label":  "warm",
+                                                    "startedAtUtc":  "2026-08-25T17:47:47.0797885+00:00",
+                                                    "completedAtUtc":  "2026-08-25T17:47:50.5174133+00:00",
+                                                    "startupDurationMilliseconds":  3437.625,
+                                                    "totalPayloadTransferSize":  300,
+                                                    "assets":  {
+                                                                   "loader":  {
+                                                                                  "url":  "http://127.0.0.1:59361/Build/WebGL.loader.js?v=2ff7e34b04c4",
+                                                                                  "startTimeMilliseconds":  62,
+                                                                                  "durationMilliseconds":  1.1,
+                                                                                  "transferSize":  0,
+                                                                                  "encodedBodySize":  117893,
+                                                                                  "decodedBodySize":  117893,
+                                                                                  "responseStatus":  200,
+                                                                                  "deliveryType":  "cache",
+                                                                                  "nextHopProtocol":  ""
+                                                                              },
+                                                                   "data":  {
+                                                                                "url":  "http://127.0.0.1:59361/Build/WebGL.data.unityweb?v=b128cbb27ef7",
+                                                                                "startTimeMilliseconds":  87.8,
+                                                                                "durationMilliseconds":  1.6,
+                                                                                "transferSize":  300,
+                                                                                "encodedBodySize":  0,
+                                                                                "decodedBodySize":  0,
+                                                                                "responseStatus":  304,
+                                                                                "deliveryType":  "cache",
+                                                                                "nextHopProtocol":  "http/1.1"
+                                                                            },
+                                                                   "framework":  {
+                                                                                     "url":  "http://127.0.0.1:59361/Build/WebGL.framework.js.unityweb?v=b12d22343ced",
+                                                                                     "startTimeMilliseconds":  71,
+                                                                                     "durationMilliseconds":  2,
+                                                                                     "transferSize":  0,
+                                                                                     "encodedBodySize":  69291,
+                                                                                     "decodedBodySize":  69291,
+                                                                                     "responseStatus":  200,
+                                                                                     "deliveryType":  "cache",
+                                                                                     "nextHopProtocol":  ""
+                                                                                 },
+                                                                   "wasm":  {
+                                                                                "url":  "http://127.0.0.1:59361/Build/WebGL.wasm.unityweb?v=075137a24bb9",
+                                                                                "startTimeMilliseconds":  71.1,
+                                                                                "durationMilliseconds":  8.8,
+                                                                                "transferSize":  0,
+                                                                                "encodedBodySize":  3941448,
+                                                                                "decodedBodySize":  3941448,
+                                                                                "responseStatus":  200,
+                                                                                "deliveryType":  "cache",
+                                                                                "nextHopProtocol":  ""
+                                                                            }
+                                                               }
+                                                }
+                                   },
+                     "releaseTransition":  {
+                                               "state":  "not-requested"
+                                           }
+                 },
+    "routeIdentities":  {
+                            "battle":  {
+                                           "route":  1,
+                                           "routeName":  "battle",
+                                           "sessionId":  "acceptance-473698de81eb4e2bb25e0b7a6b7abf41",
+                                           "seed":  20260714,
+                                           "levelId":  "orchard-01",
+                                           "mapId":  "orchard-01",
+                                           "waveSetId":  "waves.orchard-01.teaching",
+                                           "ruleSetId":  "rules.orchard-01.baseline",
+                                           "themeId":  "theme.orchard-01.day"
+                                       }
+                        },
+    "screenshots":  {
+                        "ready":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01-ready.png",
+                        "speedHover":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01c-speed-hover-1x.png",
+                        "speedPressed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01d-speed-pressed-1x.png",
+                        "speedActivating":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01e-speed-activating-2x.png",
+                        "speedActive":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01f-speed-active-2x.png",
+                        "speedDeactivating":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01g-speed-deactivating-1x.png",
+                        "speedInactive":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01h-speed-inactive-1x.png",
+                        "waveActionHover":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\01a-wave-action-hover.png",
+                        "waveActionPressed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\02a-wave-action-pressed.png",
+                        "activeWave":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\02-active-wave.png",
+                        "betweenWave":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\03-between-wave.png",
+                        "immediateNextWave":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\04-immediate-next-wave.png",
+                        "pauseActivating":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\04a-pause-activating.png",
+                        "paused":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\05-paused.png",
+                        "pauseContinueHover":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\05a-pause-continue-hover.png",
+                        "pauseContinuePressed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\05b-pause-continue-pressed.png",
+                        "pauseDeactivating":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\05c-pause-deactivating.png",
+                        "continued":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\06-continued.png",
+                        "pauseRestartHover":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\06a-pause-restart-hover.png",
+                        "pauseRestartPressed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\06b-pause-restart-pressed.png",
+                        "restarted":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\07-restarted.png",
+                        "toolAvailable":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\08-tool-available.png",
+                        "selectedTool":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\09-selected-tool.png",
+                        "adjacentPots":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\10-adjacent-pots.png",
+                        "legalDragCue":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\11-legal-drag-cue.png",
+                        "illegalDragCue":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\12-illegal-drag-cue.png",
+                        "denseBoard":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\13-dense-board.png",
+                        "plantDetail":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\14-plant-detail.png",
+                        "detailCloseHover":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\14a-detail-close-hover.png",
+                        "detailClosePressed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\14b-detail-close-pressed.png",
+                        "detailClosed":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\14c-detail-closed.png",
+                        "destinationClickNoMove":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\15-destination-click-no-move.png",
+                        "dragRelocation":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\16-after-drag-move.png",
+                        "terminal":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\17-battle-terminal-victory.png",
+                        "terminalPreviewRestarted":  "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-compact-control-lifecycle-feedback\\evidence\\webgl\\semantic-action-v4-full-402x874-battle\\18-terminal-preview-restarted.png"
+                    },
+    "imageMetrics":  {
+                         "ready":  {
+                                       "width":  402,
+                                       "height":  874,
+                                       "headerDarkPixels":  618,
+                                       "headerLightPixels":  11547,
+                                       "blackFraction":  0,
+                                       "nearBlackFraction":  0,
+                                       "maxNearBlackHorizontalRunFraction":  0,
+                                       "invalidFraction":  0,
+                                       "averageLuma":  0.71012239978229075,
+                                       "formerActionColorPixels":  0,
+                                       "formerActionColorSpanPixels":  0,
+                                       "sampledRegions":  {
+                                                              "header":  {
+                                                                             "xMin":  13,
+                                                                             "yMin":  11,
+                                                                             "xMax":  263,
+                                                                             "yMax":  64
+                                                                         },
+                                                              "formerAction":  {
+                                                                                   "xMin":  8,
+                                                                                   "yMin":  760,
+                                                                                   "xMax":  394,
+                                                                                   "yMax":  810
+                                                                               },
+                                                              "frameContent":  {
+                                                                                   "xMin":  0,
+                                                                                   "yMin":  0,
+                                                                                   "xMax":  402,
+                                                                                   "yMax":  874
+                                                                               }
+                                                          }
+                                   },
+                         "speedHover":  {
+                                            "width":  402,
+                                            "height":  874,
+                                            "headerDarkPixels":  618,
+                                            "headerLightPixels":  11547,
+                                            "blackFraction":  0,
+                                            "nearBlackFraction":  0,
+                                            "maxNearBlackHorizontalRunFraction":  0,
+                                            "invalidFraction":  0,
+                                            "averageLuma":  0.70978570087468851,
+                                            "formerActionColorPixels":  0,
+                                            "formerActionColorSpanPixels":  0,
+                                            "sampledRegions":  {
+                                                                   "header":  {
+                                                                                  "xMin":  13,
+                                                                                  "yMin":  11,
+                                                                                  "xMax":  263,
+                                                                                  "yMax":  64
+                                                                              },
+                                                                   "formerAction":  {
+                                                                                        "xMin":  8,
+                                                                                        "yMin":  760,
+                                                                                        "xMax":  394,
+                                                                                        "yMax":  810
+                                                                                    },
+                                                                   "frameContent":  {
+                                                                                        "xMin":  0,
+                                                                                        "yMin":  0,
+                                                                                        "xMax":  402,
+                                                                                        "yMax":  874
+                                                                                    }
+                                                               }
+                                        },
+                         "speedPressed":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  618,
+                                              "headerLightPixels":  11547,
+                                              "blackFraction":  0,
+                                              "nearBlackFraction":  0,
+                                              "maxNearBlackHorizontalRunFraction":  0,
+                                              "invalidFraction":  0,
+                                              "averageLuma":  0.71009611153219265,
+                                              "formerActionColorPixels":  0,
+                                              "formerActionColorSpanPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  13,
+                                                                                    "yMin":  11,
+                                                                                    "xMax":  263,
+                                                                                    "yMax":  64
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  8,
+                                                                                          "yMin":  760,
+                                                                                          "xMax":  394,
+                                                                                          "yMax":  810
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  0,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  874
+                                                                                      }
+                                                                 }
+                                          },
+                         "speedActivating":  {
+                                                 "width":  402,
+                                                 "height":  874,
+                                                 "headerDarkPixels":  618,
+                                                 "headerLightPixels":  11547,
+                                                 "blackFraction":  0,
+                                                 "nearBlackFraction":  0,
+                                                 "maxNearBlackHorizontalRunFraction":  0,
+                                                 "invalidFraction":  0,
+                                                 "averageLuma":  0.70961635889294794,
+                                                 "formerActionColorPixels":  0,
+                                                 "formerActionColorSpanPixels":  0,
+                                                 "sampledRegions":  {
+                                                                        "header":  {
+                                                                                       "xMin":  13,
+                                                                                       "yMin":  11,
+                                                                                       "xMax":  263,
+                                                                                       "yMax":  64
+                                                                                   },
+                                                                        "formerAction":  {
+                                                                                             "xMin":  8,
+                                                                                             "yMin":  760,
+                                                                                             "xMax":  394,
+                                                                                             "yMax":  810
+                                                                                         },
+                                                                        "frameContent":  {
+                                                                                             "xMin":  0,
+                                                                                             "yMin":  0,
+                                                                                             "xMax":  402,
+                                                                                             "yMax":  874
+                                                                                         }
+                                                                    }
+                                             },
+                         "speedActive":  {
+                                             "width":  402,
+                                             "height":  874,
+                                             "headerDarkPixels":  618,
+                                             "headerLightPixels":  11547,
+                                             "blackFraction":  0,
+                                             "nearBlackFraction":  0,
+                                             "maxNearBlackHorizontalRunFraction":  0,
+                                             "invalidFraction":  0,
+                                             "averageLuma":  0.70961635889294794,
+                                             "formerActionColorPixels":  0,
+                                             "formerActionColorSpanPixels":  0,
+                                             "sampledRegions":  {
+                                                                    "header":  {
+                                                                                   "xMin":  13,
+                                                                                   "yMin":  11,
+                                                                                   "xMax":  263,
+                                                                                   "yMax":  64
+                                                                               },
+                                                                    "formerAction":  {
+                                                                                         "xMin":  8,
+                                                                                         "yMin":  760,
+                                                                                         "xMax":  394,
+                                                                                         "yMax":  810
+                                                                                     },
+                                                                    "frameContent":  {
+                                                                                         "xMin":  0,
+                                                                                         "yMin":  0,
+                                                                                         "xMax":  402,
+                                                                                         "yMax":  874
+                                                                                     }
+                                                                }
+                                         },
+                         "speedDeactivating":  {
+                                                   "width":  402,
+                                                   "height":  874,
+                                                   "headerDarkPixels":  618,
+                                                   "headerLightPixels":  11547,
+                                                   "blackFraction":  0,
+                                                   "nearBlackFraction":  0,
+                                                   "maxNearBlackHorizontalRunFraction":  0,
+                                                   "invalidFraction":  0,
+                                                   "averageLuma":  0.70978570087468851,
+                                                   "formerActionColorPixels":  0,
+                                                   "formerActionColorSpanPixels":  0,
+                                                   "sampledRegions":  {
+                                                                          "header":  {
+                                                                                         "xMin":  13,
+                                                                                         "yMin":  11,
+                                                                                         "xMax":  263,
+                                                                                         "yMax":  64
+                                                                                     },
+                                                                          "formerAction":  {
+                                                                                               "xMin":  8,
+                                                                                               "yMin":  760,
+                                                                                               "xMax":  394,
+                                                                                               "yMax":  810
+                                                                                           },
+                                                                          "frameContent":  {
+                                                                                               "xMin":  0,
+                                                                                               "yMin":  0,
+                                                                                               "xMax":  402,
+                                                                                               "yMax":  874
+                                                                                           }
+                                                                      }
+                                               },
+                         "speedInactive":  {
+                                               "width":  402,
+                                               "height":  874,
+                                               "headerDarkPixels":  618,
+                                               "headerLightPixels":  11547,
+                                               "blackFraction":  0,
+                                               "nearBlackFraction":  0,
+                                               "maxNearBlackHorizontalRunFraction":  0,
+                                               "invalidFraction":  0,
+                                               "averageLuma":  0.71012239978229075,
+                                               "formerActionColorPixels":  0,
+                                               "formerActionColorSpanPixels":  0,
+                                               "sampledRegions":  {
+                                                                      "header":  {
+                                                                                     "xMin":  13,
+                                                                                     "yMin":  11,
+                                                                                     "xMax":  263,
+                                                                                     "yMax":  64
+                                                                                 },
+                                                                      "formerAction":  {
+                                                                                           "xMin":  8,
+                                                                                           "yMin":  760,
+                                                                                           "xMax":  394,
+                                                                                           "yMax":  810
+                                                                                       },
+                                                                      "frameContent":  {
+                                                                                           "xMin":  0,
+                                                                                           "yMin":  0,
+                                                                                           "xMax":  402,
+                                                                                           "yMax":  874
+                                                                                       }
+                                                                  }
+                                           },
+                         "waveActionHover":  {
+                                                 "width":  402,
+                                                 "height":  874,
+                                                 "headerDarkPixels":  618,
+                                                 "headerLightPixels":  11547,
+                                                 "blackFraction":  0,
+                                                 "nearBlackFraction":  0,
+                                                 "maxNearBlackHorizontalRunFraction":  0,
+                                                 "invalidFraction":  0,
+                                                 "averageLuma":  0.71140391915743439,
+                                                 "formerActionColorPixels":  0,
+                                                 "formerActionColorSpanPixels":  0,
+                                                 "sampledRegions":  {
+                                                                        "header":  {
+                                                                                       "xMin":  13,
+                                                                                       "yMin":  11,
+                                                                                       "xMax":  263,
+                                                                                       "yMax":  64
+                                                                                   },
+                                                                        "formerAction":  {
+                                                                                             "xMin":  8,
+                                                                                             "yMin":  760,
+                                                                                             "xMax":  394,
+                                                                                             "yMax":  810
+                                                                                         },
+                                                                        "frameContent":  {
+                                                                                             "xMin":  0,
+                                                                                             "yMin":  0,
+                                                                                             "xMax":  402,
+                                                                                             "yMax":  874
+                                                                                         }
+                                                                    }
+                                             },
+                         "waveActionPressed":  {
+                                                   "width":  402,
+                                                   "height":  874,
+                                                   "headerDarkPixels":  618,
+                                                   "headerLightPixels":  11547,
+                                                   "blackFraction":  0,
+                                                   "nearBlackFraction":  0,
+                                                   "maxNearBlackHorizontalRunFraction":  0,
+                                                   "invalidFraction":  0,
+                                                   "averageLuma":  0.71187855640037034,
+                                                   "formerActionColorPixels":  0,
+                                                   "formerActionColorSpanPixels":  0,
+                                                   "sampledRegions":  {
+                                                                          "header":  {
+                                                                                         "xMin":  13,
+                                                                                         "yMin":  11,
+                                                                                         "xMax":  263,
+                                                                                         "yMax":  64
+                                                                                     },
+                                                                          "formerAction":  {
+                                                                                               "xMin":  8,
+                                                                                               "yMin":  760,
+                                                                                               "xMax":  394,
+                                                                                               "yMax":  810
+                                                                                           },
+                                                                          "frameContent":  {
+                                                                                               "xMin":  0,
+                                                                                               "yMin":  0,
+                                                                                               "xMax":  402,
+                                                                                               "yMax":  874
+                                                                                           }
+                                                                      }
+                                               },
+                         "activeWave":  {
+                                            "width":  402,
+                                            "height":  874,
+                                            "headerDarkPixels":  618,
+                                            "headerLightPixels":  11551,
+                                            "blackFraction":  0,
+                                            "nearBlackFraction":  9.04200009042E-05,
+                                            "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                            "invalidFraction":  0,
+                                            "averageLuma":  0.71771709287287233,
+                                            "formerActionColorPixels":  0,
+                                            "formerActionColorSpanPixels":  0,
+                                            "sampledRegions":  {
+                                                                   "header":  {
+                                                                                  "xMin":  13,
+                                                                                  "yMin":  11,
+                                                                                  "xMax":  263,
+                                                                                  "yMax":  64
+                                                                              },
+                                                                   "formerAction":  {
+                                                                                        "xMin":  8,
+                                                                                        "yMin":  760,
+                                                                                        "xMax":  394,
+                                                                                        "yMax":  810
+                                                                                    },
+                                                                   "frameContent":  {
+                                                                                        "xMin":  0,
+                                                                                        "yMin":  0,
+                                                                                        "xMax":  402,
+                                                                                        "yMax":  874
+                                                                                    }
+                                                               }
+                                        },
+                         "betweenWave":  {
+                                             "width":  402,
+                                             "height":  874,
+                                             "headerDarkPixels":  618,
+                                             "headerLightPixels":  11551,
+                                             "blackFraction":  0,
+                                             "nearBlackFraction":  9.04200009042E-05,
+                                             "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                             "invalidFraction":  0,
+                                             "averageLuma":  0.71516560731658041,
+                                             "formerActionColorPixels":  0,
+                                             "formerActionColorSpanPixels":  0,
+                                             "sampledRegions":  {
+                                                                    "header":  {
+                                                                                   "xMin":  13,
+                                                                                   "yMin":  11,
+                                                                                   "xMax":  263,
+                                                                                   "yMax":  64
+                                                                               },
+                                                                    "formerAction":  {
+                                                                                         "xMin":  8,
+                                                                                         "yMin":  760,
+                                                                                         "xMax":  394,
+                                                                                         "yMax":  810
+                                                                                     },
+                                                                    "frameContent":  {
+                                                                                         "xMin":  0,
+                                                                                         "yMin":  0,
+                                                                                         "xMax":  402,
+                                                                                         "yMax":  874
+                                                                                     }
+                                                                }
+                                         },
+                         "immediateNextWave":  {
+                                                   "width":  402,
+                                                   "height":  874,
+                                                   "headerDarkPixels":  618,
+                                                   "headerLightPixels":  11548,
+                                                   "blackFraction":  0,
+                                                   "nearBlackFraction":  4.52100004521E-05,
+                                                   "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                   "invalidFraction":  0,
+                                                   "averageLuma":  0.72369498908312213,
+                                                   "formerActionColorPixels":  0,
+                                                   "formerActionColorSpanPixels":  0,
+                                                   "sampledRegions":  {
+                                                                          "header":  {
+                                                                                         "xMin":  13,
+                                                                                         "yMin":  11,
+                                                                                         "xMax":  263,
+                                                                                         "yMax":  64
+                                                                                     },
+                                                                          "formerAction":  {
+                                                                                               "xMin":  8,
+                                                                                               "yMin":  760,
+                                                                                               "xMax":  394,
+                                                                                               "yMax":  810
+                                                                                           },
+                                                                          "frameContent":  {
+                                                                                               "xMin":  0,
+                                                                                               "yMin":  0,
+                                                                                               "xMax":  402,
+                                                                                               "yMax":  874
+                                                                                           }
+                                                                      }
+                                               },
+                         "pauseActivating":  {
+                                                 "width":  402,
+                                                 "height":  874,
+                                                 "headerDarkPixels":  13250,
+                                                 "headerLightPixels":  0,
+                                                 "blackFraction":  0,
+                                                 "nearBlackFraction":  0,
+                                                 "maxNearBlackHorizontalRunFraction":  0,
+                                                 "invalidFraction":  0,
+                                                 "averageLuma":  0.443838992863093,
+                                                 "formerActionColorPixels":  0,
+                                                 "formerActionColorSpanPixels":  0,
+                                                 "sampledRegions":  {
+                                                                        "header":  {
+                                                                                       "xMin":  13,
+                                                                                       "yMin":  11,
+                                                                                       "xMax":  263,
+                                                                                       "yMax":  64
+                                                                                   },
+                                                                        "formerAction":  {
+                                                                                             "xMin":  8,
+                                                                                             "yMin":  760,
+                                                                                             "xMax":  394,
+                                                                                             "yMax":  810
+                                                                                         },
+                                                                        "frameContent":  {
+                                                                                             "xMin":  0,
+                                                                                             "yMin":  0,
+                                                                                             "xMax":  402,
+                                                                                             "yMax":  874
+                                                                                         }
+                                                                    }
+                                             },
+                         "paused":  {
+                                        "width":  402,
+                                        "height":  874,
+                                        "headerDarkPixels":  13250,
+                                        "headerLightPixels":  0,
+                                        "blackFraction":  0,
+                                        "nearBlackFraction":  0,
+                                        "maxNearBlackHorizontalRunFraction":  0,
+                                        "invalidFraction":  0,
+                                        "averageLuma":  0.443838992863093,
+                                        "formerActionColorPixels":  0,
+                                        "formerActionColorSpanPixels":  0,
+                                        "sampledRegions":  {
+                                                               "header":  {
+                                                                              "xMin":  13,
+                                                                              "yMin":  11,
+                                                                              "xMax":  263,
+                                                                              "yMax":  64
+                                                                          },
+                                                               "formerAction":  {
+                                                                                    "xMin":  8,
+                                                                                    "yMin":  760,
+                                                                                    "xMax":  394,
+                                                                                    "yMax":  810
+                                                                                },
+                                                               "frameContent":  {
+                                                                                    "xMin":  0,
+                                                                                    "yMin":  0,
+                                                                                    "xMax":  402,
+                                                                                    "yMax":  874
+                                                                                }
+                                                           }
+                                    },
+                         "pauseContinueHover":  {
+                                                    "width":  402,
+                                                    "height":  874,
+                                                    "headerDarkPixels":  13250,
+                                                    "headerLightPixels":  0,
+                                                    "blackFraction":  0,
+                                                    "nearBlackFraction":  0,
+                                                    "maxNearBlackHorizontalRunFraction":  0,
+                                                    "invalidFraction":  0,
+                                                    "averageLuma":  0.44481203766797689,
+                                                    "formerActionColorPixels":  0,
+                                                    "formerActionColorSpanPixels":  0,
+                                                    "sampledRegions":  {
+                                                                           "header":  {
+                                                                                          "xMin":  13,
+                                                                                          "yMin":  11,
+                                                                                          "xMax":  263,
+                                                                                          "yMax":  64
+                                                                                      },
+                                                                           "formerAction":  {
+                                                                                                "xMin":  8,
+                                                                                                "yMin":  760,
+                                                                                                "xMax":  394,
+                                                                                                "yMax":  810
+                                                                                            },
+                                                                           "frameContent":  {
+                                                                                                "xMin":  0,
+                                                                                                "yMin":  0,
+                                                                                                "xMax":  402,
+                                                                                                "yMax":  874
+                                                                                            }
+                                                                       }
+                                                },
+                         "pauseContinuePressed":  {
+                                                      "width":  402,
+                                                      "height":  874,
+                                                      "headerDarkPixels":  13250,
+                                                      "headerLightPixels":  0,
+                                                      "blackFraction":  0,
+                                                      "nearBlackFraction":  0,
+                                                      "maxNearBlackHorizontalRunFraction":  0,
+                                                      "invalidFraction":  0,
+                                                      "averageLuma":  0.44558535451295772,
+                                                      "formerActionColorPixels":  0,
+                                                      "formerActionColorSpanPixels":  0,
+                                                      "sampledRegions":  {
+                                                                             "header":  {
+                                                                                            "xMin":  13,
+                                                                                            "yMin":  11,
+                                                                                            "xMax":  263,
+                                                                                            "yMax":  64
+                                                                                        },
+                                                                             "formerAction":  {
+                                                                                                  "xMin":  8,
+                                                                                                  "yMin":  760,
+                                                                                                  "xMax":  394,
+                                                                                                  "yMax":  810
+                                                                                              },
+                                                                             "frameContent":  {
+                                                                                                  "xMin":  0,
+                                                                                                  "yMin":  0,
+                                                                                                  "xMax":  402,
+                                                                                                  "yMax":  874
+                                                                                              }
+                                                                         }
+                                                  },
+                         "pauseDeactivating":  {
+                                                   "width":  402,
+                                                   "height":  874,
+                                                   "headerDarkPixels":  618,
+                                                   "headerLightPixels":  11548,
+                                                   "blackFraction":  0,
+                                                   "nearBlackFraction":  4.52100004521E-05,
+                                                   "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                   "invalidFraction":  0,
+                                                   "averageLuma":  0.72390222534260584,
+                                                   "formerActionColorPixels":  0,
+                                                   "formerActionColorSpanPixels":  0,
+                                                   "sampledRegions":  {
+                                                                          "header":  {
+                                                                                         "xMin":  13,
+                                                                                         "yMin":  11,
+                                                                                         "xMax":  263,
+                                                                                         "yMax":  64
+                                                                                     },
+                                                                          "formerAction":  {
+                                                                                               "xMin":  8,
+                                                                                               "yMin":  760,
+                                                                                               "xMax":  394,
+                                                                                               "yMax":  810
+                                                                                           },
+                                                                          "frameContent":  {
+                                                                                               "xMin":  0,
+                                                                                               "yMin":  0,
+                                                                                               "xMax":  402,
+                                                                                               "yMax":  874
+                                                                                           }
+                                                                      }
+                                               },
+                         "continued":  {
+                                           "width":  402,
+                                           "height":  874,
+                                           "headerDarkPixels":  618,
+                                           "headerLightPixels":  11548,
+                                           "blackFraction":  4.52100004521E-05,
+                                           "nearBlackFraction":  0.0002712600027126,
+                                           "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                           "invalidFraction":  4.52100004521E-05,
+                                           "averageLuma":  0.7238011802469605,
+                                           "formerActionColorPixels":  0,
+                                           "formerActionColorSpanPixels":  0,
+                                           "sampledRegions":  {
+                                                                  "header":  {
+                                                                                 "xMin":  13,
+                                                                                 "yMin":  11,
+                                                                                 "xMax":  263,
+                                                                                 "yMax":  64
+                                                                             },
+                                                                  "formerAction":  {
+                                                                                       "xMin":  8,
+                                                                                       "yMin":  760,
+                                                                                       "xMax":  394,
+                                                                                       "yMax":  810
+                                                                                   },
+                                                                  "frameContent":  {
+                                                                                       "xMin":  0,
+                                                                                       "yMin":  0,
+                                                                                       "xMax":  402,
+                                                                                       "yMax":  874
+                                                                                   }
+                                                              }
+                                       },
+                         "pauseRestartHover":  {
+                                                   "width":  402,
+                                                   "height":  874,
+                                                   "headerDarkPixels":  13250,
+                                                   "headerLightPixels":  0,
+                                                   "blackFraction":  0,
+                                                   "nearBlackFraction":  0,
+                                                   "maxNearBlackHorizontalRunFraction":  0,
+                                                   "invalidFraction":  0,
+                                                   "averageLuma":  0.44503388147363077,
+                                                   "formerActionColorPixels":  0,
+                                                   "formerActionColorSpanPixels":  0,
+                                                   "sampledRegions":  {
+                                                                          "header":  {
+                                                                                         "xMin":  13,
+                                                                                         "yMin":  11,
+                                                                                         "xMax":  263,
+                                                                                         "yMax":  64
+                                                                                     },
+                                                                          "formerAction":  {
+                                                                                               "xMin":  8,
+                                                                                               "yMin":  760,
+                                                                                               "xMax":  394,
+                                                                                               "yMax":  810
+                                                                                           },
+                                                                          "frameContent":  {
+                                                                                               "xMin":  0,
+                                                                                               "yMin":  0,
+                                                                                               "xMax":  402,
+                                                                                               "yMax":  874
+                                                                                           }
+                                                                      }
+                                               },
+                         "pauseRestartPressed":  {
+                                                     "width":  402,
+                                                     "height":  874,
+                                                     "headerDarkPixels":  13250,
+                                                     "headerLightPixels":  0,
+                                                     "blackFraction":  0,
+                                                     "nearBlackFraction":  4.52100004521E-05,
+                                                     "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                     "invalidFraction":  0,
+                                                     "averageLuma":  0.44537481813619406,
+                                                     "formerActionColorPixels":  0,
+                                                     "formerActionColorSpanPixels":  0,
+                                                     "sampledRegions":  {
+                                                                            "header":  {
+                                                                                           "xMin":  13,
+                                                                                           "yMin":  11,
+                                                                                           "xMax":  263,
+                                                                                           "yMax":  64
+                                                                                       },
+                                                                            "formerAction":  {
+                                                                                                 "xMin":  8,
+                                                                                                 "yMin":  760,
+                                                                                                 "xMax":  394,
+                                                                                                 "yMax":  810
+                                                                                             },
+                                                                            "frameContent":  {
+                                                                                                 "xMin":  0,
+                                                                                                 "yMin":  0,
+                                                                                                 "xMax":  402,
+                                                                                                 "yMax":  874
+                                                                                             }
+                                                                        }
+                                                 },
+                         "restarted":  {
+                                           "width":  402,
+                                           "height":  874,
+                                           "headerDarkPixels":  618,
+                                           "headerLightPixels":  11547,
+                                           "blackFraction":  0,
+                                           "nearBlackFraction":  0,
+                                           "maxNearBlackHorizontalRunFraction":  0,
+                                           "invalidFraction":  0,
+                                           "averageLuma":  0.710097670443925,
+                                           "formerActionColorPixels":  0,
+                                           "formerActionColorSpanPixels":  0,
+                                           "sampledRegions":  {
+                                                                  "header":  {
+                                                                                 "xMin":  13,
+                                                                                 "yMin":  11,
+                                                                                 "xMax":  263,
+                                                                                 "yMax":  64
+                                                                             },
+                                                                  "formerAction":  {
+                                                                                       "xMin":  8,
+                                                                                       "yMin":  760,
+                                                                                       "xMax":  394,
+                                                                                       "yMax":  810
+                                                                                   },
+                                                                  "frameContent":  {
+                                                                                       "xMin":  0,
+                                                                                       "yMin":  0,
+                                                                                       "xMax":  402,
+                                                                                       "yMax":  874
+                                                                                   }
+                                                              }
+                                       },
+                         "toolAvailable":  {
+                                               "width":  402,
+                                               "height":  874,
+                                               "headerDarkPixels":  618,
+                                               "headerLightPixels":  11547,
+                                               "blackFraction":  0,
+                                               "nearBlackFraction":  4.52100004521E-05,
+                                               "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                               "invalidFraction":  0,
+                                               "averageLuma":  0.71509693339681246,
+                                               "formerActionColorPixels":  0,
+                                               "formerActionColorSpanPixels":  0,
+                                               "sampledRegions":  {
+                                                                      "header":  {
+                                                                                     "xMin":  13,
+                                                                                     "yMin":  11,
+                                                                                     "xMax":  263,
+                                                                                     "yMax":  64
+                                                                                 },
+                                                                      "formerAction":  {
+                                                                                           "xMin":  8,
+                                                                                           "yMin":  760,
+                                                                                           "xMax":  394,
+                                                                                           "yMax":  810
+                                                                                       },
+                                                                      "frameContent":  {
+                                                                                           "xMin":  0,
+                                                                                           "yMin":  0,
+                                                                                           "xMax":  402,
+                                                                                           "yMax":  874
+                                                                                       }
+                                                                  }
+                                           },
+                         "selectedTool":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  618,
+                                              "headerLightPixels":  11547,
+                                              "blackFraction":  0,
+                                              "nearBlackFraction":  4.52100004521E-05,
+                                              "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                              "invalidFraction":  0,
+                                              "averageLuma":  0.71397436280937454,
+                                              "formerActionColorPixels":  0,
+                                              "formerActionColorSpanPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  13,
+                                                                                    "yMin":  11,
+                                                                                    "xMax":  263,
+                                                                                    "yMax":  64
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  8,
+                                                                                          "yMin":  760,
+                                                                                          "xMax":  394,
+                                                                                          "yMax":  810
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  0,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  874
+                                                                                      }
+                                                                 }
+                                          },
+                         "adjacentPots":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  618,
+                                              "headerLightPixels":  11547,
+                                              "blackFraction":  4.52100004521E-05,
+                                              "nearBlackFraction":  0.0001808400018084,
+                                              "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                              "invalidFraction":  4.52100004521E-05,
+                                              "averageLuma":  0.71396629507592946,
+                                              "formerActionColorPixels":  0,
+                                              "formerActionColorSpanPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  13,
+                                                                                    "yMin":  11,
+                                                                                    "xMax":  263,
+                                                                                    "yMax":  64
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  8,
+                                                                                          "yMin":  760,
+                                                                                          "xMax":  394,
+                                                                                          "yMax":  810
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  0,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  874
+                                                                                      }
+                                                                 }
+                                          },
+                         "legalDragCue":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  618,
+                                              "headerLightPixels":  11547,
+                                              "blackFraction":  0,
+                                              "nearBlackFraction":  0,
+                                              "maxNearBlackHorizontalRunFraction":  0,
+                                              "invalidFraction":  0,
+                                              "averageLuma":  0.71290110395730222,
+                                              "formerActionColorPixels":  0,
+                                              "formerActionColorSpanPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  13,
+                                                                                    "yMin":  11,
+                                                                                    "xMax":  263,
+                                                                                    "yMax":  64
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  8,
+                                                                                          "yMin":  760,
+                                                                                          "xMax":  394,
+                                                                                          "yMax":  810
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  0,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  874
+                                                                                      }
+                                                                 }
+                                          },
+                         "illegalDragCue":  {
+                                                "width":  402,
+                                                "height":  874,
+                                                "headerDarkPixels":  618,
+                                                "headerLightPixels":  11547,
+                                                "blackFraction":  4.52100004521E-05,
+                                                "nearBlackFraction":  9.04200009042E-05,
+                                                "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                "invalidFraction":  4.52100004521E-05,
+                                                "averageLuma":  0.7123841859318979,
+                                                "formerActionColorPixels":  0,
+                                                "formerActionColorSpanPixels":  0,
+                                                "sampledRegions":  {
+                                                                       "header":  {
+                                                                                      "xMin":  13,
+                                                                                      "yMin":  11,
+                                                                                      "xMax":  263,
+                                                                                      "yMax":  64
+                                                                                  },
+                                                                       "formerAction":  {
+                                                                                            "xMin":  8,
+                                                                                            "yMin":  760,
+                                                                                            "xMax":  394,
+                                                                                            "yMax":  810
+                                                                                        },
+                                                                       "frameContent":  {
+                                                                                            "xMin":  0,
+                                                                                            "yMin":  0,
+                                                                                            "xMax":  402,
+                                                                                            "yMax":  874
+                                                                                        }
+                                                                   }
+                                            },
+                         "denseBoard":  {
+                                            "width":  402,
+                                            "height":  874,
+                                            "headerDarkPixels":  618,
+                                            "headerLightPixels":  11547,
+                                            "blackFraction":  0.0006329400063294,
+                                            "nearBlackFraction":  0.0015371400153714,
+                                            "maxNearBlackHorizontalRunFraction":  0.019900497512437811,
+                                            "invalidFraction":  0.0006329400063294,
+                                            "averageLuma":  0.7015049052495993,
+                                            "formerActionColorPixels":  0,
+                                            "formerActionColorSpanPixels":  0,
+                                            "sampledRegions":  {
+                                                                   "header":  {
+                                                                                  "xMin":  13,
+                                                                                  "yMin":  11,
+                                                                                  "xMax":  263,
+                                                                                  "yMax":  64
+                                                                              },
+                                                                   "formerAction":  {
+                                                                                        "xMin":  8,
+                                                                                        "yMin":  760,
+                                                                                        "xMax":  394,
+                                                                                        "yMax":  810
+                                                                                    },
+                                                                   "frameContent":  {
+                                                                                        "xMin":  0,
+                                                                                        "yMin":  0,
+                                                                                        "xMax":  402,
+                                                                                        "yMax":  874
+                                                                                    }
+                                                               }
+                                        },
+                         "plantDetail":  {
+                                             "width":  402,
+                                             "height":  874,
+                                             "headerDarkPixels":  618,
+                                             "headerLightPixels":  11547,
+                                             "blackFraction":  4.52100004521E-05,
+                                             "nearBlackFraction":  9.04200009042E-05,
+                                             "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                             "invalidFraction":  4.52100004521E-05,
+                                             "averageLuma":  0.7063308760013729,
+                                             "formerActionColorPixels":  515,
+                                             "formerActionColorSpanPixels":  378,
+                                             "sampledRegions":  {
+                                                                    "header":  {
+                                                                                   "xMin":  13,
+                                                                                   "yMin":  11,
+                                                                                   "xMax":  263,
+                                                                                   "yMax":  64
+                                                                               },
+                                                                    "formerAction":  {
+                                                                                         "xMin":  8,
+                                                                                         "yMin":  760,
+                                                                                         "xMax":  394,
+                                                                                         "yMax":  810
+                                                                                     },
+                                                                    "frameContent":  {
+                                                                                         "xMin":  0,
+                                                                                         "yMin":  0,
+                                                                                         "xMax":  402,
+                                                                                         "yMax":  874
+                                                                                     }
+                                                                }
+                                         },
+                         "detailCloseHover":  {
+                                                  "width":  402,
+                                                  "height":  874,
+                                                  "headerDarkPixels":  618,
+                                                  "headerLightPixels":  11547,
+                                                  "blackFraction":  4.52100004521E-05,
+                                                  "nearBlackFraction":  9.04200009042E-05,
+                                                  "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                  "invalidFraction":  4.52100004521E-05,
+                                                  "averageLuma":  0.70614413309823509,
+                                                  "formerActionColorPixels":  515,
+                                                  "formerActionColorSpanPixels":  378,
+                                                  "sampledRegions":  {
+                                                                         "header":  {
+                                                                                        "xMin":  13,
+                                                                                        "yMin":  11,
+                                                                                        "xMax":  263,
+                                                                                        "yMax":  64
+                                                                                    },
+                                                                         "formerAction":  {
+                                                                                              "xMin":  8,
+                                                                                              "yMin":  760,
+                                                                                              "xMax":  394,
+                                                                                              "yMax":  810
+                                                                                          },
+                                                                         "frameContent":  {
+                                                                                              "xMin":  0,
+                                                                                              "yMin":  0,
+                                                                                              "xMax":  402,
+                                                                                              "yMax":  874
+                                                                                          }
+                                                                     }
+                                              },
+                         "detailClosePressed":  {
+                                                    "width":  402,
+                                                    "height":  874,
+                                                    "headerDarkPixels":  618,
+                                                    "headerLightPixels":  11547,
+                                                    "blackFraction":  4.52100004521E-05,
+                                                    "nearBlackFraction":  9.04200009042E-05,
+                                                    "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                    "invalidFraction":  4.52100004521E-05,
+                                                    "averageLuma":  0.706369673699031,
+                                                    "formerActionColorPixels":  539,
+                                                    "formerActionColorSpanPixels":  378,
+                                                    "sampledRegions":  {
+                                                                           "header":  {
+                                                                                          "xMin":  13,
+                                                                                          "yMin":  11,
+                                                                                          "xMax":  263,
+                                                                                          "yMax":  64
+                                                                                      },
+                                                                           "formerAction":  {
+                                                                                                "xMin":  8,
+                                                                                                "yMin":  760,
+                                                                                                "xMax":  394,
+                                                                                                "yMax":  810
+                                                                                            },
+                                                                           "frameContent":  {
+                                                                                                "xMin":  0,
+                                                                                                "yMin":  0,
+                                                                                                "xMax":  402,
+                                                                                                "yMax":  874
+                                                                                            }
+                                                                       }
+                                                },
+                         "detailClosed":  {
+                                              "width":  402,
+                                              "height":  874,
+                                              "headerDarkPixels":  618,
+                                              "headerLightPixels":  11547,
+                                              "blackFraction":  4.52100004521E-05,
+                                              "nearBlackFraction":  9.04200009042E-05,
+                                              "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                              "invalidFraction":  4.52100004521E-05,
+                                              "averageLuma":  0.71200370526981027,
+                                              "formerActionColorPixels":  0,
+                                              "formerActionColorSpanPixels":  0,
+                                              "sampledRegions":  {
+                                                                     "header":  {
+                                                                                    "xMin":  13,
+                                                                                    "yMin":  11,
+                                                                                    "xMax":  263,
+                                                                                    "yMax":  64
+                                                                                },
+                                                                     "formerAction":  {
+                                                                                          "xMin":  8,
+                                                                                          "yMin":  760,
+                                                                                          "xMax":  394,
+                                                                                          "yMax":  810
+                                                                                      },
+                                                                     "frameContent":  {
+                                                                                          "xMin":  0,
+                                                                                          "yMin":  0,
+                                                                                          "xMax":  402,
+                                                                                          "yMax":  874
+                                                                                      }
+                                                                 }
+                                          },
+                         "destinationClickNoMove":  {
+                                                        "width":  402,
+                                                        "height":  874,
+                                                        "headerDarkPixels":  618,
+                                                        "headerLightPixels":  11547,
+                                                        "blackFraction":  4.52100004521E-05,
+                                                        "nearBlackFraction":  9.04200009042E-05,
+                                                        "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                        "invalidFraction":  4.52100004521E-05,
+                                                        "averageLuma":  0.7122025899479647,
+                                                        "formerActionColorPixels":  0,
+                                                        "formerActionColorSpanPixels":  0,
+                                                        "sampledRegions":  {
+                                                                               "header":  {
+                                                                                              "xMin":  13,
+                                                                                              "yMin":  11,
+                                                                                              "xMax":  263,
+                                                                                              "yMax":  64
+                                                                                          },
+                                                                               "formerAction":  {
+                                                                                                    "xMin":  8,
+                                                                                                    "yMin":  760,
+                                                                                                    "xMax":  394,
+                                                                                                    "yMax":  810
+                                                                                                },
+                                                                               "frameContent":  {
+                                                                                                    "xMin":  0,
+                                                                                                    "yMin":  0,
+                                                                                                    "xMax":  402,
+                                                                                                    "yMax":  874
+                                                                                                }
+                                                                           }
+                                                    },
+                         "dragRelocation":  {
+                                                "width":  402,
+                                                "height":  874,
+                                                "headerDarkPixels":  618,
+                                                "headerLightPixels":  11547,
+                                                "blackFraction":  4.52100004521E-05,
+                                                "nearBlackFraction":  9.04200009042E-05,
+                                                "maxNearBlackHorizontalRunFraction":  0.0099502487562189053,
+                                                "invalidFraction":  4.52100004521E-05,
+                                                "averageLuma":  0.7122620465946764,
+                                                "formerActionColorPixels":  0,
+                                                "formerActionColorSpanPixels":  0,
+                                                "sampledRegions":  {
+                                                                       "header":  {
+                                                                                      "xMin":  13,
+                                                                                      "yMin":  11,
+                                                                                      "xMax":  263,
+                                                                                      "yMax":  64
+                                                                                  },
+                                                                       "formerAction":  {
+                                                                                            "xMin":  8,
+                                                                                            "yMin":  760,
+                                                                                            "xMax":  394,
+                                                                                            "yMax":  810
+                                                                                        },
+                                                                       "frameContent":  {
+                                                                                            "xMin":  0,
+                                                                                            "yMin":  0,
+                                                                                            "xMax":  402,
+                                                                                            "yMax":  874
+                                                                                        }
+                                                                   }
+                                            },
+                         "terminal":  {
+                                          "width":  402,
+                                          "height":  874,
+                                          "headerDarkPixels":  13250,
+                                          "headerLightPixels":  0,
+                                          "blackFraction":  0,
+                                          "nearBlackFraction":  0,
+                                          "maxNearBlackHorizontalRunFraction":  0,
+                                          "invalidFraction":  0,
+                                          "averageLuma":  0.49156600814320983,
+                                          "formerActionColorPixels":  0,
+                                          "formerActionColorSpanPixels":  0,
+                                          "sampledRegions":  {
+                                                                 "header":  {
+                                                                                "xMin":  13,
+                                                                                "yMin":  11,
+                                                                                "xMax":  263,
+                                                                                "yMax":  64
+                                                                            },
+                                                                 "formerAction":  {
+                                                                                      "xMin":  8,
+                                                                                      "yMin":  760,
+                                                                                      "xMax":  394,
+                                                                                      "yMax":  810
+                                                                                  },
+                                                                 "frameContent":  {
+                                                                                      "xMin":  0,
+                                                                                      "yMin":  0,
+                                                                                      "xMax":  402,
+                                                                                      "yMax":  874
+                                                                                  }
+                                                             }
+                                      },
+                         "terminalPreviewRestarted":  {
+                                                          "width":  402,
+                                                          "height":  874,
+                                                          "headerDarkPixels":  618,
+                                                          "headerLightPixels":  11547,
+                                                          "blackFraction":  0,
+                                                          "nearBlackFraction":  0,
+                                                          "maxNearBlackHorizontalRunFraction":  0,
+                                                          "invalidFraction":  0,
+                                                          "averageLuma":  0.710097670443925,
+                                                          "formerActionColorPixels":  0,
+                                                          "formerActionColorSpanPixels":  0,
+                                                          "sampledRegions":  {
+                                                                                 "header":  {
+                                                                                                "xMin":  13,
+                                                                                                "yMin":  11,
+                                                                                                "xMax":  263,
+                                                                                                "yMax":  64
+                                                                                            },
+                                                                                 "formerAction":  {
+                                                                                                      "xMin":  8,
+                                                                                                      "yMin":  760,
+                                                                                                      "xMax":  394,
+                                                                                                      "yMax":  810
+                                                                                                  },
+                                                                                 "frameContent":  {
+                                                                                                      "xMin":  0,
+                                                                                                      "yMin":  0,
+                                                                                                      "xMax":  402,
+                                                                                                      "yMax":  874
+                                                                                                  }
+                                                                             }
+                                                      }
+                     },
+    "opticalMeasurements":  {
+                                "pausedModal":  {
+                                                    "thresholds":  {
+                                                                       "titleCenterLogical":  2,
+                                                                       "hintCenterLogical":  2,
+                                                                       "pairedActionCapturePixels":  2
+                                                                   },
+                                                    "title":  {
+                                                                  "mask":  "title-ink",
+                                                                  "sampleRegion":  {
+                                                                                       "xMin":  90,
+                                                                                       "yMin":  332,
+                                                                                       "xMax":  310,
+                                                                                       "yMax":  372
+                                                                                   },
+                                                                  "pixels":  699,
+                                                                  "bounds":  {
+                                                                                 "xMin":  143,
+                                                                                 "yMin":  340,
+                                                                                 "xMax":  259,
+                                                                                 "yMax":  365,
+                                                                                 "width":  116,
+                                                                                 "height":  25,
+                                                                                 "centerX":  201,
+                                                                                 "centerY":  352.5
+                                                                             },
+                                                                  "centroid":  {
+                                                                                   "x":  202.54148783977109,
+                                                                                   "y":  352.07081545064375
+                                                                               }
+                                                              },
+                                                    "titleOwner":  {
+                                                                       "xMin":  52,
+                                                                       "yMin":  326,
+                                                                       "xMax":  350,
+                                                                       "yMax":  378
+                                                                   },
+                                                    "titleCenterDeltaLogical":  0.0708154506437495,
+                                                    "hintIcon":  {
+                                                                     "mask":  "hint-icon",
+                                                                     "sampleRegion":  {
+                                                                                          "xMin":  102,
+                                                                                          "yMin":  398,
+                                                                                          "xMax":  128,
+                                                                                          "yMax":  434
+                                                                                      },
+                                                                     "pixels":  110,
+                                                                     "bounds":  {
+                                                                                    "xMin":  110,
+                                                                                    "yMin":  409,
+                                                                                    "xMax":  125,
+                                                                                    "yMax":  422,
+                                                                                    "width":  15,
+                                                                                    "height":  13,
+                                                                                    "centerX":  117.5,
+                                                                                    "centerY":  415.5
+                                                                                },
+                                                                     "centroid":  {
+                                                                                      "x":  117.1,
+                                                                                      "y":  416.70909090909089
+                                                                                  }
+                                                                 },
+                                                    "hintCopy":  {
+                                                                     "mask":  "hint-copy",
+                                                                     "sampleRegion":  {
+                                                                                          "xMin":  130,
+                                                                                          "yMin":  398,
+                                                                                          "xMax":  306,
+                                                                                          "yMax":  434
+                                                                                      },
+                                                                     "pixels":  950,
+                                                                     "bounds":  {
+                                                                                    "xMin":  134,
+                                                                                    "yMin":  408,
+                                                                                    "xMax":  292,
+                                                                                    "yMax":  426,
+                                                                                    "width":  158,
+                                                                                    "height":  18,
+                                                                                    "centerX":  213,
+                                                                                    "centerY":  417
+                                                                                },
+                                                                     "centroid":  {
+                                                                                      "x":  213.39894736842106,
+                                                                                      "y":  417.26631578947371
+                                                                                  }
+                                                                 },
+                                                    "hintOwner":  {
+                                                                      "xMin":  60,
+                                                                      "yMin":  390,
+                                                                      "xMax":  342,
+                                                                      "yMax":  442
+                                                                  },
+                                                    "hintUnion":  {
+                                                                      "xMin":  110,
+                                                                      "yMin":  408,
+                                                                      "xMax":  292,
+                                                                      "yMax":  426
+                                                                  },
+                                                    "hintIconCopyCenterDeltaLogical":  0.55722488038281881,
+                                                    "hintGroupCenterDeltaLogical":  {
+                                                                                        "x":  0,
+                                                                                        "y":  1
+                                                                                    },
+                                                    "primarySurface":  {
+                                                                           "mask":  "primary-surface",
+                                                                           "sampleRegion":  {
+                                                                                                "xMin":  54,
+                                                                                                "yMin":  466,
+                                                                                                "xMax":  196,
+                                                                                                "yMax":  518
+                                                                                            },
+                                                                           "pixels":  5391,
+                                                                           "bounds":  {
+                                                                                          "xMin":  57,
+                                                                                          "yMin":  469,
+                                                                                          "xMax":  193,
+                                                                                          "yMax":  515,
+                                                                                          "width":  136,
+                                                                                          "height":  46,
+                                                                                          "centerX":  125,
+                                                                                          "centerY":  492
+                                                                                      },
+                                                                           "centroid":  {
+                                                                                            "x":  126.36588759042849,
+                                                                                            "y":  491.87859395288444
+                                                                                        }
+                                                                       },
+                                                    "dangerSurface":  {
+                                                                          "mask":  "danger-surface",
+                                                                          "sampleRegion":  {
+                                                                                               "xMin":  206,
+                                                                                               "yMin":  466,
+                                                                                               "xMax":  348,
+                                                                                               "yMax":  518
+                                                                                           },
+                                                                          "pixels":  4738,
+                                                                          "bounds":  {
+                                                                                         "xMin":  209,
+                                                                                         "yMin":  468,
+                                                                                         "xMax":  345,
+                                                                                         "yMax":  513,
+                                                                                         "width":  136,
+                                                                                         "height":  45,
+                                                                                         "centerX":  277,
+                                                                                         "centerY":  490.5
+                                                                                     },
+                                                                          "centroid":  {
+                                                                                           "x":  278.09054453355844,
+                                                                                           "y":  489.26150274377375
+                                                                                       }
+                                                                      },
+                                                    "primaryLocalInsets":  {
+                                                                               "left":  3,
+                                                                               "top":  3,
+                                                                               "right":  3,
+                                                                               "bottom":  3
+                                                                           },
+                                                    "dangerLocalInsets":  {
+                                                                              "left":  3,
+                                                                              "top":  2,
+                                                                              "right":  3,
+                                                                              "bottom":  5
+                                                                          },
+                                                    "pairedMaximumEdgeDeltaCapturePixels":  2
+                                                },
+                                "waveActionContentContrast":  {
+                                                                  "background":  {
+                                                                                     "r":  67,
+                                                                                     "g":  108,
+                                                                                     "b":  20,
+                                                                                     "pixels":  2056
+                                                                                 },
+                                                                  "foreground":  {
+                                                                                     "r":  254,
+                                                                                     "g":  245,
+                                                                                     "b":  223,
+                                                                                     "pixels":  157
+                                                                                 },
+                                                                  "ratio":  5.69885082668722,
+                                                                  "minimum":  4.5,
+                                                                  "polarity":  "LightOnDark",
+                                                                  "passed":  true,
+                                                                  "sampleRect":  {
+                                                                                     "xMin":  232,
+                                                                                     "yMin":  533,
+                                                                                     "xMax":  380,
+                                                                                     "yMax":  563
+                                                                                 }
+                                                              },
+                                "refreshActionContentContrast":  {
+                                                                     "background":  {
+                                                                                        "r":  169,
+                                                                                        "g":  184,
+                                                                                        "b":  91,
+                                                                                        "pixels":  2740
+                                                                                    },
+                                                                     "foreground":  {
+                                                                                        "r":  85,
+                                                                                        "g":  56,
+                                                                                        "b":  32,
+                                                                                        "pixels":  757
+                                                                                    },
+                                                                     "ratio":  4.9139993887654088,
+                                                                     "minimum":  4.5,
+                                                                     "polarity":  "DarkOnLight",
+                                                                     "passed":  true,
+                                                                     "sampleRect":  {
+                                                                                        "xMin":  38,
+                                                                                        "yMin":  751,
+                                                                                        "xMax":  364,
+                                                                                        "yMax":  781
+                                                                                    }
+                                                                 }
+                            },
+    "interactionPolishEvidence":  {
+                                      "waveActionRect":  {
+                                                             "xMin":  210,
+                                                             "yMin":  526,
+                                                             "xMax":  394,
+                                                             "yMax":  570
+                                                         },
+                                      "waveActionFocusDifference":  {
+                                                                        "channelThreshold":  8,
+                                                                        "region":  {
+                                                                                       "xMin":  210,
+                                                                                       "yMin":  526,
+                                                                                       "xMax":  394,
+                                                                                       "yMax":  570
+                                                                                   },
+                                                                        "regionPixels":  8096,
+                                                                        "changedPixels":  720,
+                                                                        "changedFraction":  0.088932806324110672,
+                                                                        "edgeBandPixels":  3,
+                                                                        "edgePixels":  1332,
+                                                                        "changedEdgePixels":  0,
+                                                                        "changedBounds":  {
+                                                                                              "xMin":  214,
+                                                                                              "yMin":  530,
+                                                                                              "xMax":  390,
+                                                                                              "yMax":  566
+                                                                                          }
+                                                                    },
+                                      "waveActionPressDifference":  {
+                                                                        "channelThreshold":  8,
+                                                                        "region":  {
+                                                                                       "xMin":  210,
+                                                                                       "yMin":  526,
+                                                                                       "xMax":  394,
+                                                                                       "yMax":  570
+                                                                                   },
+                                                                        "regionPixels":  8096,
+                                                                        "changedPixels":  2484,
+                                                                        "changedFraction":  0.30681818181818182,
+                                                                        "edgeBandPixels":  3,
+                                                                        "edgePixels":  1332,
+                                                                        "changedEdgePixels":  416,
+                                                                        "changedBounds":  {
+                                                                                              "xMin":  212,
+                                                                                              "yMin":  528,
+                                                                                              "xMax":  392,
+                                                                                              "yMax":  568
+                                                                                          }
+                                                                    },
+                                      "waveActionPressInset":  {
+                                                                   "region":  {
+                                                                                  "xMin":  210,
+                                                                                  "yMin":  526,
+                                                                                  "xMax":  394,
+                                                                                  "yMax":  570
+                                                                              },
+                                                                   "edgeBandPixels":  3,
+                                                                   "distanceMargin":  8,
+                                                                   "samples":  228,
+                                                                   "retreatedPixels":  66,
+                                                                   "retreatedFraction":  0.28947368421052633
+                                                               },
+                                      "pauseContinueRect":  {
+                                                                "xMin":  54,
+                                                                "yMin":  466,
+                                                                "xMax":  196,
+                                                                "yMax":  518
+                                                            },
+                                      "pauseActionBandRect":  {
+                                                                  "xMin":  36,
+                                                                  "yMin":  454,
+                                                                  "xMax":  366,
+                                                                  "yMax":  524
+                                                              },
+                                      "pauseContinuePressDifference":  {
+                                                                           "channelThreshold":  8,
+                                                                           "region":  {
+                                                                                          "xMin":  36,
+                                                                                          "yMin":  454,
+                                                                                          "xMax":  366,
+                                                                                          "yMax":  524
+                                                                                      },
+                                                                           "regionPixels":  23100,
+                                                                           "changedPixels":  2803,
+                                                                           "changedFraction":  0.12134199134199135,
+                                                                           "edgeBandPixels":  3,
+                                                                           "edgePixels":  2364,
+                                                                           "changedEdgePixels":  0,
+                                                                           "changedBounds":  {
+                                                                                                 "xMin":  56,
+                                                                                                 "yMin":  468,
+                                                                                                 "xMax":  194,
+                                                                                                 "yMax":  516
+                                                                                             }
+                                                                       },
+                                      "pauseContinuePressInset":  {
+                                                                      "region":  {
+                                                                                     "xMin":  54,
+                                                                                     "yMin":  466,
+                                                                                     "xMax":  196,
+                                                                                     "yMax":  518
+                                                                                 },
+                                                                      "edgeBandPixels":  3,
+                                                                      "distanceMargin":  8,
+                                                                      "samples":  276,
+                                                                      "retreatedPixels":  84,
+                                                                      "retreatedFraction":  0.30434782608695654
+                                                                  },
+                                      "pauseRestartRect":  {
+                                                               "xMin":  206,
+                                                               "yMin":  466,
+                                                               "xMax":  348,
+                                                               "yMax":  518
+                                                           },
+                                      "pauseRestartPressDifference":  {
+                                                                          "channelThreshold":  8,
+                                                                          "region":  {
+                                                                                         "xMin":  36,
+                                                                                         "yMin":  454,
+                                                                                         "xMax":  366,
+                                                                                         "yMax":  524
+                                                                                     },
+                                                                          "regionPixels":  23100,
+                                                                          "changedPixels":  2786,
+                                                                          "changedFraction":  0.12060606060606061,
+                                                                          "edgeBandPixels":  3,
+                                                                          "edgePixels":  2364,
+                                                                          "changedEdgePixels":  0,
+                                                                          "changedBounds":  {
+                                                                                                "xMin":  208,
+                                                                                                "yMin":  468,
+                                                                                                "xMax":  346,
+                                                                                                "yMax":  516
+                                                                                            }
+                                                                      },
+                                      "pauseRestartPressInset":  {
+                                                                     "region":  {
+                                                                                    "xMin":  206,
+                                                                                    "yMin":  466,
+                                                                                    "xMax":  348,
+                                                                                    "yMax":  518
+                                                                                },
+                                                                     "edgeBandPixels":  3,
+                                                                     "distanceMargin":  8,
+                                                                     "samples":  276,
+                                                                     "retreatedPixels":  84,
+                                                                     "retreatedFraction":  0.30434782608695654
+                                                                 },
+                                      "releaseAction":  "StartWave-pass"
+                                  },
+    "compactControlEvidence":  {
+                                   "state":  "captured",
+                                   "speedRect":  {
+                                                     "xMin":  334,
+                                                     "yMin":  20,
+                                                     "xMax":  386,
+                                                     "yMax":  72
+                                                 },
+                                   "speedFocusDifference":  {
+                                                                "channelThreshold":  8,
+                                                                "region":  {
+                                                                               "xMin":  334,
+                                                                               "yMin":  20,
+                                                                               "xMax":  386,
+                                                                               "yMax":  72
+                                                                           },
+                                                                "regionPixels":  2704,
+                                                                "changedPixels":  224,
+                                                                "changedFraction":  0.082840236686390539,
+                                                                "edgeBandPixels":  3,
+                                                                "edgePixels":  588,
+                                                                "changedEdgePixels":  0,
+                                                                "changedBounds":  {
+                                                                                      "xMin":  338,
+                                                                                      "yMin":  24,
+                                                                                      "xMax":  382,
+                                                                                      "yMax":  68
+                                                                                  }
+                                                            },
+                                   "speedActivatingDifference":  {
+                                                                     "channelThreshold":  8,
+                                                                     "region":  {
+                                                                                    "xMin":  334,
+                                                                                    "yMin":  20,
+                                                                                    "xMax":  386,
+                                                                                    "yMax":  72
+                                                                                },
+                                                                     "regionPixels":  2704,
+                                                                     "changedPixels":  2215,
+                                                                     "changedFraction":  0.81915680473372776,
+                                                                     "edgeBandPixels":  3,
+                                                                     "edgePixels":  588,
+                                                                     "changedEdgePixels":  142,
+                                                                     "changedBounds":  {
+                                                                                           "xMin":  336,
+                                                                                           "yMin":  22,
+                                                                                           "xMax":  384,
+                                                                                           "yMax":  70
+                                                                                       }
+                                                                 },
+                                   "speedActiveDifference":  {
+                                                                 "channelThreshold":  8,
+                                                                 "region":  {
+                                                                                "xMin":  334,
+                                                                                "yMin":  20,
+                                                                                "xMax":  386,
+                                                                                "yMax":  72
+                                                                            },
+                                                                 "regionPixels":  2704,
+                                                                 "changedPixels":  2215,
+                                                                 "changedFraction":  0.81915680473372776,
+                                                                 "edgeBandPixels":  3,
+                                                                 "edgePixels":  588,
+                                                                 "changedEdgePixels":  142,
+                                                                 "changedBounds":  {
+                                                                                       "xMin":  336,
+                                                                                       "yMin":  22,
+                                                                                       "xMax":  384,
+                                                                                       "yMax":  70
+                                                                                   }
+                                                             },
+                                   "speedDeactivatingDifference":  {
+                                                                       "channelThreshold":  8,
+                                                                       "region":  {
+                                                                                      "xMin":  334,
+                                                                                      "yMin":  20,
+                                                                                      "xMax":  386,
+                                                                                      "yMax":  72
+                                                                                  },
+                                                                       "regionPixels":  2704,
+                                                                       "changedPixels":  224,
+                                                                       "changedFraction":  0.082840236686390539,
+                                                                       "edgeBandPixels":  3,
+                                                                       "edgePixels":  588,
+                                                                       "changedEdgePixels":  0,
+                                                                       "changedBounds":  {
+                                                                                             "xMin":  338,
+                                                                                             "yMin":  24,
+                                                                                             "xMax":  382,
+                                                                                             "yMax":  68
+                                                                                         }
+                                                                   },
+                                   "deactivatingSurfaceContract":  "captured-complete-endpoint-or-active-variant",
+                                   "pauseRect":  {
+                                                     "xMin":  274,
+                                                     "yMin":  20,
+                                                     "xMax":  326,
+                                                     "yMax":  72
+                                                 },
+                                   "pauseActivatingDifference":  {
+                                                                     "channelThreshold":  8,
+                                                                     "region":  {
+                                                                                    "xMin":  274,
+                                                                                    "yMin":  20,
+                                                                                    "xMax":  326,
+                                                                                    "yMax":  72
+                                                                                },
+                                                                     "regionPixels":  2704,
+                                                                     "changedPixels":  2697,
+                                                                     "changedFraction":  0.9974112426035503,
+                                                                     "edgeBandPixels":  3,
+                                                                     "edgePixels":  588,
+                                                                     "changedEdgePixels":  588,
+                                                                     "changedBounds":  {
+                                                                                           "xMin":  274,
+                                                                                           "yMin":  20,
+                                                                                           "xMax":  326,
+                                                                                           "yMax":  72
+                                                                                       }
+                                                                 },
+                                   "pauseDeactivatingDifference":  {
+                                                                       "channelThreshold":  8,
+                                                                       "region":  {
+                                                                                      "xMin":  274,
+                                                                                      "yMin":  20,
+                                                                                      "xMax":  326,
+                                                                                      "yMax":  72
+                                                                                  },
+                                                                       "regionPixels":  2704,
+                                                                       "changedPixels":  0,
+                                                                       "changedFraction":  0,
+                                                                       "edgeBandPixels":  3,
+                                                                       "edgePixels":  588,
+                                                                       "changedEdgePixels":  0,
+                                                                       "changedBounds":  null
+                                                                   },
+                                   "detailCloseRect":  {
+                                                           "xMin":  342,
+                                                           "yMin":  800,
+                                                           "xMax":  386,
+                                                           "yMax":  844
+                                                       },
+                                   "detailClosePressDifference":  {
+                                                                      "channelThreshold":  8,
+                                                                      "region":  {
+                                                                                     "xMin":  342,
+                                                                                     "yMin":  800,
+                                                                                     "xMax":  386,
+                                                                                     "yMax":  844
+                                                                                 },
+                                                                      "regionPixels":  1936,
+                                                                      "changedPixels":  514,
+                                                                      "changedFraction":  0.265495867768595,
+                                                                      "edgeBandPixels":  3,
+                                                                      "edgePixels":  492,
+                                                                      "changedEdgePixels":  122,
+                                                                      "changedBounds":  {
+                                                                                            "xMin":  348,
+                                                                                            "yMin":  802,
+                                                                                            "xMax":  386,
+                                                                                            "yMax":  842
+                                                                                        }
+                                                                  },
+                                   "detailCloseRemainsInstantCommand":  true
+                               },
+    "controls":  {
+                     "lobbyLevelOrchard01":  {
+                                                 "x":  201,
+                                                 "y":  206
+                                             },
+                     "lobbyLevelOrchard02":  {
+                                                 "x":  201,
+                                                 "y":  392
+                                             },
+                     "lobbyLevelOrchard03":  {
+                                                 "x":  201,
+                                                 "y":  578
+                                             },
+                     "lobbyStart":  {
+                                        "x":  201,
+                                        "y":  746
+                                    },
+                     "settlementRetry":  {
+                                             "x":  201,
+                                             "y":  674
+                                         },
+                     "settlementReturn":  {
+                                              "x":  201,
+                                              "y":  754
+                                          },
+                     "headerPause":  {
+                                         "x":  300,
+                                         "y":  46
+                                     },
+                     "headerSpeed":  {
+                                         "x":  360,
+                                         "y":  46
+                                     },
+                     "waveAction":  {
+                                        "x":  302,
+                                        "y":  548
+                                    },
+                     "pauseContinue":  {
+                                           "x":  125,
+                                           "y":  492
+                                       },
+                     "pauseRestart":  {
+                                          "x":  277,
+                                          "y":  492
+                                      },
+                     "terminalRestart":  {
+                                             "x":  201,
+                                             "y":  536
+                                         },
+                     "weaponGatling":  {
+                                           "x":  60,
+                                           "y":  624
+                                       },
+                     "nurserySlot0":  {
+                                          "x":  51,
+                                          "y":  705
+                                      },
+                     "acceptanceCell0":  {
+                                             "x":  32,
+                                             "y":  195
+                                         },
+                     "acceptanceCell1":  {
+                                             "x":  80,
+                                             "y":  195
+                                         },
+                     "detailClose":  {
+                                         "x":  364,
+                                         "y":  822
+                                     }
+                 },
+    "referenceControls":  {
+                              "lobbyLevelOrchard01":  {
+                                                          "x":  201,
+                                                          "y":  206
+                                                      },
+                              "lobbyLevelOrchard02":  {
+                                                          "x":  201,
+                                                          "y":  392
+                                                      },
+                              "lobbyLevelOrchard03":  {
+                                                          "x":  201,
+                                                          "y":  578
+                                                      },
+                              "lobbyStart":  {
+                                                 "x":  201,
+                                                 "y":  746
+                                             },
+                              "settlementRetry":  {
+                                                      "x":  201,
+                                                      "y":  674
+                                                  },
+                              "settlementReturn":  {
+                                                       "x":  201,
+                                                       "y":  754
+                                                   },
+                              "headerPause":  {
+                                                  "x":  300,
+                                                  "y":  46
+                                              },
+                              "headerSpeed":  {
+                                                  "x":  360,
+                                                  "y":  46
+                                              },
+                              "waveAction":  {
+                                                 "x":  302,
+                                                 "y":  548
+                                             },
+                              "pauseContinue":  {
+                                                    "x":  125,
+                                                    "y":  492
+                                                },
+                              "pauseRestart":  {
+                                                   "x":  277,
+                                                   "y":  492
+                                               },
+                              "terminalRestart":  {
+                                                      "x":  201,
+                                                      "y":  536
+                                                  },
+                              "weaponGatling":  {
+                                                    "x":  60,
+                                                    "y":  624
+                                                },
+                              "nurserySlot0":  {
+                                                   "x":  51,
+                                                   "y":  705
+                                               },
+                              "acceptanceCell0":  {
+                                                      "x":  32,
+                                                      "y":  195
+                                                  },
+                              "acceptanceCell1":  {
+                                                      "x":  80,
+                                                      "y":  195
+                                                  },
+                              "detailClose":  {
+                                                  "x":  364,
+                                                  "y":  822
+                                              }
+                          },
+    "pixelThresholds":  {
+                            "hudDarkPixels":  80,
+                            "hudLightPixels":  5000,
+                            "formerActionColorPixels":  12,
+                            "formerActionColorSpanPixels":  78,
+                            "framePixels":  {
+                                                "sampleStepPixels":  4,
+                                                "nearBlackLuma":  0.08,
+                                                "maxBlackFraction":  0.01,
+                                                "maxNearBlackFraction":  0.05,
+                                                "maxInvalidFraction":  0.05
+                                            }
+                        },
+    "sessionSequence":  {
+                            "labels":  {
+                                           "ready":  "开始波次",
+                                           "betweenWave":  "立即开始下一波",
+                                           "pauseContinue":  "继续游戏",
+                                           "pauseRestart":  "重新开始"
+                                       },
+                            "steps":  [
+                                          "capture clean ready state and exact ready label",
+                                          "click battlefield wave action and capture active wave without a start action",
+                                          "capture deterministic between-wave countdown and exact immediate-start label",
+                                          "click immediate next wave and capture active wave two",
+                                          "pause active run and capture both modal actions",
+                                          "continue and capture the same active run",
+                                          "pause again, restart, and capture clean ready state"
+                                      ]
+                        },
+    "interactionSequence":  {
+                                "source":  {
+                                               "cell":  [
+                                                            0,
+                                                            1
+                                                        ],
+                                               "x":  32,
+                                               "y":  195
+                                           },
+                                "destination":  {
+                                                    "cell":  [
+                                                                 1,
+                                                                 1
+                                                             ],
+                                                    "x":  80,
+                                                    "y":  195
+                                                },
+                                "steps":  [
+                                              "click source plant to inspect",
+                                              "click empty destination without relocation",
+                                              "drag source plant to destination to relocate"
+                                          ]
+                            },
+    "terminalCapture":  {
+                            "outcome":  "victory",
+                            "state":  "terminal-victory",
+                            "routeBeforeScreenshot":  1,
+                            "routeAfterScreenshot":  1,
+                            "sha256":  "52BD64035A5583DD673FC19EEE30BDE16751A0EC57AF2E398CF3E5759315722B",
+                            "previewOnly":  true,
+                            "productionSubmissionEvidence":  "Flow mode / task 5.3",
+                            "restart":  {
+                                            "route":  1,
+                                            "sessionId":  "acceptance-473698de81eb4e2bb25e0b7a6b7abf41",
+                                            "seed":  20260714,
+                                            "sameSession":  true,
+                                            "resultCardDismissed":  true
+                                        }
+                        },
+    "selectedToolCapture":  {
+                                "state":  "selected-tool",
+                                "availableSha256":  "C9449BD212FA19F6382A2D2CF5CE78D64004B628B053FE4360F62E62F0730DA5",
+                                "selectedSha256":  "DFAF6525CC0932C835195DD316B18C1E98CA495A61C14540D4D504C7B1C10CA3",
+                                "realClick":  {
+                                                  "x":  60,
+                                                  "y":  624
+                                              },
+                                "changed":  true
+                            }
+}

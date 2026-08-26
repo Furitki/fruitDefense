@@ -18,39 +18,46 @@ namespace FruitDefense.Presentation
         public const float MergeHintMaximumWidth = 160f;
         public const float MergeHintHeight = 24f;
         public const float HeaderMetricIconSize = 18f;
+        public const float SpacingUnit = 4f;
+        public const float ContentInset = SpacingUnit * 2f;
+        public const float SectionGap = SpacingUnit * 2f;
 
-        private const float ToolGap = 5f;
-        private const float NurseryGap = 5f;
+        private const float ToolGap = SpacingUnit;
+        private const float NurseryGap = SpacingUnit;
 
         public BattleUiLayout(BattlefieldMapDefinition map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             Design = new Rect(0f, 0f, DesignWidth, DesignHeight);
-            Header = new Rect(8f, 8f, 386f, 76f);
-            BattleSurface = new Rect(0f, 88f, 402f, 782f);
-            Board = new Rect(0f, 88f, 402f, 484f);
-            ToolTray = new Rect(8f, 580f, 386f, 68f);
-            NurseryTray = new Rect(8f, 656f, 386f, 80f);
-            RefreshAction = new Rect(8f, 744f, 386f, 44f);
-            Detail = new Rect(8f, 796f, 386f, 70f);
+            Header = FullWidthTrack(8f, 96f);
+            BattleStage = FullWidthTrack(108f, 486f);
+            Board = BattleStage;
+            ContextTray = InsetTrack(602f, 78f);
+            NurseryTray = InsetTrack(688f, 88f);
+            RefreshAction = InsetTrack(784f, 52f);
             Modal = new Rect(36f, 300f, 330f, 244f);
             TerminalModal = new Rect(28f, 270f, 346f, 320f);
 
-            HeaderTitle = new Rect(16f, 12f, 246f, 24f);
-            SunMetric = new Rect(16f, 40f, 84f, 32f);
-            LivesMetric = new Rect(108f, 40f, 78f, 32f);
-            WaveMetric = new Rect(194f, 40f, 76f, 32f);
-            FirstMetricDivider = new Rect(100f, 44f, 8f, 24f);
-            SecondMetricDivider = new Rect(186f, 44f, 8f, 24f);
-            PauseAction = new Rect(274f, 20f, 52f, 52f);
-            SpeedAction = new Rect(334f, 20f, 52f, 52f);
+            HeaderTitle = new Rect(16f, 26f, 246f, 24f);
+            SunMetric = new Rect(16f, 68f, 118f, 32f);
+            LivesMetric = new Rect(142f, 68f, 118f, 32f);
+            WaveMetric = new Rect(268f, 68f, 118f, 32f);
+            FirstMetricDivider = new Rect(134f, 68f, 8f, 32f);
+            SecondMetricDivider = new Rect(260f, 68f, 8f, 32f);
+            PauseAction = new Rect(274f, 12f, 52f, 52f);
+            SpeedAction = new Rect(334f, 12f, 52f, 52f);
 
-            ToolTrayTitle = new Rect(ToolTray.x + 8f, ToolTray.y + 4f, 180f, 16f);
-            NurseryTrayTitle = new Rect(NurseryTray.x + 8f, NurseryTray.y + 4f, 180f, 16f);
-            DetailTitle = new Rect(Detail.x + 8f, Detail.y + 4f, Detail.width - 64f, 22f);
-            DetailBody = new Rect(Detail.x + 8f, Detail.y + 34f, Detail.width - 64f, 28f);
-            DetailCloseAction = new Rect(Detail.xMax - 48f, Detail.y + 4f, 44f, 44f);
+            ContextTrayTitle = new Rect(ContextTray.x + ContentInset,
+                ContextTray.y + SpacingUnit, 180f, 22f);
+            NurseryTrayTitle = new Rect(NurseryTray.x + ContentInset,
+                NurseryTray.y + SpacingUnit, 180f, 22f);
+            DetailTitle = new Rect(ContextTray.x + ContentInset,
+                ContextTray.y + SpacingUnit, ContextTray.width - 64f, 24f);
+            DetailBody = new Rect(ContextTray.x + ContentInset,
+                ContextTray.y + 36f, ContextTray.width - 64f, 22f);
+            DetailCloseAction = new Rect(ContextTray.xMax - 48f,
+                ContextTray.y + 4f, 44f, 44f);
 
             ModalTitle = new Rect(52f, 326f, 298f, 52f);
             ModalPauseHint = new Rect(60f, 390f, 282f, 52f);
@@ -69,18 +76,17 @@ namespace FruitDefense.Presentation
             BoardStatusWithWaveAction = new Rect(
                 BoardStatus.x + 8f,
                 BoardStatus.y,
-                BoardStatus.width - WaveAction.width - 16f,
+                BoardStatus.width - WaveAction.width - 12f,
                 BoardStatus.height);
         }
 
         public Rect Design { get; }
         public Rect Header { get; }
-        public Rect BattleSurface { get; }
+        public Rect BattleStage { get; }
         public Rect Board { get; }
-        public Rect ToolTray { get; }
+        public Rect ContextTray { get; }
         public Rect NurseryTray { get; }
         public Rect RefreshAction { get; }
-        public Rect Detail { get; }
         public Rect Modal { get; }
         public Rect TerminalModal { get; }
 
@@ -93,7 +99,7 @@ namespace FruitDefense.Presentation
         public Rect PauseAction { get; }
         public Rect SpeedAction { get; }
 
-        public Rect ToolTrayTitle { get; }
+        public Rect ContextTrayTitle { get; }
         public Rect NurseryTrayTitle { get; }
         public Rect DetailTitle { get; }
         public Rect DetailBody { get; }
@@ -113,9 +119,13 @@ namespace FruitDefense.Presentation
         public Rect BoardStatusWithWaveAction { get; }
         public Rect WaveAction { get; }
 
-        public Rect WeaponTool(WeaponKind weapon)
+        public Rect EquipmentTool(string equipmentId)
         {
-            var index = weapon == WeaponKind.Gatling ? 0 : weapon == WeaponKind.Ice ? 1 : 2;
+            var index = BattlePresentationVisualCatalog.EquipmentToolIndex(
+                equipmentId);
+            if (index < 0)
+                throw new ArgumentException(
+                    "Unsupported bundled equipment tool ID.", nameof(equipmentId));
             return Tool(index);
         }
 
@@ -123,10 +133,11 @@ namespace FruitDefense.Presentation
 
         public Rect Tool(int index)
         {
-            var width = (ToolTray.width - 16f - ToolGap * 3f) / ToolCount;
+            var width = (ContextTray.width - ContentInset * 2f - ToolGap * 3f)
+                / ToolCount;
             return new Rect(
-                ToolTray.x + 8f + index * (width + ToolGap),
-                ToolTray.y + 24f,
+                ContextTray.x + ContentInset + index * (width + ToolGap),
+                ContextTrayTitle.yMax + SpacingUnit,
                 width,
                 44f);
         }
@@ -138,7 +149,7 @@ namespace FruitDefense.Presentation
 
         public Rect ToolCountLabel(Rect tool)
         {
-            return new Rect(tool.x + 43f, tool.y + 3f, 41f, 44f);
+            return new Rect(tool.x + 43f, tool.y, tool.width - 47f, tool.height);
         }
 
         public Rect PotToolIcon
@@ -156,16 +167,36 @@ namespace FruitDefense.Presentation
             get
             {
                 var rect = PotTool;
-                return new Rect(rect.x + 47f, rect.y + 3f, rect.width - 49f, 44f);
+                return new Rect(rect.x + 47f, rect.y,
+                    rect.width - 49f, rect.height);
+            }
+        }
+
+        public Rect PotToolNameLabel
+        {
+            get
+            {
+                var rect = PotToolLabel;
+                return new Rect(rect.x, rect.y, rect.width, 22f);
+            }
+        }
+
+        public Rect PotToolCountLabel
+        {
+            get
+            {
+                var rect = PotToolLabel;
+                return new Rect(rect.x, rect.y + 22f, rect.width, 22f);
             }
         }
 
         public Rect NurserySlot(int slot)
         {
-            var width = (NurseryTray.width - 16f - NurseryGap * 4f) / NurserySlotCount;
+            var width = (NurseryTray.width - ContentInset * 2f
+                - NurseryGap * 4f) / NurserySlotCount;
             return new Rect(
-                NurseryTray.x + 8f + slot * (width + NurseryGap),
-                NurseryTray.y + 24f,
+                NurseryTray.x + ContentInset + slot * (width + NurseryGap),
+                NurseryTrayTitle.yMax + SpacingUnit,
                 width,
                 54f);
         }
@@ -177,7 +208,7 @@ namespace FruitDefense.Presentation
 
         public static Rect NurserySlotLabel(Rect slot)
         {
-            return new Rect(slot.x + 2f, slot.yMax - 18f, slot.width - 4f, 16f);
+            return new Rect(slot.x + 2f, slot.yMax - 24f, slot.width - 4f, 22f);
         }
 
         public static Rect CueBadge(Rect target)
@@ -191,7 +222,7 @@ namespace FruitDefense.Presentation
 
         public static Rect CueLabel(Rect target)
         {
-            const float gap = 2f;
+            const float gap = SpacingUnit;
             var badge = CueBadge(target);
             var x = Mathf.Min(target.xMax, badge.xMax + gap);
             return new Rect(x, target.y,
@@ -214,7 +245,7 @@ namespace FruitDefense.Presentation
 
         public Rect MergeHint(Rect dragPreview, float labelWidth)
         {
-            var width = Mathf.Clamp(labelWidth + 20f,
+            var width = Mathf.Clamp(labelWidth + 40f,
                 MergeHintMinimumWidth, MergeHintMaximumWidth);
             var x = Mathf.Clamp(dragPreview.center.x - width * .5f,
                 8f, DesignWidth - 8f - width);
@@ -223,10 +254,19 @@ namespace FruitDefense.Presentation
 
         public static Rect BattlefieldFeedback(Rect gridRect, Vector2 point)
         {
-            var width = Mathf.Min(90f, Mathf.Max(0f, gridRect.width));
-            var height = Mathf.Min(18f, Mathf.Max(0f, gridRect.height));
+            return BattlefieldFeedback(gridRect, point, 112f, 30f, false);
+        }
+
+        public static Rect BattlefieldFeedback(Rect gridRect, Vector2 point,
+            float requestedWidth, float requestedHeight, bool belowAnchor)
+        {
+            var width = Mathf.Min(Mathf.Max(0f, requestedWidth),
+                Mathf.Max(0f, gridRect.width));
+            var height = Mathf.Min(Mathf.Max(0f, requestedHeight),
+                Mathf.Max(0f, gridRect.height));
             var x = Mathf.Clamp(point.x - width * .5f, gridRect.xMin, gridRect.xMax - width);
-            var y = Mathf.Clamp(point.y - 28f, gridRect.yMin, gridRect.yMax - height);
+            var desiredY = belowAnchor ? point.y + 8f : point.y - height - 8f;
+            var y = Mathf.Clamp(desiredY, gridRect.yMin, gridRect.yMax - height);
             return new Rect(x, y, width, height);
         }
 
@@ -234,6 +274,17 @@ namespace FruitDefense.Presentation
         {
             return new Rect(rect.x - amount, rect.y - amount,
                 rect.width + amount * 2f, rect.height + amount * 2f);
+        }
+
+        private static Rect FullWidthTrack(float y, float height)
+        {
+            return new Rect(0f, y, DesignWidth, height);
+        }
+
+        private static Rect InsetTrack(float y, float height)
+        {
+            return new Rect(ContentInset, y,
+                DesignWidth - ContentInset * 2f, height);
         }
     }
 }

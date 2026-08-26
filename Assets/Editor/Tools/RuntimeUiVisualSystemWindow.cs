@@ -297,19 +297,31 @@ namespace FruitDefense.Editor
                     break;
                 case RuntimeUiComponentKind.PrimaryButton:
                     RuntimeUiGui.DrawAction(drawContext, rect, "开始",
-                        RuntimeUiActionKind.Primary, state, RuntimeUiArtSlot.IconControlStart);
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                            RuntimeUiActionContentForm.IconLabel,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        state, RuntimeUiArtSlot.IconControlStart);
                     break;
                 case RuntimeUiComponentKind.SecondaryButton:
                     RuntimeUiGui.DrawAction(drawContext, rect, "刷新",
-                        RuntimeUiActionKind.Secondary, state, RuntimeUiArtSlot.IconControlRefresh);
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Secondary,
+                            RuntimeUiActionContentForm.IconLabel,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        state, RuntimeUiArtSlot.IconControlRefresh);
                     break;
                 case RuntimeUiComponentKind.QuietButton:
                     RuntimeUiGui.DrawAction(drawContext, rect, "返回",
-                        RuntimeUiActionKind.Quiet, state, RuntimeUiArtSlot.IconControlReturn);
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                            RuntimeUiActionContentForm.IconLabel,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        state, RuntimeUiArtSlot.IconControlReturn);
                     break;
                 case RuntimeUiComponentKind.DangerButton:
                     RuntimeUiGui.DrawAction(drawContext, rect, "重试",
-                        RuntimeUiActionKind.Danger, state, RuntimeUiArtSlot.IconControlRetry);
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Danger,
+                            RuntimeUiActionContentForm.IconLabel,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        state, RuntimeUiArtSlot.IconControlRetry);
                     break;
                 case RuntimeUiComponentKind.Metric:
                     RuntimeUiGui.DrawMetric(drawContext, rect, RuntimeUiArtSlot.IconResourceSun,
@@ -394,16 +406,28 @@ namespace FruitDefense.Editor
                     RuntimeUiGui.DrawBlockingModal(drawContext, rect, new Rect()); break;
                 case RuntimeUiArtSlot.ActionPrimary:
                     RuntimeUiGui.DrawAction(drawContext, rect, string.Empty,
-                        RuntimeUiActionKind.Primary, RuntimeUiInteractionState.Normal); break;
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                            RuntimeUiActionContentForm.Text,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        RuntimeUiInteractionState.Normal); break;
                 case RuntimeUiArtSlot.ActionSecondary:
                     RuntimeUiGui.DrawAction(drawContext, rect, string.Empty,
-                        RuntimeUiActionKind.Secondary, RuntimeUiInteractionState.Normal); break;
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Secondary,
+                            RuntimeUiActionContentForm.Text,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        RuntimeUiInteractionState.Normal); break;
                 case RuntimeUiArtSlot.ActionQuiet:
                     RuntimeUiGui.DrawAction(drawContext, rect, string.Empty,
-                        RuntimeUiActionKind.Quiet, RuntimeUiInteractionState.Normal); break;
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                            RuntimeUiActionContentForm.Text,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        RuntimeUiInteractionState.Normal); break;
                 case RuntimeUiArtSlot.ActionDanger:
                     RuntimeUiGui.DrawAction(drawContext, rect, string.Empty,
-                        RuntimeUiActionKind.Danger, RuntimeUiInteractionState.Normal); break;
+                        new RuntimeUiActionSpec(RuntimeUiActionKind.Danger,
+                            RuntimeUiActionContentForm.Text,
+                            RuntimeUiActionBehavior.Instantaneous),
+                        RuntimeUiInteractionState.Normal); break;
                 case RuntimeUiArtSlot.SlotTool:
                     RuntimeUiGui.DrawSlot(drawContext, rect, RuntimeUiSlotKind.Tool,
                         RuntimeUiInteractionState.Normal); break;
@@ -482,7 +506,10 @@ namespace FruitDefense.Editor
                 RuntimeUiIndicatorKind.Selected);
             RuntimeUiGui.DrawAction(drawContext,
                 new Rect(safe.x + 28f, safe.yMax - 76f, safe.width - 56f, 56f), "开始关卡",
-                RuntimeUiActionKind.Primary, RuntimeUiInteractionState.Normal,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous),
+                RuntimeUiInteractionState.Normal,
                 RuntimeUiArtSlot.IconControlStart);
         }
 
@@ -516,7 +543,10 @@ namespace FruitDefense.Editor
                 RuntimeUiSlotKind.Tool, RuntimeUiInteractionState.Selected);
             RuntimeUiGui.DrawAction(drawContext,
                 new Rect(rect.xMax - 92f, rect.yMax - 92f, 68f, 68f), string.Empty,
-                RuntimeUiActionKind.Secondary, RuntimeUiInteractionState.Normal,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Secondary,
+                    RuntimeUiActionContentForm.IconOnly,
+                    RuntimeUiActionBehavior.Instantaneous),
+                RuntimeUiInteractionState.Normal,
                 RuntimeUiArtSlot.IconControlPause);
         }
 
@@ -547,11 +577,17 @@ namespace FruitDefense.Editor
                 RuntimeUiInteractionState.Success);
             RuntimeUiGui.DrawAction(drawContext,
                 new Rect(card.x + 24f, card.yMax - 140f, card.width - 48f, 52f), "继续",
-                RuntimeUiActionKind.Primary, RuntimeUiInteractionState.Normal,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous),
+                RuntimeUiInteractionState.Normal,
                 RuntimeUiArtSlot.IconControlContinue);
             RuntimeUiGui.DrawAction(drawContext,
                 new Rect(card.x + 24f, card.yMax - 76f, card.width - 48f, 48f), "返回大厅",
-                RuntimeUiActionKind.Quiet, RuntimeUiInteractionState.Normal,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous),
+                RuntimeUiInteractionState.Normal,
                 RuntimeUiArtSlot.IconControlReturn);
         }
 

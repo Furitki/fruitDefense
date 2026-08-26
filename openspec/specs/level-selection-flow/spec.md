@@ -41,23 +41,23 @@ The flow coordinator SHALL resolve the launch `LevelId` once into a composite le
 - **THEN** the active session continues using its launch-time resolved identity and definitions
 
 ### Requirement: Snapshot preserves complete level identity
-The current snapshot schema SHALL export `levelId`, `mapId`, `waveSetId`, `ruleSetId`, and `themeId`, and restore MUST validate all five values against one catalog resolution before mutating live simulation state.
+The single current snapshot schema SHALL export `levelId`, `mapId`, `waveSetId`, `ruleSetId`, and `themeId` together with exact level-catalog ID, content-catalog ID/version, gameplay-map fingerprint, and a canonical resolved-source definition fingerprint covering compiled battle content, ordered waves, rules, theme, and gameplay map. A snapshot-capable Standard target SHALL retain that immutable resolved source from construction, and restore MUST prove that the serialized source, supplied catalog resolution, and existing target source all match in IDs, versions, and definition fingerprint before candidate construction or live mutation. The flow SHALL NOT infer, translate, or map a missing or legacy identity from `orchard-01`, current Lobby selection, a default map, or another level.
 
-#### Scenario: Restore a matching level snapshot
-- **WHEN** a snapshot's composite identity, catalog version, and content version match the current resolved level
-- **THEN** restore succeeds and the resumed session continues with the same map, waves, rules, theme, seed, and gameplay state
+#### Scenario: Restore a matching current level snapshot
+- **WHEN** a current snapshot, supplied catalog resolution, and existing target share the same catalog/content, level, map, waves, rules, theme, gameplay-map identity, and resolved-source definition fingerprint
+- **THEN** restore may resume that existing target with the same seed, Ability state, and gameplay state
 
-#### Scenario: Reject a component mismatch atomically
-- **WHEN** any recorded level component ID differs from the current catalog resolution
-- **THEN** restore fails with the mismatched identity field identified and leaves the live simulation and presentation-event state unchanged
+#### Scenario: Reject a supplied-catalog or target mismatch atomically
+- **WHEN** any serialized, resolved, or target source component differs
+- **THEN** restore reports the mismatched source path before candidate construction and leaves simulation and presentation-event state unchanged
 
-#### Scenario: Migrate the known legacy default
-- **WHEN** a legacy single-map snapshot has the explicitly supported bundled catalog/content version and legacy default map identity
-- **THEN** the compatibility reader may map it to `orchard-01` and emits a current-schema snapshot on the next export
+#### Scenario: Reject changed definitions under reused identities
+- **WHEN** a supplied catalog keeps all IDs and version strings but changes a rule value, ordered-wave payload, theme value, or compiled battle-content definition
+- **THEN** restore rejects the definition-fingerprint mismatch before candidate construction and leaves the existing target unchanged
 
-#### Scenario: Reject an ambiguous legacy snapshot
-- **WHEN** a legacy snapshot does not match the explicitly supported default identity and version
-- **THEN** restore fails and does not infer a level from current Lobby selection
+#### Scenario: Reject a non-current or incomplete identity
+- **WHEN** a V1/V2/V3 or incomplete snapshot lacks the current schema or required resolved source fields
+- **THEN** restore rejects it before mutation without mapping it to `orchard-01`, current Lobby selection, a default map, or another level
 
 ### Requirement: Settlement and retry preserve the completed level
 Settlement SHALL identify the completed `LevelId`; retry SHALL launch that same level through normal catalog resolution with a fresh session identity, and returning SHALL restore it as the Lobby selection.

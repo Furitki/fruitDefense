@@ -4,33 +4,37 @@
 TBD - created by archiving change embed-battle-trays-and-expand-map. Update Purpose after archive.
 ## Requirements
 ### Requirement: Enlarged dominant battlefield
-The portrait battle screen SHALL make the battlefield the dominant surface below the header and SHALL enlarge its reference map region beyond the previous 394-by-398 logical-point region without clipping route, grid, core, pots, plants, enemies, or wave controls.
+The portrait battle screen SHALL make one gameplay stage the dominant surface below the header, SHALL not wrap the stage and lower controls in another enclosing panel, and SHALL contain route, grid, core, pots, plants, enemies, wave controls, and their shared projection within the stage.
 
 #### Scenario: Reference portrait layout
 - **WHEN** the battle screen renders at 402 by 874 logical points
-- **THEN** the battlefield spans the available logical width, is taller than the previous battlefield, and all projected map content remains contained
+- **THEN** the gameplay stage shares Header's full-width track, remains the only persistent heavy structural frame, and contains all projected map content
 
 #### Scenario: Safe-area portrait layout
 - **WHEN** the same composition is scaled into a supported portrait safe area
-- **THEN** the header and complete battle surface remain visible and operable inside the safe area
+- **THEN** Header, gameplay stage, ContextTray, NurseryTray, RefreshAction, and their complete hit targets remain visible and operable inside the safe area
 
-### Requirement: Embedded tool tray
-The three weapon controls and flowerpot control SHALL render inside the battle surface, and each control's draw, click, and drag-source bounds SHALL come from the same embedded tool-tray geometry.
+### Requirement: Contextual tool tray
+The three weapon controls and flowerpot control SHALL render in the single ContextTray below the gameplay stage when no plant detail is selected, and each control's draw, click, and drag-source bounds SHALL come from that authoritative tray geometry.
 
 #### Scenario: Tool is selected or dragged
 - **WHEN** the player clicks or begins dragging an available weapon or flowerpot from the embedded tray
 - **THEN** the existing selection or drag behavior starts from the visible control without coordinate drift
 
-### Requirement: Embedded refresh tray
-The five nursery slots and refresh action SHALL render inside the battle surface, SHALL preserve nursery drag/drop behavior and refresh cost behavior, and SHALL use shared draw and hit-test rectangles.
+#### Scenario: Plant detail owns the context tray
+- **WHEN** a plant is selected for inspection
+- **THEN** the detail anatomy replaces the tool anatomy in the same ContextTray rectangle and the two anatomies are not drawn together
+
+### Requirement: Persistent nursery and refresh controls
+The five nursery slots and RefreshAction SHALL render as persistent light sections below ContextTray, SHALL preserve nursery drag/drop and refresh-cost behavior, and SHALL use shared draw and hit-test rectangles without an enclosing lower-page panel.
 
 #### Scenario: Nursery plant is moved
 - **WHEN** the player drags a nursery plant to the map or returns an on-board plant to a nursery slot
-- **THEN** source, destination, highlight, and drop resolution align with the embedded nursery controls
+- **THEN** source, destination, highlight, and drop resolution align with the persistent NurseryTray controls
 
 #### Scenario: Nursery is refreshed
 - **WHEN** the player activates the embedded refresh action with sufficient or insufficient sunlight
-- **THEN** the existing simulation result is preserved and the control remains inside the battle surface
+- **THEN** the existing simulation result is preserved and the complete action remains inside the safe-content edge
 
 ### Requirement: No persistent bottom guidance or status panel
 The default battle screen SHALL NOT reserve or render the former generic guidance block or the standalone bottom operation-status panel.
@@ -40,26 +44,26 @@ The default battle screen SHALL NOT reserve or render the former generic guidanc
 - **THEN** no generic instruction paragraph, operation-hint heading, or persistent bottom status copy is visible
 
 ### Requirement: Contextual plant details
-An inspected plant SHALL retain a compact information card inside the battle surface, while no detail card content SHALL be reserved when no plant is inspected.
+An inspected plant SHALL replace the tool anatomy inside ContextTray with a compact information anatomy, while no separate detail rectangle or hidden detail band SHALL be reserved when no plant is inspected.
 
 #### Scenario: Plant is inspected
 - **WHEN** the player clicks an on-board or nursery plant without starting a drag
-- **THEN** a compact card shows its identity and essential combat values with a touch-sized close action
+- **THEN** ContextTray shows its identity, finite essential combat values, and a touch-sized close action while NurseryTray, RefreshAction, and WaveAction remain visible
 
 #### Scenario: Inspection is closed
 - **WHEN** the player closes the compact card
-- **THEN** the detail content disappears without changing any plant position or battle state
+- **THEN** ContextTray returns to the tool anatomy without changing any plant position or battle state
 
-### Requirement: Embedded control touch and acceptance coverage
-Primary embedded controls SHALL remain at least 44 logical points on their shortest interactive dimension, and the project SHALL validate the new composition through Unity smoke and real WebGL portrait evidence.
+### Requirement: Battle control touch and acceptance coverage
+Primary battle controls SHALL remain at least 44 logical points on their shortest interactive dimension, and the project SHALL validate the paper-page composition through Unity smoke and real WebGL portrait evidence.
 
 #### Scenario: Geometry smoke
 - **WHEN** editor validation checks the reference composition
-- **THEN** the enlarged map and embedded subregions are contained, ordered, non-overlapping, and touch-sized
+- **THEN** the stage and lower sections are ordered, non-overlapping, touch-sized, aligned to the four-point rhythm, and contain no legacy enclosing BattleSurface
 
 #### Scenario: WebGL portrait evidence
 - **WHEN** the rebuilt WebGL player is captured at the 402-by-874 reference viewport
-- **THEN** the evidence shows the enlarged map, embedded tool and refresh trays, and absence of persistent bottom guidance/status text
+- **THEN** the evidence shows one heavy gameplay stage, mutually exclusive ContextTray modes, persistent NurseryTray and RefreshAction, finite text containment, and an 8-to-40-point lower closeout
 
 ### Requirement: Frameless near-cell-size flowerpot and fruit icons
 Map flowerpots, map fruits, occupied nursery fruits, nursery flowerpot rewards, and the flowerpot tool SHALL render without persistent opaque square backplates, and their atlas art SHALL nearly fill the associated logical cell without changing its click or drag bounds.

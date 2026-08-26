@@ -7,9 +7,11 @@ namespace FruitDefense.UI
     public sealed class RuntimeUiTheme : ScriptableObject
     {
         [SerializeField] private string themeId = "ui.sunny-orchard";
-        [SerializeField] private string revision = "1";
+        [SerializeField] private string revision = "2";
         [SerializeField] private RuntimeUiSemanticColors colors =
             RuntimeUiSemanticColors.SunnyOrchardDefault();
+        [SerializeField] private RuntimeUiActionStyleTokens actionStyles =
+            RuntimeUiActionStyleTokens.SunnyOrchardDefault();
         [SerializeField] private Font packagedChineseFont;
         [SerializeField] private RuntimeUiTypographyTokens typography =
             RuntimeUiTypographyTokens.SunnyOrchardDefault();
@@ -22,6 +24,7 @@ namespace FruitDefense.UI
         public string ThemeId => themeId;
         public string Revision => revision;
         public RuntimeUiSemanticColors Colors => colors;
+        public RuntimeUiActionStyleTokens ActionStyles => actionStyles;
         public Font PackagedChineseFont => packagedChineseFont;
         public RuntimeUiTypographyTokens Typography => typography;
         public RuntimeUiMetrics Metrics => metrics;
@@ -44,6 +47,7 @@ namespace FruitDefense.UI
             }
 
             colors.AppendValidation(result, "colors");
+            actionStyles.AppendValidation(result, "actionStyles");
             typography.AppendValidation(result, "typography");
             metrics.AppendValidation(result, "metrics");
             feedback.AppendValidation(result, "feedback");
@@ -65,6 +69,85 @@ namespace FruitDefense.UI
             }
 
             return result;
+        }
+
+        public RuntimeUiResolvedActionStyle ResolveActionStyle(
+            RuntimeUiActionKind role, RuntimeUiActionContentForm contentForm,
+            RuntimeUiActionBehavior behavior, RuntimeUiInteractionState interactionState,
+            bool modeActive)
+        {
+            return ResolveActionStyle(new RuntimeUiActionSpec(role, contentForm, behavior),
+                interactionState, modeActive);
+        }
+
+        public RuntimeUiResolvedActionStyle ResolveActionStyle(RuntimeUiActionSpec spec,
+            RuntimeUiInteractionState interactionState, bool modeActive)
+        {
+            if (!System.Enum.IsDefined(typeof(RuntimeUiInteractionState), interactionState))
+            {
+                throw new System.ArgumentOutOfRangeException(
+                    nameof(interactionState), interactionState, null);
+            }
+            if (modeActive && spec.Behavior != RuntimeUiActionBehavior.PersistentMode)
+            {
+                throw new System.ArgumentException(
+                    "Only persistent mode actions can resolve a mode-active style.",
+                    nameof(modeActive));
+            }
+
+            var disabledState = interactionState == RuntimeUiInteractionState.Disabled;
+            var visualRole = disabledState
+                ? RuntimeUiActionVisualRole.Disabled
+                : modeActive
+                    ? RuntimeUiActionVisualRole.ModeActive
+                    : ResolveVisualRole(spec.Role);
+            var pair = actionStyles.For(visualRole);
+            // The ring geometry carries focus/state structure. Reusing the paired
+            // content token keeps that cue above 3:1 on every resolved container.
+            var outlineColor = pair.Content;
+            return new RuntimeUiResolvedActionStyle(spec, interactionState, visualRole,
+                ResolveContainerSlot(spec, modeActive, disabledState), pair,
+                outlineColor, modeActive);
+        }
+
+        private static RuntimeUiActionVisualRole ResolveVisualRole(RuntimeUiActionKind role)
+        {
+            switch (role)
+            {
+                case RuntimeUiActionKind.Primary: return RuntimeUiActionVisualRole.Primary;
+                case RuntimeUiActionKind.Secondary: return RuntimeUiActionVisualRole.Secondary;
+                case RuntimeUiActionKind.Quiet: return RuntimeUiActionVisualRole.Quiet;
+                case RuntimeUiActionKind.Danger: return RuntimeUiActionVisualRole.Danger;
+                default: throw new System.ArgumentOutOfRangeException(nameof(role), role, null);
+            }
+        }
+
+        private static RuntimeUiArtSlot ResolveContainerSlot(RuntimeUiActionSpec spec,
+            bool modeActive, bool disabled)
+        {
+            if (spec.ContentForm == RuntimeUiActionContentForm.CompactMultiplier
+                || (spec.Role == RuntimeUiActionKind.Quiet
+                    && spec.ContentForm == RuntimeUiActionContentForm.IconOnly))
+            {
+                return modeActive
+                    ? RuntimeUiArtSlot.ActionCompactControlActive
+                    : RuntimeUiArtSlot.ActionCompactControl;
+            }
+
+            // Disabled is a complete low-emphasis pairing, not a faded role surface.
+            // ActionQuiet is the finite light container owned by every production ArtSet.
+            if (disabled)
+                return RuntimeUiArtSlot.ActionQuiet;
+
+            switch (spec.Role)
+            {
+                case RuntimeUiActionKind.Primary: return RuntimeUiArtSlot.ActionPrimary;
+                case RuntimeUiActionKind.Secondary: return RuntimeUiArtSlot.ActionSecondary;
+                case RuntimeUiActionKind.Quiet: return RuntimeUiArtSlot.ActionQuiet;
+                case RuntimeUiActionKind.Danger: return RuntimeUiArtSlot.ActionDanger;
+                default: throw new System.ArgumentOutOfRangeException(
+                    nameof(spec), spec.Role, null);
+            }
         }
 
         public bool TryValidate(out string reason)

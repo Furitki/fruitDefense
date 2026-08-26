@@ -7,6 +7,12 @@ namespace FruitDefense.Core
     {
         public const float PreviewSize = 44f;
         public const float CursorOffset = 24f;
+        public const float ActivationDistance = 8f;
+
+        public static bool CrossedActivationThreshold(Vector2 start, Vector2 current)
+        {
+            return Vector2.Distance(start, current) > ActivationDistance;
+        }
 
         public static Rect PreviewRect(Vector2 cursor)
         {

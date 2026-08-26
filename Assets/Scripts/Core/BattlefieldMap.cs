@@ -39,6 +39,7 @@ namespace FruitDefense.Core
 
     public readonly struct BattlefieldRouteTileDescriptor
     {
+        public string RouteId { get; }
         public Vector2Int Cell { get; }
         public BattlefieldRouteTileKind Kind { get; }
         public BattlefieldDirection PreviousConnection { get; }
@@ -49,10 +50,12 @@ namespace FruitDefense.Core
         }
         public BattlefieldRouteConnections Connections { get; }
 
-        public BattlefieldRouteTileDescriptor(Vector2Int cell, BattlefieldRouteTileKind kind,
+        public BattlefieldRouteTileDescriptor(string routeId, Vector2Int cell,
+            BattlefieldRouteTileKind kind,
             BattlefieldDirection previousConnection, BattlefieldDirection nextConnection,
             BattlefieldRouteConnections connections)
         {
+            RouteId = routeId ?? string.Empty;
             Cell = cell;
             Kind = kind;
             PreviousConnection = previousConnection;
@@ -81,20 +84,32 @@ namespace FruitDefense.Core
         public const string DefaultMapId = "orchard-01";
         public const float DefaultRouteLength = 23f;
         public const int DefaultRouteSegmentCount = 19;
+        public const float LegacyReferenceMapUnitsPerCell = 1.2105263f;
+        public const float LegacyReferenceDistanceScale = .10087717f;
 
         private HashSet<Vector2Int> _plantableLookup;
         private HashSet<Vector2Int> _routeCellLookup;
         private Dictionary<Vector2Int, BattlefieldRouteTileDescriptor> _routeTileLookup;
+        private IReadOnlyDictionary<string, IReadOnlyDictionary<Vector2Int,
+            BattlefieldRouteTileDescriptor>> _routeTileLookupByRoute;
         private CompiledBattlefieldMap _layeredMap;
+        private IReadOnlyDictionary<string, BattlefieldRouteMetrics> _routeMetrics;
+        private IReadOnlyDictionary<string, Vector2Int> _enemySpawnCells;
+        private IReadOnlyDictionary<string, Vector2Int> _routeGoalCells;
 
         public string MapId { get; private set; }
         public int GridWidth { get; private set; }
         public int GridHeight { get; private set; }
         public float MapUnitsPerCell { get; private set; }
         public float LegacyToMapScale { get; private set; }
+        public BattlefieldExecutionProfile ExecutionProfile { get; private set; }
         public bool UsesLayeredMap { get { return _layeredMap != null; } }
         public CompiledBattlefieldMap LayeredMap { get { return _layeredMap; } }
-        public string PrimaryRouteId { get { return _layeredMap == null ? string.Empty : _layeredMap.PrimaryRouteId; } }
+        public string PrimaryRouteId { get; private set; }
+        public IReadOnlyList<string> RouteIds { get; private set; }
+        public IReadOnlyDictionary<string, BattlefieldRouteMetrics> RouteMetrics { get { return _routeMetrics; } }
+        public IReadOnlyDictionary<string, Vector2Int> EnemySpawnCells { get { return _enemySpawnCells; } }
+        public IReadOnlyDictionary<string, Vector2Int> RouteGoalCells { get { return _routeGoalCells; } }
         public string GameplayFingerprint { get { return _layeredMap == null ? string.Empty : _layeredMap.GameplayFingerprint; } }
         public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
@@ -111,10 +126,16 @@ namespace FruitDefense.Core
         public Vector2Int CoreCell { get; private set; }
         public IReadOnlyList<BattlefieldRouteTileDescriptor> RouteTileDescriptors { get; private set; }
         public IReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor> RouteTileLookup { get; private set; }
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<Vector2Int,
+            BattlefieldRouteTileDescriptor>> RouteTileLookupByRoute
+        {
+            get { return _routeTileLookupByRoute; }
+        }
         public IReadOnlyList<Vector2> RouteNodes { get; private set; }
         public Vector2 Entry { get; private set; }
         public Vector2 Exit { get; private set; }
         public Vector2 Core { get; private set; }
+        public bool HasCore { get; private set; }
         public IReadOnlyDictionary<string, InitialPotGroup> InitialPotGroups { get; private set; }
         public IReadOnlyList<string> InitialPotGroupOrder { get; private set; }
         public Rect MapBounds { get; private set; }
@@ -126,13 +147,28 @@ namespace FruitDefense.Core
         {
         }
 
+        public BattlefieldMapDefinition(BattlefieldLayeredMapSource source,
+            float legacyDistanceScale)
+            : this(BattlefieldLayeredMapCompiler.CompileOrThrow(source),
+                legacyDistanceScale)
+        {
+        }
+
         public BattlefieldMapDefinition(CompiledBattlefieldMap layeredMap)
+            : this(layeredMap, null)
+        {
+        }
+
+        private BattlefieldMapDefinition(CompiledBattlefieldMap layeredMap,
+            float? legacyDistanceScale)
         {
             _layeredMap = layeredMap ?? throw new ArgumentNullException(nameof(layeredMap));
             MapId = layeredMap.MapId;
             GridWidth = layeredMap.GridWidth;
             GridHeight = layeredMap.GridHeight;
             MapUnitsPerCell = layeredMap.MapUnitsPerCell;
+            ExecutionProfile = layeredMap.ExecutionProfile;
+            PrimaryRouteId = layeredMap.PrimaryRouteId;
             VisualCells = layeredMap.VisualCells;
             VisualSurfaceIds = layeredMap.VisualSurfaceIds;
             GameplayCells = layeredMap.GameplayCells;
@@ -140,16 +176,41 @@ namespace FruitDefense.Core
             MarkerGroups = layeredMap.MarkerGroupsInSourceOrder;
             Markers = layeredMap.MarkersInSourceOrder;
 
-            var orderedRouteCells = layeredMap.PrimaryRoute.Cells.ToArray();
+            RouteIds = Array.AsReadOnly(layeredMap.RoutesInSourceOrder
+                .Select(route => route.RouteId).ToArray());
+            var routeMetrics = new Dictionary<string, BattlefieldRouteMetrics>(StringComparer.Ordinal);
+            var spawnCells = new Dictionary<string, Vector2Int>(StringComparer.Ordinal);
+            var goalCells = new Dictionary<string, Vector2Int>(StringComparer.Ordinal);
+            foreach (var route in layeredMap.RoutesInSourceOrder)
+            {
+                routeMetrics.Add(route.RouteId, new BattlefieldRouteMetrics(
+                    route.Cells.Select(CellToMap).ToArray()));
+                spawnCells.Add(route.RouteId, layeredMap.MarkersInSourceOrder.Single(marker =>
+                    marker.Kind == BattlefieldMarkerKind.EnemySpawn
+                    && string.Equals(marker.RouteId, route.RouteId, StringComparison.Ordinal)).Cell);
+                goalCells.Add(route.RouteId, layeredMap.MarkersInSourceOrder.Single(marker =>
+                    marker.Kind == BattlefieldMarkerKind.RouteGoal
+                    && string.Equals(marker.RouteId, route.RouteId, StringComparison.Ordinal)).Cell);
+            }
+            _routeMetrics = new ReadOnlyDictionary<string, BattlefieldRouteMetrics>(routeMetrics);
+            _enemySpawnCells = new ReadOnlyDictionary<string, Vector2Int>(spawnCells);
+            _routeGoalCells = new ReadOnlyDictionary<string, Vector2Int>(goalCells);
+            _routeCellLookup = new HashSet<Vector2Int>(layeredMap.RoutesInSourceOrder
+                .SelectMany(route => route.Cells));
+
+            var orderedRouteCells = string.IsNullOrEmpty(PrimaryRouteId)
+                ? Array.Empty<Vector2Int>() : layeredMap.RouteById(PrimaryRouteId).Cells.ToArray();
             RouteCells = Array.AsReadOnly(orderedRouteCells);
-            _routeCellLookup = new HashSet<Vector2Int>(orderedRouteCells);
-            EnemySpawnCell = layeredMap.MarkersInSourceOrder
-                .Single(marker => marker.Kind == BattlefieldMarkerKind.EnemySpawn).Cell;
-            RouteGoalCell = layeredMap.MarkersInSourceOrder
-                .Single(marker => marker.Kind == BattlefieldMarkerKind.RouteGoal).Cell;
+            EnemySpawnCell = string.IsNullOrEmpty(PrimaryRouteId)
+                ? default(Vector2Int) : spawnCells[PrimaryRouteId];
+            RouteGoalCell = string.IsNullOrEmpty(PrimaryRouteId)
+                ? default(Vector2Int) : goalCells[PrimaryRouteId];
             EntryCell = EnemySpawnCell;
             ExitCell = RouteGoalCell;
-            CoreCell = layeredMap.MarkersInSourceOrder.Single(marker => marker.Kind == BattlefieldMarkerKind.Core).Cell;
+            var core = layeredMap.MarkersInSourceOrder
+                .SingleOrDefault(marker => marker.Kind == BattlefieldMarkerKind.Core);
+            HasCore = core != null;
+            CoreCell = core == null ? default(Vector2Int) : core.Cell;
 
             var plantableCells = Enumerable.Range(0, layeredMap.GameplayCells.Count)
                 .Where(index => layeredMap.GameplayCells[index].Has(BattlefieldCellCapabilities.Plantable))
@@ -163,17 +224,42 @@ namespace FruitDefense.Core
             Core = CellToMap(CoreCell);
             var routeNodes = orderedRouteCells.Select(CellToMap).ToArray();
             RouteNodes = Array.AsReadOnly(routeNodes);
-            Route = new BattlefieldRouteMetrics(RouteNodes);
-            LegacyToMapScale = Route.TotalLength / LegacyRouteLength;
+            Route = string.IsNullOrEmpty(PrimaryRouteId) ? null : routeMetrics[PrimaryRouteId];
+            var derivedLegacyDistanceScale = routeMetrics[RouteIds[0]].TotalLength
+                / LegacyRouteLength;
+            LegacyToMapScale = legacyDistanceScale ?? derivedLegacyDistanceScale;
+            if (LegacyToMapScale <= 0f || float.IsNaN(LegacyToMapScale)
+                || float.IsInfinity(LegacyToMapScale))
+                throw new ArgumentOutOfRangeException(nameof(legacyDistanceScale));
 
             SetInitialPotGroupsFromMarkers(layeredMap);
             Topology = new BattlefieldTopology(this);
             var descriptors = BuildRouteTileDescriptors();
             RouteTileDescriptors = Array.AsReadOnly(descriptors);
             _routeTileLookup = new Dictionary<Vector2Int, BattlefieldRouteTileDescriptor>();
+            var ambiguousCells = new HashSet<Vector2Int>();
+            var byRoute = new Dictionary<string, IReadOnlyDictionary<Vector2Int,
+                BattlefieldRouteTileDescriptor>>(StringComparer.Ordinal);
+            foreach (var routeId in RouteIds)
+            {
+                var lookup = descriptors.Where(value => string.Equals(value.RouteId, routeId,
+                        StringComparison.Ordinal)).ToDictionary(value => value.Cell);
+                byRoute.Add(routeId, new ReadOnlyDictionary<Vector2Int,
+                    BattlefieldRouteTileDescriptor>(lookup));
+            }
             foreach (var descriptor in descriptors)
-                if (!_routeTileLookup.ContainsKey(descriptor.Cell)) _routeTileLookup.Add(descriptor.Cell, descriptor);
+            {
+                if (ambiguousCells.Contains(descriptor.Cell)) continue;
+                if (_routeTileLookup.ContainsKey(descriptor.Cell))
+                {
+                    _routeTileLookup.Remove(descriptor.Cell);
+                    ambiguousCells.Add(descriptor.Cell);
+                }
+                else _routeTileLookup.Add(descriptor.Cell, descriptor);
+            }
             RouteTileLookup = new ReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor>(_routeTileLookup);
+            _routeTileLookupByRoute = new ReadOnlyDictionary<string,
+                IReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor>>(byRoute);
             MapBounds = CalculateGridBounds(GridWidth, GridHeight, MapUnitsPerCell);
         }
 
@@ -192,6 +278,9 @@ namespace FruitDefense.Core
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             MapUnitsPerCell = 1f;
+            ExecutionProfile = BattlefieldExecutionProfile.StandardRelease;
+            PrimaryRouteId = BattlefieldLayerIds.PrimaryRoute;
+            RouteIds = Array.AsReadOnly(new[] { PrimaryRouteId });
             LegacyToMapScale = legacyToMapScale;
             var cells = plantableCells == null ? Array.Empty<Vector2Int>() : plantableCells.ToArray();
             var nodes = routeNodes == null ? Array.Empty<Vector2>() : routeNodes.ToArray();
@@ -204,6 +293,7 @@ namespace FruitDefense.Core
             EnemySpawnCell = EntryCell;
             RouteGoalCell = ExitCell;
             CoreCell = Vector2Int.RoundToInt(core);
+            HasCore = true;
             RouteNodes = Array.AsReadOnly(nodes);
             Entry = nodes.Length > 0 ? nodes[0] : Vector2.zero;
             Exit = nodes.Length > 0 ? nodes[nodes.Length - 1] : Vector2.zero;
@@ -211,10 +301,29 @@ namespace FruitDefense.Core
             SetInitialPotGroups(initialPotGroups);
             SetLegacyLayerViews();
             Route = new BattlefieldRouteMetrics(RouteNodes);
+            _routeMetrics = new ReadOnlyDictionary<string, BattlefieldRouteMetrics>(
+                new Dictionary<string, BattlefieldRouteMetrics>(StringComparer.Ordinal)
+                {
+                    { PrimaryRouteId, Route },
+                });
+            _enemySpawnCells = new ReadOnlyDictionary<string, Vector2Int>(
+                new Dictionary<string, Vector2Int>(StringComparer.Ordinal)
+                {
+                    { PrimaryRouteId, EnemySpawnCell },
+                });
+            _routeGoalCells = new ReadOnlyDictionary<string, Vector2Int>(
+                new Dictionary<string, Vector2Int>(StringComparer.Ordinal)
+                {
+                    { PrimaryRouteId, RouteGoalCell },
+                });
             Topology = new BattlefieldTopology(this);
             RouteTileDescriptors = Array.AsReadOnly(Array.Empty<BattlefieldRouteTileDescriptor>());
             _routeTileLookup = new Dictionary<Vector2Int, BattlefieldRouteTileDescriptor>();
             RouteTileLookup = new ReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor>(_routeTileLookup);
+            _routeTileLookupByRoute = new ReadOnlyDictionary<string,
+                IReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor>>(
+                    new Dictionary<string, IReadOnlyDictionary<Vector2Int,
+                        BattlefieldRouteTileDescriptor>>(StringComparer.Ordinal));
             MapBounds = CalculateBounds(cells, nodes, core);
         }
 
@@ -261,9 +370,67 @@ namespace FruitDefense.Core
             return _routeCellLookup.Contains(cell);
         }
 
+        public bool TryGetRoute(string routeId, out BattlefieldRouteMetrics route)
+        {
+            if (string.IsNullOrWhiteSpace(routeId))
+            {
+                route = null;
+                return false;
+            }
+            return _routeMetrics.TryGetValue(routeId, out route);
+        }
+
+        public BattlefieldRouteMetrics RouteById(string routeId)
+        {
+            BattlefieldRouteMetrics route;
+            if (!TryGetRoute(routeId, out route))
+                throw new ArgumentException("Unknown battlefield route ID '" + routeId + "'.",
+                    nameof(routeId));
+            return route;
+        }
+
+        public Vector2Int SpawnCellForRoute(string routeId)
+        {
+            Vector2Int cell;
+            if (string.IsNullOrWhiteSpace(routeId) || !_enemySpawnCells.TryGetValue(routeId, out cell))
+                throw new ArgumentException("Unknown battlefield route ID '" + routeId + "'.",
+                    nameof(routeId));
+            return cell;
+        }
+
+        public Vector2Int GoalCellForRoute(string routeId)
+        {
+            Vector2Int cell;
+            if (string.IsNullOrWhiteSpace(routeId) || !_routeGoalCells.TryGetValue(routeId, out cell))
+                throw new ArgumentException("Unknown battlefield route ID '" + routeId + "'.",
+                    nameof(routeId));
+            return cell;
+        }
+
+        public Vector2 SampleRoute(string routeId, float progress)
+        {
+            return RouteById(routeId).Sample(progress);
+        }
+
+        public float RouteLength(string routeId)
+        {
+            return RouteById(routeId).TotalLength;
+        }
+
         public bool TryGetRouteTile(Vector2Int cell, out BattlefieldRouteTileDescriptor descriptor)
         {
             return _routeTileLookup.TryGetValue(cell, out descriptor);
+        }
+
+        public bool TryGetRouteTile(string routeId, Vector2Int cell,
+            out BattlefieldRouteTileDescriptor descriptor)
+        {
+            IReadOnlyDictionary<Vector2Int, BattlefieldRouteTileDescriptor> routeLookup;
+            if (!string.IsNullOrWhiteSpace(routeId)
+                && _routeTileLookupByRoute.TryGetValue(routeId, out routeLookup))
+                return routeLookup.TryGetValue(cell, out descriptor);
+            descriptor = default(BattlefieldRouteTileDescriptor);
+            return false;
         }
 
         public string SurfaceAt(Vector2Int cell)
@@ -328,12 +495,17 @@ namespace FruitDefense.Core
 
         private BattlefieldRouteTileDescriptor[] BuildRouteTileDescriptors()
         {
-            var descriptors = new List<BattlefieldRouteTileDescriptor>(RouteCells.Count);
-            for (var index = 0; index < RouteCells.Count; index++)
+            var descriptors = new List<BattlefieldRouteTileDescriptor>();
+            foreach (var routeId in RouteIds)
             {
-                BattlefieldRouteTileDescriptor descriptor;
-                string reason;
-                if (Topology.TryDescribeRouteCell(index, out descriptor, out reason)) descriptors.Add(descriptor);
+                var route = _layeredMap.RouteById(routeId);
+                for (var index = 0; index < route.Cells.Count; index++)
+                {
+                    BattlefieldRouteTileDescriptor descriptor;
+                    string reason;
+                    if (Topology.TryDescribeRouteCell(routeId, index, out descriptor, out reason))
+                        descriptors.Add(descriptor);
+                }
             }
             return descriptors.ToArray();
         }
@@ -441,23 +613,42 @@ namespace FruitDefense.Core
         public bool TryDescribeRouteCell(int routeIndex,
             out BattlefieldRouteTileDescriptor descriptor, out string reason)
         {
-            descriptor = default(BattlefieldRouteTileDescriptor);
-            if (routeIndex < 0 || routeIndex >= _map.RouteCells.Count)
+            if (string.IsNullOrEmpty(_map.PrimaryRouteId))
             {
-                reason = "route index is outside the ordered route: " + routeIndex;
+                descriptor = default(BattlefieldRouteTileDescriptor);
+                reason = "The " + _map.ExecutionProfile + " profile has no primary route.";
+                return false;
+            }
+            return TryDescribeRouteCell(_map.PrimaryRouteId, routeIndex, out descriptor, out reason);
+        }
+
+        public bool TryDescribeRouteCell(string routeId, int routeIndex,
+            out BattlefieldRouteTileDescriptor descriptor, out string reason)
+        {
+            descriptor = default(BattlefieldRouteTileDescriptor);
+            BattlefieldRouteDefinition routeDefinition;
+            if (_map.LayeredMap == null || !_map.LayeredMap.TryGetRoute(routeId, out routeDefinition))
+            {
+                reason = "unknown battlefield route ID: " + routeId;
+                return false;
+            }
+            var routeCells = routeDefinition.Cells;
+            if (routeIndex < 0 || routeIndex >= routeCells.Count)
+            {
+                reason = "route index is outside route '" + routeId + "': " + routeIndex;
                 return false;
             }
 
-            var cell = _map.RouteCells[routeIndex];
+            var cell = routeCells[routeIndex];
             BattlefieldDirection previous = BattlefieldDirection.None;
             BattlefieldDirection next = BattlefieldDirection.None;
-            if (routeIndex > 0 && !TryDirection(cell, _map.RouteCells[routeIndex - 1], out previous))
+            if (routeIndex > 0 && !TryDirection(cell, routeCells[routeIndex - 1], out previous))
             {
                 reason = "route index " + routeIndex + " has an invalid previous connection at cell " + cell;
                 return false;
             }
-            if (routeIndex + 1 < _map.RouteCells.Count
-                && !TryDirection(cell, _map.RouteCells[routeIndex + 1], out next))
+            if (routeIndex + 1 < routeCells.Count
+                && !TryDirection(cell, routeCells[routeIndex + 1], out next))
             {
                 reason = "route index " + routeIndex + " has an invalid next connection at cell " + cell;
                 return false;
@@ -473,7 +664,7 @@ namespace FruitDefense.Core
                 }
                 kind = BattlefieldRouteTileKind.Entry;
             }
-            else if (routeIndex == _map.RouteCells.Count - 1)
+            else if (routeIndex == routeCells.Count - 1)
             {
                 if (previous == BattlefieldDirection.None)
                 {
@@ -516,7 +707,7 @@ namespace FruitDefense.Core
                 }
             }
 
-            descriptor = new BattlefieldRouteTileDescriptor(cell, kind, previous, next,
+            descriptor = new BattlefieldRouteTileDescriptor(routeId, cell, kind, previous, next,
                 ToConnections(previous) | ToConnections(next));
             reason = "ok";
             return true;
@@ -536,31 +727,44 @@ namespace FruitDefense.Core
                 reason = "compiled layered map coverage is incomplete";
                 return false;
             }
-            if (_map.RouteCells.Count < 2 || _map.EnemySpawnCell != _map.RouteCells[0]
-                || _map.RouteGoalCell != _map.RouteCells[_map.RouteCells.Count - 1])
+            foreach (var routeId in _map.RouteIds)
             {
-                reason = "compiled route markers do not match the primary route endpoints";
-                return false;
-            }
-            for (var index = 0; index < _map.RouteCells.Count; index++)
-            {
-                var cell = _map.RouteCells[index];
-                if (!_map.HasCapability(cell, BattlefieldCellCapabilities.EnemyTraversable))
+                var route = _map.LayeredMap.RouteById(routeId);
+                if (route.Cells.Count < 2
+                    || _map.SpawnCellForRoute(routeId) != route.Cells[0]
+                    || _map.GoalCellForRoute(routeId) != route.Cells[route.Cells.Count - 1])
                 {
-                    reason = "compiled route cell lacks enemy traversal capability: " + cell;
+                    reason = "compiled route markers do not match route '" + routeId + "' endpoints";
                     return false;
                 }
-                if (index > 0 && !AreCoordinatesCardinalNeighbors(_map.RouteCells[index - 1], cell))
+                for (var index = 0; index < route.Cells.Count; index++)
                 {
-                    reason = "compiled route is disconnected at index " + index;
-                    return false;
+                    var cell = route.Cells[index];
+                    if (!_map.HasCapability(cell, BattlefieldCellCapabilities.EnemyTraversable))
+                    {
+                        reason = "compiled route '" + routeId
+                            + "' cell lacks enemy traversal capability: " + cell;
+                        return false;
+                    }
+                    if (index > 0 && !AreCoordinatesCardinalNeighbors(route.Cells[index - 1], cell))
+                    {
+                        reason = "compiled route '" + routeId + "' is disconnected at index " + index;
+                        return false;
+                    }
+                    BattlefieldRouteTileDescriptor descriptor;
+                    if (!TryDescribeRouteCell(routeId, index, out descriptor, out reason)) return false;
                 }
-                BattlefieldRouteTileDescriptor descriptor;
-                if (!TryDescribeRouteCell(index, out descriptor, out reason)) return false;
             }
-            if (!AreCoordinatesCardinalNeighbors(_map.RouteGoalCell, _map.CoreCell))
+            if (_map.ExecutionProfile == BattlefieldExecutionProfile.StandardRelease
+                && (!_map.HasCore
+                    || !AreCoordinatesCardinalNeighbors(_map.RouteGoalCell, _map.CoreCell)))
             {
                 reason = "route goal is not cardinally adjacent to the core marker";
+                return false;
+            }
+            if (_map.ExecutionProfile == BattlefieldExecutionProfile.GmMultiRoute && _map.HasCore)
+            {
+                reason = "GM multi-route battlefield must not expose a damageable core";
                 return false;
             }
             return ValidateInitialPotGroups(out reason);

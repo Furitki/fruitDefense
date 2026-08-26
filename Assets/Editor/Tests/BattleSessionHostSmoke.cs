@@ -1,10 +1,13 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using FruitDefense.App;
 using FruitDefense.Battle;
+using FruitDefense.Content;
 using FruitDefense.Core;
 using FruitDefense.Platform;
+using FruitDefense.Presentation;
 using FruitDefense.UI;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,19 +15,164 @@ namespace FruitDefense.Editor
 {
     public static class BattleSessionHostSmoke
     {
+#if FRUIT_DEFENSE_ACCEPTANCE
+        [Serializable]
+        private sealed class CombatFeedbackAcceptanceRecord
+        {
+            public int count;
+            public string role;
+            public string semanticId;
+            public float eventX;
+            public float eventY;
+            public float anchorX;
+            public float anchorY;
+            public float lifetimeProgress;
+            public float detachedProgress;
+            public float motionScale;
+            public float motionOpacity;
+            public bool followingTarget;
+            public float finalScreenCenterX;
+            public float finalScreenCenterY;
+            public float anchorScreenX;
+            public float anchorScreenY;
+            public float anchorScreenError;
+            public float finalScreenBoundsX;
+            public float finalScreenBoundsY;
+            public float finalScreenBoundsWidth;
+            public float finalScreenBoundsHeight;
+        }
+
+        [Serializable]
+        private sealed class CombatFeedbackAcceptanceGeometry
+        {
+            public float headerX;
+            public float headerY;
+            public float headerWidth;
+            public float headerHeight;
+            public float boardX;
+            public float boardY;
+            public float boardWidth;
+            public float boardHeight;
+            public float potHitX;
+            public float potHitY;
+            public float potHitWidth;
+            public float potHitHeight;
+        }
+
+        [Serializable]
+        private sealed class CombatFeedbackAcceptanceTelemetry
+        {
+            public int schemaVersion;
+            public string state;
+            public string surface;
+            public string phase;
+            public int battleSpeed;
+            public string[] activeRoles;
+            public string activeBeat;
+            public float beatProgress;
+            public float battlefieldOffsetX;
+            public float battlefieldOffsetY;
+            public float battlefieldFlash;
+            public bool hasExpectedCentroid;
+            public float expectedCentroidX;
+            public float expectedCentroidY;
+            public float eventCentroidError;
+            public float anchorCentroidError;
+            public CombatFeedbackAcceptanceGeometry geometryBefore;
+            public CombatFeedbackAcceptanceGeometry geometryAfter;
+            public bool authoritativeGeometryUnchanged;
+            public int feedbackCount;
+            public int ordinaryFeedbackCount;
+            public int activePoolCount;
+            public int poolCapacity;
+            public int atlasPageCount;
+            public string atlasFormat;
+            public int sharedMaterialCount;
+            public int preparedAtlasDrawCount;
+            public bool placementValid;
+            public string placementFailure;
+            public int missingProfileCount;
+            public string performanceScope;
+            public string profileAllocationMetric;
+            public CombatFeedbackAcceptanceRecord[] feedback;
+        }
+#endif
+
         public static void Run()
         {
             var runtimeUiTheme = ProjectSetup.RequireReleaseRuntimeUiTheme();
+            var catalog = BundledLevelCatalogFactory.CreateCompiled();
+            var resolution = catalog.Resolve(
+                BundledLevelCatalogIds.Levels.Orchard01);
+            Assert(resolution.Succeeded && resolution.Value != null,
+                "bundled host smoke level resolves");
+            ValidateHostContract();
             ValidateResultContract();
-            ValidateInitializationAndLifecycle(runtimeUiTheme);
-            ValidateDefeatResult(runtimeUiTheme);
-            ValidateAcceptanceTerminalPreview(runtimeUiTheme);
+            ValidateInitializationAndLifecycle(
+                runtimeUiTheme, catalog, resolution.Value);
+            ValidateDefeatResult(runtimeUiTheme, catalog, resolution.Value);
+#if FRUIT_DEFENSE_ACCEPTANCE
+            ValidateAcceptancePort(runtimeUiTheme, catalog, resolution.Value);
+#endif
             Debug.Log("Fruit Defense battle session host validation passed.");
+        }
+
+        private static void ValidateHostContract()
+        {
+            var contract = typeof(IBattleSessionHost);
+            var properties = contract.GetProperties(BindingFlags.Instance
+                | BindingFlags.Public);
+            Assert(properties.Length == 1
+                && properties[0].Name == nameof(IBattleSessionHost.Status)
+                && properties[0].PropertyType == typeof(BattleSessionStatus),
+                "production host exposes one immutable observation value");
+            Assert(contract.GetProperty("Simulation") == null
+                && contract.GetProperty("CurrentRequest") == null
+                && contract.GetProperty("ActiveLevel") == null,
+                "production host exposes no mutable aggregate or source object");
+            Assert(typeof(FruitDefenseGame).GetProperty("Simulation",
+                    BindingFlags.Instance | BindingFlags.Public) == null,
+                "release presenter has no concrete mutable compatibility accessor");
+            var initialize = contract.GetMethod(nameof(IBattleSessionHost.Initialize));
+            var initializeParameters = initialize == null
+                ? Array.Empty<ParameterInfo>()
+                : initialize.GetParameters();
+            Assert(initializeParameters.Length == 5
+                && initializeParameters[4].ParameterType == typeof(CompiledLevelCatalog)
+                && initializeParameters.All(parameter =>
+                    parameter.ParameterType != typeof(ResolvedLevelDefinition)),
+                "host initialization receives one compiled catalog authority and no detached resolved level");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Assert(typeof(FruitDefense.Development.GmStress.GmStressBattlePresenter)
+                    .GetProperty("Simulation", BindingFlags.Instance
+                        | BindingFlags.Public) == null
+                && typeof(FruitDefense.Development.GmStress.GmStressBattlePresenter)
+                    .GetProperty("Controller", BindingFlags.Instance
+                        | BindingFlags.Public) == null,
+                "GM presenter cannot leak its simulation directly or indirectly");
+#endif
+
+            var statusType = typeof(BattleSessionStatus);
+            Assert(statusType.IsValueType
+                && statusType.GetFields(BindingFlags.Instance
+                    | BindingFlags.Public).Length == 0
+                && statusType.GetProperties(BindingFlags.Instance
+                    | BindingFlags.Public).All(property => !property.CanWrite),
+                "battle status is an immutable value with getter-only facts");
+            var allowedTypes = new[]
+            {
+                typeof(bool), typeof(int), typeof(GamePhase),
+            };
+            Assert(statusType.GetProperties(BindingFlags.Instance
+                    | BindingFlags.Public)
+                    .All(property => allowedTypes.Contains(property.PropertyType)),
+                "battle status cannot carry a reference or collection");
         }
 
         private static void ValidateResultContract()
         {
-            var request = new BattleLaunchRequest("result-contract", "orchard-01", 31415, "1.0.0");
+            var request = new BattleLaunchRequest("result-contract", "orchard-01", 31415,
+                "1.0.0", BattleSessionMode.Standard);
             var valid = new BattleResult("result-contract", "orchard-01", 31415, BattleOutcome.Victory, 15, 3);
             Assert(valid.TryValidate(request, out var error) && string.IsNullOrEmpty(error),
                 "matching result contract is accepted");
@@ -42,7 +190,9 @@ namespace FruitDefense.Editor
                 "negative remaining lives are rejected");
         }
 
-        private static void ValidateInitializationAndLifecycle(RuntimeUiTheme runtimeUiTheme)
+        private static void ValidateInitializationAndLifecycle(
+            RuntimeUiTheme runtimeUiTheme, CompiledLevelCatalog catalog,
+            ResolvedLevelDefinition resolvedLevel)
         {
             var baselineHostCount = FruitDefenseGame.ActiveSessionHostCount;
             var gameObject = new GameObject("BattleSessionHostSmoke");
@@ -52,99 +202,162 @@ namespace FruitDefense.Editor
 
             try
             {
+                Assert(!host.Status.IsInitialized
+                    && !host.Status.IsTerminal
+                    && !host.Status.HasSubmittedResult,
+                    "new host reports the canonical uninitialized status");
+                Assert(!host.ExportCurrentSessionSnapshot().Succeeded,
+                    "uninitialized host rejects snapshot export");
                 AssertFailure(
-                    host.Initialize(null, navigator, sink, runtimeUiTheme),
+                    host.Initialize(null, navigator, sink, runtimeUiTheme,
+                        catalog),
                     BattleSessionInitializationResult.InvalidRequest,
                     "null launch request is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("", "orchard-01", 11, "builtin"),
-                        navigator, sink, runtimeUiTheme),
+                    host.Initialize(new BattleLaunchRequest("", "orchard-01", 11, "builtin",
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
                     BattleSessionInitializationResult.InvalidSessionId,
                     "missing session id is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("session-a", "", 11, "builtin"),
-                        navigator, sink, runtimeUiTheme),
+                    host.Initialize(new BattleLaunchRequest("session-a", "", 11, "builtin",
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
                     BattleSessionInitializationResult.InvalidLevelId,
                     "missing level id is rejected");
                 AssertFailure(
-                    host.Initialize(new BattleLaunchRequest("session-a", "orchard-01", 11, ""),
-                        navigator, sink, runtimeUiTheme),
+                    host.Initialize(new BattleLaunchRequest("session-a", "orchard-01", 11, "",
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
                     BattleSessionInitializationResult.InvalidContentVersion,
                     "missing content version is rejected");
 
-                var request = new BattleLaunchRequest("session-a", "orchard-01", 24680, "builtin-v1");
+                var request = new BattleLaunchRequest("session-a",
+                    resolvedLevel.Identity.LevelId, 24680,
+                    resolvedLevel.BattleContent.Header.contentVersion,
+                    BattleSessionMode.Standard);
                 AssertFailure(
-                    host.Initialize(request, null, sink, runtimeUiTheme),
+                    host.Initialize(request, null, sink, runtimeUiTheme,
+                        catalog),
                     BattleSessionInitializationResult.NavigatorRequired,
                     "missing navigator is rejected");
                 AssertFailure(
-                    host.Initialize(request, navigator, null, runtimeUiTheme),
+                    host.Initialize(request, navigator, null, runtimeUiTheme,
+                        catalog),
                     BattleSessionInitializationResult.ResultSinkRequired,
                     "missing result sink is rejected");
 
                 AssertFailure(
-                    host.Initialize(request, navigator, sink, null),
+                    host.Initialize(request, navigator, sink, null,
+                        catalog),
                     BattleSessionInitializationResult.RuntimeUiThemeRequired,
                     "missing runtime UI theme is rejected");
+                AssertFailure(
+                    host.Initialize(request, navigator, sink, runtimeUiTheme,
+                        null),
+                    BattleSessionInitializationResult.LevelCatalogRequired,
+                    "missing level catalog is rejected");
+                AssertFailure(
+                    host.Initialize(new BattleLaunchRequest("session-unresolved",
+                            "level.missing", request.Seed, request.ContentVersion,
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
+                    BattleSessionInitializationResult.LevelResolutionFailed,
+                    "unknown level identity is rejected through the catalog boundary");
+                AssertFailure(
+                    host.Initialize(new BattleLaunchRequest("session-content-mismatch",
+                            request.LevelId, request.Seed, "content.missing",
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
+                    BattleSessionInitializationResult.ContentVersionMismatch,
+                    "resolved content-version mismatch is rejected");
 
-                var initialized = host.Initialize(request, navigator, sink, runtimeUiTheme);
-                Assert(initialized.Success && host.IsInitialized, "valid request initializes the host");
-                Assert(ReferenceEquals(host.CurrentRequest, request), "host retains the immutable request instance");
-                Assert(host.Simulation != null && host.Simulation.State.RandomSeed == request.Seed,
-                    "host constructs the simulation from the request seed");
+                var initialized = host.Initialize(request, navigator, sink,
+                    runtimeUiTheme, catalog);
+                Assert(initialized.Success
+                    && host.Status.IsInitialized
+                    && host.Status.Phase == GamePhase.Ready
+                    && host.Status.WaveIndex == 0
+                    && host.Status.Lives == 10
+                    && !host.Status.IsPaused
+                    && !host.Status.IsTerminal,
+                    "valid request initializes an immutable Ready status");
+                var initialExport = host.ExportCurrentSessionSnapshot();
+                Assert(initialExport.Succeeded
+                    && initialExport.Snapshot.randomSeed == request.Seed,
+                    "bounded snapshot export retains the request seed");
                 Assert(FruitDefenseGame.ActiveSessionHostCount == baselineHostCount + 1,
                     "initialized host is tracked exactly once");
                 Assert(navigator.RouteSubscriptionCount == 1, "host subscribes to route changes exactly once");
 
-                var originalSimulation = host.Simulation;
+                var beforeRepeatedInitialization = BattleSnapshotJson.Serialize(
+                    initialExport.Snapshot);
+                var beforeRepeatedStatus = host.Status;
                 AssertFailure(
                     host.Initialize(
-                        new BattleLaunchRequest("session-b", "orchard-01", 999, "builtin-v1"),
-                        navigator, sink, runtimeUiTheme),
+                        new BattleLaunchRequest("session-b",
+                            resolvedLevel.Identity.LevelId, 999,
+                            resolvedLevel.BattleContent.Header.contentVersion,
+                            BattleSessionMode.Standard),
+                        navigator, sink, runtimeUiTheme, catalog),
                     BattleSessionInitializationResult.AlreadyInitialized,
                     "repeated initialization is rejected");
-                Assert(ReferenceEquals(originalSimulation, host.Simulation)
-                    && host.Simulation.State.RandomSeed == request.Seed,
-                    "repeated initialization does not replace or reset the simulation");
+                var afterRepeatedInitialization = host.ExportCurrentSessionSnapshot();
+                Assert(afterRepeatedInitialization.Succeeded
+                    && beforeRepeatedInitialization == BattleSnapshotJson.Serialize(
+                        afterRepeatedInitialization.Snapshot)
+                    && SameStatus(beforeRepeatedStatus, host.Status),
+                    "repeated initialization cannot mutate authoritative state");
 
-                host.Simulation.AdvanceFrame(.04f);
-                Assert(host.Simulation.FrameAccumulatorSeconds > 0d,
-                    "host scenario has pending frame time before backgrounding");
                 host.HandlePlatformVisibility(PlatformVisibility.Background);
-                Assert(host.Simulation.State.Paused, "background pauses the active battle");
-                Assert(Math.Abs(host.Simulation.FrameAccumulatorSeconds) < .0000001,
-                    "background clears the fixed-step accumulator");
+                Assert(host.Status.IsPaused,
+                    "background pauses the active battle through a bounded command");
                 host.HandlePlatformVisibility(PlatformVisibility.Foreground);
-                Assert(host.Simulation.State.Paused, "foreground does not resume the battle");
+                Assert(host.Status.IsPaused, "foreground does not resume the battle");
 
-                host.Simulation.State.WaveIndex = 7;
-                host.Simulation.State.Sun = 333;
-                host.Simulation.State.Lives = 2;
-                host.Simulation.State.Zombies.Add(new Zombie { Id = 42, Hp = 1f, MaxHp = 1f });
+                var external = BattleSnapshotSmoke.CreateScenario(catalog,
+                    resolvedLevel.Identity.LevelId, request.Seed);
+                external.State.Sun = 333;
+                external.State.Lives = 2;
+                var externalExport = external.ExportSnapshot();
+                Assert(externalExport.Succeeded
+                    && host.RestoreCurrentSessionSnapshot(
+                        externalExport.Snapshot, catalog).Succeeded
+                    && host.Status.Phase == GamePhase.Playing
+                    && host.Status.WaveIndex == 1
+                    && host.Status.Lives == 2,
+                    "bounded restore replaces the session without exposing its aggregate");
                 Assert(host.RestartCurrentSession(out var restartError) && string.IsNullOrEmpty(restartError),
                     "pause-menu local restart succeeds before settlement");
-                Assert(host.Simulation.State.Phase == GamePhase.Ready
-                    && !host.Simulation.State.Paused
-                    && host.Simulation.State.WaveIndex == 0
-                    && host.Simulation.State.Lives == 10
-                    && host.Simulation.State.Zombies.Count == 0
-                    && host.Simulation.State.RandomSeed == request.Seed,
+                var restarted = host.ExportCurrentSessionSnapshot();
+                Assert(host.Status.Phase == GamePhase.Ready
+                    && !host.Status.IsPaused
+                    && host.Status.WaveIndex == 0
+                    && host.Status.Lives == 10
+                    && restarted.Succeeded
+                    && restarted.Snapshot.enemies.Length == 0
+                    && restarted.Snapshot.randomSeed == request.Seed,
                     "local restart creates a clean Ready state from the same request seed");
-                Assert(sink.SubmissionCount == 0 && !host.HasSubmittedResult,
+                Assert(sink.SubmissionCount == 0
+                    && !host.Status.HasSubmittedResult,
                     "local restart does not submit a settlement result");
 
-                host.Simulation.State.Phase = GamePhase.Victory;
-                host.Simulation.State.WaveIndex = 15;
-                host.Simulation.State.Lives = 4;
+                var victory = CreateTerminalSnapshot(
+                    catalog, request.LevelId, request.Seed,
+                    BattleOutcome.Victory, 4);
+                Assert(host.RestoreCurrentSessionSnapshot(victory, catalog).Succeeded
+                    && host.Status.IsTerminal
+                    && host.Status.Phase == GamePhase.Victory,
+                    "terminal state enters only through bounded snapshot restore");
                 Assert(host.TrySubmitTerminalResult(), "first terminal frame submits a result");
                 Assert(!host.TrySubmitTerminalResult() && sink.SubmissionCount == 1,
                     "repeated terminal frames cannot submit a second result");
-                Assert(host.HasSubmittedResult
+                Assert(host.Status.HasSubmittedResult
                     && sink.LastResult.SessionId == request.SessionId
                     && sink.LastResult.LevelId == request.LevelId
                     && sink.LastResult.Seed == request.Seed
                     && sink.LastResult.Outcome == BattleOutcome.Victory
-                    && sink.LastResult.ReachedWave == 15
+                    && sink.LastResult.ReachedWave == resolvedLevel.OrderedWaves.Count
                     && sink.LastResult.RemainingLives == 4,
                     "submitted victory result is immutable session data");
                 Assert(!host.RestartCurrentSession(out restartError)
@@ -154,6 +367,11 @@ namespace FruitDefense.Editor
             finally
             {
                 host.DisposeSession();
+                Assert(!host.Status.IsInitialized
+                    && !host.RestartCurrentSession(out var disposedError)
+                    && disposedError == FruitDefenseGame.SessionNotInitialized
+                    && !host.ExportCurrentSessionSnapshot().Succeeded,
+                    "disposed host rejects bounded commands and exposes no stale status");
                 UnityEngine.Object.DestroyImmediate(gameObject);
             }
 
@@ -163,7 +381,8 @@ namespace FruitDefense.Editor
                 "destroying the scene host releases navigation callbacks");
         }
 
-        private static void ValidateDefeatResult(RuntimeUiTheme runtimeUiTheme)
+        private static void ValidateDefeatResult(RuntimeUiTheme runtimeUiTheme,
+            CompiledLevelCatalog catalog, ResolvedLevelDefinition resolvedLevel)
         {
             var gameObject = new GameObject("BattleSessionDefeatSmoke");
             var host = gameObject.AddComponent<FruitDefenseGame>();
@@ -171,16 +390,24 @@ namespace FruitDefense.Editor
             var sink = new RecordingResultSink();
             try
             {
-                var request = new BattleLaunchRequest("session-defeat", "orchard-01", 13579, "builtin-v1");
-                Assert(host.Initialize(request, navigator, sink, runtimeUiTheme).Success,
+                var request = new BattleLaunchRequest("session-defeat",
+                    resolvedLevel.Identity.LevelId, 13579,
+                    resolvedLevel.BattleContent.Header.contentVersion,
+                    BattleSessionMode.Standard);
+                Assert(host.Initialize(request, navigator, sink,
+                        runtimeUiTheme, catalog).Success,
                     "defeat host initializes");
-                host.Simulation.State.Phase = GamePhase.Defeat;
-                host.Simulation.State.WaveIndex = 6;
-                host.Simulation.State.Lives = 0;
+                var defeat = CreateTerminalSnapshot(
+                    catalog, request.LevelId, request.Seed,
+                    BattleOutcome.Defeat, 0);
+                Assert(host.RestoreCurrentSessionSnapshot(defeat, catalog).Succeeded
+                    && host.Status.IsTerminal
+                    && host.Status.Phase == GamePhase.Defeat,
+                    "bounded restore applies a valid defeat state");
                 Assert(host.TrySubmitTerminalResult()
                     && sink.SubmissionCount == 1
                     && sink.LastResult.Outcome == BattleOutcome.Defeat
-                    && sink.LastResult.ReachedWave == 6
+                    && sink.LastResult.ReachedWave == 1
                     && sink.LastResult.RemainingLives == 0,
                     "defeat submits the expected single result");
             }
@@ -191,85 +418,137 @@ namespace FruitDefense.Editor
             }
         }
 
-        private static void ValidateAcceptanceTerminalPreview(RuntimeUiTheme runtimeUiTheme)
+        private static BattleSnapshot CreateTerminalSnapshot(
+            CompiledLevelCatalog catalog, string levelId, int seed,
+            BattleOutcome outcome, int lives)
         {
-            var gameObject = new GameObject("BattleSessionAcceptanceTerminalPreviewSmoke");
+            var resolution = catalog.Resolve(levelId);
+            Assert(resolution.Succeeded && resolution.Value != null,
+                "terminal snapshot fixture resolves through the supplied catalog");
+            var resolvedLevel = resolution.Value;
+            var simulation = new GameSimulation(catalog, levelId, seed);
+            var victory = outcome == BattleOutcome.Victory;
+            var waveIndex = victory ? resolvedLevel.OrderedWaves.Count : 1;
+            var waveTotal = resolvedLevel.OrderedWaves[waveIndex - 1]
+                .enemyIds.Length;
+            simulation.State.Phase = victory
+                ? GamePhase.Victory
+                : GamePhase.Defeat;
+            simulation.State.WaveIndex = waveIndex;
+            simulation.State.WaveTotal = waveTotal;
+            simulation.State.WaveSpawned = victory ? waveTotal : 0;
+            simulation.State.Lives = lives;
+            simulation.State.Paused = false;
+            var export = simulation.ExportSnapshot();
+            Assert(export.Succeeded,
+                "external terminal fixture exports through the snapshot boundary");
+            return export.Snapshot;
+        }
+
+        private static bool SameStatus(
+            BattleSessionStatus first, BattleSessionStatus second)
+        {
+            return first.IsInitialized == second.IsInitialized
+                && first.Phase == second.Phase
+                && first.WaveIndex == second.WaveIndex
+                && first.Lives == second.Lives
+                && first.IsPaused == second.IsPaused
+                && first.HasSubmittedResult == second.HasSubmittedResult
+                && first.IsTerminal == second.IsTerminal;
+        }
+
+#if FRUIT_DEFENSE_ACCEPTANCE
+        private static void ValidateAcceptancePort(RuntimeUiTheme runtimeUiTheme,
+            CompiledLevelCatalog catalog, ResolvedLevelDefinition resolvedLevel)
+        {
+            var gameObject = new GameObject("BattleSessionAcceptancePortSmoke");
             var host = gameObject.AddComponent<FruitDefenseGame>();
             var navigator = new TestNavigator(AppRoute.Battle);
             var sink = new RecordingResultSink();
             try
             {
                 var request = new BattleLaunchRequest(
-                    "session-terminal-preview", "orchard-01", 86420, "builtin-v1");
-                Assert(host.Initialize(request, navigator, sink, runtimeUiTheme).Success,
-                    "acceptance terminal-preview host initializes");
+                    "session-acceptance-port", resolvedLevel.Identity.LevelId,
+                    86420, resolvedLevel.BattleContent.Header.contentVersion,
+                    BattleSessionMode.Standard);
+                Assert(host.Initialize(request, navigator, sink,
+                        runtimeUiTheme, catalog).Success,
+                    "acceptance-port host initializes");
+                var port = (IAcceptanceBattlePort)host;
 
-                var configureForUrl = typeof(FruitDefenseGame).GetMethod(
-                    "ConfigureAcceptanceState",
-                    BindingFlags.Instance | BindingFlags.NonPublic,
-                    null,
-                    new[] { typeof(string), typeof(string) },
-                    null);
-                Assert(configureForUrl != null,
-                    "acceptance state bridge retains its URL-guarded implementation");
-
-                configureForUrl.Invoke(host, new object[]
-                {
-                    "terminal-victory", "https://fruit.example/?route=battle"
-                });
-                Assert(host.Simulation.State.Phase == GamePhase.Ready
-                    && !host.TrySubmitTerminalResult()
+                var beforeUnknown = host.ExportCurrentSessionSnapshot();
+                var beforeUnknownStatus = host.Status;
+                var unknownNamed = port.TryConfigureNamedState(
+                    "not-a-real-acceptance-state");
+                var unknownTerminal = port.TryConfigureTerminalFixture(
+                    (AcceptanceTerminalFixture)int.MaxValue);
+                var afterUnknown = host.ExportCurrentSessionSnapshot();
+                Assert(beforeUnknown.Succeeded && afterUnknown.Succeeded
+                    && !unknownNamed.Succeeded
+                    && unknownNamed.ErrorCode
+                        == AcceptanceCommandResult.NamedStateUnknown
+                    && !unknownTerminal.Succeeded
+                    && unknownTerminal.ErrorCode
+                        == AcceptanceCommandResult.TerminalFixtureUnknown
+                    && BattleSnapshotJson.Serialize(beforeUnknown.Snapshot)
+                        == BattleSnapshotJson.Serialize(afterUnknown.Snapshot)
+                    && SameStatus(beforeUnknownStatus, host.Status)
                     && sink.SubmissionCount == 0,
-                    "terminal preview is unreachable without the existing acceptance URL guard");
-                configureForUrl.Invoke(host, new object[]
-                {
-                    "selected-tool", "https://fruit.example/?route=battle"
-                });
-                Assert(host.Simulation.State.Inventory.Gatling == 0,
-                    "selected-tool setup is unreachable without the acceptance URL guard");
+                    "unknown acceptance commands fail without authoritative mutation");
 
-                configureForUrl.Invoke(host, new object[]
-                {
-                    "terminal-victory", "https://fruit.example/?acceptance=1&route=battle"
-                });
-                Assert(host.Simulation.State.Phase == GamePhase.Victory
-                    && host.Simulation.State.WaveIndex == host.Simulation.MaxWaves
-                    && host.Simulation.State.Lives == 3
+                Assert(port.TryConfigureNamedState("terminal-victory").Succeeded
+                    && host.Status.Phase == GamePhase.Victory
+                    && host.Status.WaveIndex == resolvedLevel.OrderedWaves.Count
+                    && host.Status.Lives == 3
                     && !host.TrySubmitTerminalResult()
-                    && !host.HasSubmittedResult
+                    && !host.Status.HasSubmittedResult
                     && sink.SubmissionCount == 0,
                     "acceptance victory preview suppresses only terminal submission");
                 Assert(host.RestartCurrentSession(out var restartError)
                     && string.IsNullOrEmpty(restartError)
-                    && host.Simulation.State.Phase == GamePhase.Ready,
+                    && host.Status.Phase == GamePhase.Ready,
                     "restart clears the acceptance terminal preview");
 
-                configureForUrl.Invoke(host, new object[]
-                {
-                    "terminal-defeat", "https://fruit.example/?acceptance=1&route=battle"
-                });
-                Assert(host.Simulation.State.Phase == GamePhase.Defeat
-                    && host.Simulation.State.Lives == 0
+                Assert(port.TryConfigureNamedState("terminal-defeat").Succeeded
+                    && host.Status.Phase == GamePhase.Defeat
+                    && host.Status.Lives == 0
                     && !host.TrySubmitTerminalResult()
                     && sink.SubmissionCount == 0,
                     "acceptance defeat preview is stable and does not submit");
 
-                configureForUrl.Invoke(host, new object[]
-                {
-                    "selected-tool", "https://fruit.example/?acceptance=1&route=battle"
-                });
-                Assert(host.Simulation.State.Phase == GamePhase.Ready
-                    && host.Simulation.State.Inventory.Gatling == 1,
-                    "guarded selected-tool state exposes one real selectable Gatling");
+                Assert(port.TryConfigureNamedState("selected-tool").Succeeded,
+                    "known named state is accepted through the dedicated port");
+                var selectedTool = host.ExportCurrentSessionSnapshot();
+                Assert(host.Status.Phase == GamePhase.Ready
+                    && selectedTool.Succeeded
+                    && selectedTool.Snapshot.equipment.Any(value =>
+                        value.definitionId == BattleContentIds.Equipment.Gatling
+                        && value.count == 1),
+                    "selected-tool fixture exposes one real selectable Gatling");
 
-                host.Simulation.State.Phase = GamePhase.Victory;
-                host.Simulation.State.WaveIndex = 4;
-                host.Simulation.State.Lives = 2;
-                Assert(host.TrySubmitTerminalResult()
-                    && host.HasSubmittedResult
+                ValidateCombatFeedbackAcceptanceFixtures(port);
+
+                Assert(port.TryConfigureNamedState("initial").Succeeded,
+                    "known reset state clears the terminal preview");
+                var terminal = port.TryConfigureTerminalFixture(
+                    AcceptanceTerminalFixture.Victory);
+                Assert(terminal.Succeeded
+                    && host.Status.HasSubmittedResult
+                    && host.Status.Phase == GamePhase.Victory
                     && sink.SubmissionCount == 1
                     && sink.LastResult.Outcome == BattleOutcome.Victory,
-                    "a nonterminal acceptance state clears preview suppression");
+                    "terminal fixture mutates and submits only through the dedicated port");
+
+                var beforeUnavailable = host.ExportCurrentSessionSnapshot();
+                var unavailable = port.TryConfigureTerminalFixture(
+                    AcceptanceTerminalFixture.Defeat);
+                var afterUnavailable = host.ExportCurrentSessionSnapshot();
+                Assert(!unavailable.Succeeded
+                    && unavailable.ErrorCode == FruitDefenseGame.ResultAlreadySubmitted
+                    && beforeUnavailable.Succeeded && afterUnavailable.Succeeded
+                    && BattleSnapshotJson.Serialize(beforeUnavailable.Snapshot)
+                        == BattleSnapshotJson.Serialize(afterUnavailable.Snapshot),
+                    "unavailable terminal fixture fails before authoritative mutation");
             }
             finally
             {
@@ -277,6 +556,255 @@ namespace FruitDefense.Editor
                 UnityEngine.Object.DestroyImmediate(gameObject);
             }
         }
+
+        private static void ValidateCombatFeedbackAcceptanceFixtures(
+            IAcceptanceBattlePort port)
+        {
+            var grass = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-role-grass", "grass", "role-inventory",
+                1, "Heavy", 6);
+            var route = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-role-route", "route", "role-inventory",
+                1, "Heavy", 6);
+            var requiredRoles = new[]
+            {
+                "NormalDamage", "HeavyDamage", "PeriodicDamage",
+                "Resource", "Control", "Defeat",
+            };
+            Assert(requiredRoles.All(role => grass.activeRoles.Contains(role))
+                && requiredRoles.All(role => route.activeRoles.Contains(role))
+                && route.feedback.Any(value => value.followingTarget),
+                "role fixtures cover the finite inventory on grass and a live route anchor");
+            var roleSemantics = new[]
+            {
+                BattleContentIds.Abilities.PeaAttack,
+                BattleContentIds.Abilities.WatermelonAttack,
+                BattleContentIds.Statuses.ChiliBurn,
+                BattleContentIds.Resources.Sun,
+                BattleContentIds.Statuses.IceFreeze,
+                BattleContentIds.Enemies.Normal,
+            };
+            AssertSemanticMultiset(grass, roleSemantics, "grass role inventory");
+            AssertSemanticMultiset(route, roleSemantics, "route role inventory");
+            var followed = route.feedback.Single(value => value.followingTarget);
+            var routeTargetAnchor = route.feedback.Single(value =>
+                value.semanticId == BattleContentIds.Statuses.ChiliBurn);
+            Assert(Vector2.Distance(
+                    new Vector2(followed.anchorX, followed.anchorY),
+                    new Vector2(routeTargetAnchor.eventX, routeTargetAnchor.eventY))
+                    <= .0001f
+                && Vector2.Distance(
+                    new Vector2(followed.eventX, followed.eventY),
+                    new Vector2(followed.anchorX, followed.anchorY)) > .01f,
+                "route follow anchor resolves to the deterministic live target rather than only setting a flag");
+
+            var entry = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-rebound-entry", "route", "entry",
+                1, "Heavy", 1);
+            var peak = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-rebound-peak", "route", "peak",
+                1, "Heavy", 1);
+            var rebound = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-rebound-return", "route", "rebound",
+                1, "None", 1);
+            var hold = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-rebound-hold", "route", "hold",
+                1, "None", 1);
+            Assert(entry.feedback[0].motionScale < peak.feedback[0].motionScale
+                && rebound.feedback[0].motionScale < peak.feedback[0].motionScale
+                && rebound.feedback[0].motionScale > hold.feedback[0].motionScale,
+                "entry, peak, rebound, and hold expose distinct deterministic phases");
+            foreach (var value in new[] { entry, peak, rebound, hold })
+                AssertSemanticMultiset(value,
+                    new[] { BattleContentIds.Abilities.WatermelonAttack },
+                    "rebound phase");
+
+            var denseOne = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-dense-1x", "route", "dense",
+                1, "Heavy", 12);
+            var denseTwo = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-dense-2x", "route", "dense",
+                2, "Heavy", 12);
+            Assert(denseOne.ordinaryFeedbackCount == 8
+                && denseTwo.ordinaryFeedbackCount == 8,
+                "1x and 2x dense fixtures reach the 8 ordinary / 12 total caps");
+            var denseSemantics = new[]
+            {
+                BattleContentIds.Abilities.PeaAttack,
+                BattleContentIds.Abilities.PeaAttack,
+                BattleContentIds.Abilities.PeaAttack,
+                BattleContentIds.Abilities.BananaAttack,
+                BattleContentIds.Abilities.BananaAttack,
+                BattleContentIds.Abilities.BananaAttack,
+                BattleContentIds.Statuses.ChiliBurn,
+                BattleContentIds.Statuses.ChiliBurn,
+                BattleContentIds.Abilities.WatermelonAttack,
+                BattleContentIds.Resources.Sun,
+                BattleContentIds.Statuses.IceFreeze,
+                BattleContentIds.Enemies.Normal,
+            };
+            AssertSemanticMultiset(denseOne, denseSemantics, "dense 1x");
+            AssertSemanticMultiset(denseTwo, denseSemantics, "dense 2x");
+            Assert(denseOne.feedback.Length == denseTwo.feedback.Length,
+                "dense speed fixtures retain corresponding record counts");
+            for (var index = 0; index < denseOne.feedback.Length; index++)
+            {
+                Assert(denseOne.feedback[index].semanticId
+                        == denseTwo.feedback[index].semanticId
+                    && denseOne.feedback[index].role
+                        == denseTwo.feedback[index].role,
+                    "dense speed fixtures retain corresponding semantic order");
+                var ratio = denseTwo.feedback[index].lifetimeProgress
+                    / denseOne.feedback[index].lifetimeProgress;
+                Assert(ratio >= 1.20f && ratio <= 1.30f,
+                    "every dense record uses the 1.25x 2x display-clock rate");
+            }
+
+            var heavy = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-beat-heavy", "route", "impact-beat",
+                1, "Heavy", 1);
+            var cluster = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-beat-cluster", "route", "impact-beat",
+                1, "Cluster", 1);
+            var terminal = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-beat-terminal", "route", "impact-beat",
+                1, "Terminal", 1);
+            Assert(cluster.feedback[0].count == 3
+                && !cluster.feedback[0].followingTarget
+                && cluster.hasExpectedCentroid
+                && cluster.eventCentroidError <= .0001f
+                && cluster.anchorCentroidError <= .0001f
+                && Vector2.Distance(
+                    new Vector2(cluster.feedback[0].eventX,
+                        cluster.feedback[0].eventY),
+                    new Vector2(cluster.expectedCentroidX,
+                        cluster.expectedCentroidY)) <= .0001f
+                && Vector2.Distance(
+                    new Vector2(cluster.feedback[0].anchorX,
+                        cluster.feedback[0].anchorY),
+                    new Vector2(cluster.expectedCentroidX,
+                        cluster.expectedCentroidY)) <= .0001f,
+                "Cluster uses one detached three-defeat record at the independently expected centroid");
+            AssertSemanticMultiset(heavy,
+                new[] { BattleContentIds.Abilities.WatermelonAttack },
+                "Heavy beat");
+            AssertSemanticMultiset(cluster,
+                new[] { BattleContentIds.Enemies.Normal }, "Cluster beat");
+            AssertSemanticMultiset(terminal,
+                new[] { BattleContentIds.Enemies.Boss }, "Terminal beat");
+        }
+
+        private static CombatFeedbackAcceptanceTelemetry ConfigureCombatFeedbackFixture(
+            IAcceptanceBattlePort port, string state,
+            string surface, string phase, int speed, string beat, int count)
+        {
+            var result = port.TryConfigureNamedState(state);
+            Assert(result.Succeeded,
+                "known combat-feedback fixture is accepted: " + state);
+            var telemetry = JsonUtility.FromJson<CombatFeedbackAcceptanceTelemetry>(
+                port.CombatFeedbackAcceptanceTelemetryJson);
+            Assert(telemetry != null
+                && telemetry.schemaVersion == 1
+                && telemetry.state == state
+                && telemetry.surface == surface
+                && telemetry.phase == phase
+                && telemetry.battleSpeed == speed
+                && telemetry.activeBeat == beat
+                && telemetry.feedbackCount == count
+                && telemetry.activePoolCount == count
+                && telemetry.poolCapacity == 12
+                && telemetry.atlasPageCount == 1
+                && telemetry.atlasFormat == "RGBA32"
+                && telemetry.sharedMaterialCount == 0
+                && telemetry.preparedAtlasDrawCount >= telemetry.feedbackCount
+                && telemetry.preparedAtlasDrawCount
+                    <= CombatFloatingTextSdfOverlay.DrawCommandCapacity
+                && telemetry.placementValid
+                && string.IsNullOrEmpty(telemetry.placementFailure)
+                && telemetry.missingProfileCount == 0
+                && telemetry.performanceScope
+                    == CombatFloatingTextSdfOverlay.AcceptancePerformanceScope
+                && telemetry.profileAllocationMetric
+                    == CombatFloatingTextSdfOverlay.AcceptanceAllocationMetric
+                && telemetry.feedback != null
+                && telemetry.feedback.Length == count
+                && Finite(telemetry.beatProgress)
+                && Finite(telemetry.battlefieldOffsetX)
+                && Finite(telemetry.battlefieldOffsetY)
+                && Finite(telemetry.battlefieldFlash)
+                && Finite(telemetry.expectedCentroidX)
+                && Finite(telemetry.expectedCentroidY)
+                && Finite(telemetry.eventCentroidError)
+                && Finite(telemetry.anchorCentroidError)
+                && telemetry.feedback.All(value => value != null
+                    && Finite(value.eventX) && Finite(value.eventY)
+                    && Finite(value.anchorX) && Finite(value.anchorY)
+                    && Finite(value.lifetimeProgress)
+                    && Finite(value.detachedProgress)
+                    && Finite(value.motionScale)
+                    && Finite(value.motionOpacity)
+                    && Finite(value.finalScreenCenterX)
+                    && Finite(value.finalScreenCenterY)
+                    && Finite(value.anchorScreenX)
+                    && Finite(value.anchorScreenY)
+                    && Finite(value.anchorScreenError)
+                    && value.anchorScreenError >= 0f
+                    && Finite(value.finalScreenBoundsX)
+                    && Finite(value.finalScreenBoundsY)
+                    && Finite(value.finalScreenBoundsWidth)
+                    && value.finalScreenBoundsWidth > 0f
+                    && Finite(value.finalScreenBoundsHeight)
+                    && value.finalScreenBoundsHeight > 0f)
+                && telemetry.authoritativeGeometryUnchanged
+                && GeometryEqual(telemetry.geometryBefore, telemetry.geometryAfter),
+                "combat-feedback fixture exports exact read-only telemetry: " + state);
+            var beatOffset = new Vector2(
+                telemetry.battlefieldOffsetX, telemetry.battlefieldOffsetY).magnitude;
+            Assert(beat == "None"
+                    ? beatOffset <= .0001f
+                    : beatOffset > .0001f
+                        && beatOffset <= CombatImpactBeatCatalog.MaximumAmplitude
+                            + .0001f,
+                "active beat exports a non-zero bounded offset: " + state);
+            return telemetry;
+        }
+
+        private static void AssertSemanticMultiset(
+            CombatFeedbackAcceptanceTelemetry telemetry,
+            string[] expected, string label)
+        {
+            var actual = telemetry.feedback.Select(value => value.semanticId)
+                .OrderBy(value => value, StringComparer.Ordinal).ToArray();
+            var orderedExpected = expected.OrderBy(value => value,
+                StringComparer.Ordinal).ToArray();
+            Assert(actual.SequenceEqual(orderedExpected),
+                label + " exports the exact semantic ID multiset");
+        }
+
+        private static bool GeometryEqual(
+            CombatFeedbackAcceptanceGeometry first,
+            CombatFeedbackAcceptanceGeometry second)
+        {
+            return first != null && second != null
+                && Mathf.Abs(first.headerX - second.headerX) <= .0001f
+                && Mathf.Abs(first.headerY - second.headerY) <= .0001f
+                && Mathf.Abs(first.headerWidth - second.headerWidth) <= .0001f
+                && Mathf.Abs(first.headerHeight - second.headerHeight) <= .0001f
+                && Mathf.Abs(first.boardX - second.boardX) <= .0001f
+                && Mathf.Abs(first.boardY - second.boardY) <= .0001f
+                && Mathf.Abs(first.boardWidth - second.boardWidth) <= .0001f
+                && Mathf.Abs(first.boardHeight - second.boardHeight) <= .0001f
+                && Mathf.Abs(first.potHitX - second.potHitX) <= .0001f
+                && Mathf.Abs(first.potHitY - second.potHitY) <= .0001f
+                && Mathf.Abs(first.potHitWidth - second.potHitWidth) <= .0001f
+                && Mathf.Abs(first.potHitHeight - second.potHitHeight) <= .0001f;
+        }
+
+        private static bool Finite(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+#endif
 
         private static void AssertFailure(
             BattleSessionInitializationResult result,

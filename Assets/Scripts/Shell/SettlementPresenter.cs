@@ -1,10 +1,18 @@
 using System;
+using System.Runtime.InteropServices;
 using FruitDefense.App;
 using FruitDefense.UI;
 using UnityEngine;
 
 namespace FruitDefense.Shell
 {
+    public enum SettlementOutcomeRevealPhase
+    {
+        Hidden = 0,
+        Appearing = 1,
+        Stable = 2,
+    }
+
     [DisallowMultipleComponent]
     public sealed class SettlementPresenter : MonoBehaviour
     {
@@ -29,11 +37,17 @@ namespace FruitDefense.Shell
         private string _transitionTarget = string.Empty;
         private string _observedErrorCode = string.Empty;
         private bool _wasTransitioning;
+        private SettlementOutcomeRevealPhase? _publishedOutcomeRevealPhase;
 
         private const string RetryFeedbackTarget = "retry";
         private const string ReturnFeedbackTarget = "return";
         private const int RetryControlId = 2101;
         private const int ReturnControlId = 2102;
+
+#if FRUIT_DEFENSE_ACCEPTANCE && UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern void FruitDefensePublishSettlementOutcomeReveal(int state);
+#endif
 
         public SettlementViewData ViewData { get; private set; }
         public bool HasViewData { get; private set; }
@@ -65,16 +79,18 @@ namespace FruitDefense.Shell
             _pressTarget = string.Empty;
             _transitionTarget = string.Empty;
             _observedErrorCode = string.Empty;
+            _publishedOutcomeRevealPhase = null;
             _wasTransitioning = context?.Navigator == null
                 || context.Navigator.TransitionState != AppTransitionState.Idle;
             BindResultOrRecover();
-            _routeRevealPulse = RuntimeUiMotion.BeginReveal(Time.unscaledTime,
+            var revealStartedAt = Time.unscaledTime;
+            _routeRevealPulse = RuntimeUiMotion.BeginReveal(revealStartedAt,
                 runtimeUiTheme.Feedback, 5);
             if (HasViewData)
             {
-                _resultEmphasisPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
-                    runtimeUiTheme.Feedback.UnscaledTransitionSeconds
-                    + runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
+                _resultEmphasisPulse = RuntimeUiFeedbackPulse.Begin(
+                    ResolveOutcomeVisibleAt(revealStartedAt, runtimeUiTheme.Feedback),
+                    runtimeUiTheme.Feedback.UnscaledPopSeconds);
             }
         }
 
@@ -201,6 +217,12 @@ namespace FruitDefense.Shell
                 _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Stagger, 1);
             var resultPop = RuntimeUiMotion.Evaluate(_resultEmphasisPulse, unscaledTime,
                 _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.StrongPop);
+            var outcomeRevealPhase = HasViewData
+                ? ResolveOutcomeRevealPhase(
+                    _routeRevealPulse, _resultEmphasisPulse, unscaledTime,
+                    _runtimeUiTheme.Feedback)
+                : SettlementOutcomeRevealPhase.Hidden;
+            PublishOutcomeRevealPhase(outcomeRevealPhase);
             var resultMotion = RuntimeUiMotionSample.Combine(resultReveal, resultPop);
             var resultCardRect = resultMotion.Transform(layout.ResultCard);
             var previousResultColor = GUI.color;
@@ -218,24 +240,16 @@ namespace FruitDefense.Shell
 
             if (HasViewData)
             {
-                var outcomeCopy = RuntimeUiCopyCatalog.Get(ViewData.Victory
-                    ? RuntimeUiCopyId.SettlementVictory
-                    : RuntimeUiCopyId.SettlementDefeat);
-                var outcomeRect = TransformInside(
-                    layout.Outcome, layout.ResultCard, resultCardRect);
-                var previousOutcomeColor = GUI.color;
-                GUI.color = new Color(previousOutcomeColor.r, previousOutcomeColor.g,
-                    previousOutcomeColor.b,
-                    previousOutcomeColor.a * resultMotion.Alpha);
-                try
+                if (outcomeRevealPhase != SettlementOutcomeRevealPhase.Hidden)
                 {
-                    RuntimeUiGui.DrawSingleLineText(_drawContext, outcomeRect,
+                    var outcomeCopy = RuntimeUiCopyCatalog.Get(ViewData.Victory
+                        ? RuntimeUiCopyId.SettlementVictory
+                        : RuntimeUiCopyId.SettlementDefeat);
+                    var outcomeRect = TransformInside(
+                        layout.Outcome, layout.ResultCard, resultCardRect);
+                    RuntimeUiGui.DrawEmphasisText(_drawContext, outcomeRect,
                         outcomeCopy.Text, outcomeCopy.Role, outcomeCopy.Tone,
                         outcomeCopy.Alignment, resultState);
-                }
-                finally
-                {
-                    GUI.color = previousOutcomeColor;
                 }
                 DrawResultMetric(layout.CompletedLevel, RuntimeUiArtSlot.IconResourceSun,
                     RuntimeUiCopyCatalog.Get(
@@ -313,7 +327,10 @@ namespace FruitDefense.Shell
                     _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press)
                 : RuntimeUiMotionSample.Rest;
             RuntimeUiGui.DrawActionVisual(_drawContext, layout.RetryButton,
-                retryCopy.Text, RuntimeUiActionKind.Primary, retryState,
+                retryCopy.Text,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous), retryState,
                 RuntimeUiArtSlot.IconControlRetry, retryCopy.Role,
                 IsTransitionEmphasized(RetryFeedbackTarget, unscaledTime),
                 RuntimeUiMotionSample.Combine(retryReveal, retryMotion));
@@ -344,7 +361,10 @@ namespace FruitDefense.Shell
                     _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Press)
                 : RuntimeUiMotionSample.Rest;
             RuntimeUiGui.DrawActionVisual(_drawContext, layout.ReturnButton,
-                returnCopy.Text, RuntimeUiActionKind.Quiet, returnState,
+                returnCopy.Text,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous), returnState,
                 RuntimeUiArtSlot.IconControlReturn, returnCopy.Role,
                 IsTransitionEmphasized(ReturnFeedbackTarget, unscaledTime),
                 RuntimeUiMotionSample.Combine(returnReveal, returnMotion));
@@ -444,6 +464,39 @@ namespace FruitDefense.Shell
             return victory
                 ? RuntimeUiInteractionState.Success
                 : RuntimeUiInteractionState.Error;
+        }
+
+        public static float ResolveOutcomeVisibleAt(float revealStartedAt,
+            RuntimeUiFeedbackTokens tokens)
+        {
+            return revealStartedAt + tokens.UnscaledStaggerSeconds
+                + tokens.UnscaledRevealSeconds;
+        }
+
+        public static SettlementOutcomeRevealPhase ResolveOutcomeRevealPhase(
+            RuntimeUiFeedbackPulse routeRevealPulse,
+            RuntimeUiFeedbackPulse resultEmphasisPulse,
+            float unscaledTime, RuntimeUiFeedbackTokens tokens)
+        {
+            if (tokens.ReducedMotion || !routeRevealPulse.IsScheduled)
+                return SettlementOutcomeRevealPhase.Stable;
+
+            var reveal = RuntimeUiMotion.Evaluate(routeRevealPulse, unscaledTime,
+                tokens, RuntimeUiMotionPattern.Stagger, 1);
+            if (!reveal.IsResting)
+                return SettlementOutcomeRevealPhase.Hidden;
+            return resultEmphasisPulse.IsActive(unscaledTime)
+                ? SettlementOutcomeRevealPhase.Appearing
+                : SettlementOutcomeRevealPhase.Stable;
+        }
+
+        private void PublishOutcomeRevealPhase(SettlementOutcomeRevealPhase phase)
+        {
+            if (_publishedOutcomeRevealPhase == phase) return;
+            _publishedOutcomeRevealPhase = phase;
+#if FRUIT_DEFENSE_ACCEPTANCE && UNITY_WEBGL && !UNITY_EDITOR
+            FruitDefensePublishSettlementOutcomeReveal((int)phase);
+#endif
         }
 
         internal static RuntimeUiInteractionState ResolveActionState(bool transitioning,

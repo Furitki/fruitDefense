@@ -452,7 +452,8 @@ namespace FruitDefense.Editor
                 source.PrimaryRouteId,
                 Enumerable.Repeat(new BattlefieldVisualCellSource(
                     BattlefieldLayerIds.Surfaces.Soil), source.VisualCells.Count),
-                source.GameplayCells, source.Routes, source.MarkerGroups, source.Markers);
+                source.GameplayCells, source.Routes, source.MarkerGroups, source.Markers,
+                source.ExecutionProfile);
             return SerializeSource(withoutPresentation);
         }
 

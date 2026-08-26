@@ -33,6 +33,8 @@ Use one source of truth for each kind of information:
 |---|---|
 | `README.md` | How to open and play the project, main engineering entry points, and links to deeper documents |
 | `docs/design/game-design-overview.md` | Stable game direction, experience pillars, core loops, content structure, milestone intent, exclusions, and unresolved design questions |
+| `docs/ui/ui-visual-system.md` | Stable runtime UI semantics, component anatomy, state language, art-production rules, and visual review standards |
+| `openspec/specs/` | The current requirements of capabilities that have already been implemented and synced |
 | `openspec/changes/<change>/` | The proposal, requirements, design decisions, tasks, and acceptance contract for one concrete change |
 | `docs/p0-release-baseline.md` | The currently verified P0 runtime, artifacts, and release gates |
 | `docs/p1-first-wave-gate.md` | The currently verified P1 authorization state and unblock sequence |
@@ -47,7 +49,8 @@ Use one source of truth for each kind of information:
 5. Separate temporary scope exclusions from lasting architecture boundaries. Payment, ads, economy, progression, or backend work may be deferred without being permanently forbidden.
 6. Do not claim a mini-game target is supported from a successful ordinary WebGL run. Douyin and WeChat adapters must remain explicitly unavailable until their own gates authorize them, and they must never silently fall back to the Web adapter.
 7. Use OpenSpec for a concrete behavior or capability change. A stable product-direction change or a resolved design question triggers the design synchronization gate below; it does not authorize an automatic overview edit.
-8. Keep README concise and current. It should route readers to the design overview, OpenSpec, release baselines, and platform evidence instead of duplicating them.
+8. Before proposing or implementing a player-visible runtime UI change, read `docs/ui/ui-visual-system.md` and the relevant current specs under `openspec/specs/`. Treat them as the baseline unless the new request explicitly changes the standard; archived change evidence is historical support, not the current contract.
+9. Keep README concise and current. It should route readers to the design overview, OpenSpec, release baselines, and platform evidence instead of duplicating them.
 
 ## Major design synchronization gate
 

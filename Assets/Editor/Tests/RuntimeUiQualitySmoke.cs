@@ -18,7 +18,8 @@ namespace FruitDefense.Editor
             public TextGeometry(RuntimeUiDrawContext context, Rect componentRect,
                 Rect firstLineRect, Rect secondLineRect, Rect iconRect,
                 Rect groupRect, GUIStyle style, int maximumLineCount,
-                bool hasIcon, RuntimeUiStatusTextLayout statusLayout = default,
+                bool hasIcon, bool fits = true,
+                RuntimeUiStatusTextLayout statusLayout = default,
                 bool hasStatusLayout = false)
             {
                 Context = context;
@@ -30,6 +31,7 @@ namespace FruitDefense.Editor
                 Style = style;
                 MaximumLineCount = maximumLineCount;
                 HasIcon = hasIcon;
+                Fits = fits;
                 StatusLayout = statusLayout;
                 HasStatusLayout = hasStatusLayout;
             }
@@ -43,6 +45,7 @@ namespace FruitDefense.Editor
             public GUIStyle Style { get; }
             public int MaximumLineCount { get; }
             public bool HasIcon { get; }
+            public bool Fits { get; }
             public RuntimeUiStatusTextLayout StatusLayout { get; }
             public bool HasStatusLayout { get; }
         }
@@ -61,11 +64,16 @@ namespace FruitDefense.Editor
                 Settlement = PortraitShellLayout.CreateSettlement(
                     viewport.Width, viewport.Height, safeArea);
                 Battle = new BattleUiLayout(GameConfig.DefaultBattlefield);
+                BattleViewport = BattlefieldProjection.CalculateViewportLayout(
+                    viewport.Width, viewport.Height, safeArea,
+                    BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
                 BootstrapContext = RuntimeUiDrawContext.Create(theme, Bootstrap.Scale);
                 LobbyContext = RuntimeUiDrawContext.Create(theme, Lobby.Frame.Scale);
                 SettlementContext = RuntimeUiDrawContext.Create(
                     theme, Settlement.Frame.Scale);
                 BattleContext = RuntimeUiDrawContext.Create(theme, 1f);
+                ProjectedBattleContext = RuntimeUiDrawContext.Create(
+                    theme, BattleViewport.Scale);
             }
 
             public RuntimeUiQualityViewportCase Viewport { get; }
@@ -74,10 +82,12 @@ namespace FruitDefense.Editor
             public LobbyShellLayout Lobby { get; }
             public SettlementShellLayout Settlement { get; }
             public BattleUiLayout Battle { get; }
+            public BattlefieldViewportLayout BattleViewport { get; }
             public RuntimeUiDrawContext BootstrapContext { get; }
             public RuntimeUiDrawContext LobbyContext { get; }
             public RuntimeUiDrawContext SettlementContext { get; }
             public RuntimeUiDrawContext BattleContext { get; }
+            public RuntimeUiDrawContext ProjectedBattleContext { get; }
         }
 
         public static void Run()
@@ -85,7 +95,9 @@ namespace FruitDefense.Editor
             var theme = ProjectSetup.RequireReleaseRuntimeUiTheme();
             ValidateProfile(theme);
             ValidateCatalogCoverage();
+            ValidateResolverFailureSignals(theme);
             ValidateTextAndGeometryMatrix(theme);
+            ValidateSettlementOutcomeEmphasis(theme);
             ValidateEffectiveContrast(theme);
             ValidateSourceAuthorities();
             Debug.Log("RUNTIME_UI_QUALITY_OK cases="
@@ -174,7 +186,8 @@ namespace FruitDefense.Editor
             {
                 Assert(caseIds.Add(inspection.Id),
                     "text inspection IDs are unique: " + inspection.Id);
-                inspected.Add(inspection.CopyId);
+                if (inspection.CoversCatalogCopy)
+                    inspected.Add(inspection.CopyId);
             }
 
             foreach (var copyId in enumValues)
@@ -190,6 +203,42 @@ namespace FruitDefense.Editor
                 && RuntimeUiCopyCatalog.LevelDisplayName("orchard-02") == "第二关"
                 && RuntimeUiCopyCatalog.LevelDisplayName("orchard-03") == "第三关",
                 "finite release level IDs map to localized player-facing names");
+
+            var requiredBattleBoundaries = new[]
+            {
+                "battle.tool-count.max",
+                "battle.pot-count.max",
+                "battle.nursery-stars.max",
+                "battle.refresh-cost.max",
+                "battle.status.success-prefix.max",
+                "battle.status.error-prefix.max",
+                "battle.merge-hint.max",
+            };
+            for (var index = 0; index < requiredBattleBoundaries.Length; index++)
+            {
+                Assert(caseIds.Contains(requiredBattleBoundaries[index]),
+                    "dynamic Battle boundary is registered: "
+                    + requiredBattleBoundaries[index]);
+            }
+
+            var refreshSemanticVerified = false;
+            foreach (var inspection in RuntimeUiTextInspectionCatalog.Cases)
+            {
+                if (inspection.Target
+                        != RuntimeUiTextInspectionTarget.BattleRefreshAction)
+                    continue;
+                var spec = inspection.ActionSpec;
+                Assert(inspection.ActionSemantic
+                        == BattleUiActionSemantic.NurseryRefresh
+                    && spec.Role == RuntimeUiActionKind.Secondary
+                    && spec.ContentForm == RuntimeUiActionContentForm.IconLabel
+                    && spec.Behavior == RuntimeUiActionBehavior.Instantaneous,
+                    inspection.Id
+                    + " consumes the real Secondary nursery-refresh semantic spec");
+                refreshSemanticVerified = true;
+            }
+            Assert(refreshSemanticVerified,
+                "refresh inspection is present and semantic rather than hand-authored");
         }
 
         private static void ValidateTextAndGeometryMatrix(RuntimeUiTheme theme)
@@ -228,10 +277,15 @@ namespace FruitDefense.Editor
                 caseName + " uses its semantic typography role");
             Assert(geometry.Style.alignment == copy.Alignment,
                 caseName + " uses its catalog alignment");
-            Assert(Contains(geometry.ComponentRect, geometry.FirstLineRect)
+            Assert(geometry.Fits
+                && ContainsTextPixelRounded(
+                    geometry.ComponentRect, geometry.FirstLineRect)
                 && (!geometry.HasIcon
-                    || Contains(geometry.ComponentRect, geometry.IconRect)),
-                caseName + " text/icon remain inside the owning component");
+                    || ContainsTextPixelRounded(
+                        geometry.ComponentRect, geometry.IconRect)),
+                caseName + " resolver reports fit and text/icon remain inside the owner; owner="
+                + geometry.ComponentRect + " line=" + geometry.FirstLineRect
+                + " icon=" + geometry.IconRect + " fits=" + geometry.Fits);
 
             var expectedLineCount = copy.LinePolicy
                 == RuntimeUiCopyLinePolicy.ControlledTwoLines ? 2 : 1;
@@ -264,9 +318,8 @@ namespace FruitDefense.Editor
                 geometry.Context.Theme.Typography.For(copy.Role).LineHeight
                 * geometry.Context.Scale);
             Assert(geometry.FirstLineRect.height + RuntimeUiQualityProfile.GeometryTolerance
-                    >= Mathf.Min(expectedLineHeight,
-                        geometry.Style.CalcSize(new GUIContent(copy.Text)).y),
-                caseName + " provides a valid semantic line box");
+                    >= expectedLineHeight,
+                caseName + " provides the complete semantic line height without compression");
 
             if (expectedLineCount == 1 && IsMiddleAnchor(copy.Alignment))
             {
@@ -336,18 +389,18 @@ namespace FruitDefense.Editor
                 return new TextGeometry(context, component, inline.LabelRect,
                     default, inline.IconVisualRect, inline.GroupRect,
                     context.Styles.SingleLineText(copy.Role, TextAnchor.MiddleCenter),
-                    1, true);
+                    1, true, inline.Fits);
             }
 
             if (IsActionTarget(inspection.Target))
             {
                 var action = RuntimeUiGui.ResolveActionContentLayout(
-                    context, component, copy.Text, inspection.ActionKind,
+                    context, component, copy.Text, inspection.ActionSpec,
                     inspection.State, inspection.IconSlot, copy.Role);
                 return new TextGeometry(context, component, action.LabelRect,
                     default, action.IconVisualRect, action.GroupRect,
                     context.Styles.SingleLineText(copy.Role, copy.Alignment),
-                    1, action.HasIcon);
+                    1, action.HasIcon, action.Fits);
             }
 
             if (IsStatusTarget(inspection.Target))
@@ -358,7 +411,7 @@ namespace FruitDefense.Editor
                 return new TextGeometry(context, component, status.FirstLineRect,
                     status.SecondLineRect, status.IndicatorRect, default,
                     status.Style, status.MaximumLineCount, status.HasIndicator,
-                    status, true);
+                    statusLayout: status, hasStatusLayout: true);
             }
 
             if (IsMetricTarget(inspection.Target))
@@ -367,12 +420,12 @@ namespace FruitDefense.Editor
                     ? BattleUiLayout.HeaderMetricIconSize : 24f;
                 var metric = RuntimeUiGui.ResolveCompactInlineMetricContentLayout(
                     context, component, MetricIcon(inspection.Target), copy.Text,
-                    MetricValue(inspection.Target), inspection.State,
+                    MetricValue(inspection), inspection.State,
                     compactIconSize);
                 return new TextGeometry(context, component, metric.LabelRect, default,
                     metric.IconVisualRect, metric.GroupRect,
                     context.Styles.SingleLineText(copy.Role, copy.Alignment),
-                    1, true);
+                    1, true, metric.Fits);
             }
 
             if (copy.LinePolicy == RuntimeUiCopyLinePolicy.ControlledTwoLines)
@@ -381,7 +434,7 @@ namespace FruitDefense.Editor
                     context, component, copy.Role, copy.Alignment, inspection.State);
                 return new TextGeometry(context, component, twoLine.FirstLineRect,
                     twoLine.SecondLineRect, default, default, twoLine.Style, 2,
-                    false, twoLine, true);
+                    false, statusLayout: twoLine, hasStatusLayout: true);
             }
 
             var textRect = RuntimeUiGui.ResolveSingleLineTextRect(
@@ -400,7 +453,7 @@ namespace FruitDefense.Editor
             if (target <= RuntimeUiTextInspectionTarget.LobbyStatus)
                 return bundle.LobbyContext;
             if (target <= RuntimeUiTextInspectionTarget.BattleModalTerminalAction)
-                return bundle.BattleContext;
+                return bundle.ProjectedBattleContext;
             return bundle.SettlementContext;
         }
 
@@ -443,46 +496,78 @@ namespace FruitDefense.Editor
                 case RuntimeUiTextInspectionTarget.LobbyStatus:
                     return bundle.Lobby.Status;
                 case RuntimeUiTextInspectionTarget.BattleHeaderTitle:
-                    return bundle.Battle.HeaderTitle;
+                    return ProjectBattleRect(bundle, bundle.Battle.HeaderTitle);
                 case RuntimeUiTextInspectionTarget.BattleSunMetric:
-                    return bundle.Battle.SunMetric;
+                    return ProjectBattleRect(bundle, bundle.Battle.SunMetric);
                 case RuntimeUiTextInspectionTarget.BattleCoreMetric:
-                    return bundle.Battle.LivesMetric;
+                    return ProjectBattleRect(bundle, bundle.Battle.LivesMetric);
                 case RuntimeUiTextInspectionTarget.BattleWaveMetric:
-                    return bundle.Battle.WaveMetric;
+                    return ProjectBattleRect(bundle, bundle.Battle.WaveMetric);
                 case RuntimeUiTextInspectionTarget.BattleBoardStatus:
-                    return bundle.Battle.BoardStatusWithWaveAction;
+                    return ProjectBattleRect(bundle,
+                        bundle.Battle.BoardStatusWithWaveAction);
                 case RuntimeUiTextInspectionTarget.BattleBoardStatusFull:
-                    return bundle.Battle.BoardStatus;
+                    return ProjectBattleRect(bundle, bundle.Battle.BoardStatus);
                 case RuntimeUiTextInspectionTarget.BattleWaveAction:
-                    return bundle.Battle.WaveAction;
-                case RuntimeUiTextInspectionTarget.BattleToolTrayTitle:
-                    return bundle.Battle.ToolTrayTitle;
+                    return ProjectBattleRect(bundle, bundle.Battle.WaveAction);
+                case RuntimeUiTextInspectionTarget.BattleContextTrayTitle:
+                    return ProjectBattleRect(bundle, bundle.Battle.ContextTrayTitle);
                 case RuntimeUiTextInspectionTarget.BattleNurseryTrayTitle:
-                    return bundle.Battle.NurseryTrayTitle;
+                    return ProjectBattleRect(bundle, bundle.Battle.NurseryTrayTitle);
                 case RuntimeUiTextInspectionTarget.BattleNurserySlot:
-                    return inspection.CopyId == RuntimeUiCopyId.BattleNurseryPotStored
+                    return ProjectBattleRect(bundle,
+                        inspection.CopyId == RuntimeUiCopyId.BattleNurseryPotStored
                         ? BattleUiLayout.NurserySlotLabel(bundle.Battle.NurserySlot(0))
-                        : bundle.Battle.NurserySlot(0);
+                        : bundle.Battle.NurserySlot(0));
+                case RuntimeUiTextInspectionTarget.BattleToolCount:
+                    return ProjectBattleRect(bundle,
+                        bundle.Battle.ToolCountLabel(bundle.Battle.Tool(0)));
+                case RuntimeUiTextInspectionTarget.BattlePotName:
+                    return ProjectBattleRect(bundle, bundle.Battle.PotToolNameLabel);
+                case RuntimeUiTextInspectionTarget.BattlePotCount:
+                    return ProjectBattleRect(bundle, bundle.Battle.PotToolCountLabel);
+                case RuntimeUiTextInspectionTarget.BattleNurseryStars:
+                    return ProjectBattleRect(bundle,
+                        BattleUiLayout.NurserySlotLabel(bundle.Battle.NurserySlot(0)));
                 case RuntimeUiTextInspectionTarget.BattleRefreshAction:
-                    return bundle.Battle.RefreshAction;
+                    return ProjectBattleRect(bundle, bundle.Battle.RefreshAction);
+                case RuntimeUiTextInspectionTarget.BattleDetailTitle:
+                    return ProjectBattleRect(bundle, bundle.Battle.DetailTitle);
+                case RuntimeUiTextInspectionTarget.BattleDetailBody:
+                    return ProjectBattleRect(bundle, bundle.Battle.DetailBody);
+                case RuntimeUiTextInspectionTarget.BattleMergeHint:
+                {
+                    var mergeStyle = bundle.ProjectedBattleContext.Styles.SingleLineText(
+                        inspection.Copy.Role, inspection.Copy.Alignment);
+                    var measured = mergeStyle.CalcSize(
+                        new GUIContent(inspection.Copy.Text)).x;
+                    var logicalWidth = measured
+                        / Mathf.Max(.0001f, bundle.BattleViewport.Scale);
+                    var mergeHint = bundle.Battle.MergeHint(
+                        new Rect(180f, 180f, 48f, 48f), logicalWidth);
+                    return ProjectBattleRect(bundle,
+                        BattleUiLayout.CueLabel(mergeHint));
+                }
                 case RuntimeUiTextInspectionTarget.BattleModalTitle:
-                    return inspection.CopyId == RuntimeUiCopyId.BattleVictoryTitle
+                    return ProjectBattleRect(bundle,
+                        inspection.CopyId == RuntimeUiCopyId.BattleVictoryTitle
                         || inspection.CopyId == RuntimeUiCopyId.BattleDefeatTitle
                         ? bundle.Battle.ModalTerminalTitle
-                        : bundle.Battle.ModalTitle;
+                        : bundle.Battle.ModalTitle);
                 case RuntimeUiTextInspectionTarget.BattleModalMessage:
-                    return bundle.Battle.ModalPauseHint;
+                    return ProjectBattleRect(bundle, bundle.Battle.ModalPauseHint);
                 case RuntimeUiTextInspectionTarget.BattleModalResultBanner:
-                    return bundle.Battle.ModalResultBannerText;
+                    return ProjectBattleRect(bundle,
+                        bundle.Battle.ModalResultBannerText);
                 case RuntimeUiTextInspectionTarget.BattleModalTerminalMessage:
-                    return bundle.Battle.ModalTerminalMessage;
+                    return ProjectBattleRect(bundle,
+                        bundle.Battle.ModalTerminalMessage);
                 case RuntimeUiTextInspectionTarget.BattleModalPrimaryAction:
-                    return bundle.Battle.ModalAction(0, 2);
+                    return ProjectBattleRect(bundle, bundle.Battle.ModalAction(0, 2));
                 case RuntimeUiTextInspectionTarget.BattleModalSecondaryAction:
-                    return bundle.Battle.ModalAction(1, 2);
+                    return ProjectBattleRect(bundle, bundle.Battle.ModalAction(1, 2));
                 case RuntimeUiTextInspectionTarget.BattleModalTerminalAction:
-                    return bundle.Battle.ModalAction(0, 1);
+                    return ProjectBattleRect(bundle, bundle.Battle.ModalAction(0, 1));
                 case RuntimeUiTextInspectionTarget.SettlementTitle:
                     return bundle.Settlement.Title;
                 case RuntimeUiTextInspectionTarget.SettlementOutcome:
@@ -502,6 +587,60 @@ namespace FruitDefense.Editor
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, null);
             }
+        }
+
+        private static void ValidateResolverFailureSignals(RuntimeUiTheme theme)
+        {
+            var context = RuntimeUiDrawContext.Create(theme, 1f);
+            var action = RuntimeUiGui.ResolveActionContentLayout(context,
+                new Rect(0f, 0f, 72f, 44f),
+                RuntimeUiCopyCatalog.FormatRefreshAction(999),
+                BattleUiPresentationState.ResolveActionSpec(
+                    BattleUiActionSemantic.NurseryRefresh),
+                RuntimeUiInteractionState.Normal,
+                RuntimeUiArtSlot.IconControlRefresh);
+            Assert(!action.Fits,
+                "action resolver exposes label/icon clamping as a failed fit");
+
+            var metric = RuntimeUiGui.ResolveCompactInlineMetricContentLayout(
+                context, new Rect(0f, 0f, 64f, 22f),
+                RuntimeUiArtSlot.IconResourceSunMicro, "阳光", "999",
+                compactIconSize: BattleUiLayout.HeaderMetricIconSize);
+            Assert(!metric.Fits,
+                "metric resolver exposes value clamping as a failed fit");
+
+            var inline = RuntimeUiGui.ResolveInlineContentLayout(context,
+                new Rect(0f, 0f, 48f, 24f), RuntimeUiArtSlot.IndicatorWarning,
+                "按空格或选择操作", RuntimeUiTypographyRole.Body,
+                RuntimeUiInteractionState.Warning);
+            Assert(!inline.Fits,
+                "inline resolver exposes copy clamping as a failed fit");
+
+            var requiredHeight = theme.Typography.For(
+                RuntimeUiTypographyRole.Supplemental).LineHeight;
+            AssertThrows<InvalidOperationException>(() =>
+                RuntimeUiGui.ResolveSingleLineTextRect(context,
+                    new Rect(0f, 0f, 160f, requiredHeight - 1f),
+                    RuntimeUiTypographyRole.Supplemental,
+                    TextAnchor.MiddleLeft),
+                "single-line resolver rejects an owner below semantic line-height");
+
+            var twoLine = RuntimeUiGui.ResolveStatusTextLayout(context,
+                new Rect(0f, 0f, 48f, 48f), RuntimeUiInteractionState.Error,
+                RuntimeUiTypographyRole.Supplemental,
+                RuntimeUiStatusTextMode.CompactTwoLines);
+            var split = RuntimeUiGui.ResolveStatusTextLines(twoLine,
+                new string('宽', 40));
+            Assert(!split.HasSecondLine,
+                "controlled two-line resolver exposes an unsplittable boundary sample");
+        }
+
+        private static Rect ProjectBattleRect(LayoutBundle bundle, Rect rect)
+        {
+            var projected = bundle.BattleViewport.ProjectDesignRect(rect);
+            return Rect.MinMaxRect(
+                Mathf.Floor(projected.xMin), Mathf.Floor(projected.yMin),
+                Mathf.Ceil(projected.xMax), Mathf.Ceil(projected.yMax));
         }
 
         private static bool IsActionTarget(RuntimeUiTextInspectionTarget target)
@@ -586,8 +725,11 @@ namespace FruitDefense.Editor
             }
         }
 
-        private static string MetricValue(RuntimeUiTextInspectionTarget target)
+        private static string MetricValue(RuntimeUiTextInspectionCase inspection)
         {
+            if (!string.IsNullOrEmpty(inspection.MetricValue))
+                return inspection.MetricValue;
+            var target = inspection.Target;
             switch (target)
             {
                 case RuntimeUiTextInspectionTarget.BattleSunMetric: return "999";
@@ -611,6 +753,8 @@ namespace FruitDefense.Editor
                 && Contains(bundle.Settlement.Frame.SafeArea,
                     bundle.Settlement.Frame.Content),
                 suffix + " route chrome remains inside the resolved safe area");
+
+            ValidateProjectedBattleGeometry(bundle, suffix);
 
             ValidateTouch(bundle.Bootstrap.RetryAction,
                 bundle.BootstrapContext.Scale, suffix + "/bootstrap.retry");
@@ -699,9 +843,9 @@ namespace FruitDefense.Editor
                 bundle.Settlement.RetryButton,
                 bundle.Settlement.ReturnButton,
                 bundle.Battle.Header,
-                bundle.Battle.ToolTray,
+                bundle.Battle.BattleStage,
+                bundle.Battle.ContextTray,
                 bundle.Battle.NurseryTray,
-                bundle.Battle.Detail,
                 bundle.Battle.Modal,
                 bundle.Battle.TerminalModal,
             };
@@ -754,13 +898,13 @@ namespace FruitDefense.Editor
                         + RuntimeUiQualityProfile.GeometryTolerance,
                 suffix + " Settlement occupied content is vertically balanced with <=100 lower gap");
 
-            Assert(bundle.Battle.ToolTrayTitle.yMin
-                    >= bundle.Battle.ToolTray.yMin
+            Assert(bundle.Battle.ContextTrayTitle.yMin
+                    >= bundle.Battle.ContextTray.yMin
                     + RuntimeUiQualityProfile.MinimumTextToBorderGap
                 && bundle.Battle.Tool(0).yMin
-                    - bundle.Battle.ToolTrayTitle.yMax
+                    - bundle.Battle.ContextTrayTitle.yMax
                     >= RuntimeUiQualityProfile.MinimumTextToBorderGap,
-                suffix + " Battle tool title clears the panel top edge");
+                suffix + " Battle context title clears the panel top edge");
             Assert(bundle.Battle.NurseryTrayTitle.yMin
                     >= bundle.Battle.NurseryTray.yMin
                     + RuntimeUiQualityProfile.MinimumTextToBorderGap
@@ -857,6 +1001,77 @@ namespace FruitDefense.Editor
             ValidateBattleHeaderMetrics(bundle, suffix);
         }
 
+        private static bool IsBattleTarget(RuntimeUiTextInspectionTarget target)
+        {
+            return target >= RuntimeUiTextInspectionTarget.BattleHeaderTitle
+                && target <= RuntimeUiTextInspectionTarget.BattleModalTerminalAction;
+        }
+
+        private static void ValidateProjectedBattleGeometry(
+            LayoutBundle bundle, string suffix)
+        {
+            var projection = bundle.BattleViewport;
+            var rawProjectedDesign = projection.ProjectDesignRect(
+                bundle.Battle.Design);
+            var projectedDesign = ProjectBattleRect(bundle, bundle.Battle.Design);
+            Assert(Approximately(rawProjectedDesign, projection.DesignViewportRect)
+                && Contains(projection.SafeAreaInGuiSpace, rawProjectedDesign)
+                && Mathf.Abs(bundle.ProjectedBattleContext.Scale - projection.Scale)
+                    <= .00051f,
+                suffix + " Battle uses the calculated full/inset viewport projection");
+
+            var header = SnapDeviceRect(ProjectBattleRect(bundle, bundle.Battle.Header));
+            var stage = SnapDeviceRect(ProjectBattleRect(
+                bundle, bundle.Battle.BattleStage));
+            Assert(Mathf.Approximately(header.xMin, stage.xMin)
+                && Mathf.Approximately(header.xMax, stage.xMax),
+                suffix + " Battle header and gameplay stage share snapped device edges");
+
+            var controlStack = new[]
+            {
+                bundle.Battle.ContextTray,
+                bundle.Battle.NurseryTray,
+                bundle.Battle.RefreshAction,
+            };
+            for (var index = 0; index < controlStack.Length; index++)
+            {
+                var projected = SnapDeviceRect(
+                    ProjectBattleRect(bundle, controlStack[index]));
+                Assert(Contains(SnapDeviceRect(projectedDesign), projected),
+                    suffix + " Battle projected control track remains inside design: "
+                    + index);
+            }
+
+            Assert(Approximately(ProjectBattleRect(bundle,
+                    bundle.Battle.Battlefield.BoardRect),
+                    ProjectBattleRect(bundle, bundle.Battle.Board))
+                && Approximately(ProjectBattleRect(bundle, bundle.Battle.Board),
+                    ProjectBattleRect(bundle, bundle.Battle.BattleStage))
+                && Contains(ProjectBattleRect(bundle, bundle.Battle.Board),
+                    ProjectBattleRect(bundle, bundle.Battle.WaveAction)),
+                suffix + " Battle draw and hit geometry use the same projection");
+
+            var expectedTopGap = Mathf.Round(BattleUiLayout.SpacingUnit
+                * projection.Scale);
+            var actualTopGap = stage.yMin - header.yMax;
+            Assert(Mathf.Abs(actualTopGap - expectedTopGap) <= 1f,
+                suffix + " Battle snapped top-level gap preserves the four-point rhythm");
+
+            foreach (var inspection in RuntimeUiTextInspectionCatalog.Cases)
+            {
+                if (!IsBattleTarget(inspection.Target)) continue;
+                var owner = SnapDeviceRect(ResolveComponentRect(bundle, inspection));
+                Assert(Contains(SnapDeviceRect(projectedDesign), owner),
+                    inspection.Id + "@" + suffix
+                    + " projected owner remains inside the complete design inset");
+            }
+
+            ValidateTouch(ProjectBattleRect(bundle, bundle.Battle.WaveAction),
+                projection.Scale, suffix + "/battle.wave-action.projected");
+            ValidateTouch(ProjectBattleRect(bundle, bundle.Battle.RefreshAction),
+                projection.Scale, suffix + "/battle.refresh.projected");
+        }
+
         private static void ValidateBattleHeaderMetrics(LayoutBundle bundle, string suffix)
         {
             var rects = new[]
@@ -899,9 +1114,11 @@ namespace FruitDefense.Editor
                         <= RuntimeUiQualityProfile.MaximumIconTextGap
                             + RuntimeUiQualityProfile.GeometryTolerance
                     && layout.ValueRect.xMin - layout.LabelRect.xMax
+                        + RuntimeUiQualityProfile.GeometryTolerance
                         >= RuntimeUiQualityProfile.MinimumIconTextGap
                     && layout.ValueRect.xMin - layout.LabelRect.xMax
                         <= RuntimeUiQualityProfile.MaximumIconTextGap
+                            + RuntimeUiQualityProfile.GeometryTolerance
                     && Mathf.Abs(layout.GroupRect.center.x - rects[index].center.x)
                         <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
                     && Mathf.Abs(layout.GroupRect.center.y - rects[index].center.y)
@@ -927,22 +1144,23 @@ namespace FruitDefense.Editor
                     suffix + " Battle compact metric icon centers align");
             }
 
-            var speed = RuntimeUiGui.ResolveActionContentLayout(
-                bundle.BattleContext, bundle.Battle.SpeedAction, "2×",
-                RuntimeUiActionKind.Quiet, RuntimeUiInteractionState.Selected,
-                RuntimeUiArtSlot.IconControlSpeed,
-                RuntimeUiTypographyRole.Supplemental);
-            Assert(Mathf.Abs(speed.GroupRect.center.x
+            var speed = RuntimeUiGui.ResolveCompactControlLayout(
+                bundle.Battle.SpeedAction, RuntimeUiInteractionState.Normal,
+                true, bundle.BattleContext.Theme.Feedback);
+            Assert(speed.UsesMultiplierText
+                && Contains(bundle.Battle.SpeedAction, speed.SurfaceRect)
+                && Contains(bundle.Battle.SpeedAction, speed.ContentRect)
+                && Mathf.Abs(speed.ContentRect.center.x
                     - bundle.Battle.SpeedAction.center.x)
                     <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
-                && Mathf.Abs(speed.GroupRect.center.y
+                && Mathf.Abs(speed.ContentRect.center.y
                     - bundle.Battle.SpeedAction.center.y)
-                    <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
-                && speed.LabelRect.xMin - speed.IconVisualRect.xMax
-                    >= RuntimeUiQualityProfile.MinimumIconTextGap
-                && speed.LabelRect.xMin - speed.IconVisualRect.xMax
-                    <= RuntimeUiQualityProfile.MaximumIconTextGap,
-                suffix + " Battle speed icon and value use the shared centered action group");
+                    <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical,
+                suffix + " Battle speed multiplier owns one centered compact-control content rect");
+            AssertSingleLineFits(bundle.BattleContext.Styles.SingleLineText(
+                    RuntimeUiTypographyRole.Metric, TextAnchor.MiddleCenter),
+                "2×", speed.ContentRect,
+                suffix + "/battle.speed-multiplier");
         }
 
         private static void ValidateRepeatedBaselines(LayoutBundle bundle, string suffix)
@@ -1120,16 +1338,21 @@ namespace FruitDefense.Editor
                 theme.Colors.BaseSurface);
             Assert(secondary + .001f >= RuntimeUiQualityProfile.NormalTextContrast,
                 "secondary card copy remains subordinate without falling below 4.5:1");
-            var primary = Contrast(theme.Colors.InverseText,
-                theme.Colors.PrimaryAction);
-            Assert(primary + .001f >= RuntimeUiQualityProfile.LargeOrBoldTextContrast,
-                "primary action inverse text meets the bold-text contrast floor");
+            var primary = theme.ResolveActionStyle(RuntimeUiActionKind.Primary,
+                RuntimeUiActionContentForm.IconLabel,
+                RuntimeUiActionBehavior.Instantaneous,
+                RuntimeUiInteractionState.Normal, false);
+            Assert(Contrast(primary.ContentColor, primary.ContainerColor) + .001f
+                    >= RuntimeUiQualityProfile.NormalTextContrast,
+                "primary action label and glyph share the 4.5:1 content pairing");
 
-            var pressedText = Composite(theme.Colors.InverseText,
-                theme.Colors.PrimaryAction, theme.Feedback.PressedOpacity);
-            Assert(Contrast(pressedText, theme.Colors.PrimaryAction) + .001f
-                    >= RuntimeUiQualityProfile.LargeOrBoldTextContrast,
-                "pressed action copy preserves effective contrast");
+            var pressed = theme.ResolveActionStyle(RuntimeUiActionKind.Primary,
+                RuntimeUiActionContentForm.IconLabel,
+                RuntimeUiActionBehavior.Instantaneous,
+                RuntimeUiInteractionState.Pressed, false);
+            Assert(Contrast(pressed.ContentColor, pressed.ContainerColor) + .001f
+                    >= RuntimeUiQualityProfile.NormalTextContrast,
+                "pressed action resolves a complete contrast-safe pairing");
             var contrastContext = RuntimeUiDrawContext.Create(theme, 1f);
             Assert(Mathf.Approximately(RuntimeUiGui.ResolveTextOpacity(contrastContext,
                         RuntimeUiInteractionState.Normal), theme.Feedback.NormalOpacity)
@@ -1145,17 +1368,14 @@ namespace FruitDefense.Editor
             Assert(Contrast(loadingText, theme.Colors.BaseSurface) + .001f
                     >= RuntimeUiQualityProfile.DisabledReadableContrast,
                 "loading readable copy preserves effective contrast");
-            var disabledSurface = Composite(theme.Colors.Disabled,
-                theme.Colors.BaseSurface, theme.Feedback.DisabledOpacity);
-            var disabledText = Composite(theme.Colors.PrimaryText,
-                disabledSurface, RuntimeUiGui.ResolveTextOpacity(
-                    contrastContext,
-                    RuntimeUiInteractionState.Disabled));
-            Assert(RuntimeUiGui.ResolveActionTextTone(RuntimeUiActionKind.Primary,
-                    RuntimeUiInteractionState.Disabled) == RuntimeUiTextTone.Primary
-                && Contrast(disabledText, disabledSurface) + .001f
-                    >= RuntimeUiQualityProfile.DisabledReadableContrast,
-                "disabled readable copy preserves effective contrast");
+            var disabled = theme.ResolveActionStyle(RuntimeUiActionKind.Primary,
+                RuntimeUiActionContentForm.IconLabel,
+                RuntimeUiActionBehavior.Instantaneous,
+                RuntimeUiInteractionState.Disabled, false);
+            Assert(disabled.Disabled
+                && Contrast(disabled.ContentColor, disabled.ContainerColor) + .001f
+                    >= RuntimeUiQualityProfile.NormalTextContrast,
+                "disabled action owns a complete contrast-safe pairing without global alpha attenuation");
 
             var requiredCueSlots = new[]
             {
@@ -1202,8 +1422,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateSourceAuthorities()
         {
-            var runtimeGui = File.ReadAllText(Path.Combine(
-                Application.dataPath, "Scripts/UI/RuntimeUiGui.cs"));
+            var runtimeGui = RuntimeUiSourceAuthority.ReadRuntimeGui();
             Assert(runtimeGui.Contains("ResolveActionContentLayout(")
                 && runtimeGui.Contains("ResolveMetricContentLayout(")
                 && runtimeGui.Contains("ResolveOpticalEnvelopeDrawRect(")
@@ -1219,8 +1438,8 @@ namespace FruitDefense.Editor
                 Application.dataPath, "Scripts/Shell/SettlementPresenter.cs"));
             var bootstrap = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/App/AppFlowCoordinator.cs"));
-            var battle = File.ReadAllText(Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs"));
+            var battle = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
+            var acceptance = RuntimeUiSourceAuthority.ReadAcceptanceRunner();
             Assert(lobby.Contains("RuntimeUiCopyCatalog")
                 && settlement.Contains("RuntimeUiCopyCatalog")
                 && bootstrap.Contains("RuntimeUiCopyCatalog")
@@ -1236,9 +1455,37 @@ namespace FruitDefense.Editor
             Assert(MethodBodyContains(runtimeGui,
                     "public static void DrawResultBanner(",
                     "DrawOpticalEnvelopeFitSlotArt(")
+                && runtimeGui.Contains("public static void DrawEmphasisText(")
+                && runtimeGui.Contains("public static RuntimeUiEmphasisTextLayout ResolveEmphasisTextLayout(")
+                && MethodBodyContains(runtimeGui,
+                    "public static void DrawEmphasisText(",
+                    "RequireOpaqueEmphasisComposition(")
+                && !runtimeGui.Contains("ComposeEmphasisAlpha(")
+                && CountOccurrences(settlement,
+                    "RuntimeUiGui.DrawEmphasisText(_drawContext, outcomeRect") == 1
+                && settlement.Contains("SettlementOutcomeRevealPhase.Hidden")
+                && settlement.Contains(
+                    "#if FRUIT_DEFENSE_ACCEPTANCE && UNITY_WEBGL && !UNITY_EDITOR")
+                && settlement.Contains(
+                    "FruitDefensePublishSettlementOutcomeReveal((int)phase)")
+                && !settlement.Contains(
+                    "previousOutcomeColor.a * resultMotion.Alpha")
+                && typeof(SettlementPresenter).GetMethod(
+                    "FruitDefensePublishSettlementOutcomeReveal",
+                    System.Reflection.BindingFlags.Static
+                    | System.Reflection.BindingFlags.NonPublic) == null
                 && !MethodBodyContains(runtimeGui,
                     "public static void DrawMetric(", "SurfaceMetric"),
-                "text-bearing ornaments use optical pixels and read-only metrics remain borderless");
+                "text-bearing ornaments use optical pixels, the approved outcome gates one opaque shared outline, and read-only metrics remain borderless");
+            Assert(acceptance.Contains(
+                        "function Test-SettlementOutcomeFillSupportPixel")
+                && acceptance.Contains("[MidpointRounding]::ToEven")
+                && acceptance.Contains("maximumConnectedThicknessCapturePixels")
+                && acceptance.Contains("linkedToInnerRingPixels")
+                && acceptance.Contains("touchesSampleBoundary")
+                && acceptance.Contains("connectedOutlinePixelsCovered")
+                && !acceptance.Contains("outlineNeighborRadius"),
+                "WebGL acceptance measures complete connected outline rings at the runtime-rounded exact thickness");
             Assert(CountOccurrences(settlement,
                        "RuntimeUiGui.DrawIndicator(_drawContext, indicatorRect") == 1
                 && CountOccurrences(settlement,
@@ -1258,10 +1505,15 @@ namespace FruitDefense.Editor
                 && battle.Contains("DrawControlledTwoLineText")
                 && battle.Contains("layout.ModalResultBannerText")
                 && battle.Contains("content.ResultBannerText")
-                && battle.Contains("RuntimeUiArtSlot.IconControlSpeed")
+                && MethodBodyContains(battle, "private void DrawHeader(",
+                    "DrawCompactControlVisual(drawContext, layout.SpeedAction")
+                && MethodBodyContains(battle, "private void DrawHeader(",
+                    "multiplierText: _game.State.Speed + \"×\"")
+                && !MethodBodyContains(battle, "private void DrawHeader(",
+                    "RuntimeUiArtSlot.IconControlSpeed")
                 && !battle.Contains("layout.SpeedActionIcon")
                 && !battle.Contains("layout.SpeedActionValue"),
-                "Battle consumes compact metric and controlled terminal-copy anatomy");
+                "Battle consumes compact metrics, centered speed multiplier, and controlled terminal-copy anatomy");
             Assert(lobby.Contains("RuntimeUiGui.DrawShellOrchardDepth")
                 && settlement.Contains("RuntimeUiGui.DrawShellOrchardDepth")
                 && !battle.Contains("RuntimeUiGui.DrawShellOrchardDepth"),
@@ -1278,9 +1530,12 @@ namespace FruitDefense.Editor
                 && !settlement.Contains("\"完成关卡 \" + ViewData.LevelId"),
                 "Lobby and Settlement never expose internal level IDs as copy");
             Assert(!runtimeGui.Contains("GUI.skin")
-                && !runtimeGui.Contains("Texture2D.whiteTexture")
+                && CountOccurrences(runtimeGui, "Texture2D.whiteTexture") == 1
+                && MethodBodyContains(runtimeGui,
+                    "private static void DrawActionInteractionCue(",
+                    "Texture2D.whiteTexture")
                 && !runtimeGui.Contains("Resources.Load"),
-                "shared quality path has no default-skin or resource fallback");
+                "shared quality path permits one token-colored focus primitive but no default-skin or resource fallback");
         }
 
         private static bool MethodBodyContains(string source, string signature,
@@ -1345,6 +1600,108 @@ namespace FruitDefense.Editor
                 && inner.yMax <= outer.yMax + tolerance;
         }
 
+        private static void ValidateSettlementOutcomeEmphasis(RuntimeUiTheme theme)
+        {
+            var layout = PortraitShellLayout.CreateSettlement(402f, 874f,
+                new Rect(0f, 0f, 402f, 874f));
+            var context = RuntimeUiDrawContext.Create(theme, layout.Frame.Scale);
+            var bannerDraw = RuntimeUiGui.ResolveOpticalEnvelopeDrawRect(context,
+                RuntimeUiArtSlot.OrnamentResultBanner, layout.ResultBanner);
+            var bannerVisual = RuntimeUiGui.ResolveOpticalVisualRect(context,
+                RuntimeUiArtSlot.OrnamentResultBanner, bannerDraw);
+            var outcomeIds = new[]
+            {
+                RuntimeUiCopyId.SettlementVictory,
+                RuntimeUiCopyId.SettlementDefeat,
+            };
+
+            for (var index = 0; index < outcomeIds.Length; index++)
+            {
+                var copy = RuntimeUiCopyCatalog.Get(outcomeIds[index]);
+                var emphasis = RuntimeUiGui.ResolveEmphasisTextLayout(context,
+                    layout.Outcome, copy.Role, copy.Tone, copy.Alignment,
+                    index == 0
+                        ? RuntimeUiInteractionState.Success
+                        : RuntimeUiInteractionState.Error);
+                Assert(copy.Role == RuntimeUiTypographyRole.SectionTitle
+                    && emphasis.Style.fontSize
+                        == RuntimeUiQualityProfile.MinimumFontSize(copy.Role)
+                    && emphasis.Style.fontStyle == FontStyle.Bold
+                    && emphasis.OutlinePixels
+                        == RuntimeUiQualityProfile.EmphasisOutlineCapturePixels
+                    && Contrast(emphasis.OutlineColor, emphasis.FillColor) + .001f
+                        >= RuntimeUiQualityProfile.NonTextContrast,
+                    copy.Id + " keeps the approved bold role and visible two-pixel contrasting outline");
+                Assert(Contains(bannerVisual, emphasis.OutlinedRect)
+                    && Mathf.Abs(emphasis.TextRect.center.x
+                        - bannerVisual.center.x)
+                        <= RuntimeUiQualityProfile.GeometryTolerance
+                    && Mathf.Abs(emphasis.TextRect.center.y
+                        - bannerVisual.center.y)
+                        <= RuntimeUiQualityProfile.GeometryTolerance,
+                    copy.Id + " outlined line owner stays centered and contained in the optical banner");
+            }
+
+            const float checkpointStart = 10f;
+            var revealPulse = RuntimeUiMotion.BeginReveal(checkpointStart,
+                theme.Feedback, 5);
+            var visibleAt = SettlementPresenter.ResolveOutcomeVisibleAt(
+                checkpointStart, theme.Feedback);
+            var emphasisPulse = RuntimeUiFeedbackPulse.Begin(visibleAt,
+                theme.Feedback.UnscaledPopSeconds);
+            var hiddenAt = visibleAt - .001f;
+            var appearingAt = visibleAt
+                + theme.Feedback.UnscaledPopSeconds * .5f;
+            var stableAt = visibleAt + theme.Feedback.UnscaledPopSeconds;
+            var hiddenPhase = SettlementPresenter.ResolveOutcomeRevealPhase(
+                revealPulse, emphasisPulse, hiddenAt, theme.Feedback);
+            var appearingPhase = SettlementPresenter.ResolveOutcomeRevealPhase(
+                revealPulse, emphasisPulse, appearingAt, theme.Feedback);
+            var stablePhase = SettlementPresenter.ResolveOutcomeRevealPhase(
+                revealPulse, emphasisPulse, stableAt, theme.Feedback);
+            var appearingMotion = RuntimeUiMotion.Evaluate(
+                emphasisPulse, appearingAt, theme.Feedback,
+                RuntimeUiMotionPattern.StrongPop);
+            Assert(hiddenPhase == SettlementOutcomeRevealPhase.Hidden,
+                "Settlement outcome draw plan is absent immediately before its reveal boundary");
+            Assert(appearingPhase == SettlementOutcomeRevealPhase.Appearing
+                && Mathf.Approximately(appearingMotion.Alpha, 1f)
+                && appearingMotion.Scale < 1f,
+                "Settlement outcome appears as one opaque fill-plus-outline composition while StrongPop changes geometry only");
+            Assert(stablePhase == SettlementOutcomeRevealPhase.Stable,
+                "Settlement outcome reaches a deterministic stable phase after its opaque geometry pulse");
+
+            AssertThrows<ArgumentOutOfRangeException>(() =>
+                    RuntimeUiGui.ResolveEmphasisTextLayout(context, layout.Outcome,
+                        RuntimeUiTypographyRole.Body, RuntimeUiTextTone.Primary,
+                        TextAnchor.MiddleCenter),
+                "supporting body copy cannot enter the heavy outline path");
+        }
+
+        private static bool ContainsTextPixelRounded(Rect outer, Rect inner)
+        {
+            const float pixelRoundingTolerance = .51f;
+            return inner.xMin >= outer.xMin - pixelRoundingTolerance
+                && inner.yMin >= outer.yMin - pixelRoundingTolerance
+                && inner.xMax <= outer.xMax + pixelRoundingTolerance
+                && inner.yMax <= outer.yMax + pixelRoundingTolerance;
+        }
+
+        private static Rect SnapDeviceRect(Rect rect)
+        {
+            return Rect.MinMaxRect(Mathf.Round(rect.xMin), Mathf.Round(rect.yMin),
+                Mathf.Round(rect.xMax), Mathf.Round(rect.yMax));
+        }
+
+        private static bool Approximately(Rect left, Rect right)
+        {
+            var tolerance = RuntimeUiQualityProfile.GeometryTolerance;
+            return Mathf.Abs(left.xMin - right.xMin) <= tolerance
+                && Mathf.Abs(left.yMin - right.yMin) <= tolerance
+                && Mathf.Abs(left.xMax - right.xMax) <= tolerance
+                && Mathf.Abs(left.yMax - right.yMax) <= tolerance;
+        }
+
         private static bool Overlaps(Rect first, Rect second)
         {
             var tolerance = RuntimeUiQualityProfile.GeometryTolerance;
@@ -1388,6 +1745,21 @@ namespace FruitDefense.Editor
             if (!condition)
                 throw new InvalidOperationException(
                     "Runtime UI quality validation failed: " + message);
+        }
+
+        private static void AssertThrows<TException>(Action action, string message)
+            where TException : Exception
+        {
+            try
+            {
+                action();
+            }
+            catch (TException)
+            {
+                return;
+            }
+            throw new InvalidOperationException(
+                "Runtime UI quality validation failed: " + message);
         }
     }
 }

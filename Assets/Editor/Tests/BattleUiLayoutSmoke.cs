@@ -13,7 +13,9 @@ namespace FruitDefense.Editor
         {
             var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
             ValidateReferenceGeometry(layout);
+            ValidateNamedTracksAndRhythm(layout);
             ValidateViewportBackgroundContract();
+            ValidateProjectedViewportMatrix(layout);
             ValidateInteractionBoundaries(layout);
             ValidateFinitePresentationState();
             ValidateBetweenWaveSingleLineText(layout);
@@ -29,39 +31,39 @@ namespace FruitDefense.Editor
         {
             Assert(Approximately(layout.Design, new Rect(0f, 0f, 402f, 874f)),
                 "design geometry changed");
-            Assert(Approximately(layout.Header, new Rect(8f, 8f, 386f, 76f))
-                && Approximately(layout.BattleSurface, new Rect(0f, 88f, 402f, 782f))
-                && Approximately(layout.Board, new Rect(0f, 88f, 402f, 484f)),
+            Assert(Approximately(layout.Header, new Rect(0f, 8f, 402f, 96f))
+                && Approximately(layout.BattleStage, new Rect(0f, 108f, 402f, 486f))
+                && Approximately(layout.Board, layout.BattleStage),
                 "top-level Battle chrome changed");
-            Assert(Approximately(layout.ToolTray, new Rect(8f, 580f, 386f, 68f))
-                && Approximately(layout.NurseryTray, new Rect(8f, 656f, 386f, 80f))
-                && Approximately(layout.RefreshAction, new Rect(8f, 744f, 386f, 44f))
-                && Approximately(layout.Detail, new Rect(8f, 796f, 386f, 70f)),
-                "embedded control chrome changed");
-            Assert(Approximately(layout.PauseAction, new Rect(274f, 20f, 52f, 52f))
-                && Approximately(layout.SpeedAction, new Rect(334f, 20f, 52f, 52f))
-                && Approximately(layout.HeaderTitle, new Rect(16f, 12f, 246f, 24f))
-                && Approximately(layout.SunMetric, new Rect(16f, 40f, 84f, 32f))
-                && Approximately(layout.LivesMetric, new Rect(108f, 40f, 78f, 32f))
-                && Approximately(layout.WaveMetric, new Rect(194f, 40f, 76f, 32f))
-                && Approximately(layout.FirstMetricDivider, new Rect(100f, 44f, 8f, 24f))
-                && Approximately(layout.SecondMetricDivider, new Rect(186f, 44f, 8f, 24f)),
+            Assert(Approximately(layout.ContextTray, new Rect(8f, 602f, 386f, 78f))
+                && Approximately(layout.NurseryTray, new Rect(8f, 688f, 386f, 88f))
+                && Approximately(layout.RefreshAction, new Rect(8f, 784f, 386f, 52f))
+                && Mathf.Approximately(layout.Design.yMax - layout.RefreshAction.yMax, 38f),
+                "context/nursery/refresh closeout geometry changed");
+            Assert(Approximately(layout.PauseAction, new Rect(274f, 12f, 52f, 52f))
+                && Approximately(layout.SpeedAction, new Rect(334f, 12f, 52f, 52f))
+                && Approximately(layout.HeaderTitle, new Rect(16f, 26f, 246f, 24f))
+                && Approximately(layout.SunMetric, new Rect(16f, 68f, 118f, 32f))
+                && Approximately(layout.LivesMetric, new Rect(142f, 68f, 118f, 32f))
+                && Approximately(layout.WaveMetric, new Rect(268f, 68f, 118f, 32f))
+                && Approximately(layout.FirstMetricDivider, new Rect(134f, 68f, 8f, 32f))
+                && Approximately(layout.SecondMetricDivider, new Rect(260f, 68f, 8f, 32f)),
                 "header action targets changed");
-            Assert(Approximately(layout.BoardStatus, new Rect(8f, 522f, 386f, 48f))
+            Assert(Approximately(layout.BoardStatus, new Rect(8f, 544f, 386f, 48f))
                 && Approximately(layout.BoardStatusWithWaveAction,
-                    new Rect(16f, 522f, 186f, 48f))
-                && Approximately(layout.WaveAction, new Rect(210f, 526f, 184f, 44f)),
+                    new Rect(16f, 544f, 190f, 48f))
+                && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
                 "board status or wave target changed");
-            Assert(Approximately(layout.ToolTrayTitle, new Rect(16f, 584f, 180f, 16f))
-                && Approximately(layout.NurseryTrayTitle, new Rect(16f, 660f, 180f, 16f))
-                && Approximately(layout.Tool(0), new Rect(16f, 604f, 88.75f, 44f))
-                && Approximately(layout.Tool(3), new Rect(297.25f, 604f, 88.75f, 44f))
-                && Approximately(layout.NurserySlot(0), new Rect(16f, 680f, 70f, 54f))
-                && Approximately(layout.NurserySlot(4), new Rect(316f, 680f, 70f, 54f)),
+            Assert(Approximately(layout.ContextTrayTitle, new Rect(16f, 606f, 180f, 22f))
+                && Approximately(layout.NurseryTrayTitle, new Rect(16f, 692f, 180f, 22f))
+                && Approximately(layout.Tool(0), new Rect(16f, 632f, 89.5f, 44f))
+                && Approximately(layout.Tool(3), new Rect(296.5f, 632f, 89.5f, 44f))
+                && Approximately(layout.NurserySlot(0), new Rect(16f, 718f, 70.8f, 54f))
+                && Approximately(layout.NurserySlot(4), new Rect(315.2f, 718f, 70.8f, 54f)),
                 "tool or nursery cell geometry changed");
-            Assert(Approximately(layout.DetailTitle, new Rect(16f, 800f, 322f, 22f))
-                && Approximately(layout.DetailBody, new Rect(16f, 830f, 322f, 28f))
-                && Approximately(layout.DetailCloseAction, new Rect(346f, 800f, 44f, 44f))
+            Assert(Approximately(layout.DetailTitle, new Rect(16f, 606f, 322f, 24f))
+                && Approximately(layout.DetailBody, new Rect(16f, 638f, 322f, 22f))
+                && Approximately(layout.DetailCloseAction, new Rect(346f, 606f, 44f, 44f))
                 && layout.DetailBody.yMin - layout.DetailTitle.yMax >= 8f
                 && layout.DetailCloseAction.xMin - layout.DetailTitle.xMax >= 8f
                 && layout.DetailCloseAction.xMin - layout.DetailBody.xMax >= 8f,
@@ -82,9 +84,9 @@ namespace FruitDefense.Editor
             Assert(Approximately(layout.Battlefield.BoardRect, layout.Board),
                 "layout and battlefield projection do not share the authoritative board rectangle");
             Assert(Approximately(layout.Battlefield.MapViewportRect,
-                    new Rect(0f, 88f, 402f, 422f))
+                    new Rect(0f, 108f, 402f, 424f))
                 && Approximately(layout.Battlefield.GridRect,
-                    new Rect(8f, 130.125f, 386f, 337.75f)),
+                    new Rect(8f, 151.125f, 386f, 337.75f)),
                 "Battlefield grid composition changed inside the map viewport");
             var left = layout.Battlefield.GridRect.xMin
                 - layout.Battlefield.MapViewportRect.xMin;
@@ -97,8 +99,65 @@ namespace FruitDefense.Editor
             Assert(Mathf.Abs(left - right) <= 1f
                 && Mathf.Abs(top - bottom) <= 1f
                 && Mathf.Approximately(left, 8f)
-                && Mathf.Approximately(top, 42.125f),
+                && Mathf.Approximately(top, 43.125f),
                 "Battlefield grid has symmetric visual gutters relative to MapViewportRect");
+        }
+
+        private static void ValidateNamedTracksAndRhythm(BattleUiLayout layout)
+        {
+            Assert(Mathf.Approximately(BattleUiLayout.SpacingUnit, 4f)
+                && Mathf.Approximately(BattleUiLayout.ContentInset, 8f)
+                && Mathf.Approximately(BattleUiLayout.SectionGap, 8f),
+                "Battle named tracks derive from the four-point spacing unit");
+            Assert(Mathf.Approximately(layout.Header.xMin, layout.BattleStage.xMin)
+                && Mathf.Approximately(layout.Header.xMax, layout.BattleStage.xMax)
+                && Mathf.Approximately(layout.BattleStage.yMin - layout.Header.yMax,
+                    BattleUiLayout.SpacingUnit),
+                "Header and BattleStage share one full-width track with one four-point gap");
+
+            var sections = new[]
+            {
+                layout.ContextTray, layout.NurseryTray, layout.RefreshAction,
+            };
+            for (var index = 0; index < sections.Length; index++)
+            {
+                Assert(Mathf.Approximately(sections[index].xMin,
+                        layout.BattleStage.xMin + BattleUiLayout.ContentInset)
+                    && Mathf.Approximately(sections[index].xMax,
+                        layout.BattleStage.xMax - BattleUiLayout.ContentInset),
+                    "Battle control section uses the shared inset track: " + index);
+            }
+            Assert(Mathf.Approximately(layout.ContextTray.yMin - layout.Board.yMax,
+                       BattleUiLayout.SectionGap)
+                && Mathf.Approximately(layout.NurseryTray.yMin - layout.ContextTray.yMax,
+                    BattleUiLayout.SectionGap)
+                && Mathf.Approximately(layout.RefreshAction.yMin - layout.NurseryTray.yMax,
+                    BattleUiLayout.SectionGap),
+                "Battle sections preserve the named eight-point rhythm");
+
+            Assert(layout.ContextTrayTitle.height == 22f
+                && layout.NurseryTrayTitle.height == 22f
+                && BattleUiLayout.NurserySlotLabel(layout.NurserySlot(0)).height == 22f
+                && layout.DetailTitle.height == 24f
+                && layout.DetailBody.height == 22f
+                && layout.HeaderTitle.height == 24f
+                && layout.SunMetric.height == 32f
+                && layout.LivesMetric.height == 32f
+                && layout.WaveMetric.height == 32f,
+                "Battle text owners expose complete semantic line-height boxes");
+            Assert(Mathf.Approximately(layout.ContextTrayTitle.yMin - layout.ContextTray.yMin,
+                       BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.Tool(0).yMin - layout.ContextTrayTitle.yMax,
+                    BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.ContextTray.yMax - layout.Tool(0).yMax,
+                    BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.NurseryTrayTitle.yMin - layout.NurseryTray.yMin,
+                    BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.NurserySlot(0).yMin
+                    - layout.NurseryTrayTitle.yMax, BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.NurseryTray.yMax
+                    - layout.NurserySlot(0).yMax, BattleUiLayout.SpacingUnit),
+                "tool and nursery tracks preserve complete four-side insets");
         }
 
         private static void ValidateViewportBackgroundContract()
@@ -116,6 +175,76 @@ namespace FruitDefense.Editor
                 "inset viewport no longer letterboxes the design inside the safe area");
         }
 
+        private static void ValidateProjectedViewportMatrix(BattleUiLayout layout)
+        {
+            foreach (var viewport in RuntimeUiQualityProfile.Viewports)
+            {
+                ValidateProjectedViewport(layout, viewport, viewport.FullSafeArea, "full");
+                ValidateProjectedViewport(layout, viewport, viewport.InsetSafeArea, "inset");
+            }
+        }
+
+        private static void ValidateProjectedViewport(BattleUiLayout layout,
+            RuntimeUiQualityViewportCase viewport, Rect safeArea, string safeAreaKind)
+        {
+            var projection = BattlefieldProjection.CalculateViewportLayout(
+                viewport.Width, viewport.Height, safeArea,
+                BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
+            var caseName = viewport.Id + "/" + safeAreaKind;
+            Assert(Approximately(projection.ProjectDesignRect(layout.Design),
+                    projection.DesignViewportRect)
+                && Contains(projection.SafeAreaInGuiSpace,
+                    projection.DesignViewportRect),
+                caseName + " projects the complete design inside the GUI safe area");
+
+            var header = SnapDeviceRect(projection.ProjectDesignRect(layout.Header));
+            var surface = SnapDeviceRect(
+                projection.ProjectDesignRect(layout.BattleStage));
+            Assert(Mathf.Approximately(header.xMin, surface.xMin)
+                && Mathf.Approximately(header.xMax, surface.xMax),
+                caseName + " preserves peer-frame device edges");
+
+            var expectedGap = Mathf.Round(
+                BattleUiLayout.SpacingUnit * projection.Scale);
+            Assert(Mathf.Abs(surface.yMin - header.yMax - expectedGap) <= 1f,
+                caseName + " preserves the four-point top-level gap after snapping");
+
+            var projectedBoard = projection.ProjectDesignRect(layout.Board);
+            Assert(Approximately(projectedBoard,
+                    projection.ProjectDesignRect(layout.Battlefield.BoardRect))
+                && Contains(surface, SnapDeviceRect(projectedBoard))
+                && Contains(SnapDeviceRect(projectedBoard), SnapDeviceRect(
+                    projection.ProjectDesignRect(layout.WaveAction))),
+                caseName + " preserves draw/hit identity and control containment");
+
+            var lineOwners = new[]
+            {
+                layout.HeaderTitle,
+                layout.SunMetric,
+                layout.LivesMetric,
+                layout.WaveMetric,
+                layout.ContextTrayTitle,
+                layout.NurseryTrayTitle,
+                BattleUiLayout.NurserySlotLabel(layout.NurserySlot(0)),
+                layout.DetailTitle,
+                layout.DetailBody,
+            };
+            var logicalLineHeights = new[]
+            {
+                24f, 22f, 22f, 22f, 22f, 22f, 22f, 24f, 22f,
+            };
+            for (var index = 0; index < lineOwners.Length; index++)
+            {
+                var owner = SnapDeviceRect(
+                    projection.ProjectDesignRect(lineOwners[index]));
+                var requiredHeight = Mathf.Floor(
+                    logicalLineHeights[index] * projection.Scale);
+                Assert(Contains(SnapDeviceRect(projection.DesignViewportRect), owner)
+                    && owner.height >= requiredHeight,
+                    caseName + " preserves projected semantic line-height owner " + index);
+            }
+        }
+
         private static void ValidateInteractionBoundaries(BattleUiLayout layout)
         {
             Assert(!layout.PauseAction.Overlaps(layout.SpeedAction),
@@ -130,7 +259,7 @@ namespace FruitDefense.Editor
             for (var index = 0; index < BattleUiLayout.ToolCount; index++)
             {
                 var rect = layout.Tool(index);
-                Assert(Contains(layout.ToolTray, rect) && Mathf.Min(rect.width, rect.height) >= 44f,
+                Assert(Contains(layout.ContextTray, rect) && Mathf.Min(rect.width, rect.height) >= 44f,
                     "tool target is clipped or undersized: " + index);
                 Assert(!previous.HasValue || !previous.Value.Overlaps(rect),
                     "tool targets overlap: " + index);
@@ -148,12 +277,14 @@ namespace FruitDefense.Editor
                 previous = rect;
             }
 
-            Assert(Contains(layout.BattleSurface, layout.Board)
-                && Contains(layout.BattleSurface, layout.ToolTray)
-                && Contains(layout.BattleSurface, layout.NurseryTray)
-                && Contains(layout.BattleSurface, layout.RefreshAction)
-                && Contains(layout.BattleSurface, layout.Detail),
-                "embedded Battle chrome leaves the Battle surface");
+            Assert(Approximately(layout.BattleStage, layout.Board)
+                && Contains(layout.ContextTray, layout.Tool(0))
+                && Contains(layout.ContextTray, layout.DetailTitle)
+                && Contains(layout.ContextTray, layout.DetailBody)
+                && Contains(layout.ContextTray, layout.DetailCloseAction)
+                && !layout.ContextTray.Overlaps(layout.NurseryTray)
+                && !layout.NurseryTray.Overlaps(layout.RefreshAction),
+                "stage and mutually exclusive context anatomy lost authority");
             Assert(layout.Battlefield.ValidateControlInset(out var controlReason),
                 "wave target crossed battlefield interaction geometry: " + controlReason);
 
@@ -185,10 +316,10 @@ namespace FruitDefense.Editor
             Assert(Approximately(clamped.center, new Vector2(24f, 850f)),
                 "drag preview clamp changed");
             var mergeHint = layout.MergeHint(new Rect(180f, 180f, 48f, 48f), 118f);
-            Assert(Approximately(mergeHint, new Rect(135f, 232f, 138f, 24f)),
+            Assert(Approximately(mergeHint, new Rect(125f, 232f, 158f, 24f)),
                 "merge hint geometry changed");
             Assert(Approximately(BattleUiLayout.CueBadge(layout.Tool(0)),
-                    new Rect(18f, 606f, 28f, 28f))
+                    new Rect(18f, 634f, 28f, 28f))
                 && Contains(layout.Tool(0), BattleUiLayout.CueBadge(layout.Tool(0)))
                 && Contains(mergeHint, BattleUiLayout.CueLabel(mergeHint)),
                 "drop/state cue escaped the authoritative target rectangle");
@@ -286,13 +417,21 @@ namespace FruitDefense.Editor
                     BattleUiDropCue.Swap) == RuntimeUiIndicatorKind.Swap,
                 "finite legal/illegal/merge/swap cues changed");
             Assert(BattleUiPresentationState.ResolveTransientStatusState(
-                    true, BattleUiDropCue.None) == RuntimeUiInteractionState.Success
+                    RuntimeUiInteractionState.Normal, BattleUiDropCue.None)
+                    == RuntimeUiInteractionState.Normal
                 && BattleUiPresentationState.ResolveTransientStatusState(
-                    false, BattleUiDropCue.None) == RuntimeUiInteractionState.Error
+                    RuntimeUiInteractionState.Error, BattleUiDropCue.None)
+                    == RuntimeUiInteractionState.Error
                 && BattleUiPresentationState.ResolveTransientStatusState(
-                    true, BattleUiDropCue.Swap)
+                    RuntimeUiInteractionState.Success, BattleUiDropCue.Swap)
                     == RuntimeUiInteractionState.Selected,
                 "transient status semantic state changed");
+            Assert(BattleUiPresentationState.FormatTransientStatus(true, "水果已放回刷新栏")
+                    == "✓ 水果已放回刷新栏"
+                && BattleUiPresentationState.FormatTransientStatus(false,
+                    "目标植物移动冷却 10.0 秒")
+                    == "! 目标植物移动冷却 10.0 秒",
+                "transient status uses the finite real success/error prefixes");
         }
 
         private static void ValidateBetweenWaveSingleLineText(BattleUiLayout layout)
@@ -352,8 +491,8 @@ namespace FruitDefense.Editor
                 inset.Scale, "402 inset ten-second status");
 
             Assert(Approximately(layout.BoardStatusWithWaveAction,
-                    new Rect(16f, 522f, 186f, 48f))
-                && Approximately(layout.WaveAction, new Rect(210f, 526f, 184f, 44f)),
+                    new Rect(16f, 544f, 190f, 48f))
+                && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
                 "between-wave draw/hit rectangles changed while fixing text clipping");
         }
 
@@ -373,10 +512,10 @@ namespace FruitDefense.Editor
                 "已取消扩建",
                 "拖拽已取消，物品返回原位",
                 "已取消拖拽，物品返回原位",
-                "请把场上水果拖到空苗圃位",
-                "点击只查看信息；请把场上水果拖到空苗圃位",
-                "请把苗圃水果拖到花盆种植",
-                "点击只查看信息；请拖动向日葵到花盆",
+                "拖动场上水果到这里",
+                "将选中水果拖到这里",
+                "拖动苗圃水果到这里",
+                "将向日葵拖到这里",
                 plantDetail,
                 "正在查看向日葵；拖动到花盆种植",
                 "刷新完成：水果 0 株，花盆×5 已入库",
@@ -478,6 +617,34 @@ namespace FruitDefense.Editor
                     "402 inset transient status second line: " + message);
             }
 
+            var guidanceMessages = new[]
+            {
+                "拖动场上水果到这里",
+                "将选中水果拖到这里",
+                "拖动苗圃水果到这里",
+                "将向日葵拖到这里",
+            };
+            for (var index = 0; index < guidanceMessages.Length; index++)
+            {
+                var guidance = guidanceMessages[index];
+                var mode = RuntimeUiGui.ResolveStatusTextMode(context, statusRect,
+                    guidance, RuntimeUiInteractionState.Normal,
+                    RuntimeUiTypographyRole.Supplemental);
+                var guidanceLayout = RuntimeUiGui.ResolveStatusTextLayout(context, statusRect,
+                    RuntimeUiInteractionState.Normal,
+                    RuntimeUiTypographyRole.Supplemental, mode);
+                Assert(mode == RuntimeUiStatusTextMode.SingleLine
+                        && !guidanceLayout.HasIndicator,
+                    "destination guidance must remain neutral, indicator-free, and single-line: "
+                    + guidance);
+                AssertSingleLineFits(guidanceLayout.Style, guidance,
+                    guidanceLayout.FirstLineRect.size, full.Scale,
+                    "402 full destination guidance: " + guidance);
+                AssertSingleLineFits(guidanceLayout.Style, guidance,
+                    guidanceLayout.FirstLineRect.size, inset.Scale,
+                    "402 inset destination guidance: " + guidance);
+            }
+
             var plantMode = RuntimeUiGui.ResolveStatusTextMode(context, statusRect,
                 plantDetail, RuntimeUiInteractionState.Success,
                 RuntimeUiTypographyRole.Supplemental);
@@ -490,8 +657,8 @@ namespace FruitDefense.Editor
                     && plantLines.HasSecondLine
                     && plantLines.FirstLine + plantLines.SecondLine == plantDetail,
                 "plant-detail product copy must remain complete and render on two lines");
-            Assert(Approximately(statusRect, new Rect(16f, 522f, 186f, 48f))
-                    && Approximately(layout.WaveAction, new Rect(210f, 526f, 184f, 44f)),
+            Assert(Approximately(statusRect, new Rect(16f, 544f, 190f, 48f))
+                    && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
                 "transient status fix changed board status or wave-action draw/hit geometry");
         }
 
@@ -520,19 +687,18 @@ namespace FruitDefense.Editor
 
         private static void ValidateSharedChromeSource()
         {
-            var sourcePath = Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs");
-            var source = File.ReadAllText(sourcePath);
+            var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             var header = MethodSlice(source,
                 "private void DrawHeader(", "private void DrawBoard(");
             var status = MethodSlice(source,
                 "private void DrawBoardStatus(", "private void DrawEmbeddedBattleControls(");
 
-            Assert(header.Contains("RuntimeUiGui.DrawRaisedPanel")
+            Assert(header.Contains("RuntimeUiGui.DrawStandardPanel")
                 && header.Contains("RuntimeUiGui.DrawMetric")
                 && header.Contains("RuntimeUiGui.DrawMetricDivider")
                 && header.Contains("TrackBattleAction(")
-                && header.Contains("RuntimeUiGui.DrawActionVisual")
+                && header.Contains("RuntimeUiGui.DrawCompactControlVisual")
+                && !header.Contains("RuntimeUiActionKind.Quiet")
                 && header.Contains("_game.TogglePause()")
                 && header.Contains("_game.SetSpeed(")
                 && status.Contains("RuntimeUiGui.DrawStatus")
@@ -548,9 +714,7 @@ namespace FruitDefense.Editor
                 && source.Contains("_runtimeUiDrawContext = RuntimeUiGui.RequireContext"),
                 "header/status slice is not bound to the cached shared visual system");
 
-            var sharedSourcePath = Path.Combine(
-                Application.dataPath, "Scripts/UI/RuntimeUiGui.cs");
-            var sharedSource = File.ReadAllText(sharedSourcePath);
+            var sharedSource = RuntimeUiSourceAuthority.ReadRuntimeGui();
             Assert(sharedSource.Contains("public GUIStyle SingleLineText(")
                 && sharedSource.Contains("public GUIStyle CompactTwoLineText(")
                 && sharedSource.Contains("wordWrap = false")
@@ -561,9 +725,9 @@ namespace FruitDefense.Editor
                 "shared action text is not explicitly bound to the cached single-line style");
 
             Assert(source.Contains("\"拖动可移动或合成\"")
-                && source.Contains("\"正在查看\" + GameConfig.Plant(plant.Kind).Name + \"；\" + verb")
-                && !source.Contains("(success ? \"✓ \" : \"! \")"),
-                "Battle transient product copy changed or decorative status prefix returned");
+                && source.Contains("\"正在查看\" + PlantDisplayName(_game, plant) + \"；\" + verb")
+                && source.Contains("BattleUiPresentationState.FormatTransientStatus"),
+                "Battle transient product copy or shared status-prefix formatter changed");
 
             var legacyTokens = new[]
             {
@@ -580,9 +744,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateSharedControlSource()
         {
-            var sourcePath = Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs");
-            var source = File.ReadAllText(sourcePath);
+            var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             var controls = MethodSlice(source,
                 "private void DrawEmbeddedBattleControls(",
                 "private void RefreshNurseryFromUi(");
@@ -591,17 +753,23 @@ namespace FruitDefense.Editor
 
             Assert(controls.Contains("RuntimeUiGui.DrawStandardPanel")
                 && controls.Contains("RuntimeUiGui.DrawSlot")
-                && controls.Contains("RuntimeUiGui.DrawAction")
-                && controls.Contains("RuntimeUiGui.DrawText")
+                && controls.Contains("RuntimeUiGui.DrawActionVisual")
+                && controls.Contains("RuntimeUiGui.DrawSingleLineText")
+                && controls.Contains("if (_game.PlantById(_inspectedPlantId) == null)")
+                && controls.Contains("DrawSelectedPlant(layout, drawContext)")
+                && !controls.Contains("RuntimeUiGui.DrawText")
                 && controls.Contains("RuntimeUiArtSlot.IconToolPot")
                 && controls.Contains("RuntimeUiArtSlot.IconControlRefresh")
                 && controls.Contains("DrawSharedHitTarget")
                 && dragGhost.Contains("RuntimeUiGui.DrawStandardPanel")
-                && dragGhost.Contains("RuntimeUiGui.DrawText")
+                && dragGhost.Contains("RuntimeUiGui.DrawSingleLineText")
+                && !dragGhost.Contains("RuntimeUiGui.DrawText")
                 && dragGhost.Contains("DrawDropCue")
                 && source.Contains("BattleUiPresentationState.DropIndicatorKind")
                 && !source.Contains("DropHighlightColor")
-                && !source.Contains("IsCurrentDropTarget"),
+                && !source.Contains("IsCurrentDropTarget")
+                && !source.Contains("BattleSurface")
+                && !source.Contains("ToolTray"),
                 "tool/nursery/drag/status slice is not bound to finite shared components");
 
             var legacyTokens = new[]
@@ -620,9 +788,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateSharedDetailAndOverlaySource()
         {
-            var sourcePath = Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs");
-            var source = File.ReadAllText(sourcePath);
+            var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             var detail = MethodSlice(source,
                 "private void DrawSelectedPlant(", "private void DrawDragGhost(");
             var overlay = MethodSlice(source,
@@ -630,7 +796,9 @@ namespace FruitDefense.Editor
 
             Assert(detail.Contains("RuntimeUiGui.DrawDetailCard")
                 && detail.Contains("RuntimeUiGui.DrawSingleLineText")
-                && detail.Contains("RuntimeUiGui.DrawAction")
+                && detail.Contains("RuntimeUiGui.DrawCompactControlVisual")
+                && detail.Contains("RuntimeUiCompactControlVisualSample.Inactive")
+                && detail.Contains("TrackBattleAction(")
                 && detail.Contains("RuntimeUiArtSlot.IconControlClose")
                 && detail.Contains("_inspectedPlantId = -1"),
                 "plant-detail slice is not bound to the shared detail component");
@@ -663,9 +831,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateLegacyBattleUiRemoval()
         {
-            var sourcePath = Path.Combine(
-                Application.dataPath, "Scripts/FruitDefenseGame.cs");
-            var source = File.ReadAllText(sourcePath);
+            var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             var viewportChrome = MethodSlice(source,
                 "private void OnGUI(", "private void HandleDragInput(");
             var boardChrome = MethodSlice(source,
@@ -681,13 +847,27 @@ namespace FruitDefense.Editor
                 && viewportChrome.IndexOf(ScreenBackgroundToken,
                     firstScreenBackground + ScreenBackgroundToken.Length,
                     System.StringComparison.Ordinal) < 0
+                && viewportChrome.Contains("var outerMatrix = GUI.matrix")
+                && viewportChrome.Contains("finally")
+                && viewportChrome.Contains("GUI.matrix = outerMatrix")
                 && viewportChrome.Contains("new Rect(0f, 0f, Screen.width, Screen.height)")
                 && firstScreenBackground < viewportChrome.IndexOf(
                     "GUI.matrix = viewportLayout.GuiMatrix", System.StringComparison.Ordinal)
                 && !viewportChrome.Contains("DrawWorldRect")
-                && boardChrome.Contains("RuntimeUiGui.DrawStandardPanel")
+                && boardChrome.Contains("RuntimeUiGui.DrawGameplayStage")
                 && !boardChrome.Contains("DrawWorldRect"),
                 "screen background must draw exactly once in identity viewport space before Battle chrome");
+
+            var removedSimulationViewTokens = new[]
+            {
+                "plant.Kind", "plant.Weapon", "zombie.Kind",
+                "zombie.SlowUntil", "zombie.FreezeUntil", "zombie.IceHits",
+                "zombie.Burns", "projectile.Kind", "LegacyBattleContentIds",
+                ".ContentId",
+            };
+            foreach (var token in removedSimulationViewTokens)
+                Assert(!source.Contains(token),
+                    "Battle presentation reads a removed simulation mirror: " + token);
 
             var removedTokens = new[]
             {
@@ -742,10 +922,19 @@ namespace FruitDefense.Editor
                 && Mathf.Abs(left.y - right.y) <= .001f;
         }
 
+        private static Rect SnapDeviceRect(Rect rect)
+        {
+            return Rect.MinMaxRect(Mathf.Round(rect.xMin), Mathf.Round(rect.yMin),
+                Mathf.Round(rect.xMax), Mathf.Round(rect.yMax));
+        }
+
         private static bool Contains(Rect outer, Rect inner)
         {
-            return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin
-                && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;
+            var tolerance = RuntimeUiQualityProfile.GeometryTolerance;
+            return inner.xMin >= outer.xMin - tolerance
+                && inner.yMin >= outer.yMin - tolerance
+                && inner.xMax <= outer.xMax + tolerance
+                && inner.yMax <= outer.yMax + tolerance;
         }
 
         private static void Assert(bool condition, string message)

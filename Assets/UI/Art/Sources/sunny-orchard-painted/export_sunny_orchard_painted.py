@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Export approved painted masters without generating any artwork.
 
-The script only downsamples reviewed RGBA masters, validates the finite runtime
-contract, and writes the ownership manifest. It intentionally contains no
-shape, icon, ornament, or palette drawing code.
+The script downsamples reviewed RGBA masters, normalizes action-glyph RGB to a
+neutral white alpha-mask contract, validates the finite runtime contract, and
+writes the ownership manifest. It intentionally contains no shape, icon,
+ornament, or palette drawing code.
 """
 
 from __future__ import annotations
@@ -12,8 +13,10 @@ import hashlib
 import json
 import math
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import median
 
 from PIL import Image, ImageChops, ImageDraw
 
@@ -24,6 +27,44 @@ SOURCE_SCALE = 2.0
 OPTICAL_ALPHA_THRESHOLD = 48
 MICRO_ALPHA_CLEANUP_THRESHOLD = 96
 ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
+PROMPT_RECORD_PATH = (
+    "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json")
+IMAGEGEN_OUTPUTS = {
+    "icon.control-pause": "exec-2e5b3dbb-dc58-41a6-94b8-0d7eba8ad9d6.png",
+    "icon.control-continue": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
+    "icon.control-start-wave": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
+    "icon.control-start": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
+    "icon.control-speed": "exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png",
+    "icon.control-close": "exec-344e3cd7-8d96-42e7-8065-7eddad406700.png",
+    "action.compact-control": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
+    "action.compact-control-active": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
+}
+
+ACTION_GLYPH_IDS = {
+    "icon.control-pause",
+    "icon.control-continue",
+    "icon.control-start-wave",
+    "icon.control-start",
+    "icon.control-speed",
+    "icon.control-retry",
+    "icon.control-return",
+    "icon.control-close",
+    "icon.control-refresh",
+}
+SEMANTIC_CONTAINER_TARGETS = {
+    "action.primary": (0x43, 0x6C, 0x15),
+    "action.danger": (0x9F, 0x30, 0x2B),
+}
+CONTENT_REFERENCE_RGB = (0xFF, 0xF6, 0xE0)
+MINIMUM_CONTENT_CONTRAST = 4.5
+PLACEMENT_NORMALIZED_ACTION_GLYPH_IDS = {
+    "icon.control-pause",
+    "icon.control-continue",
+    "icon.control-start-wave",
+    "icon.control-start",
+    "icon.control-speed",
+    "icon.control-close",
+}
 
 
 @dataclass(frozen=True)
@@ -93,11 +134,33 @@ SLOTS = (
          "icon-resource-wave"),
     Slot(52, "illustration-shell-orchard-depth", "illustration.shell-orchard-depth",
          "stretch"),
+    Slot(53, "action-compact-control", "action.compact-control", "nine-slice"),
+    Slot(54, "action-compact-control-active", "action.compact-control-active",
+         "nine-slice"),
+    Slot(55, "surface-gameplay-stage", "surface.gameplay-stage", "nine-slice"),
 )
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+
+def save_png(image: Image.Image, path: Path) -> None:
+    """Atomically replace a PNG, tolerating brief Windows asset-scanner locks."""
+    temporary = path.with_name(path.name + ".exporting")
+    image.save(temporary, format="PNG", optimize=True, compress_level=9)
+    try:
+        for attempt in range(40):
+            try:
+                temporary.replace(path)
+                return
+            except OSError:
+                if attempt == 39:
+                    raise
+                time.sleep(0.05)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 def target_size(slot: Slot) -> tuple[int, int]:
@@ -122,7 +185,7 @@ def target_size(slot: Slot) -> tuple[int, int]:
 
 
 def subdirectory(slot: Slot) -> str:
-    if slot.index <= 16 or slot.index in (41, 42):
+    if slot.index <= 16 or slot.index in (41, 42, 53, 54, 55):
         return "surfaces"
     if slot.index in (40, 43, 44):
         return "ornaments"
@@ -147,6 +210,153 @@ def safe_inset(slot: Slot) -> int:
     if slot.geometry == "icon":
         return 12
     return 0
+
+
+def slice_border(slot: Slot) -> int:
+    if slot.index == 55:
+        return 20
+    return 32 if slot.geometry == "nine-slice" else 0
+
+
+def neutralize_action_glyph(image: Image.Image) -> Image.Image:
+    """Preserve every alpha byte while making visible RGB a pure-white mask."""
+    rgba = image.convert("RGBA")
+    neutral = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
+    neutral.putdata([
+        (255, 255, 255, alpha) if alpha else (0, 0, 0, 0)
+        for alpha in rgba.getchannel("A").get_flattened_data()
+    ])
+    return neutral
+
+
+def normalize_action_glyph_master(path: Path) -> None:
+    """Normalize a PNG master in place without changing canvas or alpha."""
+    with Image.open(path) as source:
+        rgba = source.convert("RGBA")
+    alpha_before = rgba.getchannel("A").tobytes()
+    normalized = neutralize_action_glyph(rgba)
+    if normalized.getchannel("A").tobytes() != alpha_before:
+        raise RuntimeError(f"Action-glyph alpha changed during normalization: {path}")
+    save_png(normalized, path)
+
+
+def mark_tintable_import_meta(meta_path: Path) -> None:
+    """Record the mask contract without changing importer geometry or GUID."""
+    text = meta_path.read_text(encoding="utf-8")
+    marker = "render=tintable-action-glyph;neutral-rgb=FFFFFF"
+    match = re.search(r"(?m)^(\s*userData:)\s*(.*)$", text)
+    if match is None:
+        raise RuntimeError(f"No userData field in action-glyph meta: {meta_path}")
+    current = match.group(2).strip()
+    if marker not in current:
+        updated = current + (";" if current else "") + marker
+        text = text[:match.start(2)] + updated + text[match.end(2):]
+        meta_path.write_text(text, encoding="utf-8")
+
+
+def validate_neutral_action_glyph(image: Image.Image, path: Path) -> None:
+    for red, green, blue, alpha in image.convert("RGBA").get_flattened_data():
+        expected = (255, 255, 255) if alpha else (0, 0, 0)
+        if (red, green, blue) != expected:
+            raise RuntimeError(
+                f"Action glyph is not a clean white alpha mask: {path}")
+
+
+def is_semantic_container_ink(semantic_id: str, pixel: tuple[int, int, int, int]) -> bool:
+    red, green, blue, alpha = pixel
+    if alpha < 192:
+        return False
+    if semantic_id == "action.primary":
+        return green >= red * 1.2 and green >= blue * 1.5
+    if semantic_id == "action.danger":
+        return red >= green * 1.4 and red >= blue * 1.2
+    return False
+
+
+def normalize_semantic_container_master(
+        image: Image.Image, semantic_id: str) -> Image.Image:
+    """Re-anchor painted container ink while preserving texture deltas and alpha."""
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    content = rgba.crop((width // 4, height // 4, width * 3 // 4, height * 3 // 4))
+    samples = [pixel for pixel in content.get_flattened_data()
+               if is_semantic_container_ink(semantic_id, pixel)]
+    if not samples:
+        raise RuntimeError(f"No semantic container ink found for {semantic_id}")
+    anchor = tuple(round(median(pixel[channel] for pixel in samples))
+                   for channel in range(3))
+    target = SEMANTIC_CONTAINER_TARGETS[semantic_id]
+    delta = tuple(target[channel] - anchor[channel] for channel in range(3))
+    normalized = []
+    for pixel in rgba.get_flattened_data():
+        red, green, blue, alpha = pixel
+        if is_semantic_container_ink(semantic_id, pixel):
+            red = min(255, max(0, red + delta[0]))
+            green = min(255, max(0, green + delta[1]))
+            blue = min(255, max(0, blue + delta[2]))
+        normalized.append((red, green, blue, alpha))
+    result = Image.new("RGBA", rgba.size)
+    result.putdata(normalized)
+    if result.getchannel("A").tobytes() != rgba.getchannel("A").tobytes():
+        raise RuntimeError(f"Semantic container alpha changed: {semantic_id}")
+    return result
+
+
+def normalize_semantic_container_master_file(path: Path, semantic_id: str) -> None:
+    with Image.open(path) as source:
+        rgba = source.convert("RGBA")
+    normalized = normalize_semantic_container_master(rgba, semantic_id)
+    if normalized.tobytes() != rgba.tobytes():
+        save_png(normalized, path)
+
+
+def mark_semantic_container_import_meta(meta_path: Path, semantic_id: str) -> None:
+    text = meta_path.read_text(encoding="utf-8")
+    role = semantic_id.removeprefix("action.")
+    target = SEMANTIC_CONTAINER_TARGETS[semantic_id]
+    marker = (f"container={role};target-rgb={target[0]:02X}{target[1]:02X}{target[2]:02X}"
+              f";content-reference=FFF6E0;minimum-contrast=4.5")
+    match = re.search(r"(?m)^(\s*userData:)\s*(.*)$", text)
+    if match is None:
+        raise RuntimeError(f"No userData field in container meta: {meta_path}")
+    current = match.group(2).strip()
+    if marker not in current:
+        updated = current + (";" if current else "") + marker
+        text = text[:match.start(2)] + updated + text[match.end(2):]
+        meta_path.write_text(text, encoding="utf-8")
+
+
+def linear_channel(channel: int) -> float:
+    value = channel / 255.0
+    return value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+
+
+def relative_luminance(rgb: tuple[int, int, int]) -> float:
+    return (0.2126 * linear_channel(rgb[0])
+            + 0.7152 * linear_channel(rgb[1])
+            + 0.0722 * linear_channel(rgb[2]))
+
+
+def contrast_ratio(first: tuple[int, int, int], second: tuple[int, int, int]) -> float:
+    light, dark = sorted((relative_luminance(first), relative_luminance(second)),
+                         reverse=True)
+    return (light + 0.05) / (dark + 0.05)
+
+
+def content_region_min_contrast(image: Image.Image, semantic_id: str) -> float:
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    content = rgba.crop((width // 4, height // 4, width * 3 // 4, height * 3 // 4))
+    ratios = [contrast_ratio(CONTENT_REFERENCE_RGB, pixel[:3])
+              for pixel in content.get_flattened_data()
+              if is_semantic_container_ink(semantic_id, pixel)]
+    if not ratios:
+        raise RuntimeError(f"No runtime content pixels found for {semantic_id}")
+    minimum = min(ratios)
+    if minimum < MINIMUM_CONTENT_CONTRAST:
+        raise RuntimeError(
+            f"{semantic_id} content contrast {minimum:.3f}:1 is below 4.5:1")
+    return minimum
 
 
 def alpha_safe_resize(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -175,7 +385,11 @@ def alpha_safe_resize(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     return result
 
 
-def fit_alpha_content(image: Image.Image, size: tuple[int, int], padding: int) -> Image.Image:
+def fit_alpha_content(
+        image: Image.Image,
+        size: tuple[int, int],
+        padding: int,
+        offset_adjust: tuple[int, int] = (0, 0)) -> Image.Image:
     """Tight-crop transparent art, then scale uniformly into a fixed-aspect canvas."""
     rgba = image.convert("RGBA")
     bbox = rgba.getchannel("A").getbbox()
@@ -187,7 +401,8 @@ def fit_alpha_content(image: Image.Image, size: tuple[int, int], padding: int) -
     fitted_size = (max(1, round(crop.width * scale)), max(1, round(crop.height * scale)))
     fitted = alpha_safe_resize(crop, fitted_size)
     canvas = Image.new("RGBA", size, (0, 0, 0, 0))
-    offset = ((size[0] - fitted.width) // 2, (size[1] - fitted.height) // 2)
+    offset = ((size[0] - fitted.width) // 2 + offset_adjust[0],
+              (size[1] - fitted.height) // 2 + offset_adjust[1])
     canvas.alpha_composite(fitted, offset)
     return canvas
 
@@ -327,7 +542,7 @@ def normalize_target_import_meta(
     this exporter focused on sizing and metadata, while preserving each new PNG's
     Unity GUID across repeated exports.
     """
-    if slot.index < 49:
+    if not 49 <= slot.index <= 52:
         return
     meta_path = runtime_path.with_suffix(".png.meta")
     if not meta_path.exists():
@@ -353,6 +568,64 @@ def normalize_target_import_meta(
         + ";target-size=" + str(target_size(slot)[0]) + "x"
         + str(target_size(slot)[1]), normalized)
     meta_path.write_text(normalized, encoding="utf-8")
+
+
+def stable_guid(scope: str, semantic_id: str) -> str:
+    return hashlib.md5(
+        f"{SET_ID}:{scope}:{semantic_id}".encode("utf-8")).hexdigest()
+
+
+def ensure_generated_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    """Create stable source/runtime importer metadata for newly authored slots."""
+    if slot.index not in (53, 54, 55):
+        return
+    folder = subdirectory(slot)
+    source_path = source_root / folder / f"{source_stem(slot)}.png"
+    runtime_path = runtime_root / folder / f"{slot.stem}.png"
+    if not source_path.is_file():
+        raise RuntimeError(f"Missing imagegen master: {source_path}")
+
+    source_meta = source_path.with_suffix(".png.meta")
+    if not source_meta.exists():
+        source_template = source_root / "surfaces/action-quiet.png.meta"
+        text = source_template.read_text(encoding="utf-8")
+        text = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                      "guid: " + stable_guid("source", slot.semantic_id), text)
+        text = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+                      r"\g<1> 2048", text)
+        provenance = ("generated=built-in-imagegen" if slot.index in (53, 54)
+                      else "authored=deterministic-vector")
+        text = re.sub(
+            r"(?m)^\s*userData:.*$",
+            "  userData: ui-art-source=" + SET_ID + ";slot=" + slot.semantic_id
+            + ";" + provenance, text)
+        source_meta.write_text(text, encoding="utf-8")
+
+    runtime_meta = runtime_path.with_suffix(".png.meta")
+    if not runtime_meta.exists():
+        runtime_template = runtime_root / "surfaces/action-quiet.png.meta"
+        text = runtime_template.read_text(encoding="utf-8")
+        text = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                      "guid: " + stable_guid("runtime", slot.semantic_id), text)
+        text = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+                      r"\g<1> " + str(max(target_size(slot))), text)
+        sprite_id = hashlib.sha256(
+            f"{SET_ID}:{slot.semantic_id}:sprite".encode("utf-8")).hexdigest()[:32]
+        text = re.sub(r"(?m)^(\s*spriteID:)\s*[0-9a-f]*\s*$",
+                      r"\g<1> " + sprite_id, text)
+        border = slice_border(slot)
+        text = re.sub(
+            r"(?m)^\s*spriteBorder:.*$",
+            "  spriteBorder: {x: " + str(border) + ", y: " + str(border)
+            + ", z: " + str(border) + ", w: " + str(border) + "}", text)
+        provenance = ("generated=built-in-imagegen" if slot.index in (53, 54)
+                      else "authored=deterministic-vector")
+        text = re.sub(
+            r"(?m)^\s*userData:.*$",
+            "  userData: ui-art-set=" + SET_ID + ";slot=" + slot.semantic_id
+            + ";source-scale=2;" + provenance, text)
+        runtime_meta.write_text(text, encoding="utf-8")
 
 
 def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
@@ -416,15 +689,32 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
     if not runtime_path.with_suffix(".png.meta").is_file():
         raise RuntimeError(f"Missing stable runtime meta: {runtime_path}.meta")
 
+    if slot.semantic_id in ACTION_GLYPH_IDS:
+        normalize_action_glyph_master(source_path)
+        mark_tintable_import_meta(source_path.with_suffix(".png.meta"))
+        mark_tintable_import_meta(runtime_path.with_suffix(".png.meta"))
+    if slot.semantic_id in SEMANTIC_CONTAINER_TARGETS:
+        normalize_semantic_container_master_file(source_path, slot.semantic_id)
+        mark_semantic_container_import_meta(
+            source_path.with_suffix(".png.meta"), slot.semantic_id)
+        mark_semantic_container_import_meta(
+            runtime_path.with_suffix(".png.meta"), slot.semantic_id)
+
     with Image.open(source_path) as source:
         rgba = source.convert("RGBA")
         size = target_size(slot)
-        if 11 <= slot.index <= 14:
+        if 11 <= slot.index <= 14 or slot.index in (53, 54):
             exported = normalize_action_surface(rgba)
         elif 49 <= slot.index <= 51:
             exported = normalize_micro_icon(rgba)
         elif slot.index == 52:
             exported = cover_crop(rgba, size)
+        elif slot.semantic_id in PLACEMENT_NORMALIZED_ACTION_GLYPH_IDS:
+            optical_x = (7 if slot.semantic_id in {
+                "icon.control-continue", "icon.control-start-wave", "icon.control-start"
+            } else 4 if slot.semantic_id == "icon.control-speed" else 0)
+            exported = fit_alpha_content(
+                clear_low_alpha_fringe(rgba), size, 17, (optical_x, 0))
         elif slot.index in (43, 44):
             exported = fit_alpha_content(rgba, size, 4 if slot.index == 43 else 8)
         else:
@@ -456,14 +746,19 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         # A second pass is required after the optional icon safe-box resize,
         # whose Lanczos ringing can otherwise recreate an alpha-1 key pixel.
         post_resize_bbox = (alpha_bbox(exported)
-                            if slot.geometry == "icon" and slot.index < 49 else None)
+                            if slot.geometry == "icon"
+                            and slot.index < 49
+                            else None)
         if (post_resize_bbox is not None
                 and (post_resize_bbox[0] < 12 or post_resize_bbox[1] < 12
                      or post_resize_bbox[2] > 84 or post_resize_bbox[3] > 84)):
             exported = clear_icon_safe_edge(exported)
         exported = clear_visible_key_magenta(exported)
+        if slot.semantic_id in ACTION_GLYPH_IDS:
+            exported = neutralize_action_glyph(exported)
+            validate_neutral_action_glyph(exported, runtime_path)
         runtime_path.parent.mkdir(parents=True, exist_ok=True)
-        exported.save(runtime_path, format="PNG", optimize=True, compress_level=9)
+        save_png(exported, runtime_path)
 
     with Image.open(runtime_path) as runtime:
         rgba = runtime.convert("RGBA")
@@ -475,8 +770,11 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             raise RuntimeError("Scrim must remain neutral opaque white")
         if slot.geometry == "icon" and slot.index < 49:
             bbox = alpha_bbox(rgba)
-            if bbox is None or bbox[0] < 12 or bbox[1] < 12 or bbox[2] > 84 or bbox[3] > 84:
-                raise RuntimeError(f"Icon exceeds 12 px safe inset: {runtime_path} {bbox}")
+            inset = 12
+            if (bbox is None or bbox[0] < inset or bbox[1] < inset
+                    or bbox[2] > 96 - inset or bbox[3] > 96 - inset):
+                raise RuntimeError(
+                    f"Icon exceeds {inset} px safe inset: {runtime_path} {bbox}")
         if 49 <= slot.index <= 51:
             bbox = significant_alpha_bbox(rgba)
             if bbox is None or bbox[0] < 1 or bbox[1] < 1 or bbox[2] > 17 or bbox[3] > 17:
@@ -486,7 +784,15 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
                 raise RuntimeError(f"Micro icon under-fills target canvas: {runtime_path} {bbox}")
         if slot.index == 52 and rgba.getchannel("A").getextrema() != (255, 255):
             raise RuntimeError("Shell orchard depth illustration must be fully opaque")
-        if 11 <= slot.index <= 14:
+        if slot.index == 55:
+            bbox = significant_alpha_bbox(rgba)
+            if bbox != (8, 8, 116, 120):
+                raise RuntimeError(
+                    f"Gameplay stage bbox must be [8,8,116,120): {runtime_path} {bbox}")
+            if rgba.getpixel((64, 64))[3] != 0 or rgba.getpixel((0, 0))[3] != 0:
+                raise RuntimeError(
+                    "Gameplay stage must keep its center and outer corners transparent")
+        if 11 <= slot.index <= 14 or slot.index in (53, 54):
             bbox = significant_alpha_bbox(rgba)
             if bbox != (4, 4, 124, 124):
                 raise RuntimeError(
@@ -494,6 +800,10 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         if any(alpha > 0 and (red, green, blue) == (255, 0, 255)
                for red, green, blue, alpha in rgba.get_flattened_data()):
             raise RuntimeError(f"Visible key-magenta fringe: {runtime_path}")
+        if slot.semantic_id in ACTION_GLYPH_IDS:
+            validate_neutral_action_glyph(rgba, runtime_path)
+        if slot.semantic_id in SEMANTIC_CONTAINER_TARGETS:
+            content_region_min_contrast(rgba, slot.semantic_id)
 
 
 def main() -> None:
@@ -505,6 +815,7 @@ def main() -> None:
     for slot in SLOTS:
         unique.setdefault(slot.stem, slot)
     for slot in unique.values():
+        ensure_generated_import_meta(slot, source_root, runtime_root)
         export_unique(slot, source_root, runtime_root)
         runtime_path = runtime_root / subdirectory(slot) / f"{slot.stem}.png"
         normalize_target_import_meta(slot, runtime_path, runtime_root)
@@ -516,8 +827,7 @@ def main() -> None:
         runtime_path = runtime_root / folder / f"{slot.stem}.png"
         with Image.open(runtime_path) as runtime:
             measured_optical_inset = optical_inset(runtime)
-        bindings.append(
-            {
+        item = {
                 "stem": slot.stem,
                 "semantic_id": slot.semantic_id,
                 "geometry": slot.geometry,
@@ -529,13 +839,35 @@ def main() -> None:
                 "sourceSha256": sha256(source_path),
                 "runtimeSha256": sha256(runtime_path),
                 "guid": unity_guid(runtime_path.with_suffix(".png.meta")),
-                "slice_border": 32 if slot.geometry == "nine-slice" else 0,
+                "slice_border": slice_border(slot),
                 "safe_inset": safe_inset(slot),
                 "optical_inset": measured_optical_inset,
                 "pixels_per_logical_unit": pixels_per_logical_unit(slot),
                 "slot": slot.index,
             }
-        )
+        if slot.semantic_id in ACTION_GLYPH_IDS:
+            item.update({
+                "render_contract": "tintable-action-glyph",
+                "neutral_rgb": "FFFFFF",
+            })
+        if slot.semantic_id in SEMANTIC_CONTAINER_TARGETS:
+            with Image.open(runtime_path) as runtime:
+                minimum_contrast = content_region_min_contrast(
+                    runtime, slot.semantic_id)
+            target = SEMANTIC_CONTAINER_TARGETS[slot.semantic_id]
+            item.update({
+                "container_contract": "semantic-action-container",
+                "target_rgb": f"{target[0]:02X}{target[1]:02X}{target[2]:02X}",
+                "content_reference_rgb": "FFF6E0",
+                "content_region_min_contrast": round(minimum_contrast, 4),
+            })
+        if slot.semantic_id in IMAGEGEN_OUTPUTS:
+            item.update({
+                "imagegen_provider": "built-in-imagegen",
+                "imagegen_output": IMAGEGEN_OUTPUTS[slot.semantic_id],
+                "prompt_record": PROMPT_RECORD_PATH,
+            })
+        bindings.append(item)
 
     micro_images = []
     for slot in SLOTS[49:52]:
@@ -634,8 +966,7 @@ def build_gallery(source_root: Path, runtime_root: Path) -> None:
         draw.rectangle((cell_x, cell_y,
                         (column + 1) * cell_width - 1, (row + 1) * cell_height - 1),
                        outline=(139, 94, 60, 96), width=1)
-    gallery.save(review_root / "sunny-orchard-painted-53-gallery.png",
-                 format="PNG", optimize=True, compress_level=9)
+    save_png(gallery, review_root / "sunny-orchard-painted-56-gallery.png")
 
 
 if __name__ == "__main__":

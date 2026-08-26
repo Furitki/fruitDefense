@@ -43,6 +43,10 @@ status: active
 - uGUI/UI Toolkit 迁移、运行时皮肤选择器、远程资源或兼容主题。
 - 为适配美术而改变现有布局、点击区域或拖拽几何。
 
+### 2.3 后续需求入口
+
+任何新的玩家可见 UI 需求在提案或实施前，必须先读取本文和 `openspec/specs/` 下受影响的当前能力规格。默认是在既有语义、组件和验收合同上增量演进；如果新需求要改变这些标准，OpenSpec 必须明确列出保留、修改和新增的规则，并在验收后同步回本文及对应主规格。`openspec/changes/archive/` 只保存决策过程和证据，不替代当前规范。
+
 ## 3. 视觉基础
 
 ### 3.1 语义颜色
@@ -60,7 +64,9 @@ status: active
 - `scrim`：暖棕向遮罩，不能使用纯黑框住页面。
 - `text-primary`、`text-secondary`、`text-inverse`：主文字、辅助文字和深色/高彩表面的反白文字。
 
-颜色只是状态的一条线索。selected、disabled、loading、success、warning、error 和拖拽反馈还必须具有轮廓、图标、文字、透明度或形状中的至少一个非颜色线索。所有精确色值和受测前景/背景组合由 `RuntimeUiTheme` 持有。
+Action 颜色必须以 `container/content` 语义对定义，而不是让文字或图标各自携带固定颜色。至少包含 `primary.container/content`、`secondary.container/content`、`quiet.container/content`、`danger.container/content`、`mode-active.container/content` 与 `disabled.container/content`。`content` 同时约束按钮上的文字、操作图标和紧凑倍率；相同图标轮廓放到不同 container 时必须解析为对应的 content 色。
+
+颜色只是状态的一条线索。selected、mode-active、disabled、loading、success、warning、error 和拖拽反馈还必须具有轮廓、图标、文字、透明度或形状中的至少一个非颜色线索。所有精确色值和受测前景/背景组合由 `RuntimeUiTheme` 持有。按钮文字与实际渲染 container 的对比度不得低于 `4.5:1`；操作图标发布目标同样为 `4.5:1`，任何情况下不得低于 `3:1`；用于识别组件边界、焦点或状态的非文字线索不得低于 `3:1`。这些门槛按最终合成像素验证，不以源图色值或单张素材代替。
 
 ### 3.2 中文字体层级
 
@@ -78,6 +84,8 @@ status: active
 
 字体文件、精确字号、字重、行高和最小逻辑尺寸属于 `RuntimeUiTheme`。不得在 Presenter 中为了塞入 copy 临时缩小字号；应先缩短 copy、换行或调整既有布局 authority 内的内容排布。品牌字、生成图字形和系统字体不能替代项目字体覆盖验证。
 
+单行文本的 owner 高度不得小于对应 typography role 的完整 line-height；共享绘制层必须以该 line-height 建立行盒，不能缩短行盒后依赖 `Clip` 看似塞入。Battle 的标题、指标、数量、成本、星级、状态、详情和提示必须声明有限行策略与 owner；运行时 formatter 和内容目录还必须登记发布边界样本，并用真实字体、真实 action 语义和实际 viewport 投影验证。内容域扩大时，同一变更必须更新 owner、批准 copy 或受控多行 anatomy，不允许自动缩字、截断或把 clamp 视为通过。
+
 ### 3.3 四点间距节奏
 
 - 所有外边距、内边距、组件间隙和内容间隙以 4 logical point 为基础节奏，并使用 release theme 的命名 spacing token。
@@ -90,7 +98,7 @@ status: active
 
 - 形状只使用小、中、大三类语义圆角；紧凑图标控制使用小，按钮/槽位使用中，主卡片/模态使用大。
 - 泥土棕系描边保持清楚但克制；同一层级的等价组件必须使用同一 outline role。
-- 深度关系固定为 `screen background → standard panel → raised/card/action → modal/result`。
+- 深度关系固定为 `screen background → standard panel → gameplay stage / raised / card / action → modal/result`；gameplay stage 只作为页面内唯一高密度玩法锚点，不作为包裹下方控制区的外层容器。
 - 阴影只表达相邻层级：短距离、低对比、单一光向。禁止厚重倒角、强高光、玻璃拟态、金属科技光、纯黑框和与战场内容争夺注意力的装饰。
 - pressed 通过收短阴影和轻微内容位移表达，但外接框、布局矩形和点击区域不变。
 - exact radius、outline、shadow offset/opacity 由 release theme 持有；九宫格边界由 ArtSet 元数据持有。
@@ -108,6 +116,9 @@ status: active
 ### 4.2 safe area 与现有几何
 
 - `PortraitShellLayout`、`BattlefieldProjection` 及既有 Battle 交互矩形继续同时服务 draw 与 hit test。
+- Battle 的 Header 与 BattleStage 使用同一全宽 owner track，最终 WebGL 左右可见边必须对齐；Header 使用 1–2px standard outline，BattleStage 使用唯一 3–5px gameplay-stage outline。框重差来自语义槽，不得通过页面私有 rect 或局部描边补丁制造。
+- BattleStage 只包围同一个 `BattlefieldProjection`/Board。ContextTray、NurseryTray 与 RefreshAction 直接落在 page paper 的统一 8pt inset track 上，不得恢复包围 stage 与 controls 的下半页大框。
+- ContextTray 在无选择时显示工具 anatomy、选择植物时在同一 rect 显示 detail anatomy，两者互斥；NurseryTray、RefreshAction 与棋盘内 WaveAction 始终保留。RefreshAction 下缘距 safe-content 下缘必须为 8–40 logical points。
 - screen background 可以铺到可见边缘；可交互内容和必要中文必须留在 resolved safe area 内。
 - UI texture 的透明 padding 只属于视觉资源，不得扩大、缩小或偏移逻辑 rect。
 - 所有共享组件必须在 360×800、375×812、402×874、430×932 的支持竖屏尺寸，以及完整和代表性顶部/底部 inset safe area 中保持受保护边角、文字和操作目标。
@@ -121,7 +132,8 @@ status: active
 | --- | --- | --- |
 | Screen / safe-area surface | edge background、screen background、safe content frame | 背景与安全区分层明确；不出现默认 skin 或黑色框边 |
 | Standard panel | surface、outline、content inset | 承载普通内容，不用额外装饰制造假层级 |
-| Raised panel | surface、outline、shallow shadow、content inset | 顶栏和需要从背景抬起的区域；与 modal 保持层级差 |
+| Gameplay stage | transparent-center heavy frame、protected rail、authoritative Board | 页面内唯一常驻重结构框；只包围 gameplay projection，不包围 Context/Nursery/Refresh |
+| Raised panel | surface、outline、shallow shadow、content inset | 需要从 standard surface 抬起的卡片或浮层；与 modal 保持层级差，不用来给同级结构条制造不同框重 |
 | Selectable card | surface、标题/正文区、辅助信息区、selection marker | normal 与 selected 的文本排版尺寸不变；选择使用强调边与明确标记 |
 | Primary action | surface、outline、label、可选语义 icon、state cue | 每个操作组只能有清楚的主要动作；跨页面 anatomy 相同 |
 | Secondary action | surface、outline、label、state cue | 可用但优先级低于 primary，不靠减小触控区域降级 |
@@ -135,6 +147,18 @@ status: active
 | Result card | result surface、outcome 标题、metric group、action group | 胜/负共享 anatomy；结果语义由文字/图标加颜色表达 |
 
 Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/action anatomy；Lobby 与 Settlement 不得保留 Shell 专属外观；Battle 高频控件不得形成独立组件家族。
+
+### 5.1 Action 三轴合同
+
+Action 的角色、内容形态和行为类型彼此正交，页面不得通过图标名称或控件尺寸反推动作角色：
+
+- 角色：`Primary / Secondary / Quiet / Danger`，决定 container、content、outline 与视觉优先级。
+- 内容形态：文字、图标加文字、纯图标、紧凑数值，只决定排版、安全区和光学居中。
+- 行为类型：瞬时命令或持续模式，只决定是否具有 mode lifecycle，不创造新的颜色家族。
+
+典型映射为：开始波次=`Primary + 图标文字 + 瞬时命令`；刷新苗圃=`Secondary + 图标文字 + 瞬时命令`；暂停/继续=`Quiet + 纯图标 + 持续模式`；`1×/2×`=`Quiet + 紧凑数值 + 持续模式`；关闭=`Quiet + 纯图标 + 瞬时命令`。同一操作组只能有一个 Primary；准备阶段的流程推进动作不得与辅助经济操作使用相同的 Primary 外观。
+
+组件每一帧只解析一套完整视觉样式：`ButtonStyle(role, interactionState, modeState) -> container + outline + content + focus/state cue`。禁止把 active 当作第二张按钮覆盖在 inactive 按钮上；过渡只能在同一几何的语义 token 间插值或切换，不得同时暴露两套边框、两层按钮面或未经配对验证的前景色。
 
 ## 6. 完整状态矩阵
 
@@ -185,9 +209,9 @@ Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/
 
 缩写：N=`normal`、F=`hovered/focused`、P=`pressed`、S=`selected`、D=`disabled`、L=`loading/transitioning`、OK=`success`、W=`warning`、E=`error`。“可用”表示只有业务语义需要时才出现，但一旦出现必须遵守全局状态定义。
 
-## 7. 语义资源槽（finite 49）
+## 7. 语义资源槽（finite 56）
 
-下列 49 个名称是最终有限美术槽合同；序列化枚举可以使用符合代码规范的拼写，但不得合并、增删或改变语义。Presenter 只请求语义，不知道具体文件名、set ID 或路径。
+下列 56 个名称是最终有限美术槽合同；序列化枚举可以使用符合代码规范的拼写，但不得合并、增删或改变语义。Presenter 只请求语义，不知道具体文件名、set ID 或路径。
 
 ### 7.1 Surface / container
 
@@ -202,6 +226,9 @@ Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/
 - `surface.modal`
 - `surface.result`
 - `surface.scrim`
+- `surface.gameplay-stage`
+
+`surface.gameplay-stage` 是 128×128、20px slice/safe inset、透明中心的独立九宫格，只服务唯一高密度玩法锚点。它不得借用 standard/raised/illustration frame，也不得包含棋盘、文字、按钮、植物或角落大装饰。
 
 ### 7.2 Action family
 
@@ -209,8 +236,10 @@ Bootstrap 初始化、阻塞错误和重试必须复用 screen、status、modal/
 - `action.secondary`
 - `action.quiet`
 - `action.danger`
+- `action.compact-control`
+- `action.compact-control-active`
 
-四类 action 使用同一 anatomy 和状态名称。若状态需要独立 Sprite，它仍属于对应 action role；页面不能自行决定是否回退到 normal 纹理。
+四类 action role 使用同一 anatomy 和状态名称。compact 两槽是 Quiet 紧凑形态的互斥完整状态资源，不是第五种动作角色，也不得同时绘制。若状态需要独立 Sprite，它仍属于对应 action role；页面不能自行决定是否回退到 normal 纹理。
 
 ### 7.3 Slot / marker / indicator
 
@@ -258,8 +287,17 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - `illustration.lobby-orchard-01`
 - `illustration.lobby-orchard-02`
 - `illustration.lobby-orchard-03`
+- `illustration.shell-orchard-depth`
 
 这些槽只增强既有组件内部构图，不改变页面外接矩形、触控目标或流程。角饰、分隔符、横幅和插画使用显式 Icon、NineSlice 或固定宽高比 Stretch 几何；Presenter 不得按文件名猜测资源，也不得把运行时中文烘进 Sprite。
+
+### 7.6 密集 HUD 资源图标
+
+- `icon.resource-sun-micro`
+- `icon.resource-core-micro`
+- `icon.resource-wave-micro`
+
+micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可着色 action glyph；它们保持独立 optical bounds、manifest 绑定和最小尺寸验收。
 
 ## 8. 美术源文件与导出规则
 
@@ -301,7 +339,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 
 - 所有 common icon 使用同一方形逻辑 canvas、统一透明 safe inset 和统一 nominal scale；精确 canvas 与 inset 数值由 release theme/ArtSet contract 持有。
 - 主体在 safe inset 内做 optical centering；箭头、暂停条等窄形状可做视觉补偿，但外接 canvas 不变。共享排版使用 exporter 从最终运行时 PNG 生成的 optical inset 计算真实可见盒，仍绘制完整 canvas。
-- 控制图标优先使用清楚的泥土棕轮廓和有限填色；资源图标可保留可识别的果园色彩。两类都必须在最小使用尺寸下与文字同屏可辨。
+- 操作型控制图标使用单色中性母版或纯 alpha mask；轮廓语言、线重和光学尺寸属于 ArtSet，最终颜色属于当前 action 的 `content` token。禁止在操作图标中烘焙泥土棕、金色、渐变、高光、阴影或状态色。单色可着色约束只规定颜色所有权，不要求图标几何雷同；后续可以在稳定画布和家族线重内，通过剪影、负形、比例和节奏增强各动作的识别度与个性。资源/内容图标可保留可识别的果园固有色，但不得替代 action content，也不得成为唯一状态线索。
 - 图标不得包含 baked label；pause、continue、retry、return、close、warning/error 等必须仅凭形状和相邻可访问名称识别。
 - outline weight、圆角语言和阴影方向在同一 ArtSet 内一致；不得混入科技线框、照片、emoji 或系统字体符号充当 production icon。
 
@@ -337,7 +375,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 | Importer 项 | 稳定规则 |
 | --- | --- |
 | Texture Type | `Sprite (2D and UI)` |
-| Sprite Mode | `Single`；当前 49 槽合同使用 standalone FullRect Sprite，不预留 atlas/Multiple 兼容路径 |
+| Sprite Mode | `Single`；当前 56 槽合同使用 standalone FullRect Sprite，不预留 atlas/Multiple 兼容路径 |
 | Mesh Type | `Full Rect`，保留透明 padding 和九宫格边界 |
 | Color Space | 彩色 UI 使用 sRGB；数据 mask 只有在新增明确合同后才可例外 |
 | Alpha | 使用源 alpha，并启用透明边缘处理；不得烘焙不透明底色 |
@@ -381,6 +419,8 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - [ ] 一组操作没有多个互相竞争的 primary；danger 不成为默认主焦点。
 - [ ] selectable card、tool/nursery slot、metric、status、detail、modal、result 均来自共享组件合同。
 - [ ] 视觉替换没有改变 copy、命令、显隐条件、layout、draw/hit rect 或拖拽结果。
+- [ ] Action 角色、内容形态和行为类型分别解析；同一操作图标在 Primary、Secondary、Quiet、Danger 与 mode-active container 上使用对应 content 色，没有固定烘焙色泄漏。
+- [ ] 准备阶段的开始波次是所属操作组的唯一 Primary；刷新等辅助操作不与其争夺同一主操作层级。
 
 ### 11.3 状态
 
@@ -388,7 +428,9 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - [ ] tool/nursery 同时覆盖 drag-legal、drag-illegal、merge、swap。
 - [ ] selected、disabled、loading、warning、error 和拖拽反馈至少有颜色之外的第二线索。
 - [ ] pressed、loading 和状态切换不改变组件外接框；disabled/loading 不接受重复命令。
+- [ ] normal、hover/focus、pressed、mode-active 与 disabled 均使用完整且受测的 container/content 配对；active 不叠加第二张按钮面。
 - [ ] 可恢复 error 保留清楚的 recovery action；blocking modal 的 scrim 正确阻断背景输入。
+- [ ] 最终 WebGL 像素中按钮文字达到 `4.5:1`，操作图标目标达到 `4.5:1` 且绝不低于 `3:1`，必要边界、焦点与状态线索达到 `3:1`；灰度下仍能识别持续模式。
 
 ### 11.4 中文、数值与间距
 
@@ -462,12 +504,16 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - 本地发布服务对未版本化的 `index.html` 与 host 资源必须在文件原位替换后重新计算 ETag；`no-cache` 不能配合永久路径哈希缓存，否则普通刷新会继续显示旧布局。带内容哈希的 Build 文件才允许 immutable 缓存。
 - 含 icon 与 label 的 action 以实际 icon alpha ink 与字体 glyph ink 的并集作为一个视觉组；该组在 action 内两轴中心偏差均不超过 2 logical point，可见间距为 4–8，且 icon/字形距可见描边至少 4。
 - 单行标题、正文和 control label 必须先在 owner 内解析为按 typography line-height 居中的有限行盒，再应用 role-level optical offset；禁止把 fixed-height 字形盒顶锚到更高的 owner，或在页面 Presenter 中硬编码逐页 Y 补偿。
+- Header/BattleStage 必须在 owner track 与最终 WebGL 左右可见边两处一致；outline weight 按语义分层为 standard 1–2px 与唯一 gameplay-stage 3–5px。出现第二个未批准的常驻 3px+ 大框、恢复包围下半页的外框或依赖逻辑 rect 推断最终像素都直接失败。
+- Battle 的 ContextTray 必须记录 `tools` / `selected-detail` 互斥状态；验收同时记录 stage、context、nursery、refresh bounds、重框数、最终 outline band、RefreshAction 下余量和 live text containment。
+- 稳定 copy 与动态 formatter 共用同一 containment gate。资源值、成本、库存数量、星级、状态前缀与原因、合成提示、详情组合及生产内容名称的边界样本必须覆盖 360/375/402/430 full+inset；resolver 返回 clamp、owner 越界或字体 ink 越界都直接失败。
+- Battle 的结构验收同时检查 panel geometry、text-ink containment 与 occupied-content balance；不能以控件可点击或局部像素有颜色替代整体排版通过。
 - 可比较的 header/result metric 使用同一 anatomy；同组 icon center 与文字 baseline 差不超过 1 logical point，icon 可见 alpha 距 row/card 边至少 8。
 - Battle grid 的相对两侧视觉 gutter 差不超过 1 logical point；同一个 `BattlefieldProjection` 必须同时驱动绘制与 hit test，任何 chrome 调整都不得建立第二套格子或拖拽几何。
 - Lobby 与 Settlement 必须声明 intentional occupied-content bounds、重复节奏和必要留白；“全部 Rect 均 contained”不能替代页面视觉重心与下半屏完成度检查。
 - 结果 banner 若保留，必须承载有限、可测的 outcome 语义；空装饰不能占据主要信息层级。文字仍由 Noto Sans SC、有限 copy catalog 和语义 typography role 绘制，不能烘焙进美术。
 - Noto 中文覆盖、显式行策略、实际组合对比度、非颜色状态线索、九宫格完整 partition/UV、透明边与插画宽高比都属于失败即阻断的 release gate，不能通过缩字、fallback 或放宽阈值绕过。
-- active ArtSet 与每个 production candidate 都必须恰好满足 finite 49 槽及同一资源质量标准。原位更新保留路径和 `.meta` GUID；候选先隔离 preview，再单组原子激活并验证 Undo/Redo，失败保持 theme、scene、代码与布局不变。
+- active ArtSet 与每个 production candidate 都必须恰好满足 finite 56 槽及同一资源质量标准。原位更新保留路径和 `.meta` GUID；候选先隔离 preview，再单组原子激活并验证 Undo/Redo，失败保持 theme、scene、代码与布局不变。
 - 以上真实画布结论只覆盖普通 WebGL；抖音、微信或其他小游戏平台仍需各自转换、模拟器、真机与包体门禁。
 
 任何 Blocker/High、缺失有限 copy、默认 skin、回退资源、输入漂移或 release dependency 越界都必须失败关闭；不能在审查清单中作为“已知问题”保留。

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using FruitDefense.App;
 using FruitDefense.Content;
 using FruitDefense.Core;
@@ -119,9 +120,9 @@ namespace FruitDefense.Editor
             if (!validation.IsValid)
                 throw new System.InvalidOperationException(
                     "Release runtime UI theme is invalid: " + validation.Issues[0]);
-            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "1")
+            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "2")
                 throw new System.InvalidOperationException(
-                    "Release runtime UI theme identity must be ui.sunny-orchard@1.");
+                    "Release runtime UI theme identity must be ui.sunny-orchard@2.");
             if (!ReferenceEquals(runtimeUiTheme.PackagedChineseFont,
                     AssetDatabase.LoadAssetAtPath<Font>(PackagedRuntimeUiFontPath)))
                 throw new System.InvalidOperationException(
@@ -163,7 +164,7 @@ namespace FruitDefense.Editor
 
             var serializedTheme = new SerializedObject(runtimeUiTheme);
             serializedTheme.FindProperty("themeId").stringValue = "ui.sunny-orchard";
-            serializedTheme.FindProperty("revision").stringValue = "1";
+            serializedTheme.FindProperty("revision").stringValue = "2";
             serializedTheme.FindProperty("packagedChineseFont").objectReferenceValue = packagedFont;
             serializedTheme.FindProperty("activeArtSet").objectReferenceValue = artSet;
             serializedTheme.FindProperty("colors").FindPropertyRelative("primaryAction")
@@ -255,9 +256,11 @@ namespace FruitDefense.Editor
                 Assert(simulation.State.Pots.FindAll(pot => System.Linq.Enumerable.Contains(group.Cells, pot.Cell)).Count == group.InitialCount,
                     "initial pot distribution in semantic group " + group.Name);
             Assert(simulation.State.Sun == 10 && simulation.State.Lives == 10, "initial resources");
-            Assert(GameConfig.GetWave(1).Sequence.Count == 5, "wave 1 count");
-            Assert(GameConfig.GetWave(6).Sequence.Count == (9 + 5 + 2) * 3, "wave 6 count scaling");
-            Assert(Mathf.Approximately(GameConfig.WaveHpMultiplier(3), 2f), "wave health scaling");
+            Assert(simulation.Content.Waves["wave.01"].enemyIds.Length == 5, "wave 1 count");
+            Assert(simulation.Content.Waves["wave.06"].enemyIds.Length == (9 + 5 + 2) * 3,
+                "wave 6 count scaling");
+            Assert(Mathf.Approximately(simulation.Content.Waves["wave.03"].healthMultiplier, 2f),
+                "wave health scaling");
             Assert(GameConfig.PlantingCells.Count == 35 && simulation.State.Pots.Count < GameConfig.PlantingCells.Count,
                 "orchard-01 exposes 35 plantable cells with visible empty cells");
             Assert(simulation.RefreshNursery(out _), "first nursery refresh");
@@ -270,7 +273,8 @@ namespace FruitDefense.Editor
             var nurseryDrop = simulation.GetNurseryDropStatus(plant.Id, 0);
             Assert(nurseryDrop.Legal && nurseryDrop.Action == PlantDropAction.Move, "planted fruit can return to nursery");
             simulation.State.Inventory.Ice = 1;
-            Assert(simulation.GetWeaponInstallStatus(plant.Id, WeaponKind.Ice).Legal, "weapon can be dragged to plant");
+            Assert(simulation.GetEquipmentInstallStatus(plant.Id, BattleContentIds.Equipment.Ice).Legal,
+                "equipment can be dragged to plant");
             simulation.State.Inventory.Pots = 1;
             var expansion = System.Linq.Enumerable.First(GameConfig.PlantingCells, cell => simulation.CanExpand(cell));
             Assert(simulation.CanExpand(expansion), "pot can be dragged to legal expansion cell");
@@ -280,7 +284,7 @@ namespace FruitDefense.Editor
             Assert(!simulation.GetPlantDropStatus(plant.Id, otherPot.Id).Legal, "move cooldown blocks drag drop");
             var overwritten = simulation.State.Plants.Find(candidate => candidate.NurseryIndex >= 0);
             Assert(overwritten != null, "occupied nursery has a refresh replacement target");
-            overwritten.Weapon = WeaponKind.Ice;
+            overwritten.EquipmentId = BattleContentIds.Equipment.Ice;
             var iceBeforeRefresh = simulation.State.Inventory.Ice;
             simulation.State.Sun = 100;
             Assert(simulation.RefreshNursery(out _), "occupied nursery can refresh");
@@ -301,6 +305,10 @@ namespace FruitDefense.Editor
             ValidateMigrationBehavior();
             ValidateCombatActions();
             CombatFrameworkSmoke.Run();
+            BattlePresentationBoundarySmoke.Run();
+            CombatFeedbackSdfAtlasSmoke.Run();
+            CombatFeedbackSdfRenderSmoke.Run();
+            CombatFeedbackImpactRhythmSmoke.Run();
             var collisionTarget = new Rect(100f, 100f, 40f, 40f);
             var cursorOutsideTarget = new Vector2(160f, 160f);
             var preview = DragGeometry.PreviewRect(cursorOutsideTarget);
@@ -331,10 +339,14 @@ namespace FruitDefense.Editor
             ValidateP1LevelCatalogPath();
             ValidateP0SceneConfiguration();
             ValidateBootstrapRuntimeUiPresentation();
+            WebBuildProfileSmoke.Run();
+            AcceptanceRuntimeIsolationSmoke.Run();
             BattleUiLayoutSmoke.Run();
             RuntimeUiQualitySmoke.Run();
             RuntimeUiFeedbackTimingSmoke.Run();
             RuntimeUiInteractionPolishSmoke.Run();
+            CompactControlLifecycleSmoke.Run();
+            CompactControlAcceptanceSmoke.Run();
             RuntimeUiGlyphCoverageSmoke.Run();
             RuntimeUiPerformanceSmoke.Run();
             RuntimeUiVisualSystemValidator.ValidateReleaseOrThrow();
@@ -346,7 +358,7 @@ namespace FruitDefense.Editor
         {
             LevelMapCatalogSmoke.Run();
             MultiLevelSimulationSmoke.Run();
-            BattleSnapshotV2Smoke.Run();
+            BattleSnapshotSmoke.Run();
             BattleSessionHostSmoke.Run();
             ShellFlowValidation.SmokeValidate(RequireReleaseRuntimeUiTheme());
         }
@@ -591,7 +603,11 @@ namespace FruitDefense.Editor
             Assert(Mathf.Approximately(previousPotSize, 22.79238f), "legacy reference flowerpot geometry recorded");
             Assert(Mathf.Approximately(previousHorizontalCellPitch, 30.88f)
                 && Mathf.Approximately(previousVerticalCellPitch, 32f), "legacy reference cell pitch recorded");
-            Assert(Mathf.Approximately(GameConfig.PathLength / GameConfig.Zombie(ZombieKind.Normal).Speed, expectedTraversalSeconds),
+            var content = new GameSimulation(581).Content;
+            var normalSpeed = GameConfig.DefaultBattlefield.FromLegacyDistance(
+                content.Enemies[BattleContentIds.Enemies.Normal].speedLegacyUnits);
+            Assert(Mathf.Approximately(GameConfig.DefaultBattlefield.Route.TotalLength / normalSpeed,
+                    expectedTraversalSeconds),
                 "normal zombie route duration preserved from legacy baseline");
 
             var legacyNear = Vector2.Distance(new Vector2(17f, 25f), new Vector2(17f, 12f));
@@ -604,9 +620,11 @@ namespace FruitDefense.Editor
             var map = GameConfig.DefaultBattlefield;
             var nearDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(0, 0)));
             var representativeDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(3, 3)));
-            Assert(nearDistance <= GameConfig.Plant(PlantKind.Durian).Range
-                && representativeDistance <= GameConfig.Plant(PlantKind.Pea).Range
-                && representativeDistance > GameConfig.Plant(PlantKind.Durian).Range,
+            var durianRange = map.FromLegacyDistance(content.Plants[BattleContentIds.Plants.Durian].rangeLegacyUnits);
+            var peaRange = map.FromLegacyDistance(content.Plants[BattleContentIds.Plants.Pea].rangeLegacyUnits);
+            Assert(nearDistance <= durianRange
+                && representativeDistance <= peaRange
+                && representativeDistance > durianRange,
                 "representative target coverage preserved after map-unit migration");
         }
 
@@ -674,7 +692,8 @@ namespace FruitDefense.Editor
             ValidateRouteDescriptorOrientations();
 
             Assert(map.InitialPotGroups.Count == 3
-                && System.Linq.Enumerable.Sum(map.InitialPotGroups.Values, group => group.InitialCount) == GameConfig.InitialPotCount,
+                && System.Linq.Enumerable.Sum(map.InitialPotGroups.Values, group => group.InitialCount)
+                == P0GameplayParityBaseline.InitialPotCount,
                 "semantic groups place eight initial flowerpots");
             var initialCells = new HashSet<Vector2Int>();
             foreach (var groupName in map.InitialPotGroupOrder)
@@ -829,17 +848,22 @@ namespace FruitDefense.Editor
             AssertCornerContinuity(map, 7);
             AssertCornerContinuity(map, 13);
 
-            var normalTraversalSeconds = map.Route.TotalLength / GameConfig.Zombie(ZombieKind.Normal).Speed;
+            var content = new GameSimulation(812).Content;
+            var normalSpeed = map.FromLegacyDistance(
+                content.Enemies[BattleContentIds.Enemies.Normal].speedLegacyUnits);
+            var normalTraversalSeconds = map.Route.TotalLength / normalSpeed;
             Assert(Mathf.Abs(normalTraversalSeconds - P0GameplayParityBaseline.NormalEnemyTraversalSeconds) <= .0001f,
                 "normal enemy traversal duration matches the P0 parity baseline");
             var nearDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(6, 1)));
             var representativeDistance = DistanceToRoute(map, map.CellToMap(new Vector2Int(3, 3)));
-            Assert(nearDistance <= GameConfig.Plant(PlantKind.Durian).Range
-                && representativeDistance <= GameConfig.Plant(PlantKind.Pea).Range
-                && representativeDistance > GameConfig.Plant(PlantKind.Durian).Range,
+            var durianRange = map.FromLegacyDistance(content.Plants[BattleContentIds.Plants.Durian].rangeLegacyUnits);
+            var peaRange = map.FromLegacyDistance(content.Plants[BattleContentIds.Plants.Pea].rangeLegacyUnits);
+            Assert(nearDistance <= durianRange
+                && representativeDistance <= peaRange
+                && representativeDistance > durianRange,
                 "representative near and mid-range target coverage matches the P0 baseline");
 
-            Assert(GameConfig.MaxWaves == P0GameplayParityBaseline.WaveCount
+            Assert(content.BattleRules.maxWaves == P0GameplayParityBaseline.WaveCount
                 && BuildWaveContentSignature() == P0GameplayParityBaseline.WaveContentSignature,
                 "all fifteen ordered waves match the P0 content signature");
             Assert(BuildCombatNumericSignature() == P0GameplayParityBaseline.CombatNumericSignature,
@@ -849,8 +873,9 @@ namespace FruitDefense.Editor
             var snapshot = simulation.ExportSnapshot();
             Assert(simulation.Map.MapId == P0GameplayParityBaseline.MapId
                 && simulation.MapId == P0GameplayParityBaseline.MapId
-                && snapshot.mapId == P0GameplayParityBaseline.MapId,
-                "active definition and exported snapshot use the orchard-01 map identity");
+                && !snapshot.Succeeded
+                && snapshot.Code == BattleSnapshotExportCode.UnsupportedSessionSource,
+                "active definition keeps the orchard-01 map identity and direct sessions reject snapshots");
             Assert(simulation.State.Pots.Count == P0GameplayParityBaseline.InitialPotCount,
                 "P0 parity baseline retains eight initial flowerpots");
         }
@@ -1011,12 +1036,11 @@ namespace FruitDefense.Editor
             var designRegions = new[]
             {
                 battleUiLayout.Header,
-                battleUiLayout.BattleSurface,
+                battleUiLayout.BattleStage,
                 battleUiLayout.Board,
-                battleUiLayout.ToolTray,
+                battleUiLayout.ContextTray,
                 battleUiLayout.NurseryTray,
                 battleUiLayout.RefreshAction,
-                battleUiLayout.Detail,
             };
             foreach (var region in designRegions)
             {
@@ -1107,17 +1131,24 @@ namespace FruitDefense.Editor
 
         private static string BuildWaveContentSignature()
         {
-            var rows = new List<string>(GameConfig.MaxWaves);
-            for (var waveIndex = 1; waveIndex <= GameConfig.MaxWaves; waveIndex++)
+            var content = new GameSimulation(1110).Content;
+            var rows = new List<string>(content.BattleRules.maxWaves);
+            for (var waveIndex = 1; waveIndex <= content.BattleRules.maxWaves; waveIndex++)
             {
-                var counts = new int[4];
-                foreach (var kind in GameConfig.GetWave(waveIndex).Sequence) counts[(int)kind]++;
-                var multiplier = GameConfig.WaveCountMultiplier(waveIndex);
-                for (var kindIndex = 0; kindIndex < counts.Length; kindIndex++)
+                var wave = content.Waves["wave." + waveIndex.ToString("00")];
+                var orderedEnemyIds = new[]
                 {
-                    Assert(counts[kindIndex] % multiplier == 0,
-                        "wave " + waveIndex + " count is divisible by its scaling multiplier");
-                    counts[kindIndex] /= multiplier;
+                    BattleContentIds.Enemies.Normal, BattleContentIds.Enemies.Runner,
+                    BattleContentIds.Enemies.Armored, BattleContentIds.Enemies.Boss,
+                };
+                var multiplier = (int)Mathf.Pow(3,
+                    Mathf.FloorToInt((Mathf.Max(1, waveIndex) - 1) / 5f));
+                var counts = orderedEnemyIds.Select(enemyId => wave.enemyIds.Count(id => id == enemyId)).ToArray();
+                for (var enemyIndex = 0; enemyIndex < counts.Length; enemyIndex++)
+                {
+                    Assert(counts[enemyIndex] % multiplier == 0,
+                        "wave " + waveIndex + " stable-ID count is divisible by its scaling multiplier");
+                    counts[enemyIndex] /= multiplier;
                 }
                 rows.Add(string.Join(",", counts));
             }
@@ -1126,15 +1157,16 @@ namespace FruitDefense.Editor
 
         private static string BuildCombatNumericSignature()
         {
-            var pea = GameConfig.Plant(PlantKind.Pea);
-            var watermelon = GameConfig.Plant(PlantKind.Watermelon);
-            var banana = GameConfig.Plant(PlantKind.Banana);
-            var durian = GameConfig.Plant(PlantKind.Durian);
-            var sunflower = GameConfig.Plant(PlantKind.Sunflower);
-            var normal = GameConfig.Zombie(ZombieKind.Normal);
-            var runner = GameConfig.Zombie(ZombieKind.Runner);
-            var armored = GameConfig.Zombie(ZombieKind.Armored);
-            var boss = GameConfig.Zombie(ZombieKind.Boss);
+            var content = new GameSimulation(1129).Content;
+            var pea = content.Plants[BattleContentIds.Plants.Pea];
+            var watermelon = content.Plants[BattleContentIds.Plants.Watermelon];
+            var banana = content.Plants[BattleContentIds.Plants.Banana];
+            var durian = content.Plants[BattleContentIds.Plants.Durian];
+            var sunflower = content.Plants[BattleContentIds.Plants.Sunflower];
+            var normal = content.Enemies[BattleContentIds.Enemies.Normal];
+            var runner = content.Enemies[BattleContentIds.Enemies.Runner];
+            var armored = content.Enemies[BattleContentIds.Enemies.Armored];
+            var boss = content.Enemies[BattleContentIds.Enemies.Boss];
             return "plants:pea=" + PlantNumericSignature(pea)
                 + ",watermelon=" + PlantNumericSignature(watermelon)
                 + ",banana=" + PlantNumericSignature(banana)
@@ -1144,30 +1176,33 @@ namespace FruitDefense.Editor
                 + ",runner=" + EnemyNumericSignature(runner)
                 + ",armored=" + EnemyNumericSignature(armored)
                 + ",boss=" + EnemyNumericSignature(boss)
-                + ";stars:damage=" + StarNumericSignature(GameConfig.StarDamage)
-                + ",speed=" + StarNumericSignature(GameConfig.StarSpeed)
-                + ",range=" + StarNumericSignature(GameConfig.StarRange)
-                + ";waves=" + GameConfig.MaxWaves
-                + ",between=" + Number(GameConfig.BetweenWaveSeconds)
-                + ",initial-pots=" + GameConfig.InitialPotCount;
+                + ";stars:damage=" + StarNumericSignature(content, tier => tier.damageMultiplier)
+                + ",speed=" + StarNumericSignature(content, tier => tier.attackSpeedMultiplier)
+                + ",range=" + StarNumericSignature(content, tier => tier.rangeMultiplier)
+                + ";waves=" + content.BattleRules.maxWaves
+                + ",between=" + Number(content.BattleRules.betweenWaveSeconds)
+                + ",initial-pots=" + content.BattleRules.initialPotCount;
         }
 
-        private static string PlantNumericSignature(PlantStats stats)
+        private static string PlantNumericSignature(PlantDefinitionDto definition)
         {
-            return Number(stats.Damage) + "/" + Number(stats.Interval) + "/"
-                + Number(GameConfig.LegacyDistance(stats.Range));
+            return Number(definition.damage) + "/" + Number(definition.attackIntervalSeconds) + "/"
+                + Number(definition.rangeLegacyUnits);
         }
 
-        private static string EnemyNumericSignature(ZombieStats stats)
+        private static string EnemyNumericSignature(EnemyDefinitionDto definition)
         {
-            return Number(stats.Hp) + "/" + Number(GameConfig.LegacyDistance(stats.Speed))
-                + "/" + stats.Reward + "/" + stats.Threat;
+            return Number(definition.health) + "/" + Number(definition.speedLegacyUnits)
+                + "/" + definition.killReward + "/" + definition.threat;
         }
 
-        private static string StarNumericSignature(System.Func<int, float> valueAtStar)
+        private static string StarNumericSignature(CompiledBattleContentCatalog content,
+            System.Func<StarTierDefinitionDto, float> valueAtStar)
         {
-            return Number(valueAtStar(1)) + "/" + Number(valueAtStar(2)) + "/"
-                + Number(valueAtStar(3)) + "/" + Number(valueAtStar(4));
+            return Number(valueAtStar(content.StarTiers["star.1"])) + "/"
+                + Number(valueAtStar(content.StarTiers["star.2"])) + "/"
+                + Number(valueAtStar(content.StarTiers["star.3"])) + "/"
+                + Number(valueAtStar(content.StarTiers["star.4"]));
         }
 
         private static string Number(float value)
@@ -1195,10 +1230,12 @@ namespace FruitDefense.Editor
             traversal.State.Zombies.Add(new Zombie
             {
                 Id = 999,
-                Kind = ZombieKind.Normal,
+                DefinitionId = BattleContentIds.Enemies.Normal,
+                RouteId = traversal.Map.PrimaryRouteId,
                 Hp = 1000f,
                 MaxHp = 1000f,
-                Speed = GameConfig.Zombie(ZombieKind.Normal).Speed,
+                Speed = traversal.Map.FromLegacyDistance(
+                    traversal.Content.Enemies[BattleContentIds.Enemies.Normal].speedLegacyUnits),
                 Reward = 0,
                 Threat = 1,
             });
@@ -1220,7 +1257,7 @@ namespace FruitDefense.Editor
             var source = new Plant
             {
                 Id = 7001,
-                Kind = PlantKind.Pea,
+                DefinitionId = BattleContentIds.Plants.Pea,
                 Star = 1,
                 PotId = -1,
                 NurseryIndex = 0,
@@ -1250,7 +1287,7 @@ namespace FruitDefense.Editor
             var mergeTarget = new Plant
             {
                 Id = 7002,
-                Kind = PlantKind.Pea,
+                DefinitionId = BattleContentIds.Plants.Pea,
                 Star = 1,
                 PotId = secondPot.Id,
                 NurseryIndex = -1,
@@ -1265,7 +1302,7 @@ namespace FruitDefense.Editor
             var invalidSource = new Plant
             {
                 Id = 7003,
-                Kind = PlantKind.Banana,
+                DefinitionId = BattleContentIds.Plants.Banana,
                 Star = 1,
                 PotId = firstPot.Id,
                 NurseryIndex = -1,
@@ -1278,12 +1315,13 @@ namespace FruitDefense.Editor
                 "different occupied plants swap through drag");
 
             simulation.State.Inventory.Ice = 1;
-            var weaponStatus = simulation.GetWeaponInstallStatus(invalidSource.Id, WeaponKind.Ice);
-            Assert(weaponStatus.Legal
-                && simulation.InstallWeapon(invalidSource.Id, WeaponKind.Ice, out _)
-                && invalidSource.Weapon == WeaponKind.Ice
+            var equipmentStatus = simulation.GetEquipmentInstallStatus(
+                invalidSource.Id, BattleContentIds.Equipment.Ice);
+            Assert(equipmentStatus.Legal
+                && simulation.InstallEquipment(invalidSource.Id, BattleContentIds.Equipment.Ice, out _)
+                && invalidSource.EquipmentId == BattleContentIds.Equipment.Ice
                 && simulation.State.Inventory.Ice == 0,
-                "explicit weapon tool installation remains available");
+                "explicit equipment tool installation remains available");
         }
 
         private static void Assert(bool condition, string message)
@@ -1293,82 +1331,94 @@ namespace FruitDefense.Editor
 
         private static void ValidateCombatActions()
         {
-            var pea = CreateCombatScenario(PlantKind.Pea);
+            var pea = CreateCombatScenario(BattleContentIds.Plants.Pea);
             pea.Step();
             Assert(pea.State.Projectiles.Count == 1 && Mathf.Approximately(pea.State.Zombies[0].Hp, 1000f),
                 "pea creates a delayed tracking projectile");
             TickUntilProjectilesFinish(pea, 40);
-            Assert(pea.State.Zombies[0].Hp < 1000f && HasCombatEffect(pea, CombatEffectKind.PeaImpact),
-                "pea projectile tracks and creates an impact action");
+            Assert(pea.State.Zombies[0].Hp < 1000f
+                && HasSemanticEvent(pea, BattlePresentationEventKind.DamageResolved,
+                    BattleContentIds.Abilities.PeaAttack),
+                "pea projectile tracks and resolves semantic damage");
 
-            var watermelon = CreateCombatScenario(PlantKind.Watermelon);
+            var watermelon = CreateCombatScenario(BattleContentIds.Plants.Watermelon);
             watermelon.Step();
             Assert(watermelon.State.Projectiles.Count == 1 && watermelon.State.Projectiles[0].Progress > 0f,
                 "watermelon starts a timed arc projectile");
             for (var step = 0; step < 12; step++) watermelon.Tick(.05f);
-            Assert(HasCombatEffect(watermelon, CombatEffectKind.WatermelonBlast)
-                && watermelon.State.Zombies[0].Hp < 1000f, "watermelon lands and creates an area blast");
+            Assert(watermelon.State.Zombies[0].Hp < 1000f
+                && HasSemanticEvent(watermelon, BattlePresentationEventKind.DamageResolved,
+                    BattleContentIds.Abilities.WatermelonAttack),
+                "watermelon lands and resolves authored area damage");
 
-            var banana = CreateCombatScenario(PlantKind.Banana);
+            var banana = CreateCombatScenario(BattleContentIds.Plants.Banana);
             banana.Step();
-            var bananaCooldownTicks = BattleSkillTiming.SecondsToTicks(999f);
-            foreach (var runtime in banana.State.Plants[0].SkillRuntimes)
-                if (runtime.SkillId == BattleContentIds.Skills.BananaAttack)
-                    runtime.CooldownTicks = bananaCooldownTicks;
-            banana.State.Plants[0].AttackCooldown = BattleSkillTiming.TicksToSeconds(bananaCooldownTicks);
+            banana.State.Plants[0].AbilityRuntimes
+                .Single(value => value.AbilityId == BattleContentIds.Abilities.BananaAttack)
+                .CooldownTicks = BattleAbilityTiming.SecondsToTicks(999f);
             TickUntilProjectilesFinish(banana, 90);
             Assert(Mathf.Approximately(banana.State.Zombies[0].Hp, 988f),
                 "banana hits once outbound and once while returning");
 
-            var durian = CreateCombatScenario(PlantKind.Durian);
+            var durian = CreateCombatScenario(BattleContentIds.Plants.Durian);
             durian.Step();
-            Assert(HasCombatEffect(durian, CombatEffectKind.DurianDrop)
-                && durian.State.Zombies[0].Hp < 1000f, "durian uses a melee drop and shockwave action");
+            Assert(Mathf.Approximately(durian.State.Zombies[0].Hp, 1000f),
+                "durian does not damage during windup");
+            for (var step = 0; step < 8; step++) durian.Step();
+            Assert(durian.State.Zombies[0].Hp < 1000f
+                && HasSemanticEvent(durian, BattlePresentationEventKind.AbilityReleased,
+                    BattleContentIds.Abilities.DurianAttack),
+                "durian releases authored area damage after fixed windup");
 
-            var sunflower = CreateCombatScenario(PlantKind.Sunflower);
-            sunflower.State.Plants[0].ProductionProgress = 9.99f;
+            var sunflower = CreateCombatScenario(BattleContentIds.Plants.Sunflower);
+            sunflower.Step();
+            sunflower.State.Plants[0].AbilityRuntimes
+                .Single(value => value.AbilityId == BattleContentIds.Abilities.SunflowerProduce)
+                .PeriodicProgressTicks = 199;
             sunflower.State.Sun = 0;
             sunflower.Step();
-            Assert(sunflower.State.Sun == 1
-                && HasCombatEffect(sunflower, CombatEffectKind.SunBurst),
-                "sunflower production creates a visible sun burst");
+            Assert(sunflower.State.Sun == 1,
+                "sunflower production grants its authored resource payload");
 
-            var iceSunflower = CreateCombatScenario(PlantKind.Sunflower, WeaponKind.Ice);
+            var iceSunflower = CreateCombatScenario(
+                BattleContentIds.Plants.Sunflower, BattleContentIds.Equipment.Ice);
             iceSunflower.State.Zombies.Clear();
             iceSunflower.State.WaveSpawned = 0;
-            iceSunflower.State.WaveTotal = GameConfig.GetWave(1).Sequence.Count;
+            iceSunflower.State.WaveTotal = iceSunflower.Content.Waves["wave.01"].enemyIds.Length;
             iceSunflower.State.SpawnCooldown = 0f;
             iceSunflower.Step();
             Assert(iceSunflower.State.Zombies.Count > 0
-                && iceSunflower.State.Zombies[0].SlowUntil > iceSunflower.State.Elapsed,
+                && iceSunflower.HasStatus(iceSunflower.State.Zombies[0].Id,
+                    BattleContentIds.Statuses.IceSlow),
                 "ice sunflower slows the battlefield on the first wave spawn");
 
-            var gatling = CreateCombatScenario(PlantKind.Pea, WeaponKind.Gatling);
-            gatling.Step();
-            Assert(gatling.State.Plants[0].BurstShotsRemaining == 3, "gatling starts a four-shot burst");
-            for (var step = 0; step < 5; step++) gatling.Tick(.05f);
-            Assert(gatling.State.Plants[0].BurstShotsRemaining == 2
-                && HasCombatEffect(gatling, CombatEffectKind.GatlingMuzzle),
-                "gatling spaces burst shots by 0.2 seconds");
+            var gatling = CreateCombatScenario(
+                BattleContentIds.Plants.Pea, BattleContentIds.Equipment.Gatling);
+            for (var step = 0; step < 14; step++) gatling.Step();
+            Assert(CountSemanticEvents(gatling, BattlePresentationEventKind.ProjectileLaunched,
+                    BattleContentIds.Abilities.PeaAttack, BattleContentIds.Equipment.Gatling) == 4,
+                "gatling emits a four-shot Ability burst with equipment identity");
 
-            var ice = CreateCombatScenario(PlantKind.Pea, WeaponKind.Ice);
+            var ice = CreateCombatScenario(
+                BattleContentIds.Plants.Pea, BattleContentIds.Equipment.Ice);
             ice.Step();
             TickUntilProjectilesFinish(ice, 40);
-            Assert(ice.State.Zombies[0].SlowUntil > ice.State.Elapsed
-                && HasCombatEffect(ice, CombatEffectKind.IceImpact),
-                "ice weapon adds slow and a crystal impact");
+            Assert(ice.State.Zombies[0].Statuses.Any(value =>
+                    value.DefinitionId == BattleContentIds.Statuses.IceSlow),
+                "ice event Ability adds slow");
 
-            var chili = CreateCombatScenario(PlantKind.Pea, WeaponKind.Chili);
+            var chili = CreateCombatScenario(
+                BattleContentIds.Plants.Pea, BattleContentIds.Equipment.Chili);
             chili.Step();
             TickUntilProjectilesFinish(chili, 40);
-            Assert(chili.State.Zombies[0].Burns.Count == 1
-                && HasCombatEffect(chili, CombatEffectKind.ChiliImpact),
-                "chili weapon adds a burn stack and flame impact");
+            Assert(chili.State.Zombies[0].Statuses.Any(value =>
+                    value.DefinitionId == BattleContentIds.Statuses.ChiliBurn),
+                "chili event Ability adds a burn stack");
         }
 
-        private static GameSimulation CreateCombatScenario(PlantKind kind, WeaponKind weapon = WeaponKind.None)
+        private static GameSimulation CreateCombatScenario(string plantDefinitionId, string equipmentId = "")
         {
-            var simulation = new GameSimulation(9876 + (int)kind * 17 + (int)weapon);
+            var simulation = new GameSimulation(9876);
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();
             simulation.State.Projectiles.Clear();
@@ -1382,16 +1432,17 @@ namespace FruitDefense.Editor
             simulation.State.Plants.Add(new Plant
             {
                 Id = 9001,
-                Kind = kind,
+                DefinitionId = plantDefinitionId,
+                EquipmentId = equipmentId,
                 Star = 1,
                 PotId = pot.Id,
                 NurseryIndex = -1,
-                Weapon = weapon,
             });
             simulation.State.Zombies.Add(new Zombie
             {
                 Id = 9002,
-                Kind = ZombieKind.Normal,
+                DefinitionId = BattleContentIds.Enemies.Normal,
+                RouteId = simulation.Map.PrimaryRouteId,
                 Hp = 1000f,
                 MaxHp = 1000f,
                 Speed = 0f,
@@ -1402,15 +1453,21 @@ namespace FruitDefense.Editor
             return simulation;
         }
 
-        private static bool HasCombatEffect(GameSimulation simulation, CombatEffectKind kind)
+        private static bool HasSemanticEvent(GameSimulation simulation,
+            BattlePresentationEventKind kind, string abilityId)
         {
             var events = new List<BattlePresentationEvent>();
             simulation.DrainPresentationEvents(events);
-            foreach (var value in events)
-                if (value.Kind == BattlePresentationEventKind.Cue
-                    && value.HasCombatEffect && value.CombatEffectKind == kind)
-                    return true;
-            return false;
+            return events.Any(value => value.Kind == kind && value.AbilityId == abilityId);
+        }
+
+        private static int CountSemanticEvents(GameSimulation simulation,
+            BattlePresentationEventKind kind, string abilityId, string equipmentId)
+        {
+            var events = new List<BattlePresentationEvent>();
+            simulation.DrainPresentationEvents(events);
+            return events.Count(value => value.Kind == kind && value.AbilityId == abilityId
+                && value.SourceEquipmentId == equipmentId);
         }
 
         private static float NearestPathProgress(GameSimulation simulation, Vector2 point)

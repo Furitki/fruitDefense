@@ -9,6 +9,9 @@ mergeInto(LibraryManager.library, {
     ruleSetIdPointer,
     themeIdPointer) {
     var routeNames = ['lobby', 'battle', 'settlement'];
+    if (route !== 2) {
+      window.fruitDefenseSettlementOutcomeRevealState = null;
+    }
     var identity = {
       route: route,
       routeName: routeNames[route] || 'unknown',
@@ -20,6 +23,10 @@ mergeInto(LibraryManager.library, {
       ruleSetId: UTF8ToString(ruleSetIdPointer),
       themeId: UTF8ToString(themeIdPointer)
     };
+    if (route === 2 && window.fruitDefenseSettlementOutcomeRevealState) {
+      identity.settlementOutcomeRevealState =
+        window.fruitDefenseSettlementOutcomeRevealState;
+    }
     window.fruitDefenseAcceptanceRouteReady = true;
     window.fruitDefenseAppRoute = route;
     window.fruitDefenseAcceptanceIdentity = identity;
@@ -28,6 +35,48 @@ mergeInto(LibraryManager.library, {
     window.fruitDefenseAcceptanceIdentityHistory.push(identity);
     if (window.fruitDefensePendingUnityInstance) {
       window.fruitDefenseUnityInstance = window.fruitDefensePendingUnityInstance;
+    }
+  },
+
+  FruitDefensePublishSettlementOutcomeReveal: function (state) {
+    var stateNames = ['hidden', 'appearing', 'stable'];
+    if (state < 0 || state >= stateNames.length) {
+      throw new Error('Unknown settlement outcome reveal state: ' + state);
+    }
+    var identity = window.fruitDefenseAcceptanceIdentity;
+    if (window.fruitDefenseAppRoute !== 2 || !identity ||
+        identity.route !== 2 || identity.routeName !== 'settlement' ||
+        typeof identity.sessionId !== 'string' || identity.sessionId.length === 0) {
+      return;
+    }
+    var stateName = stateNames[state];
+    window.fruitDefenseSettlementOutcomeRevealState = stateName;
+    identity.settlementOutcomeRevealState = stateName;
+    window.fruitDefenseSettlementOutcomeRevealHistory =
+      window.fruitDefenseSettlementOutcomeRevealHistory || [];
+    window.fruitDefenseSettlementOutcomeRevealHistory.push({
+      state: stateName,
+      stateCode: state,
+      route: 2,
+      sessionId: identity.sessionId,
+      sequence: window.fruitDefenseSettlementOutcomeRevealHistory.length + 1
+    });
+    if (window.fruitDefenseSettlementOutcomeRevealHistory.length > 32) {
+      window.fruitDefenseSettlementOutcomeRevealHistory.splice(
+        0, window.fruitDefenseSettlementOutcomeRevealHistory.length - 32);
+    }
+  },
+
+  FruitDefensePublishCombatFeedbackTelemetry: function (jsonPointer) {
+    var json = UTF8ToString(jsonPointer);
+    window.fruitDefenseCombatFeedbackTelemetry = JSON.parse(json);
+    window.fruitDefenseCombatFeedbackTelemetryHistory =
+      window.fruitDefenseCombatFeedbackTelemetryHistory || [];
+    window.fruitDefenseCombatFeedbackTelemetryHistory.push(
+      window.fruitDefenseCombatFeedbackTelemetry);
+    if (window.fruitDefenseCombatFeedbackTelemetryHistory.length > 32) {
+      window.fruitDefenseCombatFeedbackTelemetryHistory.splice(
+        0, window.fruitDefenseCombatFeedbackTelemetryHistory.length - 32);
     }
   }
 });

@@ -48,7 +48,7 @@ namespace FruitDefense.UI
         BattleVictoryMessage = 34,
         BattleDefeatTitle = 35,
         BattleDefeatMessage = 36,
-        BattleToolTray = 37,
+        BattleContextTray = 37,
         BattleNurseryTray = 38,
         BattleNurseryPotStored = 39,
         BattleNurseryEmpty = 40,
@@ -212,7 +212,7 @@ namespace FruitDefense.UI
                 case RuntimeUiCopyId.BattleDefeatMessage: return Single(id,
                     FormatDefeatMessage(15), RuntimeUiTypographyRole.Body,
                     TextAnchor.MiddleCenter);
-                case RuntimeUiCopyId.BattleToolTray: return Single(id, "构筑栏",
+                case RuntimeUiCopyId.BattleContextTray: return Single(id, "构筑栏",
                     RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft,
                     RuntimeUiTextTone.Secondary);
                 case RuntimeUiCopyId.BattleNurseryTray: return Single(id, "刷新栏",

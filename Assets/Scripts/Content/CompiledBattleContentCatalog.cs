@@ -7,19 +7,20 @@ namespace FruitDefense.Content
 {
     public sealed class CompiledBattleContentCatalog
     {
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>> _plantAbilityLoadouts;
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>> _enemyAbilityLoadouts;
+
         public BattleContentHeaderDto Header { get; private set; }
         public BattleRulesDto BattleRules { get; private set; }
         public IReadOnlyDictionary<string, PlantDefinitionDto> Plants { get; private set; }
         public IReadOnlyDictionary<string, EnemyDefinitionDto> Enemies { get; private set; }
         public IReadOnlyDictionary<string, EquipmentDefinitionDto> Equipment { get; private set; }
-        public IReadOnlyDictionary<string, SkillDefinitionDto> Skills { get; private set; }
-        public IReadOnlyDictionary<string, PassiveDefinitionDto> Passives { get; private set; }
+        public IReadOnlyDictionary<string, AbilityDefinitionDto> Abilities { get; private set; }
         public IReadOnlyDictionary<string, ProjectileDefinitionDto> Projectiles { get; private set; }
         public IReadOnlyDictionary<string, StatusDefinitionDto> Statuses { get; private set; }
         public IReadOnlyDictionary<string, WaveDefinitionDto> Waves { get; private set; }
         public IReadOnlyDictionary<string, StarTierDefinitionDto> StarTiers { get; private set; }
-        public IReadOnlyDictionary<string, CompiledBattleSkill> RuntimeSkills { get; private set; }
-        public IReadOnlyDictionary<string, CompiledBattlePassive> RuntimePassives { get; private set; }
+        public IReadOnlyDictionary<string, CompiledAbilityDefinition> RuntimeAbilities { get; private set; }
         public IReadOnlyDictionary<string, CompiledProjectileDefinition> RuntimeProjectiles { get; private set; }
         public IReadOnlyDictionary<string, CompiledStatusDefinition> RuntimeStatuses { get; private set; }
 
@@ -30,85 +31,99 @@ namespace FruitDefense.Content
             Plants = Index(catalog.plants, value => value.id);
             Enemies = Index(catalog.enemies, value => value.id);
             Equipment = Index(catalog.equipment, value => value.id);
-            Skills = Index(catalog.skills, value => value.id);
-            Passives = Index(catalog.passives, value => value.id);
+            Abilities = Index(catalog.abilities, value => value.id);
             Projectiles = Index(catalog.projectiles, value => value.id);
             Statuses = Index(catalog.statuses, value => value.id);
             Waves = Index(catalog.waves, value => value.id);
             StarTiers = Index(catalog.starTiers, value => value.id);
-            RuntimeSkills = Index(catalog.skills.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
-            RuntimePassives = Index(catalog.passives.Select(CombatFrameworkCompiler.Compile).ToArray(), value => value.Id);
-            RuntimeProjectiles = Index(catalog.projectiles.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
-            RuntimeStatuses = Index(catalog.statuses.Select(BattleSkillCompiler.Compile).ToArray(), value => value.Id);
+            RuntimeAbilities = Index(catalog.abilities.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
+            RuntimeProjectiles = Index(catalog.projectiles.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
+            RuntimeStatuses = Index(catalog.statuses.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
+            _plantAbilityLoadouts = BuildPlantAbilityLoadouts();
+            _enemyAbilityLoadouts = BuildEnemyAbilityLoadouts();
         }
 
-        public IReadOnlyList<CompiledBattlePassive> ResolvePlantPassives(string plantId, string equipmentId)
+        public IReadOnlyList<CompiledAbilityDefinition> ResolvePlantAbilities(string plantId, string equipmentId)
         {
-            PlantDefinitionDto plant;
-            if (!Plants.TryGetValue(plantId, out plant)) throw new KeyNotFoundException("Unknown plant ID '" + plantId + "'.");
-            var resolved = plant.passiveIds.Select(id => RuntimePassives[id]).ToList();
-            if (!string.IsNullOrEmpty(equipmentId))
+            var key = LoadoutKey(plantId, equipmentId);
+            IReadOnlyList<CompiledAbilityDefinition> loadout;
+            if (_plantAbilityLoadouts.TryGetValue(key, out loadout)) return loadout;
+            if (!Plants.ContainsKey(plantId)) throw new KeyNotFoundException("Unknown plant ID '" + plantId + "'.");
+            if (!string.IsNullOrEmpty(equipmentId) && !Equipment.ContainsKey(equipmentId))
+                throw new KeyNotFoundException("Unknown equipment ID '" + equipmentId + "'.");
+            throw new InvalidOperationException("Equipment '" + equipmentId
+                + "' is not compatible with plant '" + plantId + "'.");
+        }
+
+        public IReadOnlyList<CompiledAbilityDefinition> ResolveEnemyAbilities(string enemyId)
+        {
+            IReadOnlyList<CompiledAbilityDefinition> loadout;
+            if (_enemyAbilityLoadouts.TryGetValue(enemyId, out loadout)) return loadout;
+            throw new KeyNotFoundException("Unknown enemy ID '" + enemyId + "'.");
+        }
+
+        private IReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>> BuildPlantAbilityLoadouts()
+        {
+            var result = new Dictionary<string, IReadOnlyList<CompiledAbilityDefinition>>(StringComparer.Ordinal);
+            foreach (var plant in Plants.Values.OrderBy(value => value.id, StringComparer.Ordinal))
             {
-                EquipmentDefinitionDto equipment;
-                if (!Equipment.TryGetValue(equipmentId, out equipment))
-                    throw new KeyNotFoundException("Unknown equipment ID '" + equipmentId + "'.");
-                if (!equipment.compatiblePlantIds.Contains(plantId))
-                    throw new InvalidOperationException("Equipment '" + equipmentId
-                        + "' is not compatible with plant '" + plantId + "'.");
-                var plantTags = new HashSet<string>(plant.tags, StringComparer.Ordinal);
-                foreach (var grant in equipment.passiveGrants)
+                result.Add(LoadoutKey(plant.id, string.Empty), BuildPlantAbilityLoadout(plant, null));
+                foreach (var equipment in Equipment.Values
+                             .Where(value => value.compatiblePlantIds.Contains(plant.id))
+                             .OrderBy(value => value.id, StringComparer.Ordinal))
+                    result.Add(LoadoutKey(plant.id, equipment.id), BuildPlantAbilityLoadout(plant, equipment));
+            }
+            return new ReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>>(result);
+        }
+
+        private IReadOnlyList<CompiledAbilityDefinition> BuildPlantAbilityLoadout(PlantDefinitionDto plant,
+            EquipmentDefinitionDto equipment)
+        {
+            var resolved = plant.abilityIds.Select(id => RuntimeAbilities[id].Clone()).ToList();
+            var plantTags = new HashSet<string>(plant.tags, StringComparer.Ordinal);
+            if (equipment != null)
+            {
+                foreach (var grant in equipment.grants)
                 {
                     if (!string.IsNullOrEmpty(grant.requiredPlantTag)
                         && !plantTags.Contains(grant.requiredPlantTag)) continue;
-                    if (resolved.All(passive => passive.Id != grant.passiveId))
-                        resolved.Add(RuntimePassives[grant.passiveId]);
+                    if (resolved.All(ability => ability.Id != grant.abilityId))
+                        resolved.Add(RuntimeAbilities[grant.abilityId].Clone());
+                }
+                foreach (var source in equipment.modifiers.OrderBy(value => value.id, StringComparer.Ordinal))
+                {
+                    if (!string.IsNullOrEmpty(source.requiredPlantTag)
+                        && !plantTags.Contains(source.requiredPlantTag)) continue;
+                    var modifier = BattleAbilityCompiler.Compile(source);
+                    foreach (var ability in resolved.Where(value => ModifierMatches(modifier, value)))
+                        CompiledAbilityModifierApplicator.Apply(ability, modifier);
                 }
             }
-            return resolved.OrderBy(passive => passive.Priority)
-                .ThenBy(passive => passive.Id, StringComparer.Ordinal).ToArray();
+            return Array.AsReadOnly(resolved
+                .OrderBy(value => value.Activation.Priority)
+                .ThenBy(value => value.Id, StringComparer.Ordinal).ToArray());
         }
 
-        public IReadOnlyList<CompiledBattlePassive> ResolveEnemyPassives(string enemyId)
+        private IReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>> BuildEnemyAbilityLoadouts()
         {
-            EnemyDefinitionDto enemy;
-            if (!Enemies.TryGetValue(enemyId, out enemy)) throw new KeyNotFoundException("Unknown enemy ID '" + enemyId + "'.");
-            return enemy.passiveIds.Select(id => RuntimePassives[id])
-                .OrderBy(passive => passive.Priority)
-                .ThenBy(passive => passive.Id, StringComparer.Ordinal).ToArray();
+            var result = new Dictionary<string, IReadOnlyList<CompiledAbilityDefinition>>(StringComparer.Ordinal);
+            foreach (var enemy in Enemies.Values.OrderBy(value => value.id, StringComparer.Ordinal))
+                result.Add(enemy.id, Array.AsReadOnly(enemy.abilityIds.Select(id => RuntimeAbilities[id])
+                    .OrderBy(value => value.Activation.Priority)
+                    .ThenBy(value => value.Id, StringComparer.Ordinal).ToArray()));
+            return new ReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>>(result);
         }
 
-        public IReadOnlyList<CompiledBattleSkill> ResolvePlantSkills(string plantId, string equipmentId)
+        private static bool ModifierMatches(CompiledAbilityModifier modifier, CompiledAbilityDefinition ability)
         {
-            PlantDefinitionDto plant;
-            if (!Plants.TryGetValue(plantId, out plant)) throw new KeyNotFoundException("Unknown plant ID '" + plantId + "'.");
-            var resolved = plant.skillIds.Select(id => RuntimeSkills[id].Clone()).ToList();
-            if (!string.IsNullOrEmpty(equipmentId))
-            {
-                EquipmentDefinitionDto equipment;
-                if (!Equipment.TryGetValue(equipmentId, out equipment))
-                    throw new KeyNotFoundException("Unknown equipment ID '" + equipmentId + "'.");
-                if (!equipment.compatiblePlantIds.Contains(plantId))
-                    throw new InvalidOperationException("Equipment '" + equipmentId
-                        + "' is not compatible with plant '" + plantId + "'.");
-                var plantTags = new HashSet<string>(plant.tags, StringComparer.Ordinal);
-                foreach (var grant in equipment.grants)
-                {
-                    if (!string.IsNullOrEmpty(grant.requiredPlantTag) && !plantTags.Contains(grant.requiredPlantTag)) continue;
-                    if (resolved.All(skill => skill.Id != grant.skillId)) resolved.Add(RuntimeSkills[grant.skillId].Clone());
-                }
-                foreach (var modifier in equipment.modifiers)
-                {
-                    if (!string.IsNullOrEmpty(modifier.requiredPlantTag) && !plantTags.Contains(modifier.requiredPlantTag)) continue;
-                    foreach (var skill in resolved.Where(value => value.Tags.Contains(modifier.targetSkillTag)).ToArray())
-                    {
-                        if (modifier.burstCountOverride > 0) skill.BurstCount = modifier.burstCountOverride;
-                        if (modifier.burstIntervalSeconds > 0f)
-                            skill.BurstIntervalTicks = BattleSkillTiming.SecondsToTicks(modifier.burstIntervalSeconds);
-                        if (modifier.resourceAmountDelta != 0) skill.ResourceAmount += modifier.resourceAmountDelta;
-                    }
-                }
-            }
-            return resolved.OrderBy(skill => skill.Id, StringComparer.Ordinal).ToArray();
+            if (!string.IsNullOrEmpty(modifier.TargetAbilityId)
+                && !string.Equals(modifier.TargetAbilityId, ability.Id, StringComparison.Ordinal)) return false;
+            return string.IsNullOrEmpty(modifier.TargetAbilityTag) || ability.Tags.Contains(modifier.TargetAbilityTag);
+        }
+
+        private static string LoadoutKey(string plantId, string equipmentId)
+        {
+            return (plantId ?? string.Empty) + "\n" + (equipmentId ?? string.Empty);
         }
 
         private static IReadOnlyDictionary<string, T> Index<T>(T[] values, Func<T, string> getId)

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using FruitDefense.Content;
+using FruitDefense.Presentation;
 using FruitDefense.UI;
+using UnityEngine;
 
 namespace FruitDefense.Editor
 {
@@ -26,10 +29,17 @@ namespace FruitDefense.Editor
         BattleBoardStatus,
         BattleBoardStatusFull,
         BattleWaveAction,
-        BattleToolTrayTitle,
+        BattleContextTrayTitle,
         BattleNurseryTrayTitle,
         BattleNurserySlot,
+        BattleToolCount,
+        BattlePotName,
+        BattlePotCount,
+        BattleNurseryStars,
         BattleRefreshAction,
+        BattleDetailTitle,
+        BattleDetailBody,
+        BattleMergeHint,
         BattleModalTitle,
         BattleModalMessage,
         BattleModalResultBanner,
@@ -52,26 +62,53 @@ namespace FruitDefense.Editor
         public RuntimeUiTextInspectionCase(string id, RuntimeUiCopyId copyId,
             RuntimeUiTextInspectionTarget target, RuntimeUiInteractionState state,
             RuntimeUiActionKind actionKind = RuntimeUiActionKind.Primary,
-            RuntimeUiArtSlot? iconSlot = null)
+            RuntimeUiArtSlot? iconSlot = null,
+            BattleUiActionSemantic? actionSemantic = null,
+            string metricValue = null)
+            : this(id, RuntimeUiCopyCatalog.Get(copyId), target, state,
+                true, actionKind, iconSlot, actionSemantic, metricValue)
+        {
+        }
+
+        public RuntimeUiTextInspectionCase(string id,
+            RuntimeUiCopyDefinition copy, RuntimeUiTextInspectionTarget target,
+            RuntimeUiInteractionState state, bool coversCatalogCopy,
+            RuntimeUiActionKind actionKind = RuntimeUiActionKind.Primary,
+            RuntimeUiArtSlot? iconSlot = null,
+            BattleUiActionSemantic? actionSemantic = null,
+            string metricValue = null)
         {
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("A stable text inspection ID is required.", nameof(id));
             Id = id;
-            CopyId = copyId;
+            Copy = copy;
             Target = target;
             State = state;
+            CoversCatalogCopy = coversCatalogCopy;
             ActionKind = actionKind;
             IconSlot = iconSlot;
+            ActionSemantic = actionSemantic;
+            MetricValue = metricValue ?? string.Empty;
         }
 
         public string Id { get; }
-        public RuntimeUiCopyId CopyId { get; }
+        public RuntimeUiCopyId CopyId => Copy.Id;
+        public RuntimeUiCopyDefinition Copy { get; }
         public RuntimeUiTextInspectionTarget Target { get; }
         public RuntimeUiInteractionState State { get; }
+        public bool CoversCatalogCopy { get; }
         public RuntimeUiActionKind ActionKind { get; }
         public RuntimeUiArtSlot? IconSlot { get; }
+        public BattleUiActionSemantic? ActionSemantic { get; }
+        public string MetricValue { get; }
         public bool HasIcon => IconSlot.HasValue;
-        public RuntimeUiCopyDefinition Copy => RuntimeUiCopyCatalog.Get(CopyId);
+
+        public RuntimeUiActionSpec ActionSpec => ActionSemantic.HasValue
+            ? BattleUiPresentationState.ResolveActionSpec(ActionSemantic.Value)
+            : new RuntimeUiActionSpec(ActionKind,
+                HasIcon ? RuntimeUiActionContentForm.IconLabel
+                    : RuntimeUiActionContentForm.Text,
+                RuntimeUiActionBehavior.Instantaneous);
     }
 
     /// <summary>
@@ -82,8 +119,13 @@ namespace FruitDefense.Editor
     internal static class RuntimeUiTextInspectionCatalog
     {
         private static readonly RuntimeUiTextInspectionCase[] InspectionCases =
+            BuildInspectionCases();
+
+        private static RuntimeUiTextInspectionCase[] BuildInspectionCases()
         {
-            Case("bootstrap.title", RuntimeUiCopyId.ProductTitle,
+            var cases = new List<RuntimeUiTextInspectionCase>
+            {
+                Case("bootstrap.title", RuntimeUiCopyId.ProductTitle,
                 RuntimeUiTextInspectionTarget.BootstrapTitle,
                 RuntimeUiInteractionState.Loading),
             Case("bootstrap.loading", RuntimeUiCopyId.BootstrapLoading,
@@ -189,8 +231,8 @@ namespace FruitDefense.Editor
                 RuntimeUiTextInspectionTarget.BattleWaveAction,
                 RuntimeUiInteractionState.Pressed, RuntimeUiActionKind.Primary,
                 RuntimeUiArtSlot.IconControlStartWave),
-            Case("battle.tool-tray", RuntimeUiCopyId.BattleToolTray,
-                RuntimeUiTextInspectionTarget.BattleToolTrayTitle,
+            Case("battle.context-tray", RuntimeUiCopyId.BattleContextTray,
+                RuntimeUiTextInspectionTarget.BattleContextTrayTitle,
                 RuntimeUiInteractionState.Normal),
             Case("battle.nursery-tray", RuntimeUiCopyId.BattleNurseryTray,
                 RuntimeUiTextInspectionTarget.BattleNurseryTrayTitle,
@@ -201,9 +243,10 @@ namespace FruitDefense.Editor
             Case("battle.empty", RuntimeUiCopyId.BattleNurseryEmpty,
                 RuntimeUiTextInspectionTarget.BattleNurserySlot,
                 RuntimeUiInteractionState.Normal),
-            Action("battle.refresh", RuntimeUiCopyId.BattleRefresh,
+            SemanticAction("battle.refresh", RuntimeUiCopyId.BattleRefresh,
                 RuntimeUiTextInspectionTarget.BattleRefreshAction,
-                RuntimeUiInteractionState.Normal, RuntimeUiActionKind.Primary,
+                RuntimeUiInteractionState.Normal,
+                BattleUiActionSemantic.NurseryRefresh,
                 RuntimeUiArtSlot.IconControlRefresh),
             Case("battle.pause-title", RuntimeUiCopyId.BattlePausedTitle,
                 RuntimeUiTextInspectionTarget.BattleModalTitle,
@@ -279,7 +322,11 @@ namespace FruitDefense.Editor
                 RuntimeUiCopyId.SettlementRecoveredError,
                 RuntimeUiTextInspectionTarget.SettlementStatus,
                 RuntimeUiInteractionState.Warning),
-        };
+            };
+
+            AddBattleBoundaryCases(cases);
+            return cases.ToArray();
+        }
 
         public static IReadOnlyList<RuntimeUiTextInspectionCase> Cases => InspectionCases;
 
@@ -297,6 +344,106 @@ namespace FruitDefense.Editor
         {
             return new RuntimeUiTextInspectionCase(id, copyId, target, state,
                 actionKind, iconSlot);
+        }
+
+        private static RuntimeUiTextInspectionCase SemanticAction(string id,
+            RuntimeUiCopyId copyId, RuntimeUiTextInspectionTarget target,
+            RuntimeUiInteractionState state, BattleUiActionSemantic semantic,
+            RuntimeUiArtSlot iconSlot)
+        {
+            return new RuntimeUiTextInspectionCase(id, copyId, target, state,
+                iconSlot: iconSlot, actionSemantic: semantic);
+        }
+
+        private static RuntimeUiTextInspectionCase Boundary(string id,
+            RuntimeUiCopyId anatomyCopyId, RuntimeUiTextInspectionTarget target,
+            RuntimeUiInteractionState state, string text,
+            BattleUiActionSemantic? actionSemantic = null,
+            RuntimeUiArtSlot? iconSlot = null, string metricValue = null)
+        {
+            var anatomy = RuntimeUiCopyCatalog.Get(anatomyCopyId);
+            var copy = new RuntimeUiCopyDefinition(anatomy.Id, text,
+                anatomy.Role, anatomy.Tone, anatomy.Alignment,
+                anatomy.LinePolicy, anatomy.MaximumLineCount);
+            return new RuntimeUiTextInspectionCase(id, copy, target, state,
+                false, iconSlot: iconSlot, actionSemantic: actionSemantic,
+                metricValue: metricValue);
+        }
+
+        private static void AddBattleBoundaryCases(
+            ICollection<RuntimeUiTextInspectionCase> cases)
+        {
+            cases.Add(Boundary("battle.metric.sun.max", RuntimeUiCopyId.BattleSun,
+                RuntimeUiTextInspectionTarget.BattleSunMetric,
+                RuntimeUiInteractionState.Normal, "阳光", metricValue: "999"));
+            cases.Add(Boundary("battle.metric.core.max", RuntimeUiCopyId.BattleCore,
+                RuntimeUiTextInspectionTarget.BattleCoreMetric,
+                RuntimeUiInteractionState.Warning, "核心", metricValue: "99"));
+            cases.Add(Boundary("battle.metric.wave.max", RuntimeUiCopyId.BattleWave,
+                RuntimeUiTextInspectionTarget.BattleWaveMetric,
+                RuntimeUiInteractionState.Normal, "波次", metricValue: "15"));
+            cases.Add(Boundary("battle.tool-count.max", RuntimeUiCopyId.BattleContextTray,
+                RuntimeUiTextInspectionTarget.BattleToolCount,
+                RuntimeUiInteractionState.Normal, "×99"));
+            cases.Add(Boundary("battle.pot-name", RuntimeUiCopyId.BattleContextTray,
+                RuntimeUiTextInspectionTarget.BattlePotName,
+                RuntimeUiInteractionState.Normal, "花盆"));
+            cases.Add(Boundary("battle.pot-count.max", RuntimeUiCopyId.BattleContextTray,
+                RuntimeUiTextInspectionTarget.BattlePotCount,
+                RuntimeUiInteractionState.Normal, "×99"));
+            cases.Add(Boundary("battle.nursery-stars.max",
+                RuntimeUiCopyId.BattleNurseryPotStored,
+                RuntimeUiTextInspectionTarget.BattleNurseryStars,
+                RuntimeUiInteractionState.Selected, "★★★★"));
+            cases.Add(Boundary("battle.refresh-cost.max", RuntimeUiCopyId.BattleRefresh,
+                RuntimeUiTextInspectionTarget.BattleRefreshAction,
+                RuntimeUiInteractionState.Normal,
+                RuntimeUiCopyCatalog.FormatRefreshAction(999),
+                BattleUiActionSemantic.NurseryRefresh,
+                RuntimeUiArtSlot.IconControlRefresh));
+            cases.Add(Boundary("battle.status.active-wave.max", RuntimeUiCopyId.BattleReady,
+                RuntimeUiTextInspectionTarget.BattleBoardStatusFull,
+                RuntimeUiInteractionState.Normal,
+                RuntimeUiCopyCatalog.FormatActiveWaveStatus(15, 99)));
+            cases.Add(Boundary("battle.status.between-wave.max", RuntimeUiCopyId.BattleBetweenWave,
+                RuntimeUiTextInspectionTarget.BattleBoardStatus,
+                RuntimeUiInteractionState.Warning,
+                RuntimeUiCopyCatalog.FormatBetweenWaveStatus(10)));
+            cases.Add(Boundary("battle.status.success-prefix.max",
+                RuntimeUiCopyId.BattleDefaultGuidance,
+                RuntimeUiTextInspectionTarget.BattleBoardStatusFull,
+                RuntimeUiInteractionState.Success,
+                BattleUiPresentationState.FormatTransientStatus(true,
+                    "刷新完成：水果 5 株，花盆×5 已入库")));
+            cases.Add(Boundary("battle.status.error-prefix.max",
+                RuntimeUiCopyId.BattleDefaultGuidance,
+                RuntimeUiTextInspectionTarget.BattleBoardStatusFull,
+                RuntimeUiInteractionState.Error,
+                BattleUiPresentationState.FormatTransientStatus(false,
+                    "目标植物移动冷却 10.0 秒")));
+            cases.Add(Boundary("battle.merge-hint.max", RuntimeUiCopyId.BattleContextTray,
+                RuntimeUiTextInspectionTarget.BattleMergeHint,
+                RuntimeUiInteractionState.Warning, "可合成为 4 星"));
+
+            var content = BundledBattleContentFactory.Create();
+            for (var index = 0; index < content.plants.Length; index++)
+            {
+                var plant = content.plants[index];
+                cases.Add(Boundary("battle.detail-title.plant." + plant.id,
+                    RuntimeUiCopyId.BattleTitle,
+                    RuntimeUiTextInspectionTarget.BattleDetailTitle,
+                    RuntimeUiInteractionState.Selected,
+                    plant.displayName + " · 4 星"));
+            }
+            for (var index = 0; index < content.equipment.Length; index++)
+            {
+                var equipment = content.equipment[index];
+                cases.Add(Boundary("battle.detail-body.equipment." + equipment.id,
+                    RuntimeUiCopyId.BattleContextTray,
+                    RuntimeUiTextInspectionTarget.BattleDetailBody,
+                    RuntimeUiInteractionState.Selected,
+                    "伤害 999 · 范围 999 · 装备 " + equipment.displayName));
+            }
         }
     }
 }

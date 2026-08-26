@@ -2,9 +2,9 @@ namespace FruitDefense.Content
 {
     public static class BattleContentSchema
     {
-        public const string CurrentSchemaVersion = "1";
+        public const string CurrentSchemaVersion = "2";
         public const string BundledCatalogId = "catalog.bundled.orchard";
-        public const string BundledContentVersion = "1.0.0";
+        public const string BundledContentVersion = "2.0.0";
         public const string MinimumCodeVersion = "0.1.0";
     }
 
@@ -34,17 +34,16 @@ namespace FruitDefense.Content
             public const string Chili = "equipment.chili";
         }
 
-        public static class Skills
+        public static class Abilities
         {
-            public const string PeaAttack = "skill.plant.pea.attack";
-            public const string WatermelonAttack = "skill.plant.watermelon.attack";
-            public const string BananaAttack = "skill.plant.banana.attack";
-            public const string DurianAttack = "skill.plant.durian.attack";
-            public const string SunflowerProduce = "skill.plant.sunflower.produce";
-            public const string GatlingBurst = "skill.equipment.gatling.burst";
-            public const string IceOnHit = "skill.equipment.ice.on-hit";
-            public const string IceProducerOpening = "skill.equipment.ice.producer-opening";
-            public const string ChiliOnHit = "skill.equipment.chili.on-hit";
+            public const string PeaAttack = "ability.plant.pea.attack";
+            public const string WatermelonAttack = "ability.plant.watermelon.attack";
+            public const string BananaAttack = "ability.plant.banana.attack";
+            public const string DurianAttack = "ability.plant.durian.attack";
+            public const string SunflowerProduce = "ability.plant.sunflower.produce";
+            public const string IceOnHit = "ability.equipment.ice.on-hit";
+            public const string IceProducerOpening = "ability.equipment.ice.producer-opening";
+            public const string ChiliOnHit = "ability.equipment.chili.on-hit";
         }
 
         public static class Projectiles
@@ -54,42 +53,26 @@ namespace FruitDefense.Content
             public const string Banana = "projectile.banana";
         }
 
-        public static class Passives
-        {
-            public const string IceOnHit = "passive.equipment.ice.on-hit";
-            public const string IceProducerOpening = "passive.equipment.ice.producer-opening";
-            public const string ChiliOnHit = "passive.equipment.chili.on-hit";
-        }
-
         public static class Statuses
         {
             public const string IceSlow = "status.ice.slow";
             public const string IceFreeze = "status.ice.freeze";
             public const string IceCount = "status.ice.hit-count";
             public const string ChiliBurn = "status.chili.burn";
-            public const string HitStun = "status.combat.hit-stun";
         }
 
-        public static class Visuals
+        public static class Resources { public const string Sun = "resource.sun"; }
+        public static class BattleStates
         {
-            public const string Pea = "visual.projectile.pea";
-            public const string Watermelon = "visual.projectile.watermelon";
-            public const string Banana = "visual.projectile.banana";
-            public const string Durian = "visual.skill.durian-drop";
-            public const string Sunflower = "visual.skill.sun-burst";
-        }
-
-        public static class Cues
-        {
-            public const string PeaImpact = "cue.impact.pea";
-            public const string WatermelonBlast = "cue.impact.watermelon";
-            public const string BananaHit = "cue.impact.banana";
-            public const string DurianDrop = "cue.skill.durian-drop";
-            public const string SunBurst = "cue.skill.sun-burst";
-            public const string GatlingMuzzle = "cue.equipment.gatling-muzzle";
-            public const string IceImpact = "cue.status.ice";
-            public const string ChiliImpact = "cue.status.chili";
-            public const string Milestone = "cue.reward.milestone";
+            public const string Ready = "battle.ready";
+            public const string WaveStarted = "wave.started";
+            public const string CoreDamaged = "core.damaged";
+            public const string WaveCompleted = "wave.completed";
+            public const string MilestoneReward = "reward.milestone";
+            public const string PotExpanded = "pot.expanded";
+            public const string PlantMoved = "plant.moved";
+            public const string PlantMerged = "plant.merged";
+            public const string EquipmentInstalled = "equipment.installed";
         }
 
         public static class BattleRules

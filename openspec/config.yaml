@@ -8,14 +8,17 @@ context: |
   Required WebGL build entry: FruitDefense.Editor.WebBuild.Build.
   Published output is Builds/WebGL and deploy.ps1 manages the existing remote service.
   Portrait work targets the iPhone 17 aspect and must be accepted from a real WebGL canvas capture.
+  Player-visible runtime UI work uses docs/ui/ui-visual-system.md and the relevant openspec/specs capabilities as its current design and requirement baseline.
 
 rules:
   proposal:
     - State gameplay or persistence non-goals explicitly when the change is presentation-only.
     - Identify the player-visible flow and the required runtime validation surface.
+    - For visible runtime UI work, identify the affected semantic action role, content form, behavior, and states, and state whether the current UI visual standard is preserved or intentionally changed.
   design:
     - Keep draw geometry and hit-test geometry derived from the same layout helpers.
     - Include WebGL and safe-area behavior for visible UI changes.
+    - For visible runtime UI work, apply docs/ui/ui-visual-system.md and relevant current specs; any intentional deviation must be explicit and synchronized back to the owning stable document and main spec.
   tasks:
     - Include Unity smoke validation and a WebGL build for runtime presentation changes.
     - Include live visual evidence before any visible UI change is marked complete.

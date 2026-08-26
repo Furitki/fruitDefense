@@ -1,27 +1,32 @@
-using System;
-using System.Globalization;
 using UnityEngine;
+#if FRUIT_DEFENSE_ACCEPTANCE
+using System.Globalization;
+#endif
 
 namespace FruitDefense
 {
-    /// <summary>
-    /// Resolves the runtime safe area for every portrait surface. Acceptance-only query
-    /// overrides make inset behavior observable on desktop WebGL without changing release UI.
-    /// </summary>
     public static class RuntimeSafeAreaResolver
     {
-        private const float MinimumSafeAreaHeight = 1f;
-
         public static Rect ResolveCurrent()
         {
-            return Resolve(Screen.safeArea, Screen.width, Screen.height, Application.absoluteURL);
+#if FRUIT_DEFENSE_ACCEPTANCE
+            return AcceptanceSafeAreaDecorator.Resolve(
+                Screen.safeArea, Screen.width, Screen.height, Application.absoluteURL);
+#else
+            return Screen.safeArea;
+#endif
         }
+    }
+
+#if FRUIT_DEFENSE_ACCEPTANCE
+    public static class AcceptanceSafeAreaDecorator
+    {
+        private const float MinimumSafeAreaHeight = 1f;
 
         public static Rect Resolve(Rect systemSafeArea, float screenWidth, float screenHeight,
             string absoluteUrl)
         {
-            if (!TryGetQueryValue(absoluteUrl, "acceptance", out var acceptance)
-                || !string.Equals(acceptance, "1", StringComparison.Ordinal))
+            if (!AcceptanceLaunchQuery.IsEnabled(absoluteUrl))
             {
                 return systemSafeArea;
             }
@@ -49,36 +54,10 @@ namespace FruitDefense
                 height - topInset - bottomInset);
         }
 
-        public static bool TryGetQueryValue(string absoluteUrl, string key, out string value)
-        {
-            value = string.Empty;
-            if (string.IsNullOrEmpty(absoluteUrl) || string.IsNullOrEmpty(key)) return false;
-
-            var queryStart = absoluteUrl.IndexOf('?');
-            if (queryStart < 0 || queryStart + 1 >= absoluteUrl.Length) return false;
-            var fragmentStart = absoluteUrl.IndexOf('#', queryStart + 1);
-            var queryLength = (fragmentStart >= 0 ? fragmentStart : absoluteUrl.Length)
-                - queryStart - 1;
-            var query = absoluteUrl.Substring(queryStart + 1, queryLength);
-            foreach (var pair in query.Split('&'))
-            {
-                var separator = pair.IndexOf('=');
-                var encodedName = separator >= 0 ? pair.Substring(0, separator) : pair;
-                if (!string.Equals(Decode(encodedName), key, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var encodedValue = separator >= 0 ? pair.Substring(separator + 1) : string.Empty;
-                value = Decode(encodedValue);
-                return true;
-            }
-
-            return false;
-        }
-
         private static bool TryGetInset(string absoluteUrl, string key, out float inset)
         {
             inset = 0f;
-            if (!TryGetQueryValue(absoluteUrl, key, out var value)
+            if (!AcceptanceLaunchQuery.TryGetFirstValue(absoluteUrl, key, out var value)
                 || !float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture,
                     out inset)
                 || float.IsNaN(inset) || float.IsInfinity(inset))
@@ -89,17 +68,6 @@ namespace FruitDefense
 
             return true;
         }
-
-        private static string Decode(string value)
-        {
-            try
-            {
-                return Uri.UnescapeDataString((value ?? string.Empty).Replace('+', ' '));
-            }
-            catch (UriFormatException)
-            {
-                return value ?? string.Empty;
-            }
-        }
     }
+#endif
 }

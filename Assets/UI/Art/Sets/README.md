@@ -2,9 +2,9 @@
 
 Store production `RuntimeUiArtSet` ScriptableObject assets here. Definitions use stable set IDs and content revisions and may reference only textures/sprites under the matching `Assets/UI/Art/Runtime/<set-id>/` folder.
 
-The approved release set ID is `sunny-orchard-painted`. `SunnyOrchardPaintedRuntimeUiArtSet.asset` is revision `1`, serializes all 49 required bindings, and is the only set referenced by the release theme.
+The approved release set ID is `sunny-orchard-painted`. `SunnyOrchardPaintedRuntimeUiArtSet.asset` is revision `1`, serializes all 55 required bindings, and is the only set referenced by the release theme.
 
-`SunnyOrchardRuntimeUiArtSet.asset` is a complete, non-active 49-binding technical alternate used for isolated preview and atomic replacement validation. Its original 40 roles remain owned under `Art/Runtime/sunny-orchard`; the nine composition roles introduced with the painted contract are explicit serialized references to the reviewed shared production assets, recorded as `shared_from_set` in its manifest. This is not runtime inheritance or fallback.
+`SunnyOrchardRuntimeUiArtSet.asset` is a complete, non-active 55-binding technical alternate used for isolated preview and atomic replacement validation. Any deliberately shared production roles are explicit serialized references to reviewed production assets and are recorded as `shared_from_set` in its manifest. This is not runtime inheritance or fallback.
 
 Definitions must not resolve missing bindings through runtime inheritance, filename lookup, or fallback, and must never reference source, reference-board, review, raw-generation, or fixture assets. Any deliberately shared production binding is explicit, validated, and listed by the owning manifest.
 

@@ -1,6 +1,8 @@
 param(
-  [string]$BuildRoot = "$(Split-Path $PSScriptRoot)\Builds\WebGL",
-  [string]$OutputDirectory = "$(Split-Path $PSScriptRoot)\Logs\webgl-host-acceptance",
+  [ValidateSet('release', 'acceptance')]
+  [string]$Mode = 'release',
+  [string]$BuildRoot,
+  [string]$OutputDirectory,
   [string]$ChromePath = 'C:\Program Files\Google\Chrome\Application\chrome.exe',
   [ValidateRange(5, 180)]
   [int]$TimeoutSeconds = 60,
@@ -11,8 +13,24 @@ $ErrorActionPreference = 'Stop'
 $logicalWidth = 402.0
 $logicalHeight = 874.0
 $hostId = 'fruit-defense-portrait-contain-v1'
+$releaseAcceptanceQuery = [ordered]@{
+  acceptance = '1'
+  route = 'battle'
+  state = 'terminal-victory'
+  levelId = 'orchard-02'
+  safeTop = '44'
+  safeBottom = '34'
+}
 $projectRoot = Split-Path $PSScriptRoot
+$BuildRoot = if ([string]::IsNullOrWhiteSpace($BuildRoot)) {
+  Join-Path $projectRoot $(if ($Mode -eq 'acceptance') { 'Builds\WebGL-Acceptance' } else { 'Builds\WebGL' })
+} else { [IO.Path]::GetFullPath($BuildRoot) }
+$OutputDirectory = if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+  Join-Path $projectRoot "Logs\webgl-host-$Mode"
+} else { [IO.Path]::GetFullPath($OutputDirectory) }
 $templateRoot = Join-Path $projectRoot 'Assets\WebGLTemplates\FruitDefensePortraitContain'
+$profileProbeScript = Join-Path $PSScriptRoot 'webgl-build-profile-probe.ps1'
+. $profileProbeScript
 $script:CdpId = 0
 $script:Socket = $null
 $script:ChromeProcess = $null
@@ -20,10 +38,29 @@ $serverProcess = $null
 $serverStdout = $null
 $serverStderr = $null
 $fixtureRoot = $null
+$verifiedBuildProfile = $null
 
 function Assert-Condition {
   param([bool]$Condition, [string]$Message)
   if (-not $Condition) { throw $Message }
+}
+
+function New-HostTargetUrl {
+  param(
+    [string]$BaseUrl,
+    [ValidateSet('release', 'acceptance')]
+    [string]$RuntimeMode
+  )
+  $query = if ($RuntimeMode -eq 'acceptance') {
+    'acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0'
+  } else {
+    ($releaseAcceptanceQuery.Keys | ForEach-Object {
+      [Uri]::EscapeDataString([string]$_) + '=' +
+        [Uri]::EscapeDataString([string]$releaseAcceptanceQuery[$_])
+    }) -join '&'
+  }
+  $separator = if ($BaseUrl.Contains('?')) { '&' } else { '?' }
+  return $BaseUrl + $separator + $query
 }
 
 function Get-FreeTcpPort {
@@ -120,6 +157,11 @@ function Stop-ChromeSession {
 
 function Start-ChromeSession {
   param([string]$InitialUrl, [string]$ProfileDirectory)
+  if (-not $SourceSelfCheck -and
+      ($null -eq $verifiedBuildProfile -or
+        [string]$verifiedBuildProfile.verifiedProfile -cne $Mode)) {
+    throw "WebGL '$Mode' profile must be verified before browser commands."
+  }
   Stop-ChromeSession
   $script:CdpId = 0
   $debugPort = Get-FreeTcpPort
@@ -192,15 +234,30 @@ function Get-HostState {
   const host = window.fruitDefenseWebGLHost;
   const snapshot = host ? host.snapshot() : null;
   const loading = document.querySelector('#unity-loading-bar');
+  const query = new URL(location.href).searchParams;
   return JSON.stringify({
     href: location.href,
+    queryString: location.search.substring(1),
+    query: {
+      acceptance: query.get('acceptance'),
+      route: query.get('route'),
+      state: query.get('state'),
+      levelId: query.get('levelId'),
+      safeTop: query.get('safeTop'),
+      safeBottom: query.get('safeBottom')
+    },
     readyState: document.readyState,
     host: snapshot,
     loading: loading ? getComputedStyle(loading).display : 'missing',
     warning: document.querySelector('#unity-warning')?.textContent.trim() ?? '',
     acceptanceReady: !!window.fruitDefenseUnityInstance,
+    acceptancePending: !!window.fruitDefensePendingUnityInstance,
+    acceptanceRouteReady: window.fruitDefenseAcceptanceRouteReady === true,
     route: window.fruitDefenseAppRoute ?? -1,
     identity: window.fruitDefenseAcceptanceIdentity ?? null,
+    acceptanceTelemetry: window.fruitDefenseCombatFeedbackTelemetry ?? null,
+    settlementOutcomeRevealState:
+      window.fruitDefenseSettlementOutcomeRevealState ?? null,
     payloadResources: performance.getEntriesByType('resource')
       .map(entry => entry.name)
       .filter(name => name.includes('/Build/'))
@@ -211,9 +268,44 @@ function Get-HostState {
   return $json | ConvertFrom-Json
 }
 
+function Assert-ReleaseAcceptanceQueryIgnored {
+  param([object]$State, [string]$TargetUrl)
+  $expectedQueryString = ([Uri]$TargetUrl).Query.TrimStart('?')
+  Assert-Condition ([string]$State.queryString -ceq $expectedQueryString) `
+    "Release browser did not receive the exact acceptance-shaped query: expected=$expectedQueryString actual=$($State.queryString)"
+  foreach ($key in $releaseAcceptanceQuery.Keys) {
+    Assert-Condition ([string]$State.query.$key -ceq [string]$releaseAcceptanceQuery[$key]) `
+      "Release browser query value changed for ${key}: expected=$($releaseAcceptanceQuery[$key]) actual=$($State.query.$key)"
+  }
+  Assert-Condition (-not $State.acceptanceReady -and -not $State.acceptancePending -and
+      -not $State.acceptanceRouteReady -and [int]$State.route -eq -1 -and
+      $null -eq $State.identity -and $null -eq $State.acceptanceTelemetry -and
+      $null -eq $State.settlementOutcomeRevealState) `
+    "Release browser activated acceptance state from its query: $($State | ConvertTo-Json -Compress -Depth 8)"
+  Assert-Condition ([double]$State.host.canvas.backingWidth -eq $logicalWidth -and
+      [double]$State.host.canvas.backingHeight -eq $logicalHeight) `
+    'Release acceptance-shaped safe-area query changed the fixed host canvas backing.'
+  return [ordered]@{
+    supplied = $true
+    ignored = $true
+    url = [string]$State.href
+    queryString = [string]$State.queryString
+    parameters = $releaseAcceptanceQuery
+    observed = $State.query
+    productionRoute = 'lobby'
+    acceptanceBridge = 'absent'
+    acceptanceIdentity = 'absent'
+    acceptanceRoute = 'absent'
+    acceptanceState = 'absent'
+    syntheticSafeAreaOverride = 'absent'
+  }
+}
+
 function Wait-HostState {
   param(
     [bool]$RequireUnity,
+    [ValidateSet('source', 'release', 'acceptance')]
+    [string]$RuntimeMode = 'source',
     [int]$ExpectedWidth = 0,
     [int]$ExpectedHeight = 0,
     [double]$ExpectedDeviceScaleFactor = 0
@@ -225,8 +317,20 @@ function Wait-HostState {
       $state = Get-HostState
       $hostReady = $null -ne $state -and $null -ne $state.host -and
         $state.host.hostId -eq $hostId
-      $unityReady = -not $RequireUnity -or
-        ($state.acceptanceReady -and [int]$state.route -eq 0 -and $state.loading -eq 'none')
+      $runtimeReady = switch ($RuntimeMode) {
+        'acceptance' {
+          $state.acceptanceReady -and [int]$state.route -eq 0 -and
+            $state.loading -eq 'none' -and $null -ne $state.identity
+        }
+        'release' {
+          -not $state.acceptanceReady -and [int]$state.route -eq -1 -and
+            $state.loading -eq 'none' -and $null -eq $state.identity
+        }
+        default {
+          -not $RequireUnity -or
+            ($state.acceptanceReady -and [int]$state.route -eq 0 -and $state.loading -eq 'none')
+        }
+      }
       $expectedScale = if ($ExpectedWidth -gt 0) {
         [Math]::Min($ExpectedWidth / $logicalWidth, $ExpectedHeight / $logicalHeight)
       } else { 0 }
@@ -235,7 +339,7 @@ function Wait-HostState {
           [int]$state.host.viewportHeight -eq $ExpectedHeight -and
           [Math]::Abs([double]$state.host.devicePixelRatio - $ExpectedDeviceScaleFactor) -lt 0.001 -and
           [Math]::Abs([double]$state.host.scale - $expectedScale) -lt 0.0001)
-      if ($hostReady -and $unityReady -and $viewportReady) { return $state }
+      if ($hostReady -and $runtimeReady -and $viewportReady) { return $state }
     }
     catch {}
     Start-Sleep -Milliseconds 200
@@ -446,10 +550,12 @@ try {
   if ($SourceSelfCheck) {
     $fixtureRoot = New-SourceFixture
     $url = Start-HostServer -StaticRoot $fixtureRoot
+    $targetUrl = New-HostTargetUrl -BaseUrl $url -RuntimeMode 'release'
     $profile = Join-Path $env:TEMP "fruit-defense-host-profile-$([Guid]::NewGuid().ToString('N'))"
     try {
-      Start-ChromeSession -InitialUrl $url -ProfileDirectory $profile
+      Start-ChromeSession -InitialUrl $targetUrl -ProfileDirectory $profile
       $checks = @()
+      $releaseQueryEvidence = $null
       foreach ($case in @(
         [ordered]@{ width = 1280; height = 720; dpr = 1.0 },
         [ordered]@{ width = 1024; height = 640; dpr = 2.0 },
@@ -461,6 +567,9 @@ try {
           -ExpectedWidth $case.width `
           -ExpectedHeight $case.height `
           -ExpectedDeviceScaleFactor $case.dpr
+        $releaseQueryEvidence = Assert-ReleaseAcceptanceQueryIgnored `
+          -State $state `
+          -TargetUrl $targetUrl
         $checks += Assert-HostLayout `
           -State $state `
           -Width $case.width `
@@ -472,6 +581,7 @@ try {
         evidenceType = 'project-webgl-host-source-self-check'
         accepted = $true
         hostId = $hostId
+        releaseAcceptanceQuery = $releaseQueryEvidence
         checks = $checks
       }
       $manifestPath = Join-Path $OutputDirectory 'host-source-self-check.json'
@@ -485,8 +595,10 @@ try {
     return
   }
 
-  Assert-Condition (Test-Path -LiteralPath (Join-Path $BuildRoot 'index.html') -PathType Leaf) `
-    "WebGL build not found: $BuildRoot"
+  $verifiedBuildProfile = Assert-WebGlBuildProfile `
+    -ExpectedProfile $Mode `
+    -BuildRoot $BuildRoot `
+    -TimeoutSeconds $TimeoutSeconds
   foreach ($relative in @('TemplateData\fruit-defense-host.css', 'TemplateData\fruit-defense-host.js')) {
     $sourcePath = Join-Path $templateRoot $relative
     $builtPath = Join-Path $BuildRoot $relative
@@ -499,7 +611,7 @@ try {
 
   $payload = Get-PayloadIdentity -Root $BuildRoot
   $url = Start-HostServer -StaticRoot $BuildRoot
-  $acceptanceUrl = $url + '?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0'
+  $targetUrl = New-HostTargetUrl -BaseUrl $url -RuntimeMode $Mode
   $matrices = @()
   foreach ($case in @(
     [ordered]@{ name = '1280x720'; width = 1280; height = 720 },
@@ -510,9 +622,10 @@ try {
     try {
       Start-ChromeSession -InitialUrl 'about:blank' -ProfileDirectory $profile
       Set-Viewport -Width $case.width -Height $case.height -DeviceScaleFactor 1
-      Invoke-Cdp -Method 'Page.navigate' -Params @{ url = $acceptanceUrl } | Out-Null
+      Invoke-Cdp -Method 'Page.navigate' -Params @{ url = $targetUrl } | Out-Null
       $state = Wait-HostState `
-        -RequireUnity $true `
+        -RequireUnity ($Mode -eq 'acceptance') `
+        -RuntimeMode $Mode `
         -ExpectedWidth $case.width `
         -ExpectedHeight $case.height `
         -ExpectedDeviceScaleFactor 1
@@ -522,24 +635,44 @@ try {
         -Height $case.height `
         -DeviceScaleFactor 1
       Assert-PayloadResources -State $state -Payload $payload
-      Assert-Condition ([string]$state.identity.levelId -eq 'orchard-01') `
-        "Host acceptance did not start on orchard-01: $($state.identity | ConvertTo-Json -Compress)"
+      $releaseQueryInitial = $null
+      if ($Mode -eq 'acceptance') {
+        Assert-Condition ([string]$state.identity.levelId -eq 'orchard-01') `
+          "Host acceptance did not start on orchard-01: $($state.identity | ConvertTo-Json -Compress)"
+      } else {
+        $releaseQueryInitial = Assert-ReleaseAcceptanceQueryIgnored `
+          -State $state `
+          -TargetUrl $targetUrl
+      }
 
       $input = Invoke-CanvasRelativeClick `
         -Canvas $state.host.canvas `
         -LogicalX 201 `
         -LogicalY 406
-      $selectedState = Wait-SelectedLevel -LevelId 'orchard-02'
-      Assert-Condition ([int]$selectedState.route -eq 0) `
-        'Canvas-relative input unexpectedly left the Lobby route.'
-      $screenshotPath = Join-Path $OutputDirectory "$($case.name)-lobby-orchard-02.png"
+      $selectedState = if ($Mode -eq 'acceptance') {
+        $result = Wait-SelectedLevel -LevelId 'orchard-02'
+        Assert-Condition ([int]$result.route -eq 0) `
+          'Canvas-relative input unexpectedly left the Lobby route.'
+        $result
+      } else {
+        Get-HostState
+      }
+      if ($Mode -eq 'release') {
+        $releaseQueryAfterLobbyInput = Assert-ReleaseAcceptanceQueryIgnored `
+          -State $selectedState `
+          -TargetUrl $targetUrl
+      }
+      $screenshotName = if ($Mode -eq 'acceptance') {
+        "$($case.name)-lobby-orchard-02.png"
+      } else {
+        "$($case.name)-release-lobby.png"
+      }
+      $screenshotPath = Join-Path $OutputDirectory $screenshotName
       $screenshotHash = Save-Screenshot -Path $screenshotPath
-      $matrices += [ordered]@{
+      $matrix = [ordered]@{
         name = $case.name
         layout = $layout
         input = $input
-        selectedLevelId = [string]$selectedState.identity.levelId
-        route = [int]$selectedState.route
         payload = $payload
         screenshot = $screenshotPath
         screenshotSha256 = $screenshotHash
@@ -553,6 +686,28 @@ try {
           canvasRelativeLobbyInput = 'pass'
         }
       }
+      if ($Mode -eq 'acceptance') {
+        $matrix.selectedLevelId = [string]$selectedState.identity.levelId
+        $matrix.route = [int]$selectedState.route
+      } else {
+        $matrix.acceptanceBridge = 'absent'
+        $matrix.route = -1
+        $matrix.releaseAcceptanceQuery = [ordered]@{
+          supplied = $true
+          ignored = $true
+          parameters = $releaseAcceptanceQuery
+          initial = $releaseQueryInitial
+          afterLobbyInput = $releaseQueryAfterLobbyInput
+        }
+        $matrix.checks.releaseQuerySupplied = 'pass'
+        $matrix.checks.releaseQueryIgnored = 'pass'
+        $matrix.checks.productionLobbyPreserved = 'pass'
+        $matrix.checks.releaseRouteIgnored = 'pass'
+        $matrix.checks.releaseStateIgnored = 'pass'
+        $matrix.checks.syntheticSafeAreaQueryIgnored = 'pass'
+        $matrix.checks.acceptanceBridgeAbsent = 'pass'
+      }
+      $matrices += $matrix
     }
     finally {
       Stop-ChromeSession
@@ -562,17 +717,32 @@ try {
 
   $manifest = [ordered]@{
     schemaVersion = 1
-    evidenceType = 'desktop-webgl-host-acceptance'
+    evidenceType = "desktop-webgl-host-$Mode"
     accepted = $true
     hostId = $hostId
+    mode = $Mode
+    verifiedBuildProfile = $verifiedBuildProfile
     logicalCanvas = [ordered]@{ width = [int]$logicalWidth; height = [int]$logicalHeight }
     buildRoot = (Resolve-Path -LiteralPath $BuildRoot).Path
+    url = $targetUrl
     payload = $payload
     matrices = $matrices
   }
-  $manifestPath = Join-Path $OutputDirectory 'webgl-host-acceptance.json'
+  if ($Mode -eq 'release') {
+    $manifest['releaseAcceptanceQuery'] = [ordered]@{
+      supplied = $true
+      ignored = $true
+      parameters = $releaseAcceptanceQuery
+    }
+  }
+  $manifestPath = Join-Path $OutputDirectory "webgl-host-$Mode.json"
   $manifest | ConvertTo-Json -Depth 14 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
-  Write-Host "FRUIT_DEFENSE_WEBGL_HOST_ACCEPTANCE_OK manifest=$manifestPath"
+  $marker = if ($Mode -eq 'acceptance') {
+    'FRUIT_DEFENSE_WEBGL_HOST_ACCEPTANCE_OK'
+  } else {
+    'FRUIT_DEFENSE_WEBGL_HOST_RELEASE_OK'
+  }
+  Write-Host "$marker manifest=$manifestPath"
 }
 finally {
   Stop-ChromeSession

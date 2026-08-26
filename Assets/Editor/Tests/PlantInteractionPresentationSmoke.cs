@@ -1,4 +1,5 @@
 using System;
+using FruitDefense.Content;
 using FruitDefense.Core;
 using UnityEngine;
 
@@ -23,10 +24,14 @@ namespace FruitDefense.Editor
             var secondPot = simulation.State.Pots[1];
             var thirdPot = simulation.State.Pots[2];
             var fourthPot = simulation.State.Pots[3];
-            var first = Plant(9101, PlantKind.Pea, 2, firstPot.Id, -1, WeaponKind.Ice);
-            var second = Plant(9102, PlantKind.Watermelon, 3, secondPot.Id, -1, WeaponKind.Chili);
-            var mergeSource = Plant(9103, PlantKind.Banana, 1, thirdPot.Id, -1, WeaponKind.None);
-            var mergeTarget = Plant(9104, PlantKind.Banana, 1, fourthPot.Id, -1, WeaponKind.Gatling);
+            var first = Plant(9101, BattleContentIds.Plants.Pea, 2,
+                firstPot.Id, -1, BattleContentIds.Equipment.Ice);
+            var second = Plant(9102, BattleContentIds.Plants.Watermelon, 3,
+                secondPot.Id, -1, BattleContentIds.Equipment.Chili);
+            var mergeSource = Plant(9103, BattleContentIds.Plants.Banana, 1,
+                thirdPot.Id, -1, string.Empty);
+            var mergeTarget = Plant(9104, BattleContentIds.Plants.Banana, 1,
+                fourthPot.Id, -1, BattleContentIds.Equipment.Gatling);
             simulation.State.Plants.AddRange(new[] { first, second, mergeSource, mergeTarget });
 
             var swap = simulation.GetPlantDropStatus(first.Id, secondPot.Id);
@@ -36,7 +41,8 @@ namespace FruitDefense.Editor
                 "board swap commits");
             Assert(first.PotId == secondPot.Id && second.PotId == firstPot.Id
                 && first.Star == 2 && second.Star == 3
-                && first.Weapon == WeaponKind.Ice && second.Weapon == WeaponKind.Chili
+                && first.EquipmentId == BattleContentIds.Equipment.Ice
+                && second.EquipmentId == BattleContentIds.Equipment.Chili
                 && simulation.State.Plants.Count == 4,
                 "board swap preserves plant identity, stars, equipment, and count");
 
@@ -54,8 +60,10 @@ namespace FruitDefense.Editor
             var simulation = new GameSimulation(7402);
             simulation.State.Plants.Clear();
             var pot = simulation.State.Pots[0];
-            var boardPlant = Plant(9201, PlantKind.Pea, 1, pot.Id, -1, WeaponKind.None);
-            var nurseryPlant = Plant(9202, PlantKind.Durian, 3, -1, 0, WeaponKind.Ice);
+            var boardPlant = Plant(9201, BattleContentIds.Plants.Pea, 1,
+                pot.Id, -1, string.Empty);
+            var nurseryPlant = Plant(9202, BattleContentIds.Plants.Durian, 3,
+                -1, 0, BattleContentIds.Equipment.Ice);
             simulation.State.Plants.AddRange(new[] { boardPlant, nurseryPlant });
 
             var toNursery = simulation.GetNurseryDropStatus(boardPlant.Id, 0);
@@ -85,17 +93,17 @@ namespace FruitDefense.Editor
                 "active-wave cooldown applies only to the plant moved from the board");
         }
 
-        private static Plant Plant(int id, PlantKind kind, int star, int potId,
-            int nurseryIndex, WeaponKind weapon)
+        private static Plant Plant(int id, string definitionId, int star,
+            int potId, int nurseryIndex, string equipmentId)
         {
             return new Plant
             {
                 Id = id,
-                Kind = kind,
+                DefinitionId = definitionId,
                 Star = star,
                 PotId = potId,
                 NurseryIndex = nurseryIndex,
-                Weapon = weapon,
+                EquipmentId = equipmentId,
             };
         }
 

@@ -19,16 +19,16 @@ MonoBehaviour:
   mapUnitsPerCell: 1
   visualCells:
   - baseSurfaceId: surface.soil
-    landformSurfaceId: surface.stone-road
-    contourStyleId: contour.square
+    landformSurfaceId:
+    contourStyleId:
     edgeStyleId: 
   - baseSurfaceId: surface.soil
-    landformSurfaceId: surface.stone-road
-    contourStyleId: contour.square
+    landformSurfaceId:
+    contourStyleId:
     edgeStyleId: 
   - baseSurfaceId: surface.soil
-    landformSurfaceId: surface.stone-road
-    contourStyleId: contour.square
+    landformSurfaceId:
+    contourStyleId:
     edgeStyleId: 
   - baseSurfaceId: surface.soil
     landformSurfaceId: 

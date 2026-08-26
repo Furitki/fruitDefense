@@ -78,6 +78,12 @@ namespace FruitDefense.Core
         Trigger,
     }
 
+    public enum BattlefieldExecutionProfile
+    {
+        StandardRelease,
+        GmMultiRoute,
+    }
+
     public sealed class BattlefieldGameplayCellSource
     {
         public IReadOnlyList<string> CapabilityIds { get; private set; }
@@ -98,8 +104,8 @@ namespace FruitDefense.Core
         public string ContourStyleId { get; private set; }
         public string EdgeStyleId { get; private set; }
 
-        // Legacy construction keeps the original organic silhouette. Canonical authored maps
-        // use the explicit four-identity overload below.
+        // Convenience construction keeps the original organic silhouette. Canonical authored
+        // maps and development compositions use the explicit four-identity overload below.
         public BattlefieldVisualCellSource(string baseSurfaceId, string landformSurfaceId = null,
             string edgeStyleId = null)
             : this(baseSurfaceId, landformSurfaceId,
@@ -205,6 +211,7 @@ namespace FruitDefense.Core
         public int GridWidth { get; private set; }
         public int GridHeight { get; private set; }
         public float MapUnitsPerCell { get; private set; }
+        public BattlefieldExecutionProfile ExecutionProfile { get; private set; }
         public string PrimaryRouteId { get; private set; }
         public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
@@ -219,13 +226,15 @@ namespace FruitDefense.Core
             IEnumerable<BattlefieldGameplayCellSource> gameplayCells,
             IEnumerable<BattlefieldRouteDefinition> routes,
             IEnumerable<BattlefieldMarkerGroupDefinition> markerGroups,
-            IEnumerable<BattlefieldMarkerDefinition> markers)
+            IEnumerable<BattlefieldMarkerDefinition> markers,
+            BattlefieldExecutionProfile executionProfile)
         {
             SchemaVersion = schemaVersion;
             MapId = mapId ?? string.Empty;
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             MapUnitsPerCell = mapUnitsPerCell;
+            ExecutionProfile = executionProfile;
             PrimaryRouteId = primaryRouteId ?? string.Empty;
             var authoredVisualCells = (visualCells
                 ?? Enumerable.Empty<BattlefieldVisualCellSource>()).ToArray();
@@ -246,9 +255,11 @@ namespace FruitDefense.Core
             IEnumerable<BattlefieldGameplayCellSource> gameplayCells,
             IEnumerable<BattlefieldRouteDefinition> routes,
             IEnumerable<BattlefieldMarkerGroupDefinition> markerGroups,
-            IEnumerable<BattlefieldMarkerDefinition> markers)
+            IEnumerable<BattlefieldMarkerDefinition> markers,
+            BattlefieldExecutionProfile executionProfile)
             : this(schemaVersion, mapId, gridWidth, gridHeight, mapUnitsPerCell, primaryRouteId,
-                ToVisualCells(visualSurfaceIds), gameplayCells, routes, markerGroups, markers)
+                ToVisualCells(visualSurfaceIds), gameplayCells, routes, markerGroups, markers,
+                executionProfile)
         {
         }
 
@@ -311,6 +322,7 @@ namespace FruitDefense.Core
         public int GridWidth { get; private set; }
         public int GridHeight { get; private set; }
         public float MapUnitsPerCell { get; private set; }
+        public BattlefieldExecutionProfile ExecutionProfile { get; private set; }
         public string PrimaryRouteId { get; private set; }
         public IReadOnlyList<BattlefieldVisualCellSource> VisualCells { get; private set; }
         public IReadOnlyList<string> VisualSurfaceIds { get; private set; }
@@ -323,7 +335,16 @@ namespace FruitDefense.Core
         public IReadOnlyDictionary<string, BattlefieldMarkerDefinition> Markers { get { return _markers; } }
         public string GameplayFingerprint { get; private set; }
 
-        public BattlefieldRouteDefinition PrimaryRoute { get { return _routes[PrimaryRouteId]; } }
+        public BattlefieldRouteDefinition PrimaryRoute
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(PrimaryRouteId))
+                    throw new InvalidOperationException("The " + ExecutionProfile
+                        + " battlefield profile does not expose a primary route.");
+                return _routes[PrimaryRouteId];
+            }
+        }
 
         internal CompiledBattlefieldMap(BattlefieldLayeredMapSource source,
             IEnumerable<BattlefieldGameplayCell> gameplayCells,
@@ -336,6 +357,7 @@ namespace FruitDefense.Core
             GridWidth = source.GridWidth;
             GridHeight = source.GridHeight;
             MapUnitsPerCell = source.MapUnitsPerCell;
+            ExecutionProfile = source.ExecutionProfile;
             PrimaryRouteId = source.PrimaryRouteId;
             VisualCells = Array.AsReadOnly(source.VisualCells.ToArray());
             VisualSurfaceIds = Array.AsReadOnly(source.VisualSurfaceIds.ToArray());
@@ -355,6 +377,33 @@ namespace FruitDefense.Core
         public int CellIndex(Vector2Int cell)
         {
             return cell.y * GridWidth + cell.x;
+        }
+
+        public bool TryGetRoute(string routeId, out BattlefieldRouteDefinition route)
+        {
+            if (string.IsNullOrWhiteSpace(routeId))
+            {
+                route = null;
+                return false;
+            }
+            return _routes.TryGetValue(routeId, out route);
+        }
+
+        public BattlefieldRouteDefinition RouteById(string routeId)
+        {
+            BattlefieldRouteDefinition route;
+            if (!TryGetRoute(routeId, out route))
+                throw new ArgumentException("Unknown battlefield route ID '" + routeId + "'.",
+                    nameof(routeId));
+            return route;
+        }
+
+        public bool TryGetRouteMarker(string routeId, BattlefieldMarkerKind kind,
+            out BattlefieldMarkerDefinition marker)
+        {
+            marker = MarkersInSourceOrder.FirstOrDefault(value => value.Kind == kind
+                && string.Equals(value.RouteId, routeId, StringComparison.Ordinal));
+            return marker != null;
         }
 
         public string SurfaceAt(Vector2Int cell)
@@ -502,8 +551,17 @@ namespace FruitDefense.Core
             if (source.MapUnitsPerCell <= 0f || float.IsNaN(source.MapUnitsPerCell)
                 || float.IsInfinity(source.MapUnitsPerCell))
                 validation.Add("map.scale", "mapUnitsPerCell", "Map units per cell must be finite and positive.");
-            if (string.IsNullOrWhiteSpace(source.PrimaryRouteId))
-                validation.Add("route.primary-id", "primaryRouteId", "Primary route identity is required.");
+            if (!Enum.IsDefined(typeof(BattlefieldExecutionProfile), source.ExecutionProfile))
+                validation.Add("execution.profile", "executionProfile",
+                    "Battlefield execution profile is invalid.");
+            if (source.ExecutionProfile == BattlefieldExecutionProfile.StandardRelease
+                && string.IsNullOrWhiteSpace(source.PrimaryRouteId))
+                validation.Add("route.primary-id", "primaryRouteId",
+                    "The standard release profile requires a primary route identity.");
+            if (source.ExecutionProfile == BattlefieldExecutionProfile.GmMultiRoute
+                && !string.IsNullOrEmpty(source.PrimaryRouteId))
+                validation.Add("route.unexpected-primary-id", "primaryRouteId",
+                    "The GM multi-route profile does not expose a primary route.");
         }
 
         private static void ValidateVisualCells(BattlefieldLayeredMapSource source,
@@ -901,13 +959,29 @@ namespace FruitDefense.Core
             IReadOnlyDictionary<string, BattlefieldMarkerDefinition> markers,
             BattlefieldLayeredMapValidationResult validation)
         {
+            if (source.ExecutionProfile == BattlefieldExecutionProfile.GmMultiRoute)
+            {
+                ValidateGmExecutionProfile(routes, groups, markers, validation);
+                return;
+            }
+
+            ValidateStandardExecutionProfile(source, routes, groups, markers, validation);
+        }
+
+        private static void ValidateStandardExecutionProfile(BattlefieldLayeredMapSource source,
+            IReadOnlyDictionary<string, BattlefieldRouteDefinition> routes,
+            IReadOnlyDictionary<string, BattlefieldMarkerGroupDefinition> groups,
+            IReadOnlyDictionary<string, BattlefieldMarkerDefinition> markers,
+            BattlefieldLayeredMapValidationResult validation)
+        {
             if (routes.Count != 1)
-                validation.Add("execution.route-count", "routes",
-                    "Current execution profile requires exactly one route; found " + routes.Count + ".");
+                validation.Add("execution.standard.route-count", "routes",
+                    "The standard release profile requires exactly one route; found "
+                    + routes.Count + ".");
             BattlefieldRouteDefinition primary;
             if (!routes.TryGetValue(source.PrimaryRouteId, out primary))
             {
-                validation.Add("execution.primary-route", "primaryRouteId",
+                validation.Add("execution.standard.primary-route", "primaryRouteId",
                     "Primary route '" + source.PrimaryRouteId + "' is missing.");
                 return;
             }
@@ -952,7 +1026,95 @@ namespace FruitDefense.Core
                     validation.Add("execution.unowned-candidates", "markers",
                         "Initial-pot candidates reference missing group '" + groupId + "'.");
             if (totalSelection <= 0)
-                validation.Add("execution.initial-pot-count", "markerGroups",
+                validation.Add("execution.standard.initial-pot-count", "markerGroups",
+                    "At least one initial flowerpot selection is required.");
+        }
+
+        private static void ValidateGmExecutionProfile(
+            IReadOnlyDictionary<string, BattlefieldRouteDefinition> routes,
+            IReadOnlyDictionary<string, BattlefieldMarkerGroupDefinition> groups,
+            IReadOnlyDictionary<string, BattlefieldMarkerDefinition> markers,
+            BattlefieldLayeredMapValidationResult validation)
+        {
+            if (routes.Count != 8)
+                validation.Add("execution.gm.route-count", "routes",
+                    "The GM multi-route profile requires exactly eight routes; found "
+                    + routes.Count + ".");
+
+            var spawns = markers.Values.Where(marker => marker.Kind == BattlefieldMarkerKind.EnemySpawn)
+                .ToArray();
+            var goals = markers.Values.Where(marker => marker.Kind == BattlefieldMarkerKind.RouteGoal)
+                .ToArray();
+            var cores = markers.Values.Where(marker => marker.Kind == BattlefieldMarkerKind.Core)
+                .ToArray();
+            if (spawns.Length != routes.Count)
+                validation.Add("execution.gm.spawn-count", "markers",
+                    "The GM profile requires one enemy-spawn marker per route.");
+            if (goals.Length != routes.Count)
+                validation.Add("execution.gm.goal-count", "markers",
+                    "The GM profile requires one route-goal marker per route.");
+            if (cores.Length != 0)
+                validation.Add("execution.gm.core-count", "markers",
+                    "The GM profile must not declare a damageable core marker.");
+
+            var occupiedColumns = new HashSet<int>();
+            foreach (var route in routes.Values.OrderBy(value => value.RouteId, StringComparer.Ordinal))
+            {
+                var field = "routes." + route.RouteId;
+                if (route.Cells.Count > 0)
+                {
+                    if (route.Cells.Any(cell => cell.x != route.Cells[0].x))
+                        validation.Add("execution.gm.non-vertical-route", field,
+                            "GM route '" + route.RouteId + "' must stay in one grid column.");
+                    else if (!occupiedColumns.Add(route.Cells[0].x))
+                        validation.Add("execution.gm.duplicate-column", field,
+                            "GM route '" + route.RouteId
+                            + "' shares a column with another executable route.");
+                    if (route.Cells.Count > 1
+                        && route.Cells[0].y >= route.Cells[route.Cells.Count - 1].y)
+                        validation.Add("execution.gm.route-direction", field,
+                            "GM route '" + route.RouteId
+                            + "' must travel from its top spawn toward its lower goal.");
+                }
+                if (spawns.Count(marker => string.Equals(marker.RouteId, route.RouteId,
+                        StringComparison.Ordinal)) != 1)
+                    validation.Add("execution.gm.spawn-route", field,
+                        "GM route '" + route.RouteId + "' requires exactly one paired spawn marker.");
+                if (goals.Count(marker => string.Equals(marker.RouteId, route.RouteId,
+                        StringComparison.Ordinal)) != 1)
+                    validation.Add("execution.gm.goal-route", field,
+                        "GM route '" + route.RouteId + "' requires exactly one paired goal marker.");
+            }
+
+            ValidateMarkerGroupSelections(groups, markers, "execution.gm", validation);
+        }
+
+        private static void ValidateMarkerGroupSelections(
+            IReadOnlyDictionary<string, BattlefieldMarkerGroupDefinition> groups,
+            IReadOnlyDictionary<string, BattlefieldMarkerDefinition> markers,
+            string codePrefix, BattlefieldLayeredMapValidationResult validation)
+        {
+            var candidates = markers.Values
+                .Where(marker => marker.Kind == BattlefieldMarkerKind.InitialPotCandidate)
+                .GroupBy(marker => marker.GroupId, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+            var totalSelection = 0;
+            foreach (var group in groups.Values)
+            {
+                int candidateCount;
+                candidates.TryGetValue(group.GroupId, out candidateCount);
+                if (group.SelectionCount > candidateCount)
+                    validation.Add(codePrefix + ".marker-group-selection",
+                        "markerGroups." + group.GroupId, "Selection count " + group.SelectionCount
+                        + " exceeds " + candidateCount + " candidates.");
+                totalSelection += group.SelectionCount;
+            }
+            foreach (var groupId in candidates.Keys)
+                if (!groups.ContainsKey(groupId))
+                    validation.Add(codePrefix + ".unowned-candidates", "markers",
+                        "Initial-pot candidates reference missing group '" + groupId + "'.");
+            if (totalSelection <= 0)
+                validation.Add(codePrefix + ".initial-pot-count", "markerGroups",
                     "At least one initial flowerpot selection is required.");
         }
 
@@ -964,6 +1126,8 @@ namespace FruitDefense.Core
             AddHash(ref hash, source.GridWidth);
             AddHash(ref hash, source.GridHeight);
             AddHash(ref hash, source.MapUnitsPerCell);
+            AddHash(ref hash, (int)source.ExecutionProfile);
+            AddHash(ref hash, source.PrimaryRouteId);
             foreach (var cell in gameplayCells)
             {
                 AddHash(ref hash, (int)cell.Capabilities);
@@ -1101,7 +1265,7 @@ namespace FruitDefense.Core
                 mapId, width, height, mapUnitsPerCell, BattlefieldLayerIds.PrimaryRoute,
                 visuals, gameplay,
                 new[] { new BattlefieldRouteDefinition(BattlefieldLayerIds.PrimaryRoute, route) },
-                markerGroups, markers);
+                markerGroups, markers, BattlefieldExecutionProfile.StandardRelease);
         }
 
         private static string NormalizeId(string value)

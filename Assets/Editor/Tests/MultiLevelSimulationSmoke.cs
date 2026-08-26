@@ -111,8 +111,7 @@ namespace FruitDefense.Editor
                 level.Identity.LevelId + " did not grant the resolved milestone pot reward.");
             foreach (var equipmentId in milestone.EquipmentIds)
             {
-                var kind = LegacyBattleContentIds.WeaponKindFromId(equipmentId);
-                Assert(milestoneSimulation.State.Inventory.Get(kind) > 0,
+                Assert(milestoneSimulation.State.Inventory.Get(equipmentId) > 0,
                     level.Identity.LevelId + " did not grant resolved milestone equipment "
                     + equipmentId + ".");
             }

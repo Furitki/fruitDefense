@@ -235,7 +235,9 @@ namespace FruitDefense.Shell
             RuntimeUiGui.DrawActionVisual(_drawContext, layout.StartButton,
                 transitioning ? startCopy.Text
                     : RuntimeUiCopyCatalog.FormatLobbyStart(_visibleSelectedLevelId),
-                RuntimeUiActionKind.Primary, startState,
+                new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                    RuntimeUiActionContentForm.IconLabel,
+                    RuntimeUiActionBehavior.Instantaneous), startState,
                 RuntimeUiArtSlot.IconControlStart,
                 startCopy.Role,
                 transitionEmphasized

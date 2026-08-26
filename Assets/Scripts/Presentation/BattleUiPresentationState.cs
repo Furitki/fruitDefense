@@ -32,6 +32,15 @@ namespace FruitDefense.Presentation
         Swap = 4,
     }
 
+    public enum BattleUiActionSemantic
+    {
+        StartWave = 0,
+        NurseryRefresh = 1,
+        PauseContinue = 2,
+        Speed = 3,
+        Close = 4,
+    }
+
     public readonly struct BattleUiModalContent
     {
         public BattleUiModalContent(string title, string resultBannerText,
@@ -167,6 +176,36 @@ namespace FruitDefense.Presentation
                 : RuntimeUiInteractionState.Normal;
         }
 
+        public static RuntimeUiActionSpec ResolveActionSpec(
+            BattleUiActionSemantic semantic)
+        {
+            switch (semantic)
+            {
+                case BattleUiActionSemantic.StartWave:
+                    return new RuntimeUiActionSpec(RuntimeUiActionKind.Primary,
+                        RuntimeUiActionContentForm.IconLabel,
+                        RuntimeUiActionBehavior.Instantaneous);
+                case BattleUiActionSemantic.NurseryRefresh:
+                    return new RuntimeUiActionSpec(RuntimeUiActionKind.Secondary,
+                        RuntimeUiActionContentForm.IconLabel,
+                        RuntimeUiActionBehavior.Instantaneous);
+                case BattleUiActionSemantic.PauseContinue:
+                    return new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                        RuntimeUiActionContentForm.IconOnly,
+                        RuntimeUiActionBehavior.PersistentMode);
+                case BattleUiActionSemantic.Speed:
+                    return new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                        RuntimeUiActionContentForm.CompactMultiplier,
+                        RuntimeUiActionBehavior.PersistentMode);
+                case BattleUiActionSemantic.Close:
+                    return new RuntimeUiActionSpec(RuntimeUiActionKind.Quiet,
+                        RuntimeUiActionContentForm.IconOnly,
+                        RuntimeUiActionBehavior.Instantaneous);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(semantic), semantic, null);
+            }
+        }
+
         public static RuntimeUiInteractionState ResolveSlotState(
             bool enabled, bool selected, bool pointerInside, bool pointerPressed)
         {
@@ -210,13 +249,16 @@ namespace FruitDefense.Presentation
         }
 
         public static RuntimeUiInteractionState ResolveTransientStatusState(
-            bool success, BattleUiDropCue dropCue)
+            RuntimeUiInteractionState statusState, BattleUiDropCue dropCue)
         {
             if (dropCue != BattleUiDropCue.None)
                 return DropInteractionState(dropCue);
-            return success
-                ? RuntimeUiInteractionState.Success
-                : RuntimeUiInteractionState.Error;
+            return statusState;
+        }
+
+        public static string FormatTransientStatus(bool success, string message)
+        {
+            return (success ? "✓ " : "! ") + (message ?? string.Empty);
         }
 
         public BattleUiModalContent ModalContent(int waveIndex, int maxWaves)

@@ -25,8 +25,7 @@ namespace FruitDefense.Editor
 
             var projectSetup = File.ReadAllText(ToAbsolute(
                 "Assets/Editor/Tools/ProjectSetup.cs"));
-            var validator = File.ReadAllText(ToAbsolute(
-                "Assets/Editor/Tools/RuntimeUiVisualSystemValidator.cs"));
+            var validator = RuntimeUiSourceAuthority.ReadVisualValidator();
             Assert(Count(projectSetup, "RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph") == 1,
                 "ProjectSetup consumes the single glyph authority exactly once");
             Assert(Count(validator, "RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph") == 1,

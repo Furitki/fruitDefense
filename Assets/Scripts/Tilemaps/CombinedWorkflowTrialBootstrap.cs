@@ -34,7 +34,7 @@ namespace FruitDefense.Trials
                 throw new InvalidOperationException(
                     "Combined workflow trial runtime UI theme is invalid: "
                     + themeValidation.Issues[0]);
-            if (game.IsInitialized) return;
+            if (game.Status.IsInitialized) return;
 
             var catalog = BundledLevelCatalogFactory.CreateCompiled();
             var resolution = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard01);
@@ -54,8 +54,9 @@ namespace FruitDefense.Trials
                 "combined-workflow-trial-" + Guid.NewGuid().ToString("N"),
                 level.Identity.LevelId,
                 0,
-                level.BattleContent.Header.contentVersion);
-            var result = game.Initialize(request, navigator, this, runtimeUiTheme, level);
+                level.BattleContent.Header.contentVersion,
+                BattleSessionMode.Standard);
+            var result = game.Initialize(request, navigator, this, runtimeUiTheme, catalog);
             if (!result.Success)
                 throw new InvalidOperationException(
                     "Combined workflow trial Battle initialization failed: "

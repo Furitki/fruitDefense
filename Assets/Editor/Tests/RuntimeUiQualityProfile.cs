@@ -79,6 +79,13 @@ namespace FruitDefense.Editor
         public const int MinimumContentGap = 8;
         public const int MinimumContentInset = 8;
         public const int MinimumTextToBorderGap = 4;
+        public const int EmphasisOutlineCapturePixels = 2;
+        public const int SettlementOutcomeInkHeightMinimum = 28;
+        public const int SettlementOutcomeInkHeightMaximum = 32;
+        public const float SettlementOutcomeOccupancyMinimum = .52f;
+        public const float SettlementOutcomeOccupancyMaximum = .64f;
+        public const int SettlementOutcomePaddingMinimum = 8;
+        public const int SettlementOutcomePaddingImbalanceMaximum = 2;
         public const int OccupiedContentCenterTolerance = 24;
         public const int OccupiedContentBottomGapMaximum = 100;
         public const int OppositeGutterTolerance = 1;
@@ -104,13 +111,14 @@ namespace FruitDefense.Editor
         public const float MicroIconSilhouetteIouMaximum = .8f;
         public const int NineSliceCanvasSize = 128;
         public const int NineSliceBorder = 32;
+        public const int GameplayStageNineSliceBorder = 20;
         public const int NineSliceSafeInset = 20;
         public const int NineSliceMinimumDestination = 32;
         public const int NineSlicePartitionCoverageCount = 1;
         public const int NineSliceSeamToleranceDevicePixels = 0;
         public const int ProductionPixelsPerLogicalUnit = 2;
         public const int ProductionImporterPixelsPerUnit = 100;
-        public const int PaintedUniqueExportCount = 51;
+        public const int PaintedUniqueExportCount = 54;
 
         public static int MinimumFontSize(RuntimeUiTypographyRole role)
         {

@@ -599,10 +599,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 17
-      top: 15
-      right: 17
-      bottom: 15
+      left: 25
+      top: 17
+      right: 26
+      bottom: 17
     pixelsPerLogicalUnit: 2
   - slot: 31
     texture: {fileID: 2800000, guid: e1c7d4470e9a8f06add0e800bd1e23bb, type: 3}
@@ -618,10 +618,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 15
-      top: 16
-      right: 15
-      bottom: 16
+      left: 28
+      top: 17
+      right: 14
+      bottom: 17
     pixelsPerLogicalUnit: 2
   - slot: 32
     texture: {fileID: 2800000, guid: fb4c422d6646ae4aba60104a1c9d5305, type: 3}
@@ -637,10 +637,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 16
-      top: 29
-      right: 14
-      bottom: 29
+      left: 21
+      top: 30
+      right: 13
+      bottom: 30
     pixelsPerLogicalUnit: 2
   - slot: 33
     texture: {fileID: 2800000, guid: e1c7d4470e9a8f06add0e800bd1e23bb, type: 3}
@@ -656,10 +656,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 15
-      top: 16
-      right: 15
-      bottom: 16
+      left: 28
+      top: 17
+      right: 14
+      bottom: 17
     pixelsPerLogicalUnit: 2
   - slot: 34
     texture: {fileID: 2800000, guid: 904369e03566f44f56bdbfe64002a620, type: 3}
@@ -713,9 +713,9 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 15
-      top: 16
-      right: 15
+      left: 17
+      top: 17
+      right: 17
       bottom: 17
     pixelsPerLogicalUnit: 2
   - slot: 37
@@ -751,10 +751,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 15
-      top: 16
-      right: 15
-      bottom: 16
+      left: 28
+      top: 17
+      right: 14
+      bottom: 17
     pixelsPerLogicalUnit: 2
   - slot: 39
     texture: {fileID: 2800000, guid: 769dbb3d6263bbb2c65bad050acf6cc9, type: 3}
@@ -1021,4 +1021,61 @@ MonoBehaviour:
       top: 0
       right: 0
       bottom: 0
+    pixelsPerLogicalUnit: 2
+  - slot: 53
+    texture: {fileID: 2800000, guid: 7dfb0b5af19df10465572bee07dd6df4, type: 3}
+    sprite: {fileID: 21300000, guid: 7dfb0b5af19df10465572bee07dd6df4, type: 3}
+    sliceBorder:
+      left: 32
+      top: 32
+      right: 32
+      bottom: 32
+    safeInset:
+      left: 20
+      top: 20
+      right: 20
+      bottom: 20
+    opticalInset:
+      left: 4
+      top: 4
+      right: 4
+      bottom: 4
+    pixelsPerLogicalUnit: 2
+  - slot: 54
+    texture: {fileID: 2800000, guid: de20db00bda29fa42c8ed9ae4424dcd2, type: 3}
+    sprite: {fileID: 21300000, guid: de20db00bda29fa42c8ed9ae4424dcd2, type: 3}
+    sliceBorder:
+      left: 32
+      top: 32
+      right: 32
+      bottom: 32
+    safeInset:
+      left: 20
+      top: 20
+      right: 20
+      bottom: 20
+    opticalInset:
+      left: 4
+      top: 4
+      right: 4
+      bottom: 4
+    pixelsPerLogicalUnit: 2
+  - slot: 55
+    texture: {fileID: 2800000, guid: 22874c05e340198be7942216980453c2, type: 3}
+    sprite: {fileID: 21300000, guid: 22874c05e340198be7942216980453c2, type: 3}
+    sliceBorder:
+      left: 20
+      top: 20
+      right: 20
+      bottom: 20
+    safeInset:
+      left: 20
+      top: 20
+      right: 20
+      bottom: 20
+    opticalInset:
+      left: 8
+      top: 8
+      right: 12
+      bottom: 8
     pixelsPerLogicalUnit: 2

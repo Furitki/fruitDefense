@@ -1,5 +1,6 @@
 {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
+    "outcomeProjectionVersion": 4,
     "maps": [
         {
             "levelId": "orchard-01",
@@ -23,7 +24,7 @@
             "outcomeWaveSpawned": 5,
             "outcomeZombieCount": 5,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "4d94f64cad0a67b56090bb22fd6d922c0aab28e44668f5fc6e3abbcc442d26aa"
+            "outcomeChecksum": "e08028b775b29422d968e73d5762f555d7b38e8d2a7f4ec83cb675b3eadbb9c4"
         },
         {
             "levelId": "orchard-02",
@@ -47,7 +48,7 @@
             "outcomeWaveSpawned": 8,
             "outcomeZombieCount": 8,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "a7f66482933378e1c9863bca20f1f591d28b7858d7690856d27d3aacf2853bb1"
+            "outcomeChecksum": "00991d228f54e6911503393c123976e255dd4daf37c26283a2adc93cd303157f"
         },
         {
             "levelId": "orchard-03",
@@ -71,7 +72,7 @@
             "outcomeWaveSpawned": 10,
             "outcomeZombieCount": 10,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "781ab86ead73e1a1e6e67b0cc4492c904b77be87249f5059ec0612cef41ed4f7"
+            "outcomeChecksum": "627fab9a2565efc2595f0cc4ae59b673c4dd66f86b96a5119056f208684dc431"
         }
     ]
 }

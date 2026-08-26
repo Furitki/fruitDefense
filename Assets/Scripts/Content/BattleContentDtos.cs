@@ -21,10 +21,8 @@ namespace FruitDefense.Content
         public float attackIntervalSeconds;
         public float rangeLegacyUnits;
         public float potVisualHeightOffset;
-        public string[] skillIds = Array.Empty<string>();
-        public string[] passiveIds = Array.Empty<string>();
+        public string[] abilityIds = Array.Empty<string>();
         public string[] tags = Array.Empty<string>();
-        public string projectileId = string.Empty;
         public string[] allowedEquipmentIds = Array.Empty<string>();
     }
 
@@ -37,8 +35,7 @@ namespace FruitDefense.Content
         public float speedLegacyUnits;
         public int killReward;
         public int threat;
-        public string[] skillIds = Array.Empty<string>();
-        public string[] passiveIds = Array.Empty<string>();
+        public string[] abilityIds = Array.Empty<string>();
         public string[] tags = Array.Empty<string>();
     }
 
@@ -47,84 +44,79 @@ namespace FruitDefense.Content
     {
         public string id = string.Empty;
         public string displayName = string.Empty;
-        public string[] skillIds = Array.Empty<string>();
-        public string[] statusIds = Array.Empty<string>();
         public string[] compatiblePlantIds = Array.Empty<string>();
-        public EquipmentSkillGrantDto[] grants = Array.Empty<EquipmentSkillGrantDto>();
-        public SkillModifierDefinitionDto[] modifiers = Array.Empty<SkillModifierDefinitionDto>();
-        public string[] passiveIds = Array.Empty<string>();
-        public EquipmentPassiveGrantDto[] passiveGrants = Array.Empty<EquipmentPassiveGrantDto>();
+        public AbilityGrantDefinitionDto[] grants = Array.Empty<AbilityGrantDefinitionDto>();
+        public AbilityModifierDefinitionDto[] modifiers = Array.Empty<AbilityModifierDefinitionDto>();
     }
 
     [Serializable]
-    public sealed class EquipmentSkillGrantDto
+    public sealed class AbilityGrantDefinitionDto
     {
-        public string skillId = string.Empty;
+        public string abilityId = string.Empty;
         public string requiredPlantTag = string.Empty;
     }
 
     [Serializable]
-    public sealed class EquipmentPassiveGrantDto
-    {
-        public string passiveId = string.Empty;
-        public string requiredPlantTag = string.Empty;
-    }
-
-    [Serializable]
-    public sealed class SkillModifierDefinitionDto
+    public sealed class AbilityModifierDefinitionDto
     {
         public string id = string.Empty;
         public string requiredPlantTag = string.Empty;
-        public string targetSkillTag = string.Empty;
+        public string targetAbilityId = string.Empty;
+        public string targetAbilityTag = string.Empty;
         public bool allowMultipleMatches;
-        public int burstCountOverride;
-        public float burstIntervalSeconds;
-        public int resourceAmountDelta;
+        public string attributeId = string.Empty;
+        public string operationId = string.Empty;
+        public float value;
     }
 
     [Serializable]
-    public sealed class SkillDefinitionDto
+    public sealed class AbilityDefinitionDto
     {
         public string id = string.Empty;
-        public string triggerId = string.Empty;
-        public string targetId = string.Empty;
-        public string projectileId = string.Empty;
-        public string statusId = string.Empty;
-        public float cooldownSeconds;
+        public AbilityActivationDefinitionDto activation = new AbilityActivationDefinitionDto();
+        public AbilityTimelineDefinitionDto timeline = new AbilityTimelineDefinitionDto();
         public float damageMultiplier = 1f;
-        public int resourceAmount;
         public int burstCount = 1;
         public float burstIntervalSeconds;
         public string[] tags = Array.Empty<string>();
-        public SkillEffectDefinitionDto[] effects = Array.Empty<SkillEffectDefinitionDto>();
-        public string visualId = string.Empty;
-        public string cueId = string.Empty;
-        public float actionSeconds;
+        public AbilityDeliveryDefinitionDto[] deliveries = Array.Empty<AbilityDeliveryDefinitionDto>();
     }
 
     [Serializable]
-    public sealed class SkillEffectDefinitionDto
+    public sealed class AbilityActivationDefinitionDto
     {
         public string kindId = string.Empty;
-        public string projectileId = string.Empty;
-        public string statusId = string.Empty;
-        public float magnitude = 1f;
-        public float radiusLegacyUnits;
-        public int resourceAmount;
-        public string cueId = string.Empty;
+        public string eventId = string.Empty;
+        public string ownerRoleId = "owner.any";
+        public int priority;
+        public float cooldownSeconds;
+        public float periodSeconds;
     }
 
     [Serializable]
-    public sealed class PassiveDefinitionDto
+    public sealed class AbilityTimelineDefinitionDto
     {
-        public string id = string.Empty;
-        public string triggerId = string.Empty;
-        public string ownerRoleId = string.Empty;
+        public float windupSeconds;
+        public float recoverySeconds;
+    }
+
+    [Serializable]
+    public sealed class AbilityDeliveryDefinitionDto
+    {
         public string targetId = string.Empty;
-        public int priority;
-        public float cooldownSeconds;
-        public string[] tags = Array.Empty<string>();
-        public SkillEffectDefinitionDto[] effects = Array.Empty<SkillEffectDefinitionDto>();
+        public string modeId = "delivery.instant";
+        public string projectileId = string.Empty;
+        public float radiusLegacyUnits;
+        public AbilityPayloadEffectDefinitionDto[] payload = Array.Empty<AbilityPayloadEffectDefinitionDto>();
+    }
+
+    [Serializable]
+    public sealed class AbilityPayloadEffectDefinitionDto
+    {
+        public string kindId = string.Empty;
+        public string statusId = string.Empty;
+        public float magnitude = 1f;
+        public int resourceAmount;
     }
 
     [Serializable]
@@ -134,12 +126,9 @@ namespace FruitDefense.Content
         public string travelMode = string.Empty;
         public float speedLegacyUnits;
         public float flightSeconds;
-        public float blastRadiusLegacyUnits;
         public float rangeMultiplier = 1f;
         public float hitRadiusLegacyUnits;
         public int maxHitsPerTarget = 1;
-        public string visualId = string.Empty;
-        public string impactCueId = string.Empty;
     }
 
     [Serializable]
@@ -154,7 +143,6 @@ namespace FruitDefense.Content
         public int hitsToProc;
         public string kindId = string.Empty;
         public string procStatusId = string.Empty;
-        public string cueId = string.Empty;
         public string polarityId = "polarity.neutral";
         public string[] tags = Array.Empty<string>();
         public bool blocksMovement;
@@ -224,8 +212,7 @@ namespace FruitDefense.Content
         public PlantDefinitionDto[] plants = Array.Empty<PlantDefinitionDto>();
         public EnemyDefinitionDto[] enemies = Array.Empty<EnemyDefinitionDto>();
         public EquipmentDefinitionDto[] equipment = Array.Empty<EquipmentDefinitionDto>();
-        public SkillDefinitionDto[] skills = Array.Empty<SkillDefinitionDto>();
-        public PassiveDefinitionDto[] passives = Array.Empty<PassiveDefinitionDto>();
+        public AbilityDefinitionDto[] abilities = Array.Empty<AbilityDefinitionDto>();
         public ProjectileDefinitionDto[] projectiles = Array.Empty<ProjectileDefinitionDto>();
         public StatusDefinitionDto[] statuses = Array.Empty<StatusDefinitionDto>();
         public WaveDefinitionDto[] waves = Array.Empty<WaveDefinitionDto>();
