@@ -50,6 +50,20 @@ FRUIT_DEFENSE_LOCAL_BUILD_PIPELINE_OK
 
 Entry point: `scripts/publish-online.ps1`
 
+### Release source of truth
+
+Server publication is performed only from the `oper` branch and its dedicated
+worktree, `E:\project\unity\furitDefense-oper`. `main` remains the development
+line. The publisher hard-codes this release branch and accepts no branch
+override for `-Execute`.
+
+To prepare a release, commit the approved source on `main`, deliberately
+promote the selected commit(s) to `oper`, and build, accept, and publish only
+from the clean `oper` worktree. Tag the resulting `oper` commit after a
+successful publication. Do not copy selected project folders between the two
+worktrees: Git checkout supplies the complete versioned Unity project,
+including `.meta`, `Packages`, and `ProjectSettings`.
+
 Running the entry without `-Execute` is a non-publishing plan. It prints the resolved target and gates but does not require the SSH key, connect to the server, upload files, or change the remote service.
 
 ```powershell
@@ -65,7 +79,7 @@ FRUIT_DEFENSE_ONLINE_PUBLISH_PLAN_OK
 
 Actual publication requires explicit authorization and all of these conditions:
 
-- current branch matches `-ExpectedBranch` (`main` by default);
+- current branch is `oper` (the required release branch is not configurable);
 - working tree is clean;
 - SSH private key exists at `-KeyPath`;
 - a P0-validated Web build manifest matches the current commit;

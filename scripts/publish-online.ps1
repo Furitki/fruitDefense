@@ -4,7 +4,6 @@ param(
   [string]$RemoteDir = '/root/app/furitDefense',
   [string]$KeyPath = "$HOME\.ssh\id_ed25519",
   [string]$UnityPath = 'C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe',
-  [string]$ExpectedBranch = 'main',
   [switch]$SkipBuild,
   [switch]$Execute
 )
@@ -13,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
+$releaseBranch = 'oper'
 $commonScript = Join-Path $PSScriptRoot 'pipeline-common.ps1'
 $localBuildScript = Join-Path $PSScriptRoot 'build-local.ps1'
 $deployScript = Join-Path $projectRoot 'deploy.ps1'
@@ -89,7 +89,7 @@ $plan = [ordered]@{
   user = $User
   remoteDir = $RemoteDir
   keyPath = $KeyPath
-  expectedBranch = $ExpectedBranch
+  releaseBranch = $releaseBranch
   currentBranch = $gitState.branch
   gitRevision = $gitState.revision
   dirty = $gitState.dirty
@@ -99,7 +99,7 @@ $plan = [ordered]@{
   delegatedWorkflow = $deployScript
   gates = @(
     'explicit -Execute authorization',
-    'expected Git branch and clean working tree',
+    "required Git branch '$releaseBranch' and clean working tree",
     'SSH key path exists',
     'P0-validated Web build manifest matches current revision and index hash',
     'local portrait acceptance',
@@ -110,12 +110,12 @@ $plan = [ordered]@{
 
 Write-Host ($plan | ConvertTo-Json -Depth 6)
 if (-not $Execute) {
-  Write-Host "FRUIT_DEFENSE_ONLINE_PUBLISH_PLAN_OK target=ordinary-webgl server=$Server branch=$ExpectedBranch"
+  Write-Host "FRUIT_DEFENSE_ONLINE_PUBLISH_PLAN_OK target=ordinary-webgl server=$Server branch=$releaseBranch"
   return
 }
 
-if ($gitState.branch -ne $ExpectedBranch) {
-  throw "Online publication requires branch '$ExpectedBranch'; current branch is '$($gitState.branch)'."
+if ($gitState.branch -ne $releaseBranch) {
+  throw "Online publication requires release branch '$releaseBranch'; current branch is '$($gitState.branch)'."
 }
 if ($gitState.dirty) {
   throw 'Online publication requires a clean working tree.'
