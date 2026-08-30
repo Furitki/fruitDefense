@@ -39,6 +39,19 @@ namespace FruitDefense.Editor
         private const string EdgeMarkerPath =
             "Assets/LayeredTerrain/GrassSoil/Authoring/EdgeEnabled.asset";
 
+        [MenuItem("Fruit Defense/地图工具/纯方块兼容试验/打开试验场景")]
+        public static void OpenTrialScene()
+        {
+            GenerateArtifacts();
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var camera = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Camera>(true))
+                .Single();
+            Selection.activeGameObject = camera.gameObject;
+            EditorApplication.ExecuteMenuItem("Window/General/Game");
+            Debug.Log("FRUIT_DEFENSE_CELL_ALIGNED_SQUARE_TRIAL_OPENED: " + ScenePath);
+        }
+
         [MenuItem("Fruit Defense/地图工具/纯方块兼容试验/生成试验场景")]
         public static void GenerateArtifacts()
         {
