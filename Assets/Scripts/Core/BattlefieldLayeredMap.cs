@@ -614,8 +614,67 @@ namespace FruitDefense.Core
                         "Unknown edge style identity '" + cell.EdgeStyleId + "'.");
             }
 
+            ValidateSurfaceRepresentationCompatibility(source, validation);
             ValidateContourCompatibility(source, validation);
             ValidateEdgeStyleCompatibility(source, validation);
+        }
+
+        private static void ValidateSurfaceRepresentationCompatibility(
+            BattlefieldLayeredMapSource source,
+            BattlefieldLayeredMapValidationResult validation)
+        {
+            if (source.GridWidth <= 0 || source.GridHeight <= 0
+                || source.VisualCells.Count != source.GridWidth * source.GridHeight) return;
+            var forwardNeighbors = new[]
+            {
+                Vector2Int.right,
+                Vector2Int.down,
+                new Vector2Int(1, 1),
+                new Vector2Int(-1, 1),
+            };
+            for (var index = 0; index < source.VisualCells.Count; index++)
+            {
+                var cell = source.VisualCells[index];
+                if (cell == null) continue;
+                var coordinate = new Vector2Int(index % source.GridWidth,
+                    index / source.GridWidth);
+                foreach (var offset in forwardNeighbors)
+                {
+                    var neighbor = coordinate + offset;
+                    if (!InBounds(source, neighbor)) continue;
+                    var neighborIndex = neighbor.y * source.GridWidth + neighbor.x;
+                    var other = source.VisualCells[neighborIndex];
+                    if (other == null) continue;
+
+                    var mixedSurface = MixedRepresentationSurface(cell, other);
+                    if (string.IsNullOrEmpty(mixedSurface)) continue;
+                    validation.Add("surface.shared-representation-mix",
+                        "visualCells[" + neighborIndex + "]",
+                        "Visual cells " + coordinate + " and " + neighbor
+                        + " share an edge or vertex while surface '" + mixedSurface
+                        + "' is base-only on one cell and a Dual-Grid landform on the other. "
+                        + "Separate the regions or use one representation for the touching surface.");
+                }
+            }
+        }
+
+        private static string MixedRepresentationSurface(BattlefieldVisualCellSource first,
+            BattlefieldVisualCellSource second)
+        {
+            if (IsBaseOnlySurface(first, second.LandformSurfaceId))
+                return first.BaseSurfaceId;
+            if (IsBaseOnlySurface(second, first.LandformSurfaceId))
+                return second.BaseSurfaceId;
+            return string.Empty;
+        }
+
+        private static bool IsBaseOnlySurface(BattlefieldVisualCellSource candidate,
+            string landformSurfaceId)
+        {
+            return candidate != null && string.IsNullOrEmpty(candidate.LandformSurfaceId)
+                && SurfaceIds.Contains(candidate.BaseSurfaceId)
+                && string.Equals(candidate.BaseSurfaceId, landformSurfaceId,
+                    StringComparison.Ordinal);
         }
 
         private static void ValidateContourCompatibility(BattlefieldLayeredMapSource source,

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-30",
+  "generator": "OpenAI ImageGen built-in tool",
+  "styleReference": "Assets/LayeredTerrain/GrassSoil/Square/Sources/ApprovedStyleReference.png",
+  "assets": [
+    {
+      "asset": "GrassSquareBase-v1.png",
+      "acceptedSource": "exec-c494ed7c-7b2b-4b04-b7fc-5cafebec9ed1.png",
+      "initialSource": "exec-5f2e49fe-247c-4368-8ad0-f4f5a92cdf55.png",
+      "selectionReason": "The final refinement removes directional gradients and distinct patches so one-repeat-per-cell UVs do not create a visible grid rhythm."
+    },
+    {
+      "asset": "SoilSquareBase-v1.png",
+      "acceptedSource": "exec-2b65d8fb-a5b2-4517-8c7d-4c01920608fb.png",
+      "initialSource": "exec-e76f9442-f043-4893-b26b-0e31f3e9c36d.png",
+      "selectionReason": "The final refinement removes directional gradients and brush-shaped patches so the warm ochre wash remains calm at gameplay cell scale."
+    }
+  ]
+}

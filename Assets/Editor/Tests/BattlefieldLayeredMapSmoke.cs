@@ -198,8 +198,8 @@ namespace FruitDefense.Editor
                 "presentation-only surface change altered gameplay fingerprint");
 
             var layeredVariant = source.VisualCells.Select((cell, index) => index == 6
-                ? new BattlefieldVisualCellSource(BattlefieldLayerIds.Surfaces.Grass,
-                    BattlefieldLayerIds.Surfaces.Soil,
+                ? new BattlefieldVisualCellSource(BattlefieldLayerIds.Surfaces.Soil,
+                    BattlefieldLayerIds.Surfaces.Water,
                     BattlefieldLayerIds.ContourStyles.Square,
                     BattlefieldLayerIds.EdgeStyles.Refined)
                 : cell).ToArray();
@@ -207,9 +207,9 @@ namespace FruitDefense.Editor
             Assert(baseline.GameplayFingerprint == layeredCompiled.GameplayFingerprint,
                 "base, landform or edge presentation change altered gameplay fingerprint");
             Assert(layeredCompiled.BaseSurfaceAt(new Vector2Int(2, 1))
-                    == BattlefieldLayerIds.Surfaces.Grass
-                && layeredCompiled.LandformSurfaceAt(new Vector2Int(2, 1))
                     == BattlefieldLayerIds.Surfaces.Soil
+                && layeredCompiled.LandformSurfaceAt(new Vector2Int(2, 1))
+                    == BattlefieldLayerIds.Surfaces.Water
                 && layeredCompiled.ContourStyleAt(new Vector2Int(2, 1))
                     == BattlefieldLayerIds.ContourStyles.Square
                 && layeredCompiled.EdgeStyleAt(new Vector2Int(2, 1))

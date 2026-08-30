@@ -399,6 +399,7 @@ namespace FruitDefense.Editor
             EditorGUILayout.HelpBox(
                 "只选择语义材质，不编辑 Dual-Grid Mask。Mask 与精修边缘由 Battle 同一规则推导。",
                 MessageType.Info);
+            DrawPureSquarePresets();
             DrawRegisteredBrushPresets();
             baseSurfaceId = SurfacePopup("底层", baseSurfaceId, false);
             landformSurfaceId = SurfacePopup("地貌", landformSurfaceId, true);
@@ -440,6 +441,33 @@ namespace FruitDefense.Editor
                     Mutate("应用推荐表现", () => map.ApplyRecommendedPresentation(
                         out lastOperation));
             }
+        }
+
+        private void DrawPureSquarePresets()
+        {
+            EditorGUILayout.LabelField("纯方块笔刷", EditorStyles.miniBoldLabel);
+            EditorGUILayout.BeginHorizontal();
+            foreach (var preset in CellAlignedSquareTerrainPresets.All)
+            {
+                var previousEnabled = GUI.enabled;
+                GUI.enabled = previousEnabled
+                    && CellAlignedSquareTerrainPresets.IsAvailable(preset, previewPalette);
+                if (GUILayout.Button(preset.DisplayName))
+                {
+                    string reason;
+                    if (!CellAlignedSquareTerrainPresets.TryResolve(preset.SurfaceId,
+                            out baseSurfaceId, out landformSurfaceId, out contourStyleId,
+                            out edgeStyleId, out reason))
+                        lastOperation = reason;
+                    else lastOperation = preset.DisplayName
+                        + "已选中；绘制时会清空地貌、轮廓与精修边缘。";
+                }
+                GUI.enabled = previousEnabled;
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.HelpBox(
+                "纯方块直接使用不透明底层纹理；不会创建或选择 Dual-Grid Mask。",
+                MessageType.None);
         }
 
         private void DrawRegisteredBrushPresets()

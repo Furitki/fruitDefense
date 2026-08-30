@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea79c4856d194bd41a4bc31a4bc82d90, type: 3}
+  m_Name: CellAlignedSquareTrialPalette
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.BattlefieldTerrainPalette
+  paletteId: palette.trial.cell-aligned-square.v1
+  soilBaseTexture: {fileID: 2800000, guid: 54ebb4e77407b7f4c9bf5ecba8d2e47a, type: 3}
+  surfaceBindings:
+  - surfaceId: surface.grass
+    baseTexture: {fileID: 2800000, guid: 63e9690aed794484c9348d35be1619ab, type: 3}
+    tileSet: {fileID: 0}
+  - surfaceId: surface.soil
+    baseTexture: {fileID: 2800000, guid: 54ebb4e77407b7f4c9bf5ecba8d2e47a, type: 3}
+    tileSet: {fileID: 0}
+  - surfaceId: surface.stone-road
+    baseTexture: {fileID: 2800000, guid: 3223a6246f2f27743be6e032971cf4d1, type: 3}
+    tileSet: {fileID: 0}
+  - surfaceId: surface.water
+    baseTexture: {fileID: 2800000, guid: 5bc146104e7127f4ba0664237ac225b3, type: 3}
+    tileSet: {fileID: 0}
+  landformBindings:
+  - surfaceId: surface.grass
+    contourStyleId: contour.organic
+    tileSet: {fileID: 11400000, guid: 2fc47b69529dfb541a089c835adb5ce8, type: 2}
+  - surfaceId: surface.grass
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: b57b287881df5404a9320385b2898ecb, type: 2}
+  - surfaceId: surface.soil
+    contourStyleId: contour.organic
+    tileSet: {fileID: 11400000, guid: 3e1155418d0567f44af4b96697c9dd09, type: 2}
+  - surfaceId: surface.soil
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: 897d878e9497c6e4d935ea42058d6001, type: 2}
+  - surfaceId: surface.stone-road
+    contourStyleId: contour.organic
+    tileSet: {fileID: 11400000, guid: 4c995549933a8ed48897e6b4e5760de1, type: 2}
+  - surfaceId: surface.stone-road
+    contourStyleId: contour.square
+    tileSet: {fileID: 11400000, guid: 0a6730ef0e26d5b49b9ae3129ee21909, type: 2}
+  edgeBindings:
+  - landformSurfaceId: surface.grass
+    baseSurfaceId: surface.soil
+    contourStyleId: contour.organic
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: b75665e5083dab441a2805aa7b5e1562, type: 2}
+  - landformSurfaceId: surface.grass
+    baseSurfaceId: surface.soil
+    contourStyleId: contour.square
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: b57b287881df5404a9320385b2898ecb, type: 2}
+  - landformSurfaceId: surface.stone-road
+    baseSurfaceId: surface.water
+    contourStyleId: contour.square
+    edgeStyleId: edge.refined
+    tileSet: {fileID: 11400000, guid: 38c1ae3a913d0534789495b8d9dfed35, type: 2}

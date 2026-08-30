@@ -335,6 +335,7 @@ namespace FruitDefense.Editor
             LayeredTerrainPainterSmoke.Validate();
             TerrainBrushRegistrySmoke.Validate();
             BattlefieldDualGridTerrainSmoke.Validate();
+            CellAlignedSquareTerrainSmoke.Run();
             PlantInteractionPresentationSmoke.Run();
             var simulation = new GameSimulation(12345);
             Assert(simulation.State.Pots.Count == 8, "initial pot count");
