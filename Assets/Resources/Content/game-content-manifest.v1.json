@@ -1,0 +1,10 @@
+{
+    "schemaVersion": 1,
+    "manifestId": "manifest.fruit-defense.bundled",
+    "battleCatalogResourcePath": "Content/battle-content-bundled.v3",
+    "battleCatalogId": "catalog.bundled.orchard",
+    "battleContentVersion": "3.0.0",
+    "levelCatalogId": "catalog.levels.orchard",
+    "presentationCatalogId": "presentation.orchard.bundled",
+    "defaultNurseryProfileId": "nursery.orchard.baseline"
+}

@@ -185,9 +185,10 @@ namespace FruitDefense.Content
             out LevelCatalogValidationResult levelValidation,
             out ContentValidationResult contentValidation)
         {
+            GameContentManifestDto manifest;
             CompiledBattleContentCatalog battleContent;
-            if (!BattleContentCompiler.TryCompile(BundledBattleContentFactory.Create(),
-                    out battleContent, out contentValidation))
+            if (!BundledGameContentLoader.TryLoad(out manifest, out battleContent,
+                    out contentValidation))
             {
                 levelValidation = LevelCatalogValidator.Validate(CreateSource(), null);
                 compiled = null;
@@ -267,7 +268,8 @@ namespace FruitDefense.Content
                 initialPotCount = initialPotCount,
                 betweenWaveSeconds = betweenWaveSeconds,
                 nurserySlotCount = 5,
-                nurseryPotChance = .1f,
+                nurseryProfileId = BattleContentIds.NurseryProfiles.Baseline,
+                relocationCooldownSeconds = 2f,
                 refreshBaseCost = 10,
                 refreshCostStep = 5,
                 milestoneRewards = milestones,

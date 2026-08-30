@@ -598,23 +598,23 @@ namespace FruitDefense.Editor
                     new Vector2(followed.anchorX, followed.anchorY)) > .01f,
                 "route follow anchor resolves to the deterministic live target rather than only setting a flag");
 
-            var entry = ConfigureCombatFeedbackFixture(port,
-                "combat-feedback-rebound-entry", "route", "entry",
+            var start = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-motion-start", "route", "start",
                 1, "Heavy", 1);
-            var peak = ConfigureCombatFeedbackFixture(port,
-                "combat-feedback-rebound-peak", "route", "peak",
+            var early = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-motion-early", "route", "early",
                 1, "Heavy", 1);
-            var rebound = ConfigureCombatFeedbackFixture(port,
-                "combat-feedback-rebound-return", "route", "rebound",
+            var settle = ConfigureCombatFeedbackFixture(port,
+                "combat-feedback-motion-settle", "route", "settle",
                 1, "None", 1);
             var hold = ConfigureCombatFeedbackFixture(port,
-                "combat-feedback-rebound-hold", "route", "hold",
+                "combat-feedback-motion-hold", "route", "hold",
                 1, "None", 1);
-            Assert(entry.feedback[0].motionScale < peak.feedback[0].motionScale
-                && rebound.feedback[0].motionScale < peak.feedback[0].motionScale
-                && rebound.feedback[0].motionScale > hold.feedback[0].motionScale,
-                "entry, peak, rebound, and hold expose distinct deterministic phases");
-            foreach (var value in new[] { entry, peak, rebound, hold })
+            Assert(start.feedback[0].motionScale > early.feedback[0].motionScale
+                && early.feedback[0].motionScale > settle.feedback[0].motionScale
+                && settle.feedback[0].motionScale > hold.feedback[0].motionScale,
+                "start, early, settle, and hold expose a deterministic shrinking scale");
+            foreach (var value in new[] { start, early, settle, hold })
                 AssertSemanticMultiset(value,
                     new[] { BattleContentIds.Abilities.WatermelonAttack },
                     "rebound phase");
@@ -627,7 +627,7 @@ namespace FruitDefense.Editor
                 2, "Heavy", 12);
             Assert(denseOne.ordinaryFeedbackCount == 8
                 && denseTwo.ordinaryFeedbackCount == 8,
-                "1x and 2x dense fixtures reach the 8 ordinary / 12 total caps");
+                "1x and 2x dense fixtures retain their authored eight ordinary records");
             var denseSemantics = new[]
             {
                 BattleContentIds.Abilities.PeaAttack,
@@ -712,7 +712,7 @@ namespace FruitDefense.Editor
                 && telemetry.activeBeat == beat
                 && telemetry.feedbackCount == count
                 && telemetry.activePoolCount == count
-                && telemetry.poolCapacity == 12
+                && telemetry.poolCapacity == CombatFloatingTextSdfOverlay.PoolCapacity
                 && telemetry.atlasPageCount == 1
                 && telemetry.atlasFormat == "RGBA32"
                 && telemetry.sharedMaterialCount == 0

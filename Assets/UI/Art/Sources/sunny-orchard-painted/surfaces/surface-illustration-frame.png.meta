@@ -55,6 +55,6 @@ TextureImporter:
       entries: []
     nameFileIdTable: {}
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;group=surfaces;slot=surface.illustration-frame;imagegen-master=1
+  userData: ui-art-source=sunny-orchard-painted;slot=surface.illustration-frame;source-scale=2;authored=deterministic-reference-material-kit
   assetBundleName:
   assetBundleVariant:

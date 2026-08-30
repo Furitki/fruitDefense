@@ -26,3 +26,36 @@
 127.0.0.1 - - [26/Aug/2026 05:34:57] "GET /Build/WebGL.wasm.unityweb?v=76e82420be8a HTTP/1.1" 200 -
 127.0.0.1 - - [26/Aug/2026 05:34:57] "GET /Build/WebGL.data.unityweb?v=c7534fea6f6f HTTP/1.1" 200 -
 127.0.0.1 - - [26/Aug/2026 08:08:17] "GET /Build/WebGL.loader.js HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /TemplateData/fruit-defense-host.css HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /TemplateData/fruit-defense-host.js HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /Build/WebGL.loader.js?v=ead048e091ab HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /Build/WebGL.framework.js.unityweb?v=7592bad4e29c HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /Build/WebGL.wasm.unityweb?v=db1ce566bb42 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] code 404, message File not found
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [28/Aug/2026 12:06:10] "GET /Build/WebGL.data.unityweb?v=10058c93fbbd HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /TemplateData/fruit-defense-host.css HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /TemplateData/fruit-defense-host.js HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /Build/WebGL.loader.js?v=7701095afadf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /Build/WebGL.wasm.unityweb?v=eb5c449e3fc2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /Build/WebGL.framework.js.unityweb?v=7592bad4e29c HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:26:44] "GET /Build/WebGL.data.unityweb?v=fef7c3a051f0 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /?acceptance=1&route=battle&levelId=orchard-01&safeTop=0&safeBottom=0 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /TemplateData/fruit-defense-host.css HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /TemplateData/fruit-defense-host.js HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /Build/WebGL.loader.js?v=7701095afadf HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /Build/WebGL.framework.js.unityweb?v=7592bad4e29c HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /Build/WebGL.wasm.unityweb?v=eb5c449e3fc2 HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 12:28:36] "GET /Build/WebGL.data.unityweb?v=fef7c3a051f0 HTTP/1.1" 304 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /TemplateData/fruit-defense-host.css HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /TemplateData/fruit-defense-host.js HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /Build/WebGL.loader.js?v=b82e9877a4de HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /Build/WebGL.framework.js.unityweb?v=7b56e18fa5ea HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /Build/WebGL.wasm.unityweb?v=172d5782392c HTTP/1.1" 200 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] code 404, message File not found
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [28/Aug/2026 16:02:33] "GET /Build/WebGL.data.unityweb?v=e01ac4db17f2 HTTP/1.1" 200 -

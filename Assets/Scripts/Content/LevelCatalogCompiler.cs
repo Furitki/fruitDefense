@@ -246,11 +246,16 @@ namespace FruitDefense.Content
                 if (rules == null) continue;
                 if (rules.InitialSun < 0 || rules.InitialLives <= 0 || rules.MaxWaves <= 0
                     || rules.InitialPotCount <= 0 || rules.BetweenWaveSeconds <= 0f
-                    || rules.NurserySlotCount <= 0 || rules.NurseryPotChance < 0f
-                    || rules.NurseryPotChance > 1f || rules.RefreshBaseCost < 0
+                    || rules.NurserySlotCount <= 0 || rules.RelocationCooldownSeconds < 0f
+                    || rules.RefreshBaseCost < 0
                     || rules.RefreshCostStep < 0)
                     result.Add("rule.numeric.invalid", "ruleSets", rules.RuleSetId, "values",
                         "Rule values are outside supported battle bounds.");
+                if (string.IsNullOrWhiteSpace(rules.NurseryProfileId)
+                    || !battleContent.NurseryProfiles.ContainsKey(rules.NurseryProfileId))
+                    result.Add("reference.missing", "ruleSets", rules.RuleSetId,
+                        "nurseryProfileId", "Missing nursery profile '"
+                        + rules.NurseryProfileId + "'.");
 
                 var previousWave = 0;
                 var seenWaves = new HashSet<int>();

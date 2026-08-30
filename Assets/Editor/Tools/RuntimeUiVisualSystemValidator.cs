@@ -84,7 +84,6 @@ namespace FruitDefense.Editor
         private const string ManifestSchema = "fruit-defense.runtime-ui-art-manifest.v2";
         private const string ApprovedThemeId = "ui.sunny-orchard";
         private const string PaintedSetId = "sunny-orchard-painted";
-        private const string SharedConsumerSetId = "sunny-orchard";
         private const float ColorTolerance = 1.1f / 255f;
 
         private static readonly RuntimeUiArtSlot[] TintableActionGlyphSlots =

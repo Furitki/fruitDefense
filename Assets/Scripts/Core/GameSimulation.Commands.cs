@@ -67,7 +67,8 @@ namespace FruitDefense.Core
                 return new PlantDropStatus(true, action, action == PlantDropAction.Plant ? "可种植" : "可移动");
             }
             if (target.DefinitionId == plant.DefinitionId
-                && target.Star == plant.Star && target.Star < 4)
+                && target.Star == plant.Star
+                && target.Star < _content.PlantMaximumTier(target.DefinitionId))
                 return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
             if (State.Phase == GamePhase.Playing && target.MoveCooldown > 0f)
                 return new PlantDropStatus(false, PlantDropAction.Invalid,
@@ -88,7 +89,8 @@ namespace FruitDefense.Core
             if (target == null)
                 return new PlantDropStatus(true, PlantDropAction.Move, plant.PotId >= 0 ? "可放回苗圃" : "可移动到此槽位");
             if (target.DefinitionId == plant.DefinitionId
-                && target.Star == plant.Star && target.Star < 4)
+                && target.Star == plant.Star
+                && target.Star < _content.PlantMaximumTier(target.DefinitionId))
                 return new PlantDropStatus(true, PlantDropAction.Merge, "可合成为 " + (target.Star + 1) + " 星");
             if (State.Phase == GamePhase.Playing && target.MoveCooldown > 0f)
                 return new PlantDropStatus(false, PlantDropAction.Invalid,
@@ -109,7 +111,8 @@ namespace FruitDefense.Core
                 plant.PotId = potId;
                 plant.NurseryIndex = -1;
                 plant.AbilityRuntimes.Clear();
-                if (wasPlanted && State.Phase == GamePhase.Playing) plant.MoveCooldown = 2f;
+                if (wasPlanted && State.Phase == GamePhase.Playing)
+                    plant.MoveCooldown = _ruleSet.RelocationCooldownSeconds;
                 reason = wasPlanted ? "水果已移动" : "水果已种下";
                 _presentationEvents.EmitBattleStateChanged(State.LogicTick,
                     BattleContentIds.BattleStates.PlantMoved, PotPoint(pot), plant.Id);
@@ -145,7 +148,8 @@ namespace FruitDefense.Core
                 plant.PotId = -1;
                 plant.NurseryIndex = slot;
                 plant.AbilityRuntimes.Clear();
-                if (returningDuringBattle) plant.MoveCooldown = 2f;
+                if (returningDuringBattle)
+                    plant.MoveCooldown = _ruleSet.RelocationCooldownSeconds;
                 reason = status.Reason == "可放回苗圃" ? "水果已放回刷新栏" : "水果已移动到新槽位";
                 return true;
             }
@@ -182,7 +186,8 @@ namespace FruitDefense.Core
         private void ResetAfterRelocation(Plant plant, bool movedFromBoard)
         {
             plant.AbilityRuntimes.Clear();
-            if (movedFromBoard && State.Phase == GamePhase.Playing) plant.MoveCooldown = 2f;
+            if (movedFromBoard && State.Phase == GamePhase.Playing)
+                plant.MoveCooldown = _ruleSet.RelocationCooldownSeconds;
         }
 
         public bool InstallEquipment(int plantId, string equipmentId, out string reason)

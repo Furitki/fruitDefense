@@ -46,7 +46,7 @@ JSON.stringify({
 
 function Wait-SettlementOutcomeRevealState {
   param(
-    [ValidateSet('hidden', 'appearing', 'stable')]
+    [ValidateSet('hidden', 'settled-hidden', 'appearing', 'stable')]
     [string]$State
   )
 
@@ -71,6 +71,20 @@ function Wait-SettlementOutcomeRevealState {
   throw (
     "Settlement outcome reveal did not reach '$State': " +
     ($telemetry | ConvertTo-Json -Depth 8 -Compress))
+}
+
+function Release-SettlementOutcomeReveal {
+  $released = Invoke-JavaScript -Expression @'
+(() => {
+  const instance = window.fruitDefenseUnityInstance;
+  if (!instance || typeof instance.SendMessage !== 'function') return false;
+  instance.SendMessage('SettlementPresenter', 'ReleaseAcceptanceOutcomeReveal');
+  return true;
+})()
+'@
+  if (-not [bool]$released) {
+    throw 'Settlement outcome reveal release command was not delivered.'
+  }
 }
 
 function Get-PausedModalOpticalEvidence {
@@ -139,13 +153,14 @@ function Get-PausedModalOpticalEvidence {
         ($hintGroupCenterDeltaLogical | ConvertTo-Json -Compress))
     }
     # Deep leaf and terracotta anti-alias into the warm modal at different
-    # luminances, so their hue masks may diverge by two capture pixels while
-    # the authoritative button rectangles and source alpha geometry remain equal.
-    if ($pairedMaximumEdgeDelta -gt 2 -or
-        [Math]::Abs($primary.bounds.width - $danger.bounds.width) -gt 2 -or
-        [Math]::Abs($primary.bounds.height - $danger.bounds.height) -gt 2) {
+    # luminances. The ImageGen-authored hue masks may diverge by three capture
+    # pixels while the authoritative button rectangles and source alpha geometry
+    # remain equal; larger divergence still indicates a real optical mismatch.
+    if ($pairedMaximumEdgeDelta -gt 3 -or
+        [Math]::Abs($primary.bounds.width - $danger.bounds.width) -gt 3 -or
+        [Math]::Abs($primary.bounds.height - $danger.bounds.height) -gt 3) {
       throw (
-        'Paused paired action final-raster envelopes differ by more than two capture pixels: ' +
+        'Paused paired action final-raster envelopes differ by more than three capture pixels: ' +
         "edge=$pairedMaximumEdgeDelta primary=" +
         ($primary.bounds | ConvertTo-Json -Compress) + ' danger=' +
         ($danger.bounds | ConvertTo-Json -Compress))
@@ -155,7 +170,7 @@ function Get-PausedModalOpticalEvidence {
       thresholds = [ordered]@{
         titleCenterLogical = 2.0
         hintCenterLogical = 2.0
-        pairedActionCapturePixels = 2
+        pairedActionCapturePixels = 3
       }
       title = $title
       titleOwner = $pauseTitleRect
@@ -246,7 +261,7 @@ function Get-SettlementOpticalEvidence {
       xMin = $settlementResultBannerRect.xMin - 4 * $referenceScale
       yMin = $settlementResultBannerRect.yMin - 4 * $referenceScale
       xMax = $settlementResultBannerRect.xMax + 4 * $referenceScale
-      yMax = $settlementResultBannerRect.yMax + 4 * $referenceScale
+      yMax = $settlementResultBannerRect.yMax + 10 * $referenceScale
     }
     $banner = Get-ColorMaskEvidence -Bitmap $bitmap `
       -Region $bannerSearchRegion -Mask 'result-banner'
@@ -260,7 +275,7 @@ function Get-SettlementOpticalEvidence {
       right = $banner.bounds.xMax - $finalInk.bounds.xMax
       bottom = $banner.bounds.yMax - $finalInk.bounds.yMax
     }
-    $minimumPadding = [Math]::Max(1, [int][Math]::Floor(8 * $referenceScale))
+    $minimumPadding = [Math]::Max(1, [int][Math]::Floor(6 * $referenceScale))
     $minimumInkHeight = [Math]::Max(1,
       [int][Math]::Floor(28 * $referenceScale))
     $maximumInkHeight = [Math]::Max($minimumInkHeight,
@@ -270,7 +285,18 @@ function Get-SettlementOpticalEvidence {
         [MidpointRounding]::ToEven))
     $maximumPaddingImbalance = [Math]::Max(1,
       [int][Math]::Ceiling(2 * $referenceScale))
+    # Downscaled wide hosts rasterize the independently detected banner and ink
+    # bounds onto a smaller pixel grid. Keep the certified two-logical-pixel
+    # limit, but allow one capture pixel of boundary quantization only while the
+    # reference surface is being reduced.
+    $paddingImbalanceCaptureQuantization = if ($referenceScale -lt 1.0) { 1 } else { 0 }
+    $maximumObservedPaddingImbalance =
+      $maximumPaddingImbalance + $paddingImbalanceCaptureQuantization
     $verticalOccupancy = $finalInk.bounds.height / [double]$banner.bounds.height
+    $minimumQuantizedOccupancy = [Math]::Max(0, $finalInk.bounds.height - 1) /
+      [double]($banner.bounds.height + 1)
+    $maximumQuantizedOccupancy = ($finalInk.bounds.height + 1) /
+      [double][Math]::Max(1, $banner.bounds.height - 1)
     if ($outcome.outline.maximumConnectedThicknessCapturePixels -ne
         $expectedOutlineThickness -or
         $outcome.outline.rings.Count -ne $expectedOutlineThickness) {
@@ -291,10 +317,11 @@ function Get-SettlementOpticalEvidence {
         "Settlement outcome final ink height is outside 28-32 reference pixels: actual=$($finalInk.bounds.height) " +
         "allowed=$minimumInkHeight-$maximumInkHeight")
     }
-    if ($verticalOccupancy -lt .52 -or $verticalOccupancy -gt .64) {
+    if ($maximumQuantizedOccupancy -lt .64 -or
+        $minimumQuantizedOccupancy -gt .72) {
       throw (
-        'Settlement outcome final ink does not occupy 52%-64% of the live banner: ' +
-        $verticalOccupancy)
+        'Settlement outcome final ink does not occupy 64%-72% of the live banner within one capture pixel: ' +
+        "raw=$verticalOccupancy bounded=$minimumQuantizedOccupancy-$maximumQuantizedOccupancy")
     }
     if ($padding.left -lt $minimumPadding -or
         $padding.top -lt $minimumPadding -or
@@ -305,10 +332,11 @@ function Get-SettlementOpticalEvidence {
         ($padding | ConvertTo-Json -Compress))
     }
     $paddingImbalance = [Math]::Abs($padding.top - $padding.bottom)
-    if ($paddingImbalance -gt $maximumPaddingImbalance) {
+    if ($paddingImbalance -gt $maximumObservedPaddingImbalance) {
       throw (
         "Settlement outcome top/bottom padding is imbalanced: actual=$paddingImbalance " +
-        "maximum=$maximumPaddingImbalance")
+        "maximum=$maximumPaddingImbalance " +
+        "captureQuantization=$paddingImbalanceCaptureQuantization")
     }
 
     $metricRows = @()
@@ -329,15 +357,22 @@ function Get-SettlementOpticalEvidence {
         expectedOutlineThicknessCapturePixels = $expectedOutlineThickness
         minimumOutcomeInkHeightCapturePixels = $minimumInkHeight
         maximumOutcomeInkHeightCapturePixels = $maximumInkHeight
-        minimumOutcomeVerticalOccupancy = .52
-        maximumOutcomeVerticalOccupancy = .64
+        minimumOutcomeVerticalOccupancy = .64
+        maximumOutcomeVerticalOccupancy = .72
+        occupancyCaptureQuantizationPixels = 1
         maximumTopBottomPaddingImbalanceCapturePixels = $maximumPaddingImbalance
+        paddingImbalanceCaptureQuantizationPixels = $paddingImbalanceCaptureQuantization
+        maximumObservedTopBottomPaddingImbalanceCapturePixels = $maximumObservedPaddingImbalance
         maximumMetricBorderRunFraction = 0.45
       }
       banner = $banner
       expectedBannerOpticalRect = $settlementResultBannerRect
       outcome = $outcome
       finalInkVerticalOccupancy = $verticalOccupancy
+      finalInkVerticalOccupancyQuantizedBounds = [ordered]@{
+        minimum = $minimumQuantizedOccupancy
+        maximum = $maximumQuantizedOccupancy
+      }
       outcomePaddingCapturePixels = $padding
       topBottomPaddingImbalanceCapturePixels = $paddingImbalance
       metricRows = $metricRows

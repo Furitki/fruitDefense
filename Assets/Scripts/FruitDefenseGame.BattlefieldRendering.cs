@@ -20,7 +20,7 @@ namespace FruitDefense
             var viewState = BattleUiPresentationState.Create(
                 _game.State.Phase, _game.State.Paused);
             RefreshHeaderMetricMotion();
-            RuntimeUiGui.DrawStandardPanel(drawContext, layout.Header);
+            RuntimeUiGui.DrawRaisedPanel(drawContext, layout.Header);
             var titleCopy = RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleTitle);
             RuntimeUiGui.DrawSingleLineText(drawContext, layout.HeaderTitle,
                 titleCopy.Text,
@@ -31,14 +31,16 @@ namespace FruitDefense
                 _game.State.Sun.ToString(), compactInline: true,
                 compactIconSize: BattleUiLayout.HeaderMetricIconSize,
                 motion: RuntimeUiMotion.Evaluate(_sunPulse, Time.unscaledTime,
-                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop));
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop),
+                drawSurface: true);
             RuntimeUiGui.DrawMetric(drawContext, layout.LivesMetric,
                 RuntimeUiArtSlot.IconResourceCoreMicro,
                 RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleCore).Text,
                 _game.State.Lives.ToString(), compactInline: true,
                 compactIconSize: BattleUiLayout.HeaderMetricIconSize,
                 motion: RuntimeUiMotion.Evaluate(_livesPulse, Time.unscaledTime,
-                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.StrongPop));
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.StrongPop),
+                drawSurface: true);
             RuntimeUiGui.DrawMetric(drawContext, layout.WaveMetric,
                 RuntimeUiArtSlot.IconResourceWaveMicro,
                 RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleWave).Text,
@@ -46,9 +48,8 @@ namespace FruitDefense
                 compactInline: true,
                 compactIconSize: BattleUiLayout.HeaderMetricIconSize,
                 motion: RuntimeUiMotion.Evaluate(_wavePulse, Time.unscaledTime,
-                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop));
-            RuntimeUiGui.DrawMetricDivider(drawContext, layout.FirstMetricDivider);
-            RuntimeUiGui.DrawMetricDivider(drawContext, layout.SecondMetricDivider);
+                    _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop),
+                drawSurface: true);
 
             var pausePress = TrackBattleAction(
                 PauseActionFeedbackTarget, layout.PauseAction);
@@ -114,38 +115,58 @@ namespace FruitDefense
         private void DrawBoard(BattleUiLayout layout, RuntimeUiDrawContext drawContext,
             DropTarget currentDropTarget, BattleUiDropCue currentDropCue)
         {
-            RuntimeUiGui.DrawGameplayStage(drawContext, layout.BattleStage);
-            var worldMatrix = GUI.matrix;
-            var worldOffset = _presentation.BattlefieldOffset;
-            var texturedTerrain = false;
+            BeginBattleStageClip(layout);
             try
             {
-                GUI.matrix = worldMatrix * Matrix4x4.Translate(
-                    new Vector3(worldOffset.x, worldOffset.y, 0f));
-                texturedTerrain = DrawBattlefieldTerrain();
-                DrawRouteTiles();
-                DrawCore();
-                DrawPlantingCells(texturedTerrain, layout);
-                DrawInspectedAttackRange(layout);
+                var maskRect = RuntimeUiGui.GameplayStageMaskRect(
+                    drawContext, layout.BattleStage);
+                BeginAbsoluteDesignClip(layout, maskRect);
+                try
+                {
+                    var worldMatrix = GUI.matrix;
+                    var worldOffset = _presentation.BattlefieldOffset;
+                    var texturedTerrain = false;
+                    try
+                    {
+                        GUI.matrix = worldMatrix * Matrix4x4.Translate(
+                            new Vector3(worldOffset.x, worldOffset.y, 0f));
+                        texturedTerrain = DrawBattlefieldTerrain(maskRect);
+                        DrawRouteTiles();
+                        DrawCore();
+                        DrawPlantingCells(texturedTerrain, layout);
+                        DrawInspectedAttackRange(layout);
+                    }
+                    finally
+                    {
+                        GUI.matrix = worldMatrix;
+                    }
+                    if (!texturedTerrain)
+                        DrawTerrainPresentationFailure(layout);
+                    if (_potToolSelected
+                        || (_drag != null && _drag.Active
+                            && _drag.Type == DragPayloadType.Pot))
+                        DrawExpansionCandidates(
+                            layout, drawContext, currentDropTarget, currentDropCue);
+                    DrawPotsAndPlants(
+                        layout, drawContext, currentDropTarget, currentDropCue);
+                    DrawProjectiles();
+                    DrawZombies();
+                    DrawCombatEffects();
+                    DrawBattlefieldFlash(layout);
+                }
+                finally
+                {
+                    EndAbsoluteDesignClip();
+                }
+                DrawBattlefieldHitTargets(layout, drawContext);
             }
             finally
             {
-                GUI.matrix = worldMatrix;
+                EndBattleStageClip();
             }
-            if (!texturedTerrain)
-                DrawTerrainPresentationFailure(layout);
-            if (_potToolSelected || (_drag != null && _drag.Active && _drag.Type == DragPayloadType.Pot))
-                DrawExpansionCandidates(
-                    layout, drawContext, currentDropTarget, currentDropCue);
-            DrawPotsAndPlants(layout, drawContext, currentDropTarget, currentDropCue);
-            DrawProjectiles();
-            DrawZombies();
-            DrawCombatEffects();
-            DrawBattlefieldFlash(layout);
-            DrawBoardStatus(layout, drawContext, currentDropCue);
         }
 
-        private bool DrawBattlefieldTerrain()
+        private bool DrawBattlefieldTerrain(Rect backdropRect)
         {
             string reason;
             if (!ValidateActiveTerrainPresentation(out reason))
@@ -163,6 +184,8 @@ namespace FruitDefense
                 return false;
             }
             var map = _game.Map;
+            BattlefieldTerrainGuiRenderer.DrawBackdrop(
+                map, Projection, palette, backdropRect);
             BattlefieldTerrainGuiRenderer.DrawValidated(map, Projection, palette);
             return true;
         }
@@ -299,14 +322,13 @@ namespace FruitDefense
             if (simulation == null || plant == null || simulation.Content == null)
                 return 0f;
             PlantDefinitionDto definition;
-            StarTierDefinitionDto starTier;
             if (!simulation.Content.Plants.TryGetValue(
-                    plant.DefinitionId ?? string.Empty, out definition)
-                || !simulation.Content.StarTiers.TryGetValue(
-                    "star." + Mathf.Clamp(plant.Star, 1, 4), out starTier))
+                    plant.DefinitionId ?? string.Empty, out definition))
                 return 0f;
+            var tier = simulation.Content.ResolvePlantUpgradeTier(
+                plant.DefinitionId, plant.Star);
             var baseRange = simulation.Map.FromLegacyDistance(
-                definition.rangeLegacyUnits) * starTier.rangeMultiplier;
+                definition.rangeLegacyUnits) * tier.rangeMultiplier;
             return simulation.GetEffectiveAttribute(
                 plant, CombatAttributeKind.Range, baseRange);
         }
@@ -316,13 +338,11 @@ namespace FruitDefense
         {
             if (simulation == null || plant == null || definition == null)
                 return 0f;
-            StarTierDefinitionDto starTier;
-            if (!simulation.Content.StarTiers.TryGetValue(
-                    "star." + Mathf.Clamp(plant.Star, 1, 4), out starTier))
-                return 0f;
+            var tier = simulation.Content.ResolvePlantUpgradeTier(
+                plant.DefinitionId, plant.Star);
             return simulation.GetEffectiveAttribute(plant,
                 CombatAttributeKind.Damage,
-                definition.damage * starTier.damageMultiplier);
+                definition.damage * tier.damageMultiplier);
         }
 
         private static string PlantDisplayName(
@@ -370,14 +390,8 @@ namespace FruitDefense
                 {
                     if (MatchesDropTarget(target, currentDropTarget))
                         DrawDropCue(drawContext, hitRect, currentDropCue);
-                    if (DrawSharedHitTarget(drawContext, hitRect,
-                            RuntimeUiInteractionState.Normal))
-                        HandlePotClick(pot.Id);
                     continue;
                 }
-                if (DrawSharedHitTarget(drawContext, hitRect,
-                        RuntimeUiInteractionState.Normal))
-                    HandlePlantClick(plant);
                 DrawAnimatedPlant(Grow(rect, 1f), plant);
                 DrawWorldLabel(
                     new Rect(rect.x - 4f, rect.yMax - 1f, rect.width + 8f, 10f),
@@ -463,14 +477,44 @@ namespace FruitDefense
                     ? currentDropCue
                     : BattleUiPresentationState.ResolveDropCue(legal, false, false);
                 DrawDropCue(drawContext, rect, cue);
-                var state = legal
-                    ? RuntimeUiInteractionState.Normal
-                    : RuntimeUiInteractionState.Disabled;
-                if (DrawSharedHitTarget(drawContext, rect, state) && legal)
+            }
+        }
+
+        private void DrawBattlefieldHitTargets(
+            BattleUiLayout layout, RuntimeUiDrawContext drawContext)
+        {
+            if (_potToolSelected
+                || (_drag != null && _drag.Active
+                    && _drag.Type == DragPayloadType.Pot))
+            {
+                foreach (var cell in _game.Map.PlantableCells)
                 {
+                    if (_game.State.Pots.Any(
+                            pot => pot.Active && pot.Cell == cell))
+                        continue;
+                    var legal = _game.CanExpand(cell);
+                    var state = legal
+                        ? RuntimeUiInteractionState.Normal
+                        : RuntimeUiInteractionState.Disabled;
+                    if (!DrawSharedHitTarget(
+                            drawContext, ExpansionRect(cell, layout), state)
+                        || !legal)
+                        continue;
                     SetStatus(_game.ExpandPot(cell, out var reason), reason);
-                    if (_game.State.Inventory.Pots <= 0) _potToolSelected = false;
+                    if (_game.State.Inventory.Pots <= 0)
+                        _potToolSelected = false;
                 }
+            }
+
+            foreach (var pot in _game.State.Pots.Where(value => value.Active))
+            {
+                var hitRect = PotHitRect(pot, layout);
+                var plant = _game.PlantAtPot(pot.Id);
+                if (!DrawSharedHitTarget(
+                        drawContext, hitRect, RuntimeUiInteractionState.Normal))
+                    continue;
+                if (plant == null) HandlePotClick(pot.Id);
+                else HandlePlantClick(plant);
             }
         }
 
@@ -491,13 +535,15 @@ namespace FruitDefense
                     zombie.Id, BattleContentIds.Statuses.IceFreeze);
                 var slowed = _game.HasStatus(
                     zombie.Id, BattleContentIds.Statuses.IceSlow);
-                if (frozen) DrawVfxSprite(Grow(rect, 4f), CombatSprite.FrozenAura, new Color(1f, 1f, 1f, .82f));
+                if (frozen) BattleCombatGuiRenderer.DrawFrozenAura(
+                    _combatVfxAtlas, rect, new Color(1f, 1f, 1f, .82f));
                 var tint = slowed ? new Color(.72f, .9f, 1f) : Color.white;
                 tint = Color.Lerp(tint, new Color(1f, .9f, .55f), reaction.Flash);
                 DrawTempSprite(rect, ZombieSprite(zombie.DefinitionId), tint);
                 if (_game.HasStatus(
                         zombie.Id, BattleContentIds.Statuses.ChiliBurn))
-                    DrawVfxSprite(new Rect(rect.xMax - 5f, rect.y - 6f, 11f, 11f), CombatSprite.Burning);
+                    BattleCombatGuiRenderer.DrawBurningStatus(
+                        _combatVfxAtlas, rect);
                 var healthWidth = Projection.LegacyVisualSize(80f);
                 var healthRect = new Rect(point.x - healthWidth * .5f, rect.y - 3f,
                     healthWidth, 2f);
@@ -510,92 +556,27 @@ namespace FruitDefense
         private void DrawProjectiles()
         {
             var interpolation = _game.PresentationInterpolationFraction;
+            var visualScale = Projection.LegacyVisualSize(1f);
             foreach (var projectile in _game.State.Projectiles)
             {
                 var position = _renderSamples.ProjectilePosition(
                     projectile.Id, projectile.Position, interpolation);
                 var point = ToBoard(position);
-                var archetype = BattlePresentationVisualCatalog.Projectile(
-                    projectile.ProjectileId);
-                if (archetype == ProjectileVisualArchetype.Pea
-                    || archetype == ProjectileVisualArchetype.Generic)
-                {
-                    DrawVfxSprite(CenteredRect(point, 26f), CombatSprite.PeaProjectile);
-                }
-                else if (archetype == ProjectileVisualArchetype.Watermelon)
-                {
-                    var size = Mathf.Lerp(30f, 40f, Mathf.Sin(projectile.Progress * Mathf.PI));
-                    DrawVfxSprite(CenteredRect(point, size), CombatSprite.WatermelonProjectile);
-                }
-                else
-                {
-                    var angle = (_game.State.Elapsed * 900f) * (projectile.Returning ? -1f : 1f);
-                    DrawRotatedVfx(CenteredRect(point, 38f), CombatSprite.BananaProjectile, angle,
-                        projectile.Returning ? new Color(1f, .96f, .62f) : Color.white);
-                }
+                BattleCombatGuiRenderer.DrawProjectile(_combatVfxAtlas, point,
+                    visualScale, projectile,
+                    _game.Content.Projectiles[projectile.ProjectileId].presentationId,
+                    _game.State.Elapsed);
             }
         }
 
         private void DrawCombatEffects()
         {
+            var visualScale = Projection.LegacyVisualSize(1f);
             foreach (var effect in _presentation.CombatEffects)
             {
                 var point = ToBoard(effect.Position);
-                var progress = effect.Duration <= 0f ? 1f : 1f - Mathf.Clamp01(effect.Ttl / effect.Duration);
-                var fade = Mathf.Clamp01(1f - progress * .9f);
-                switch (effect.Kind)
-                {
-                    case PresentationVfxKind.PeaImpact:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(20f, 39f, progress)), CombatSprite.PeaImpact, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.WatermelonBlast:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(48f, 102f, progress)), CombatSprite.WatermelonBlast, new Color(1f, 1f, 1f, fade));
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(35f, 125f, progress)), CombatSprite.ShockwaveRing, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.BananaHit:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(18f, 43f, progress)),
-                            CombatSprite.HitSpark, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.DurianImpact:
-                        DrawVfxSprite(CenteredRect(point + Vector2.up * Projection.LegacyVisualSize(13f),
-                                Mathf.Lerp(52f, 128f, progress)),
-                            CombatSprite.DurianShockwave, new Color(1f, 1f, 1f, fade));
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(40f, 138f, progress)),
-                            CombatSprite.ShockwaveRing, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.SunBurst:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(38f, 78f, Mathf.Sin(progress * Mathf.PI))), CombatSprite.SunBurst,
-                            new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.GatlingMuzzle:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(34f, 20f, progress)), CombatSprite.GatlingMuzzle, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.IceImpact:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(30f, 58f, progress)), CombatSprite.IceImpact, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.FreezeProc:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(42f, 78f, progress)),
-                            CombatSprite.FrozenAura, new Color(1f, 1f, 1f, fade));
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(25f, 70f, progress)),
-                            CombatSprite.ShockwaveRing, new Color(.7f, .9f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.ChiliImpact:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(34f, 62f, progress)), CombatSprite.ChiliImpact, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.BurnTick:
-                        DrawVfxSprite(CenteredRect(point + Vector2.up * 5f,
-                                Mathf.Lerp(18f, 30f, progress)),
-                            CombatSprite.Burning, new Color(1f, 1f, 1f, fade));
-                        break;
-                    case PresentationVfxKind.Defeat:
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(36f, 82f, progress)),
-                            CombatSprite.HitSpark, new Color(1f, .88f, .45f, fade));
-                        DrawVfxSprite(CenteredRect(point, Mathf.Lerp(24f, 94f, progress)),
-                            CombatSprite.ShockwaveRing, new Color(1f, .82f, .35f, fade));
-                        break;
-                    default:
-                        break;
-                }
+                BattleCombatGuiRenderer.DrawCombatEffect(_combatVfxAtlas, point,
+                    visualScale, effect);
             }
         }
 
@@ -612,7 +593,7 @@ namespace FruitDefense
             return BattleUiLayout.BattlefieldFeedback(gridRect, point);
         }
 
-        private void DrawBoardStatus(
+        private void DrawPhaseWaveRow(
             BattleUiLayout layout, RuntimeUiDrawContext drawContext,
             BattleUiDropCue currentDropCue)
         {
@@ -622,15 +603,15 @@ namespace FruitDefense
                 && !string.IsNullOrEmpty(_status);
             var text = transientVisible
                 ? _status
-                : viewState.BoardStatusText(
+                : viewState.PhaseStatusText(
                     state.WaveIndex, state.Zombies.Count, state.BetweenTimer);
             var statusState = transientVisible
                 ? BattleUiPresentationState.ResolveTransientStatusState(
                     _statusState, currentDropCue)
-                : viewState.StatusInteractionState;
+                : viewState.PhaseStatusInteractionState;
             var statusRect = viewState.ShowsWaveAction
-                ? layout.BoardStatusWithWaveAction
-                : layout.BoardStatus;
+                ? layout.PhaseStatusWithWaveAction
+                : layout.PhaseStatus;
             if (transientVisible)
             {
                 var statusMotion = RuntimeUiMotion.Evaluate(_statusPulse,
@@ -643,9 +624,12 @@ namespace FruitDefense
             }
             else
             {
+                var phaseTextMode = RuntimeUiGui.ResolveStatusTextMode(
+                    drawContext, statusRect, text, statusState,
+                    RuntimeUiTypographyRole.Supplemental);
                 RuntimeUiGui.DrawStatus(drawContext, statusRect, text, statusState,
                     RuntimeUiTypographyRole.Supplemental,
-                    RuntimeUiStatusTextMode.SingleLine);
+                    phaseTextMode);
             }
             if (transientVisible)
                 DrawDropCue(drawContext, statusRect, currentDropCue);
@@ -660,7 +644,7 @@ namespace FruitDefense
                     BattleUiPresentationState.ResolveActionSpec(
                         BattleUiActionSemantic.StartWave),
                     actionState, RuntimeUiArtSlot.IconControlStartWave,
-                    RuntimeUiTypographyRole.Supplemental,
+                    RuntimeUiTypographyRole.ControlLabel,
                     motion: BattleActionMotion(WaveActionFeedbackTarget));
                 if (wavePress.Activated)
                 {

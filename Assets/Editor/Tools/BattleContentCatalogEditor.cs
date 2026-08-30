@@ -11,62 +11,73 @@ namespace FruitDefense.Editor
     public static class BattleContentCatalogEditor
     {
         public const string AuthoringAssetPath = "Assets/Content/BundledBattleContent.asset";
-        public const string BundledJsonPath = "Assets/Resources/Content/battle-content-bundled.v2.json";
+        public const string ManifestAuthoringAssetPath = "Assets/Content/GameContentManifest.asset";
+        public const string BundledJsonPath = "Assets/Resources/Content/battle-content-bundled.v3.json";
+        public const string ManifestJsonPath = "Assets/Resources/Content/game-content-manifest.v1.json";
 
-        [MenuItem("Fruit Defense/Content/Rebuild Bundled Catalog")]
-        public static void CreateOrRefreshBundledCatalog()
-        {
-            EnsureAssetDirectory(AuthoringAssetPath);
-            var asset = AssetDatabase.LoadAssetAtPath<BattleContentCatalogAsset>(AuthoringAssetPath);
-            if (asset == null)
-            {
-                asset = ScriptableObject.CreateInstance<BattleContentCatalogAsset>();
-                AssetDatabase.CreateAsset(asset, AuthoringAssetPath);
-            }
-            asset.Catalog = BundledBattleContentFactory.Create();
-            EditorUtility.SetDirty(asset);
-            AssetDatabase.SaveAssets();
-            ExportBundledCatalog();
-            Debug.Log("Rebuilt battle content authoring asset and JSON.");
-        }
-
-        [MenuItem("Fruit Defense/Content/Export Bundled Catalog")]
-        public static void ExportBundledCatalog()
+        [MenuItem("Fruit Defense/Content/Export Game Content Bundle")]
+        public static void ExportGameContentBundle()
         {
             var asset = RequireAuthoringAsset();
+            var manifestAsset = RequireManifestAuthoringAsset();
             var copy = BattleContentJson.DeepCopy(asset.Catalog);
+            var manifest = GameContentManifestJson.DeepCopy(manifestAsset.Manifest);
             var validation = BattleContentValidator.ValidateBundledBaseline(copy);
             ThrowIfInvalid(validation, "Bundled catalog export rejected");
+            ThrowIfInvalid(GameContentManifestValidator.Validate(manifest, copy,
+                BundledLevelCatalogIds.Catalog), "Game-content manifest export rejected");
 
-            var bytes = BattleContentJson.SerializeCanonicalUtf8(copy);
-            var absolutePath = AbsoluteProjectPath(BundledJsonPath);
-            Directory.CreateDirectory(Path.GetDirectoryName(absolutePath));
-            File.WriteAllBytes(absolutePath, bytes);
+            var battleBytes = BattleContentJson.SerializeCanonicalUtf8(copy);
+            var manifestBytes = GameContentManifestJson.SerializeCanonicalUtf8(manifest);
+            var battleAbsolutePath = AbsoluteProjectPath(BundledJsonPath);
+            var manifestAbsolutePath = AbsoluteProjectPath(ManifestJsonPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(battleAbsolutePath));
+            File.WriteAllBytes(battleAbsolutePath, battleBytes);
+            File.WriteAllBytes(manifestAbsolutePath, manifestBytes);
             AssetDatabase.ImportAsset(BundledJsonPath, ImportAssetOptions.ForceSynchronousImport);
-            Debug.Log("Exported battle content JSON: " + BundledJsonPath + " (" + bytes.Length + " bytes)");
+            AssetDatabase.ImportAsset(ManifestJsonPath, ImportAssetOptions.ForceSynchronousImport);
+            Debug.Log("Exported game-content bundle: " + ManifestJsonPath + " + "
+                + BundledJsonPath + " (" + (manifestBytes.Length + battleBytes.Length) + " bytes)");
         }
 
+        [MenuItem("Fruit Defense/Content/Validate Game Content Bundle")]
         public static void ValidateBundledCatalog()
         {
             var asset = RequireAuthoringAsset();
-            var absolutePath = AbsoluteProjectPath(BundledJsonPath);
-            if (!File.Exists(absolutePath)) throw new FileNotFoundException("Bundled catalog JSON is missing.", absolutePath);
-            var json = File.ReadAllText(absolutePath, Encoding.UTF8);
+            var manifestAsset = RequireManifestAuthoringAsset();
+            var battleAbsolutePath = AbsoluteProjectPath(BundledJsonPath);
+            var manifestAbsolutePath = AbsoluteProjectPath(ManifestJsonPath);
+            if (!File.Exists(battleAbsolutePath))
+                throw new FileNotFoundException("Bundled catalog JSON is missing.", battleAbsolutePath);
+            if (!File.Exists(manifestAbsolutePath))
+                throw new FileNotFoundException("Game-content manifest JSON is missing.", manifestAbsolutePath);
+            var json = File.ReadAllText(battleAbsolutePath, Encoding.UTF8);
+            var manifestJson = File.ReadAllText(manifestAbsolutePath, Encoding.UTF8);
             BattleContentCatalogSmoke.Run(asset.Catalog, json);
+            GameContentManifestSmoke.Run(manifestAsset.Manifest, manifestJson, asset.Catalog);
             Debug.Log("Battle content validation passed: " + asset.Catalog.header.catalogId + "@" + asset.Catalog.header.contentVersion);
         }
 
-        public static void ExportAndValidateBundledCatalog()
+        public static void ExportAndValidateGameContentBundle()
         {
-            ExportBundledCatalog();
+            ExportGameContentBundle();
             ValidateBundledCatalog();
         }
 
         private static BattleContentCatalogAsset RequireAuthoringAsset()
         {
             var asset = AssetDatabase.LoadAssetAtPath<BattleContentCatalogAsset>(AuthoringAssetPath);
-            if (asset == null) throw new InvalidOperationException("Missing authoring asset at " + AuthoringAssetPath
-                + ". Run Rebuild Bundled Catalog first.");
+            if (asset == null) throw new InvalidOperationException(
+                "Missing battle-content authoring asset at " + AuthoringAssetPath + ".");
+            return asset;
+        }
+
+        private static GameContentManifestAsset RequireManifestAuthoringAsset()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameContentManifestAsset>(
+                ManifestAuthoringAssetPath);
+            if (asset == null) throw new InvalidOperationException(
+                "Missing game-content manifest authoring asset at " + ManifestAuthoringAssetPath + ".");
             return asset;
         }
 
@@ -75,13 +86,6 @@ namespace FruitDefense.Editor
             if (validation.IsValid) return;
             throw new InvalidOperationException(prefix + ":\n" + string.Join("\n",
                 validation.Issues.Select(issue => issue.ToString()).ToArray()));
-        }
-
-        private static void EnsureAssetDirectory(string assetPath)
-        {
-            var directory = Path.GetDirectoryName(AbsoluteProjectPath(assetPath));
-            if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         private static string AbsoluteProjectPath(string assetPath)

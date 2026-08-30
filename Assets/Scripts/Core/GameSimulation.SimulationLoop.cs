@@ -230,21 +230,22 @@ namespace FruitDefense.Core
             return _orderedWaves[index - 1];
         }
 
-        private StarTierDefinitionDto StarTier(Plant plant)
+        private UpgradeTierDefinitionDto UpgradeTier(Plant plant)
         {
-            return _content.StarTiers["star." + Mathf.Clamp(plant.Star, 1, 4)];
+            return _content.ResolvePlantUpgradeTier(plant.DefinitionId, plant.Star);
         }
 
         private float PlantDamage(Plant plant)
         {
-            var baseValue = _content.Plants[plant.DefinitionId].damage * StarTier(plant).damageMultiplier;
+            var baseValue = _content.Plants[plant.DefinitionId].damage
+                * UpgradeTier(plant).damageMultiplier;
             return GetEffectiveAttribute(plant, CombatAttributeKind.Damage, baseValue);
         }
 
         private float PlantRange(Plant plant)
         {
             var baseValue = Map.FromLegacyDistance(_content.Plants[plant.DefinitionId].rangeLegacyUnits)
-                * StarTier(plant).rangeMultiplier;
+                * UpgradeTier(plant).rangeMultiplier;
             return GetEffectiveAttribute(plant, CombatAttributeKind.Range, baseValue);
         }
 

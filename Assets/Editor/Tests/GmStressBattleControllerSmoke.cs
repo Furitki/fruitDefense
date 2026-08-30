@@ -4,6 +4,7 @@ using System.Linq;
 using FruitDefense.Content;
 using FruitDefense.Core;
 using FruitDefense.Development.GmStress;
+using FruitDefense.Presentation;
 using UnityEngine;
 
 namespace FruitDefense.Editor
@@ -21,6 +22,8 @@ namespace FruitDefense.Editor
             ValidateDragOnlyPlantDeploymentInteraction();
             ValidatePerCellCombatDistanceParity();
             ValidateBundledPlantAbilityExecution();
+            ValidateSharedCombatPresentation();
+            ValidateBoundedHighDensityPresentation();
             ValidateNoFailureLifecycle();
             ValidateInvalidCommandsAreAtomic();
             Debug.Log("FRUIT_DEFENSE_GM_STRESS_CONTROLLER_OK");
@@ -219,7 +222,18 @@ namespace FruitDefense.Editor
                 "GM uses the normal battle's canonical map units per cell");
             Assert(Mathf.Approximately(standard.LegacyToMapScale,
                     gm.LegacyToMapScale),
-                "GM uses the explicit normal-battle combat-distance calibration");
+                "GM and normal battle use the same per-cell combat-distance calibration");
+            Assert(Mathf.Approximately(gm.LegacyToMapScale,
+                    gm.MapUnitsPerCell / BattlefieldMapDefinition.LegacyReferenceMapUnitsPerCell
+                    * BattlefieldMapDefinition.LegacyReferenceDistanceScale),
+                "GM receives combat-distance calibration from its map cell pitch");
+            Assert(!typeof(BattlefieldMapDefinition).GetConstructors().Any(constructor =>
+                {
+                    var parameters = constructor.GetParameters();
+                    return parameters.Length == 2
+                        && parameters[0].ParameterType == typeof(BattlefieldLayeredMapSource)
+                        && parameters[1].ParameterType == typeof(float);
+                }), "GM has no separate map-scale construction override");
             var standardCellDistance = standard.FromLegacyDistance(44f)
                 / standard.MapUnitsPerCell;
             var gmCellDistance = gm.FromLegacyDistance(44f) / gm.MapUnitsPerCell;
@@ -319,6 +333,186 @@ namespace FruitDefense.Editor
                 controller.RunFixedSteps(210);
                 Assert(simulation.State.Sun > initialSun,
                     "GM producer executes its shared periodic ability");
+            }
+        }
+
+        private static void ValidateSharedCombatPresentation()
+        {
+            var atlas = Resources.Load<Texture2D>(
+                BattleCombatGuiRenderer.AtlasResourcePath);
+            Assert(BattleCombatGuiRenderer.ValidateAtlas(atlas, out var atlasReason),
+                "GM resolves the required shared combat atlas: " + atlasReason);
+
+            ValidateDamagePlantPresentation(BattleContentIds.Plants.Pea,
+                BattleContentIds.Abilities.PeaAttack,
+                BattleContentIds.Projectiles.Pea,
+                PresentationVfxKind.PeaImpact, 20200);
+            ValidateDamagePlantPresentation(BattleContentIds.Plants.Watermelon,
+                BattleContentIds.Abilities.WatermelonAttack,
+                BattleContentIds.Projectiles.Watermelon,
+                PresentationVfxKind.WatermelonBlast, 20201);
+            ValidateDamagePlantPresentation(BattleContentIds.Plants.Banana,
+                BattleContentIds.Abilities.BananaAttack,
+                BattleContentIds.Projectiles.Banana,
+                PresentationVfxKind.BananaHit, 20202);
+            ValidateDamagePlantPresentation(BattleContentIds.Plants.Durian,
+                BattleContentIds.Abilities.DurianAttack, string.Empty,
+                PresentationVfxKind.DurianImpact, 20203);
+
+            using (var controller = GmStressBattleFactory.Create(20204))
+            {
+                var simulation = controller.Simulation;
+                Assert(controller.PlaceOrReplacePlant(new Vector2Int(0, 5),
+                        BattleContentIds.Plants.Sunflower, out var reason),
+                    "GM producer deploys for presentation validation: " + reason);
+                var plant = simulation.State.Plants.Single();
+                var buffer = new BattlePresentationBuffer();
+                var scratch = new List<BattlePresentationEvent>();
+                var released = false;
+                var resourceGranted = false;
+                for (var tick = 0; tick < 240 && !resourceGranted; tick++)
+                {
+                    controller.RunFixedSteps(1);
+                    scratch.Clear();
+                    simulation.DrainPresentationEvents(scratch);
+                    released |= scratch.Any(value =>
+                        value.Kind == BattlePresentationEventKind.AbilityReleased
+                        && value.AbilityId
+                            == BattleContentIds.Abilities.SunflowerProduce);
+                    resourceGranted |= scratch.Any(value =>
+                        value.Kind == BattlePresentationEventKind.ResourceGranted
+                        && value.AbilityId
+                            == BattleContentIds.Abilities.SunflowerProduce);
+                    buffer.Consume(scratch);
+                }
+                Assert(released && resourceGranted
+                    && buffer.CombatEffects.Any(value =>
+                        value.Kind == PresentationVfxKind.SunBurst)
+                    && buffer.Reactions.Any(value => value.EntityId == plant.Id)
+                    && buffer.Feedback.Any(value =>
+                        value.Role == CombatFloatingTextRole.Resource),
+                    "GM producer events resolve to the shared sun-burst, plant motion, and resource feedback");
+            }
+
+            foreach (PresentationVfxKind kind in Enum.GetValues(
+                         typeof(PresentationVfxKind)))
+            {
+                if (kind == PresentationVfxKind.None) continue;
+                BattleCombatGuiRenderer.PrimaryEffectSprite(kind);
+            }
+            Assert(BattleCombatGuiRenderer.SecondaryEffectSprite(
+                    PresentationVfxKind.WatermelonBlast).HasValue
+                && BattleCombatGuiRenderer.SecondaryEffectSprite(
+                    PresentationVfxKind.DurianImpact).HasValue
+                && !BattleCombatGuiRenderer.SecondaryEffectSprite(
+                    PresentationVfxKind.PeaImpact).HasValue,
+                "shared renderer owns ability-specific layered effect identities instead of one GM outline");
+        }
+
+        private static void ValidateDamagePlantPresentation(string plantDefinitionId,
+            string abilityId, string projectileId, PresentationVfxKind effectKind,
+            int seed)
+        {
+            using (var controller = GmStressBattleFactory.Create(seed))
+            {
+                var simulation = controller.Simulation;
+                Assert(controller.PlaceOrReplacePlant(new Vector2Int(0, 5),
+                        plantDefinitionId, out var reason),
+                    "GM damage plant deploys for presentation validation: " + reason);
+                var plant = simulation.State.Plants.Single();
+                var enemy = simulation.SpawnEnemy(BattleContentIds.Enemies.Boss,
+                    controller.LaneIds[0]);
+                enemy.Speed = 0f;
+                enemy.PathProgress = simulation.Map.RouteLength(enemy.RouteId) - .1f;
+                var buffer = new BattlePresentationBuffer();
+                var scratch = new List<BattlePresentationEvent>();
+                var released = false;
+                var launched = string.IsNullOrEmpty(projectileId);
+                var expectedProjectileSprite = projectileId
+                    == BattleContentIds.Projectiles.Watermelon
+                        ? BattleCombatSprite.WatermelonProjectile
+                        : projectileId == BattleContentIds.Projectiles.Banana
+                            ? BattleCombatSprite.BananaProjectile
+                            : BattleCombatSprite.PeaProjectile;
+                var damaged = false;
+                for (var tick = 0; tick < 200 && !damaged; tick++)
+                {
+                    controller.RunFixedSteps(1);
+                    scratch.Clear();
+                    simulation.DrainPresentationEvents(scratch);
+                    released |= scratch.Any(value =>
+                        value.Kind == BattlePresentationEventKind.AbilityReleased
+                        && value.AbilityId == abilityId
+                        && value.SourceEntityId == plant.Id);
+                    launched |= scratch.Any(value =>
+                        value.Kind == BattlePresentationEventKind.ProjectileLaunched
+                        && value.SemanticId == projectileId
+                        && BattleCombatGuiRenderer.ProjectileSprite(value.SemanticId)
+                            == expectedProjectileSprite);
+                    damaged |= scratch.Any(value =>
+                        value.Kind == BattlePresentationEventKind.DamageResolved
+                        && value.AbilityId == abilityId
+                        && value.TargetEntityId == enemy.Id);
+                    buffer.Consume(scratch);
+                }
+                Assert(released && launched && damaged,
+                    "GM emits the normal release/projectile/damage presentation sequence: "
+                    + plantDefinitionId);
+                Assert(buffer.CombatEffects.Any(value => value.Kind == effectKind)
+                    && BattleCombatGuiRenderer.PrimaryEffectSprite(effectKind)
+                        != BattleCombatSprite.SunCollectible,
+                    "GM routes the authored impact identity through the shared renderer: "
+                    + effectKind);
+                Assert(buffer.Reactions.Any(value => value.EntityId == plant.Id)
+                    && buffer.Reactions.Any(value => value.EntityId == enemy.Id)
+                    && buffer.Feedback.Any(value => value.TargetEntityId == enemy.Id),
+                    "GM resolves plant attack motion, target reaction, and floating damage feedback: "
+                    + plantDefinitionId);
+            }
+        }
+
+        private static void ValidateBoundedHighDensityPresentation()
+        {
+            using (var controller = GmStressBattleFactory.Create(20210))
+            {
+                var simulation = controller.Simulation;
+                foreach (var pot in simulation.State.Pots.Where(value => value.Active))
+                    Assert(controller.PlaceOrReplacePlant(pot.Cell,
+                            BattleContentIds.Plants.Pea, out _),
+                        "dense GM presentation fixture fills every plant pot");
+                for (var lane = 0; lane < controller.LaneIds.Count; lane++)
+                for (var index = 0; index < 10; index++)
+                {
+                    var enemy = simulation.SpawnEnemy(
+                        BattleContentIds.Enemies.Boss, controller.LaneIds[lane]);
+                    enemy.Speed = 0f;
+                    enemy.PathProgress = simulation.Map.RouteLength(enemy.RouteId)
+                        - .1f - index * .01f;
+                }
+
+                var buffer = new BattlePresentationBuffer();
+                var scratch = new List<BattlePresentationEvent>();
+                for (var tick = 0; tick < 260; tick++)
+                {
+                    controller.RunFixedSteps(1);
+                    scratch.Clear();
+                    simulation.DrainPresentationEvents(scratch);
+                    buffer.Consume(scratch);
+                    buffer.Advance(BattleAbilityTiming.FixedStepSeconds,
+                        false, 1);
+                    Assert(buffer.CombatEffects.Count
+                            <= BattlePresentationBuffer.CombatEffectCapacity
+                        && buffer.Reactions.Count
+                            <= BattlePresentationBuffer.ReactionCapacity
+                        && buffer.Feedback.Count
+                            <= BattlePresentationBuffer.FloatingTextCapacity,
+                        "dense GM combat stays inside every shared presentation cap");
+                }
+                Assert(buffer.AllocatedFeedbackCount
+                        <= BattlePresentationBuffer.FloatingTextCapacity
+                    && buffer.PooledFeedbackCount
+                        <= BattlePresentationBuffer.FloatingTextCapacity,
+                    "dense GM combat reuses the bounded floating-feedback pool");
             }
         }
 

@@ -26,8 +26,6 @@ namespace FruitDefense.Core
         public static readonly BattlefieldMapDefinition DefaultBattlefield = BattlefieldMapDefinition.CreateDefault();
         public static IReadOnlyList<Vector2Int> PlantingCells { get { return DefaultBattlefield.PlantableCells; } }
 
-        public static int RefreshCost(int refreshCount) { return 10 + refreshCount * 5; }
-
         public static float MapDistance(float legacyDistance) { return DefaultBattlefield.FromLegacyDistance(legacyDistance); }
     }
 }

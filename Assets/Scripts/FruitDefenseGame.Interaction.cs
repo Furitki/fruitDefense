@@ -36,12 +36,17 @@ namespace FruitDefense
                 var currentDropTarget = CurrentDropTarget(layout);
                 var currentDropCue = ResolveDropCue(currentDropTarget);
                 DrawHeader(layout, _runtimeUiDrawContext);
+                RuntimeUiGui.DrawSafeArea(_runtimeUiDrawContext, layout.PageShell);
                 DrawBoard(layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
+                DrawPhaseWaveRow(layout, _runtimeUiDrawContext, currentDropCue);
                 DrawEmbeddedBattleControls(
                     layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
                 DrawDragGhost(
                     layout, _runtimeUiDrawContext, currentDropTarget, currentDropCue);
+                RuntimeUiGui.DrawGameplayStage(
+                    _runtimeUiDrawContext, layout.BattleStage);
                 DrawOverlay(layout, _runtimeUiDrawContext);
+                RuntimeUiGui.DrawScreenCorners(_runtimeUiDrawContext, layout.Design);
                 if (_floatingTextOverlay != null)
                     _floatingTextOverlay.DrawOnGuiRepaint();
             }
@@ -115,7 +120,12 @@ namespace FruitDefense
             {
                 var rect = PlantSourceRect(plant, layout);
                 if (rect.width > 0f && rect.Contains(point))
-                    return new DragSession { Type = DragPayloadType.Plant, PlantId = plant.Id };
+                    return new DragSession
+                    {
+                        Type = DragPayloadType.Plant,
+                        PlantId = plant.Id,
+                        SourceRect = rect,
+                    };
             }
             if (_game.State.Inventory.Get(BattleContentIds.Equipment.Gatling) > 0
                 && layout.EquipmentTool(BattleContentIds.Equipment.Gatling).Contains(point))
@@ -154,7 +164,7 @@ namespace FruitDefense
                     var rect = layout.Battlefield.PotHitRect(pot.Cell);
                     targets.Add(new DropTarget { Type = DropTargetType.Pot, Id = pot.Id, Rect = rect });
                 }
-                for (var slot = 0; slot < 5; slot++)
+                for (var slot = 0; slot < layout.NurserySlotCount; slot++)
                 {
                     var rect = layout.NurserySlot(slot);
                     targets.Add(new DropTarget { Type = DropTargetType.Nursery, Slot = slot, Rect = rect });
@@ -490,14 +500,17 @@ namespace FruitDefense
         private RuntimeUiPressResult TrackBattleAction(int target, Rect rect,
             bool enabled = true)
         {
+            enabled = enabled && (!BlocksBackgroundInput()
+                || IsModalActionTarget(target));
             return _actionPressTracker.Update(target, rect, enabled,
                 RuntimeUiPointerSample.FromEvent(Event.current),
                 _runtimeUiTheme.Feedback.DragCancelDistance);
         }
 
-        private static bool DrawSharedHitTarget(RuntimeUiDrawContext drawContext,
+        private bool DrawSharedHitTarget(RuntimeUiDrawContext drawContext,
             Rect rect, RuntimeUiInteractionState state)
         {
+            if (BlocksBackgroundInput()) return false;
             var enabled = GUI.enabled;
             GUI.enabled = enabled && state != RuntimeUiInteractionState.Disabled
                 && state != RuntimeUiInteractionState.Loading;
@@ -509,6 +522,43 @@ namespace FruitDefense
             {
                 GUI.enabled = enabled;
             }
+        }
+
+        private bool BlocksBackgroundInput()
+        {
+            return _game != null && BattleUiPresentationState.Create(
+                _game.State.Phase, _game.State.Paused).BlocksBackgroundInput;
+        }
+
+        private static bool IsModalActionTarget(int target)
+        {
+            return target == ModalPrimaryFeedbackTarget
+                || target == ModalSecondaryFeedbackTarget;
+        }
+
+        private static void BeginBattleStageClip(BattleUiLayout layout)
+        {
+            BeginAbsoluteDesignClip(layout, layout.BattleStage);
+        }
+
+        private static void EndBattleStageClip()
+        {
+            EndAbsoluteDesignClip();
+        }
+
+        private static void BeginAbsoluteDesignClip(
+            BattleUiLayout layout, Rect clipRect)
+        {
+            GUI.BeginGroup(clipRect);
+            var absoluteDesign = layout.Design;
+            absoluteDesign.position = -clipRect.position;
+            GUI.BeginGroup(absoluteDesign);
+        }
+
+        private static void EndAbsoluteDesignClip()
+        {
+            GUI.EndGroup();
+            GUI.EndGroup();
         }
 
     }

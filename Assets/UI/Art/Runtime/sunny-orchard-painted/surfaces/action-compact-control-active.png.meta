@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-set=sunny-orchard-painted;slot=action.compact-control-active;source-scale=2;generated=built-in-imagegen
+  userData: ui-art-set=sunny-orchard-painted;slot=action.compact-control-active;source-scale=2;authored=imagegen-direct-master;transform=alpha-crop;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/action-yellow.png;asset-sha256=BE9E3F520F570CDD44A11950515A023EB1E785309F5EC81F432394DB8395C094
   assetBundleName:
   assetBundleVariant:

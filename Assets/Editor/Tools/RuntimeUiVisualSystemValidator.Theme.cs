@@ -47,29 +47,29 @@ namespace FruitDefense.Editor
             }
 
             ValidateApprovedColor(report, path, "colors.baseSurface", theme.Colors.BaseSurface,
-                new Color32(255, 246, 224, 255));
+                new Color32(255, 249, 238, 255));
             ValidateApprovedColor(report, path, "colors.edgeBackground", theme.Colors.EdgeBackground,
-                new Color32(245, 221, 174, 255));
+                new Color32(115, 201, 244, 255));
             ValidateApprovedColor(report, path, "colors.raisedSurface", theme.Colors.RaisedSurface,
-                new Color32(255, 231, 163, 255));
+                new Color32(255, 241, 210, 255));
             ValidateApprovedColor(report, path, "colors.selectionAccent", theme.Colors.SelectionAccent,
-                new Color32(255, 210, 77, 255));
+                new Color32(255, 197, 66, 255));
             ValidateApprovedColor(report, path, "colors.success", theme.Colors.Success,
-                new Color32(109, 190, 75, 255));
+                new Color32(84, 169, 40, 255));
             ValidateApprovedColor(report, path, "colors.disabled", theme.Colors.Disabled,
-                new Color32(143, 191, 116, 255));
+                new Color32(167, 185, 155, 255));
             ValidateApprovedColor(report, path, "colors.primaryText", theme.Colors.PrimaryText,
-                new Color32(139, 94, 60, 255));
+                new Color32(86, 52, 31, 255));
             ValidateApprovedColor(report, path, "colors.warning", theme.Colors.Warning,
-                new Color32(255, 185, 66, 255));
+                new Color32(230, 154, 25, 255));
             ValidateApprovedColor(report, path, "colors.danger", theme.Colors.Danger,
-                new Color32(211, 78, 69, 255));
+                new Color32(200, 77, 63, 255));
             ValidateApprovedColor(report, path, "colors.scrim", theme.Colors.Scrim,
-                new Color32(61, 42, 32, 255));
+                new Color32(59, 36, 22, 255));
             ValidateApprovedColor(report, path, "colors.secondaryText", theme.Colors.SecondaryText,
-                new Color32(111, 90, 69, 255));
+                new Color32(111, 88, 70, 255));
             ValidateApprovedColor(report, path, "colors.inverseText", theme.Colors.InverseText,
-                new Color32(255, 246, 224, 255));
+                new Color32(255, 249, 238, 255));
             if (Mathf.Abs(theme.Colors.Scrim.a - 1f) > ColorTolerance)
             {
                 report.Error("theme.scrim.alpha-authority", path,
@@ -91,7 +91,28 @@ namespace FruitDefense.Editor
                 RuntimeUiTypographyRole.Metric, "metric");
             ValidateTypographyMinimum(report, path, theme.Typography.Supplemental,
                 RuntimeUiTypographyRole.Supplemental, "supplemental");
-            ValidateFont(report, theme.PackagedChineseFont, path);
+            ValidateFontLicenseRecords(report, path);
+            ValidateTypographyFonts(report, theme, path);
+            ValidateNoLegacyFontField(report, path);
+
+            ValidateApprovedActionColors(report, path, "actionStyles.primary",
+                theme.ActionStyles.Primary, new Color32(160, 199, 61, 255),
+                new Color32(86, 52, 31, 255));
+            ValidateApprovedActionColors(report, path, "actionStyles.secondary",
+                theme.ActionStyles.Secondary, new Color32(160, 199, 61, 255),
+                new Color32(86, 52, 31, 255));
+            ValidateApprovedActionColors(report, path, "actionStyles.quiet",
+                theme.ActionStyles.Quiet, new Color32(255, 249, 238, 255),
+                new Color32(86, 52, 31, 255));
+            ValidateApprovedActionColors(report, path, "actionStyles.danger",
+                theme.ActionStyles.Danger, new Color32(168, 56, 49, 255),
+                new Color32(255, 249, 238, 255));
+            ValidateApprovedActionColors(report, path, "actionStyles.modeActive",
+                theme.ActionStyles.ModeActive, new Color32(255, 197, 66, 255),
+                new Color32(59, 36, 22, 255));
+            ValidateApprovedActionColors(report, path, "actionStyles.disabled",
+                theme.ActionStyles.Disabled, new Color32(223, 227, 216, 255),
+                new Color32(86, 52, 31, 255));
 
             ValidateContrast(report, path, "primaryText/baseSurface", theme.Colors.PrimaryText,
                 theme.Colors.BaseSurface, RuntimeUiQualityProfile.NormalTextContrast);
@@ -250,11 +271,10 @@ namespace FruitDefense.Editor
                     "Return one complete pairing without inferring semantics from an icon or control name.");
             }
 
-            if (style.ContainerColor.a < .999f || style.ContentColor.a < .999f
-                || style.OutlineColor.a < .999f)
+            if (style.ContainerColor.a < .999f || style.ContentColor.a < .999f)
             {
                 report.Error("theme.action-style.opacity", path,
-                    "Resolved action container, content, and outline must be opaque for "
+                    "Resolved action container and content must be opaque for "
                     + spec.Role + "/" + state + "/modeActive=" + modeActive + ".",
                     "Resolve complete opaque tokens instead of global alpha attenuation.");
             }
@@ -263,11 +283,6 @@ namespace FruitDefense.Editor
                 + "/modeActive=" + modeActive,
                 style.ContentColor, style.ContainerColor,
                 RuntimeUiQualityProfile.NormalTextContrast);
-            ValidateContrast(report, path,
-                "action-outline/" + spec.Role + "/" + state
-                + "/modeActive=" + modeActive,
-                style.OutlineColor, style.ContainerColor,
-                RuntimeUiQualityProfile.NonTextContrast);
         }
 
         private static RuntimeUiArtSlot ActionContainerSlot(RuntimeUiActionKind role)
@@ -294,27 +309,87 @@ namespace FruitDefense.Editor
                 "Restore the approved semantic color token; do not compensate in drawing code.");
         }
 
+        private static void ValidateApprovedActionColors(
+            RuntimeUiVisualValidationReport report, string path, string token,
+            RuntimeUiActionColorPair actual, Color expectedContainer, Color expectedContent)
+        {
+            ValidateApprovedColor(report, path, token + ".container",
+                actual.Container, expectedContainer);
+            ValidateApprovedColor(report, path, token + ".content",
+                actual.Content, expectedContent);
+        }
+
         private static void ValidateTypographyMinimum(RuntimeUiVisualValidationReport report,
             string path, RuntimeUiTypographyStyle style, RuntimeUiTypographyRole typographyRole,
             string role)
         {
             var minimum = RuntimeUiQualityProfile.MinimumFontSize(typographyRole);
             if (style.FontSize != minimum
-                || style.LineHeight != RuntimeUiQualityProfile.LineHeight(typographyRole)
-                || style.FontStyle != RuntimeUiQualityProfile.FontStyle(typographyRole))
+                || style.LineHeight != RuntimeUiQualityProfile.LineHeight(typographyRole))
             {
                 report.Error("theme.typography.minimum", path,
-                    role + " must match the approved size/line-height/style profile ("
+                    role + " must match the approved size/line-height profile ("
                     + minimum + "/" + RuntimeUiQualityProfile.LineHeight(typographyRole)
-                    + "/" + RuntimeUiQualityProfile.FontStyle(typographyRole) + ").",
+                    + ").",
                     "Restore the serialized typography role values.");
             }
         }
 
-        private static void ValidateFont(RuntimeUiVisualValidationReport report, Font font,
-            string themePath)
+        private static void ValidateTypographyFonts(
+            RuntimeUiVisualValidationReport report, RuntimeUiTheme theme, string themePath)
         {
-            if (font == null) return;
+            RuntimeUiDrawContext context = null;
+            try
+            {
+                context = RuntimeUiDrawContext.Create(theme, 1f);
+            }
+            catch (Exception exception)
+            {
+                report.Error("theme.font.style-cache", themePath,
+                    "Role-font style cache could not be created: " + exception.Message,
+                    "Bind every typography role to its packaged static font.");
+            }
+
+            foreach (RuntimeUiTypographyRole role in Enum.GetValues(
+                         typeof(RuntimeUiTypographyRole)))
+            {
+                var typography = theme.Typography.For(role);
+                var expectedPath = RuntimeUiQualityProfile.UsesDisplayFace(role)
+                    ? ProjectSetup.DisplayRuntimeUiFontPath
+                    : ProjectSetup.ReadingRuntimeUiFontPath;
+                ValidateFont(report, typography.Font, themePath, role, expectedPath);
+                if (context == null || typography.Font == null) continue;
+
+                var renderStyle = context.Styles.SingleLineText(
+                    role, TextAnchor.MiddleCenter);
+                var measurementStyle = context.Styles.SingleLineText(
+                    role, TextAnchor.MiddleCenter);
+                if (!ReferenceEquals(renderStyle, measurementStyle)
+                    || !ReferenceEquals(renderStyle.font, typography.Font))
+                {
+                    report.Error("theme.font.measure-render-mismatch", themePath,
+                        role + " does not use the same role font/style for measurement and drawing.",
+                        "Resolve both operations from the shared role GUIStyle cache.");
+                }
+                if (renderStyle.fontStyle != FontStyle.Normal)
+                {
+                    report.Error("theme.font.synthesized-style", themePath,
+                        role + " requests synthesized GUIStyle font styling.",
+                        "Use the authored static font weight and FontStyle.Normal.");
+                }
+            }
+        }
+
+        private static void ValidateFont(RuntimeUiVisualValidationReport report, Font font,
+            string themePath, RuntimeUiTypographyRole role, string expectedPath)
+        {
+            if (font == null)
+            {
+                report.Error("theme.font.null", themePath,
+                    role + " has no packaged static font reference.",
+                    "Assign the approved role font directly on the typography style.");
+                return;
+            }
             var path = RuntimeUiArtSetRegistry.Normalize(AssetDatabase.GetAssetPath(font));
             if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal))
             {
@@ -324,6 +399,42 @@ namespace FruitDefense.Editor
                 return;
             }
 
+            if (!string.Equals(path, expectedPath, StringComparison.Ordinal))
+            {
+                report.Error("theme.font.role-binding", themePath,
+                    role + " resolves to '" + path + "' instead of '" + expectedPath + "'.",
+                    "Bind the explicit approved static face for this typography role.");
+            }
+
+            var importer = AssetImporter.GetAtPath(path) as TrueTypeFontImporter;
+            if (importer == null)
+            {
+                report.Error("theme.font.importer", path,
+                    "The packaged role font does not use Unity's TrueType font importer.",
+                    "Import the approved static TTF as a project font asset.");
+            }
+            else
+            {
+                var absoluteFontPath = Path.GetFullPath(Path.Combine(
+                    Application.dataPath, "..", path));
+                var metaPath = absoluteFontPath + ".meta";
+                var importerRecord = File.Exists(metaPath)
+                    ? File.ReadAllText(metaPath)
+                    : string.Empty;
+                if (!importerRecord.Contains("includeFontData: 1"))
+                {
+                    report.Error("theme.font.host-data", path,
+                        "The role font is not configured to include its data in the player.",
+                        "Enable packaged font data for deterministic WebGL rendering.");
+                }
+                if (!importerRecord.Contains("fallbackFontReferences: []"))
+                {
+                    report.Error("theme.font.fallback", path,
+                        "The role font importer contains fallback font references.",
+                        "Remove fallback references and cover the finite release glyph authority.");
+                }
+            }
+
             if (!RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph(font,
                     out var missingGlyph))
             {
@@ -331,6 +442,62 @@ namespace FruitDefense.Editor
                     "The packaged font lacks required player-visible glyph '"
                     + missingGlyph + "'.",
                     "Use a packaged font covering the authoritative release UI glyph probe.");
+            }
+        }
+
+        private static void ValidateFontLicenseRecords(
+            RuntimeUiVisualValidationReport report, string themePath)
+        {
+            const string licensePath = "Assets/Resources/Fonts/OFL-NotoSansSC.txt";
+            const string displayLicensePath =
+                "Assets/Resources/Fonts/OFL-SmileySans.txt";
+            const string readmePath = "Assets/Resources/Fonts/README.md";
+            var absoluteLicense = Path.GetFullPath(Path.Combine(
+                Application.dataPath, "..", licensePath));
+            var absoluteReadme = Path.GetFullPath(Path.Combine(
+                Application.dataPath, "..", readmePath));
+            var absoluteDisplayLicense = Path.GetFullPath(Path.Combine(
+                Application.dataPath, "..", displayLicensePath));
+            if (!File.Exists(absoluteLicense) || !File.Exists(absoluteDisplayLicense)
+                || !File.Exists(absoluteReadme))
+            {
+                report.Error("theme.font.license-missing", themePath,
+                    "The packaged role fonts lack their OFL license or source record.",
+                    "Restore the project font license and deterministic source manifest.");
+                return;
+            }
+
+            var record = File.ReadAllText(absoluteReadme);
+            if (!record.Contains("SIL Open Font License 1.1")
+                || !record.Contains(ProjectSetup.ReadingRuntimeUiFontPath)
+                || !record.Contains(ProjectSetup.DisplayRuntimeUiFontPath)
+                || !record.Contains(
+                    "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da")
+                || !record.Contains(
+                    "b447d7e781f08bc95c4c9f23ba71ed2b8ebb639aa7184485c71c4ca5afcd25c4"))
+            {
+                report.Error("theme.font.license-record", readmePath,
+                    "The role-font record does not identify both outputs, the OFL license, and pinned source hash.",
+                    "Record the deterministic font source, hash, weights, outputs, and license.");
+            }
+        }
+
+        private static void ValidateNoLegacyFontField(
+            RuntimeUiVisualValidationReport report, string themePath)
+        {
+            if (string.IsNullOrEmpty(themePath) || !themePath.EndsWith(".asset",
+                    StringComparison.OrdinalIgnoreCase))
+                return;
+            var absolutePath = Path.GetFullPath(Path.Combine(
+                Application.dataPath, "..", themePath));
+            if (!File.Exists(absolutePath)) return;
+            var source = File.ReadAllText(absolutePath);
+            var legacyField = "packaged" + "Chinese" + "Font";
+            if (source.Contains(legacyField + ":"))
+            {
+                report.Error("theme.font.legacy-field", themePath,
+                    "The release theme still serializes the removed single-font field.",
+                    "Delete the legacy field and bind all seven typography roles explicitly.");
             }
         }
 

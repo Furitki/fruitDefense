@@ -53,12 +53,7 @@ namespace FruitDefense.Core
         public const float ReferencePotSize = ReferenceLegacyPotSize * PreviousReferenceBoardWidth
             / PreviousReferenceBoardScaleDivisor * 2f;
 
-        private const float BoardPadding = 8f;
-        private const float ControlStripHeight = 62f;
-        private const float ControlHorizontalPadding = 8f;
-        private const float ControlBottomPadding = 2f;
-        private const float WaveActionWidth = 184f;
-        private const float WaveActionHeight = 44f;
+        private const float BoardPadding = 2f;
 
         private readonly BattlefieldMapDefinition _map;
         private readonly Vector2 _mapOrigin;
@@ -67,8 +62,6 @@ namespace FruitDefense.Core
         public Rect MapViewportRect { get; private set; }
         public Rect ContentRect { get; private set; }
         public Rect GridRect { get; private set; }
-        public Rect ControlStripRect { get; private set; }
-        public Rect WaveActionRect { get; private set; }
         public Rect CoreRect { get; private set; }
         public float MapScale { get; private set; }
         public float PotSize { get; private set; }
@@ -129,26 +122,12 @@ namespace FruitDefense.Core
         {
             _map = map;
             BoardRect = boardRect;
-            MapViewportRect = new Rect(
-                boardRect.x,
-                boardRect.y,
-                boardRect.width,
-                Mathf.Max(0f, boardRect.height - ControlStripHeight));
+            MapViewportRect = boardRect;
             ContentRect = new Rect(
                 MapViewportRect.x + BoardPadding,
                 MapViewportRect.y + BoardPadding,
                 Mathf.Max(0f, MapViewportRect.width - BoardPadding * 2f),
                 Mathf.Max(0f, MapViewportRect.height - BoardPadding * 2f));
-            ControlStripRect = new Rect(
-                boardRect.x + ControlHorizontalPadding,
-                MapViewportRect.yMax + 12f,
-                Mathf.Max(0f, boardRect.width - ControlHorizontalPadding * 2f),
-                Mathf.Max(0f, boardRect.yMax - ControlBottomPadding - (MapViewportRect.yMax + 12f)));
-            WaveActionRect = new Rect(
-                ControlStripRect.xMax - WaveActionWidth,
-                boardRect.yMax - ControlBottomPadding - WaveActionHeight,
-                WaveActionWidth,
-                WaveActionHeight);
             var gridWidth = Mathf.Max(1, map.GridWidth);
             var gridHeight = Mathf.Max(1, map.GridHeight);
             TileSize = Mathf.Max(0f, Mathf.Min(ContentRect.width / gridWidth, ContentRect.height / gridHeight));
@@ -273,40 +252,6 @@ namespace FruitDefense.Core
                     return false;
                 }
             }
-            reason = "ok";
-            return true;
-        }
-
-        public bool ValidateControlInset(out string reason)
-        {
-            if (Mathf.Min(WaveActionRect.width, WaveActionRect.height) < 44f
-                || WaveActionRect.xMin < BoardRect.xMin || WaveActionRect.yMin < BoardRect.yMin
-                || WaveActionRect.xMax > BoardRect.xMax || WaveActionRect.yMax > BoardRect.yMax)
-            {
-                reason = "battlefield wave action is outside the board or smaller than 44 logical points";
-                return false;
-            }
-
-            foreach (var cell in _map.PlantableCells)
-            {
-                if (!WaveActionRect.Overlaps(PotHitRect(cell))) continue;
-                reason = "battlefield wave action overlaps planting target: " + cell;
-                return false;
-            }
-
-            if (WaveActionRect.Overlaps(CoreRect))
-            {
-                reason = "battlefield wave action overlaps the core";
-                return false;
-            }
-
-            foreach (var cell in _map.RouteCells)
-            {
-                if (!WaveActionRect.Overlaps(RouteTileRect(cell))) continue;
-                reason = "battlefield wave action overlaps route tile " + cell;
-                return false;
-            }
-
             reason = "ok";
             return true;
         }

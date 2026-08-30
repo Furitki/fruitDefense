@@ -233,10 +233,10 @@ namespace FruitDefense.UI
                 case RuntimeUiCopyId.SettlementTitle: return Single(id, "战斗结算",
                     RuntimeUiTypographyRole.ScreenTitle, TextAnchor.MiddleCenter);
                 case RuntimeUiCopyId.SettlementVictory: return Single(id, "胜利",
-                    RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleCenter,
+                    RuntimeUiTypographyRole.Display, TextAnchor.MiddleCenter,
                     RuntimeUiTextTone.State);
                 case RuntimeUiCopyId.SettlementDefeat: return Single(id, "失败",
-                    RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleCenter,
+                    RuntimeUiTypographyRole.Display, TextAnchor.MiddleCenter,
                     RuntimeUiTextTone.State);
                 case RuntimeUiCopyId.SettlementCompletedLevel: return Single(id, "完成关卡",
                     RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);

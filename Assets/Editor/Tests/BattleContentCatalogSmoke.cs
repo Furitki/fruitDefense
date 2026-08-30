@@ -45,7 +45,8 @@ namespace FruitDefense.Editor
             Expect(compiled.Projectiles.Count == 3, "Compiled projectile count mismatch.");
             Expect(compiled.Statuses.Count == 4, "Compiled status count mismatch.");
             Expect(compiled.Waves.Count == 15, "Compiled wave count mismatch.");
-            Expect(compiled.StarTiers.Count == 4, "Compiled star-tier count mismatch.");
+            Expect(compiled.UpgradeProfiles.Count == 1, "Compiled upgrade-profile count mismatch.");
+            Expect(compiled.NurseryProfiles.Count == 1, "Compiled nursery-profile count mismatch.");
         }
 
         private static void ValidateCanonicalStableDefinitions(CompiledBattleContentCatalog compiled)
@@ -83,8 +84,13 @@ namespace FruitDefense.Editor
                 BattleContentIds.Statuses.IceSlow, BattleContentIds.Statuses.IceFreeze,
                 BattleContentIds.Statuses.IceCount, BattleContentIds.Statuses.ChiliBurn,
             }, "status");
-            ExpectKeys(compiled.StarTiers.Keys,
-                new[] { "star.1", "star.2", "star.3", "star.4" }, "star tier");
+            ExpectKeys(compiled.UpgradeProfiles.Keys,
+                new[] { BattleContentIds.UpgradeProfiles.Baseline }, "upgrade profile");
+            ExpectKeys(compiled.NurseryProfiles.Keys,
+                new[] { BattleContentIds.NurseryProfiles.Baseline }, "nursery profile");
+            Expect(compiled.UpgradeProfiles[BattleContentIds.UpgradeProfiles.Baseline].tiers
+                    .Select(value => value.tier).SequenceEqual(new[] { 1, 2, 3, 4 }),
+                "Baseline upgrade tiers mismatch.");
 
             var expectedWaveIds = Enumerable.Range(1, 15)
                 .Select(index => "wave." + index.ToString("00")).ToArray();
@@ -106,6 +112,10 @@ namespace FruitDefense.Editor
             Approximately(rules.betweenWaveSeconds, 15f, "between-wave seconds");
             Expect(rules.refreshBaseCost == 10, "Refresh base cost mismatch.");
             Expect(rules.refreshCostStep == 5, "Refresh step mismatch.");
+            Expect(rules.nurseryProfileId == BattleContentIds.NurseryProfiles.Baseline,
+                "Nursery-profile rule mismatch.");
+            Approximately(rules.relocationCooldownSeconds, 2f,
+                "relocation cooldown seconds");
             Expect(rules.milestoneRewards.Length == 4, "Milestone count mismatch.");
         }
 

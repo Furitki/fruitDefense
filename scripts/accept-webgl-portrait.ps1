@@ -24,6 +24,7 @@ param(
   [switch]$InteractionPolishEvidence,
   [switch]$CompactControlEvidence,
   [switch]$CombatFeedbackEvidence,
+  [switch]$DragFeedbackEvidence,
   [switch]$ShellError,
   [string]$ErrorLevelId = '__missing-ui-acceptance__',
   [ValidateRange(1, 20)]
@@ -96,7 +97,7 @@ if ($CacheSeedOnly -and -not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath
   throw 'Cache seed mode cannot consume another cache seed manifest.'
 }
 $selectedAcceptanceModes = @(
-  @($Flow, $ShellVisual, $ShellError, $CombatFeedbackEvidence) |
+  @($Flow, $ShellVisual, $ShellError, $CombatFeedbackEvidence, $DragFeedbackEvidence) |
     Where-Object { $_ }
 )
 if ($selectedAcceptanceModes.Count -gt 1) {
@@ -114,6 +115,9 @@ if ($CompactControlEvidence -and ($Flow -or $ShellVisual -or $ShellError)) {
 if ($CombatFeedbackEvidence -and ($InteractionPolishEvidence -or $CompactControlEvidence)) {
   throw '-CombatFeedbackEvidence owns its raw-frame interaction checkpoint and cannot be combined with other evidence switches.'
 }
+if ($DragFeedbackEvidence -and ($InteractionPolishEvidence -or $CompactControlEvidence)) {
+  throw '-DragFeedbackEvidence owns its held-drag checkpoints and cannot be combined with other evidence switches.'
+}
 if ($ShellError -and [string]::IsNullOrWhiteSpace($ErrorLevelId)) {
   throw '-ShellError requires a non-empty -ErrorLevelId.'
 }
@@ -126,6 +130,7 @@ $acceptanceModules = @(
   'transport.ps1',
   'evidence-helpers.ps1',
   'image-analysis.ps1',
+  'image-presentation-analysis.ps1',
   'settlement-ink-analysis.ps1',
   'settlement-optical-analysis.ps1',
   'self-check.ps1',
@@ -145,17 +150,17 @@ $referenceControls = [ordered]@{
   lobbyStart = [ordered]@{ x = 201; y = 746 }
   settlementRetry = [ordered]@{ x = 201; y = 674 }
   settlementReturn = [ordered]@{ x = 201; y = 754 }
-  headerPause = [ordered]@{ x = 300; y = 38 }
-  headerSpeed = [ordered]@{ x = 360; y = 38 }
-  waveAction = [ordered]@{ x = 302; y = 570 }
+  headerPause = [ordered]@{ x = 288; y = 74 }
+  headerSpeed = [ordered]@{ x = 346; y = 74 }
+  waveAction = [ordered]@{ x = 291; y = 544 }
   pauseContinue = [ordered]@{ x = 125; y = 492 }
   pauseRestart = [ordered]@{ x = 277; y = 492 }
   terminalRestart = [ordered]@{ x = 201; y = 536 }
-  weaponGatling = [ordered]@{ x = 60; y = 654 }
-  nurserySlot0 = [ordered]@{ x = 51; y = 745 }
-  acceptanceCell0 = [ordered]@{ x = 32; y = 223 }
-  acceptanceCell1 = [ordered]@{ x = 80; y = 223 }
-  detailClose = [ordered]@{ x = 368; y = 628 }
+  weaponGatling = [ordered]@{ x = 71; y = 634 }
+  nurserySlot0 = [ordered]@{ x = 61; y = 732 }
+  acceptanceCell0 = [ordered]@{ x = 46; y = 249 }
+  acceptanceCell1 = [ordered]@{ x = 90; y = 249 }
+  detailClose = [ordered]@{ x = 352; y = 604 }
 }
 $controls = [ordered]@{}
 foreach ($name in $referenceControls.Keys) {
@@ -193,26 +198,47 @@ $lobbyAlternateCardRect = [ordered]@{
   yMax = [Math]::Ceiling(
     $shellContentY + ($lobbyLevelCardOffset + 176.0) * $referenceScale)
 }
-$headerSampleRegion = Convert-ReferenceRect -X 13 -Y 11 -Width 250 -Height 53
-$formerActionRegion = Convert-ReferenceRect -X 8 -Y 842 -Width 386 -Height 24
-$headerPanelRect = Convert-ReferenceRect -X 0 -Y 8 -Width 402 -Height 96
-$gameplayStageRect = Convert-ReferenceRect -X 0 -Y 108 -Width 402 -Height 486
-$headerTitleOwner = Convert-ReferenceRect -X 16 -Y 26 -Width 246 -Height 24
-$headerMetricRowOwner = Convert-ReferenceRect -X 16 -Y 68 -Width 370 -Height 32
-$toolTitleOwner = Convert-ReferenceRect -X 16 -Y 606 -Width 180 -Height 22
-$nurseryTitleOwner = Convert-ReferenceRect -X 16 -Y 692 -Width 180 -Height 22
-$detailTitleOwner = Convert-ReferenceRect -X 16 -Y 606 -Width 322 -Height 24
-$detailBodyOwner = Convert-ReferenceRect -X 16 -Y 638 -Width 322 -Height 22
+$headerSampleRegion = Convert-ReferenceRect -X 20 -Y 42 -Width 354 -Height 105
+$headerPanelRect = Convert-ReferenceRect -X 14 -Y 36 -Width 374 -Height 114
+$pageShellRect = Convert-ReferenceRect -X 14 -Y 154 -Width 374 -Height 698
+$gameplayStageRect = Convert-ReferenceRect -X 22 -Y 168 -Width 358 -Height 338
+$phaseWaveRowRect = Convert-ReferenceRect -X 24 -Y 518 -Width 354 -Height 52
+$phaseStatusOwner = Convert-ReferenceRect -X 24 -Y 518 -Width 168 -Height 52
+$headerTitleOwner = Convert-ReferenceRect -X 40 -Y 52 -Width 210 -Height 38
+$headerMetricRowOwner = Convert-ReferenceRect -X 28 -Y 101 -Width 346 -Height 40
+$headerMetricRects = @(
+  (Convert-ReferenceRect -X 28 -Y 101 -Width 112 -Height 40),
+  (Convert-ReferenceRect -X 145 -Y 101 -Width 112 -Height 40),
+  (Convert-ReferenceRect -X 262 -Y 101 -Width 112 -Height 40)
+)
+$toolTitleOwner = Convert-ReferenceRect -X 32 -Y 582 -Width 120 -Height 24
+$nurseryTitleOwner = Convert-ReferenceRect -X 32 -Y 678 -Width 120 -Height 24
+$detailTitleOwner = Convert-ReferenceRect -X 32 -Y 582 -Width 290 -Height 24
+$detailBodyOwner = Convert-ReferenceRect -X 32 -Y 614 -Width 290 -Height 22
 $boardRegion = $gameplayStageRect
-$contextTrayRect = Convert-ReferenceRect -X 8 -Y 602 -Width 386 -Height 78
-$nurseryTrayRect = Convert-ReferenceRect -X 8 -Y 688 -Width 386 -Height 88
+$contextTrayRect = Convert-ReferenceRect -X 24 -Y 578 -Width 354 -Height 88
+$nurseryTrayRect = Convert-ReferenceRect -X 24 -Y 674 -Width 354 -Height 92
 $detailRegion = $contextTrayRect
-$waveActionRect = Convert-ReferenceRect -X 210 -Y 548 -Width 184 -Height 44
-$refreshActionRect = Convert-ReferenceRect -X 8 -Y 784 -Width 386 -Height 52
-$refreshTextOwner = Convert-ReferenceRect -X 40 -Y 796 -Width 330 -Height 28
-$pauseCompactControlRect = Convert-ReferenceRect -X 274 -Y 12 -Width 52 -Height 52
-$speedCompactControlRect = Convert-ReferenceRect -X 334 -Y 12 -Width 52 -Height 52
-$detailCloseCompactControlRect = Convert-ReferenceRect -X 346 -Y 606 -Width 44 -Height 44
+$waveActionRect = Convert-ReferenceRect -X 204 -Y 518 -Width 174 -Height 52
+$refreshActionRect = Convert-ReferenceRect -X 24 -Y 774 -Width 354 -Height 64
+$refreshTextOwner = Convert-ReferenceRect -X 56 -Y 792 -Width 290 -Height 28
+$pauseCompactControlRect = Convert-ReferenceRect -X 264 -Y 50 -Width 48 -Height 48
+$speedCompactControlRect = Convert-ReferenceRect -X 318 -Y 50 -Width 56 -Height 48
+$headerCompactControlRects = @($pauseCompactControlRect, $speedCompactControlRect)
+$detailCloseCompactControlRect = Convert-ReferenceRect -X 330 -Y 582 -Width 44 -Height 44
+$toolRecipeRects = @(
+  (Convert-ReferenceRect -X 32 -Y 610 -Width 78.5 -Height 48),
+  (Convert-ReferenceRect -X 118.5 -Y 610 -Width 78.5 -Height 48),
+  (Convert-ReferenceRect -X 205 -Y 610 -Width 78.5 -Height 48),
+  (Convert-ReferenceRect -X 291.5 -Y 610 -Width 78.5 -Height 48)
+)
+$nurserySlotRects = @(
+  (Convert-ReferenceRect -X 32 -Y 706 -Width 58 -Height 52),
+  (Convert-ReferenceRect -X 102 -Y 706 -Width 58 -Height 52),
+  (Convert-ReferenceRect -X 172 -Y 706 -Width 58 -Height 52),
+  (Convert-ReferenceRect -X 242 -Y 706 -Width 58 -Height 52),
+  (Convert-ReferenceRect -X 312 -Y 706 -Width 58 -Height 52)
+)
 $pauseTitleRect = Convert-ReferenceRect -X 52 -Y 326 -Width 298 -Height 52
 $pauseTitleInkRegion = Convert-ReferenceRect -X 90 -Y 332 -Width 220 -Height 40
 $pauseHintRect = Convert-ReferenceRect -X 60 -Y 390 -Width 282 -Height 52
@@ -222,9 +248,9 @@ $pauseContinueRect = Convert-ReferenceRect -X 54 -Y 466 -Width 142 -Height 52
 $pauseRestartRect = Convert-ReferenceRect -X 206 -Y 466 -Width 142 -Height 52
 $pauseActionBandRect = Convert-ReferenceRect -X 36 -Y 454 -Width 330 -Height 70
 $settlementResultBannerRect = Convert-ShellReferenceRect `
-  -X 36 -Y 152 -Width 330 -Height 44
+  -X 36 -Y 150 -Width 330 -Height 48
 $settlementOutcomeInkRegion = Convert-ShellReferenceRect `
-  -X 140 -Y 158 -Width 122 -Height 34
+  -X 140 -Y 146 -Width 122 -Height 58
 $settlementMetricRects = @(
   (Convert-ShellReferenceRect -X 32 -Y 450 -Width 338 -Height 48),
   (Convert-ShellReferenceRect -X 32 -Y 506 -Width 338 -Height 48),
@@ -232,9 +258,6 @@ $settlementMetricRects = @(
 )
 $hudDarkPixelThreshold = [Math]::Max(1, [Math]::Floor(80 * $referenceScale * $referenceScale))
 $hudLightPixelThreshold = [Math]::Max(1, [Math]::Floor(5000 * $referenceScale * $referenceScale))
-$formerActionPixelThreshold = [Math]::Max(12, [Math]::Ceiling(12 * $referenceScale * $referenceScale))
-$formerActionSpanThreshold = [Math]::Max(24,
-  [Math]::Ceiling(($formerActionRegion.xMax - $formerActionRegion.xMin) * 0.20))
 # At a scaled safe-area canvas, the two-pixel held offset can land entirely
 # inside anti-aliased button edges. Material pixel change plus changed-bounds
 # containment remains authoritative; the retreat counter is retained at 1:1.

@@ -24,7 +24,7 @@
             "outcomeWaveSpawned": 5,
             "outcomeZombieCount": 5,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "e08028b775b29422d968e73d5762f555d7b38e8d2a7f4ec83cb675b3eadbb9c4"
+            "outcomeChecksum": "e98acfdb4b74098d0fe2f71cfc840463cfb0cf1f139f3a92902d96e9b4938f8d"
         },
         {
             "levelId": "orchard-02",
@@ -48,7 +48,7 @@
             "outcomeWaveSpawned": 8,
             "outcomeZombieCount": 8,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "00991d228f54e6911503393c123976e255dd4daf37c26283a2adc93cd303157f"
+            "outcomeChecksum": "da0c2fa68a465912a4a890e936aa2c5eefaa0b27a94ff62b6bb9a41e57cef57e"
         },
         {
             "levelId": "orchard-03",
@@ -68,11 +68,11 @@
             "grassMasks": "4,12,12,12,12,12,12,12,8,6,15,15,15,15,15,15,15,9,6,15,15,15,15,15,15,15,9,6,15,11,3,3,3,3,3,1,6,15,9,4,12,12,12,12,8,2,3,1,6,15,15,15,15,9,4,12,12,14,15,15,15,15,9,2,3,3,3,3,3,3,3,1",
             "routeMasks": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
             "outcomeStepCount": 240,
-            "outcomeLives": 6,
+            "outcomeLives": 5,
             "outcomeWaveSpawned": 10,
-            "outcomeZombieCount": 10,
+            "outcomeZombieCount": 9,
             "outcomePhase": "Playing",
-            "outcomeChecksum": "627fab9a2565efc2595f0cc4ae59b673c4dd66f86b96a5119056f208684dc431"
+            "outcomeChecksum": "a14328ad594c0ce01c80c7f0f045b69ff2c0fdfd2c1a42d62053d7dd8c2226f1"
         }
     ]
 }

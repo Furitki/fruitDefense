@@ -137,8 +137,8 @@ namespace FruitDefense.Shell
                 && Equal(safeArea, new Rect(0f, 0f, width, height)))
             {
                 Assert(Equal(layout.Title, new Rect(16f, 42f, 370f, 64f))
-                    && Equal(layout.ResultCard, new Rect(16f, 122f, 370f, 500f))
-                    && Equal(layout.ResultBanner, new Rect(36f, 152f, 330f, 44f))
+                    && Equal(layout.ResultCard, new Rect(16f, 120f, 370f, 502f))
+                    && Equal(layout.ResultBanner, new Rect(36f, 150f, 330f, 48f))
                     && Equal(layout.Outcome, new Rect(98f, 154f, 206f, 40f))
                     && Equal(layout.OrchardVista, new Rect(32f, 222f, 338f, 216f))
                     && Equal(layout.CompletedLevel, new Rect(32f, 450f, 338f, 48f))

@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;slot=surface.gameplay-stage;authored=deterministic-vector
+  userData: ui-art-source=sunny-orchard-painted;slot=surface.gameplay-stage;source-scale=2;authored=imagegen-direct-master;transform=alpha-crop;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/stage-frame.png;asset-sha256=DB106DA52028C9128DD56FD76D6FC7084DFDDC639634AF3C3D359537C0EF9750
   assetBundleName:
   assetBundleVariant:

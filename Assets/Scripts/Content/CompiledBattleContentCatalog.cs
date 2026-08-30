@@ -19,7 +19,8 @@ namespace FruitDefense.Content
         public IReadOnlyDictionary<string, ProjectileDefinitionDto> Projectiles { get; private set; }
         public IReadOnlyDictionary<string, StatusDefinitionDto> Statuses { get; private set; }
         public IReadOnlyDictionary<string, WaveDefinitionDto> Waves { get; private set; }
-        public IReadOnlyDictionary<string, StarTierDefinitionDto> StarTiers { get; private set; }
+        public IReadOnlyDictionary<string, UpgradeProfileDefinitionDto> UpgradeProfiles { get; private set; }
+        public IReadOnlyDictionary<string, NurseryProfileDefinitionDto> NurseryProfiles { get; private set; }
         public IReadOnlyDictionary<string, CompiledAbilityDefinition> RuntimeAbilities { get; private set; }
         public IReadOnlyDictionary<string, CompiledProjectileDefinition> RuntimeProjectiles { get; private set; }
         public IReadOnlyDictionary<string, CompiledStatusDefinition> RuntimeStatuses { get; private set; }
@@ -35,7 +36,8 @@ namespace FruitDefense.Content
             Projectiles = Index(catalog.projectiles, value => value.id);
             Statuses = Index(catalog.statuses, value => value.id);
             Waves = Index(catalog.waves, value => value.id);
-            StarTiers = Index(catalog.starTiers, value => value.id);
+            UpgradeProfiles = Index(catalog.upgradeProfiles, value => value.id);
+            NurseryProfiles = Index(catalog.nurseryProfiles, value => value.id);
             RuntimeAbilities = Index(catalog.abilities.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
             RuntimeProjectiles = Index(catalog.projectiles.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
             RuntimeStatuses = Index(catalog.statuses.Select(BattleAbilityCompiler.Compile).ToArray(), value => value.Id);
@@ -60,6 +62,33 @@ namespace FruitDefense.Content
             IReadOnlyList<CompiledAbilityDefinition> loadout;
             if (_enemyAbilityLoadouts.TryGetValue(enemyId, out loadout)) return loadout;
             throw new KeyNotFoundException("Unknown enemy ID '" + enemyId + "'.");
+        }
+
+        public UpgradeProfileDefinitionDto ResolvePlantUpgradeProfile(string plantId)
+        {
+            PlantDefinitionDto plant;
+            if (!Plants.TryGetValue(plantId ?? string.Empty, out plant))
+                throw new KeyNotFoundException("Unknown plant ID '" + plantId + "'.");
+            UpgradeProfileDefinitionDto profile;
+            if (!UpgradeProfiles.TryGetValue(plant.upgradeProfileId ?? string.Empty, out profile))
+                throw new KeyNotFoundException("Unknown upgrade profile ID '"
+                    + plant.upgradeProfileId + "' for plant '" + plantId + "'.");
+            return profile;
+        }
+
+        public UpgradeTierDefinitionDto ResolvePlantUpgradeTier(string plantId, int tier)
+        {
+            var profile = ResolvePlantUpgradeProfile(plantId);
+            var resolved = profile.tiers.FirstOrDefault(value => value != null && value.tier == tier);
+            if (resolved == null)
+                throw new KeyNotFoundException("Upgrade profile '" + profile.id
+                    + "' does not define tier " + tier + ".");
+            return resolved;
+        }
+
+        public int PlantMaximumTier(string plantId)
+        {
+            return ResolvePlantUpgradeProfile(plantId).tiers.Max(value => value.tier);
         }
 
         private IReadOnlyDictionary<string, IReadOnlyList<CompiledAbilityDefinition>> BuildPlantAbilityLoadouts()

@@ -15,10 +15,11 @@ namespace FruitDefense.Content
     public sealed class PlantDefinitionDto
     {
         public string id = string.Empty;
+        public string presentationId = string.Empty;
+        public string upgradeProfileId = string.Empty;
         public string displayName = string.Empty;
         public string description = string.Empty;
         public float damage;
-        public float attackIntervalSeconds;
         public float rangeLegacyUnits;
         public float potVisualHeightOffset;
         public string[] abilityIds = Array.Empty<string>();
@@ -30,6 +31,7 @@ namespace FruitDefense.Content
     public sealed class EnemyDefinitionDto
     {
         public string id = string.Empty;
+        public string presentationId = string.Empty;
         public string displayName = string.Empty;
         public float health;
         public float speedLegacyUnits;
@@ -43,6 +45,7 @@ namespace FruitDefense.Content
     public sealed class EquipmentDefinitionDto
     {
         public string id = string.Empty;
+        public string presentationId = string.Empty;
         public string displayName = string.Empty;
         public string[] compatiblePlantIds = Array.Empty<string>();
         public AbilityGrantDefinitionDto[] grants = Array.Empty<AbilityGrantDefinitionDto>();
@@ -123,6 +126,7 @@ namespace FruitDefense.Content
     public sealed class ProjectileDefinitionDto
     {
         public string id = string.Empty;
+        public string presentationId = string.Empty;
         public string travelMode = string.Empty;
         public float speedLegacyUnits;
         public float flightSeconds;
@@ -172,13 +176,38 @@ namespace FruitDefense.Content
     }
 
     [Serializable]
-    public sealed class StarTierDefinitionDto
+    public sealed class UpgradeTierDefinitionDto
     {
-        public string id = string.Empty;
-        public int star;
+        public int tier;
         public float damageMultiplier = 1f;
         public float attackSpeedMultiplier = 1f;
         public float rangeMultiplier = 1f;
+    }
+
+    [Serializable]
+    public sealed class UpgradeProfileDefinitionDto
+    {
+        public string id = string.Empty;
+        public UpgradeTierDefinitionDto[] tiers = Array.Empty<UpgradeTierDefinitionDto>();
+    }
+
+    [Serializable]
+    public sealed class NurseryEntryDefinitionDto
+    {
+        public string plantId = string.Empty;
+        public int weight = 1;
+    }
+
+    [Serializable]
+    public sealed class NurseryProfileDefinitionDto
+    {
+        public string id = string.Empty;
+        public NurseryEntryDefinitionDto[] entries = Array.Empty<NurseryEntryDefinitionDto>();
+        public float potChance;
+        public string firstRefreshGuaranteedTag = string.Empty;
+        public int firstRefreshGuaranteedCount;
+        public string cappedTag = string.Empty;
+        public int maxCappedTagCount;
     }
 
     [Serializable]
@@ -199,7 +228,8 @@ namespace FruitDefense.Content
         public int initialPotCount;
         public float betweenWaveSeconds;
         public int nurserySlotCount;
-        public float nurseryPotChance;
+        public string nurseryProfileId = string.Empty;
+        public float relocationCooldownSeconds;
         public int refreshBaseCost;
         public int refreshCostStep;
         public MilestoneRewardDefinitionDto[] milestoneRewards = Array.Empty<MilestoneRewardDefinitionDto>();
@@ -216,7 +246,8 @@ namespace FruitDefense.Content
         public ProjectileDefinitionDto[] projectiles = Array.Empty<ProjectileDefinitionDto>();
         public StatusDefinitionDto[] statuses = Array.Empty<StatusDefinitionDto>();
         public WaveDefinitionDto[] waves = Array.Empty<WaveDefinitionDto>();
-        public StarTierDefinitionDto[] starTiers = Array.Empty<StarTierDefinitionDto>();
+        public UpgradeProfileDefinitionDto[] upgradeProfiles = Array.Empty<UpgradeProfileDefinitionDto>();
+        public NurseryProfileDefinitionDto[] nurseryProfiles = Array.Empty<NurseryProfileDefinitionDto>();
         public BattleRulesDto battleRules = new BattleRulesDto();
     }
 }

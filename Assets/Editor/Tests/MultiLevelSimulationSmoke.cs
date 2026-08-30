@@ -74,7 +74,7 @@ namespace FruitDefense.Editor
             Assert(simulation.MaxWaves == level.RuleSet.MaxWaves
                 && simulation.BetweenWaveSeconds == level.RuleSet.BetweenWaveSeconds
                 && simulation.NurserySlotCount == level.RuleSet.NurserySlotCount
-                && simulation.NurseryPotChance == level.RuleSet.NurseryPotChance,
+                && simulation.NurseryProfile.id == level.RuleSet.NurseryProfileId,
                 level.Identity.LevelId + " did not expose its HUD-readable active rules.");
 
             var startingSun = 1000;

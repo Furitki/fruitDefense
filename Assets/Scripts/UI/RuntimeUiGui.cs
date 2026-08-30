@@ -144,41 +144,6 @@ namespace FruitDefense.UI
         }
     }
 
-    public readonly struct RuntimeUiActionInteractionCueLayout
-    {
-        internal RuntimeUiActionInteractionCueLayout(Rect componentRect,
-            Rect top, Rect right, Rect bottom, Rect left, bool visible)
-        {
-            ComponentRect = componentRect;
-            Top = top;
-            Right = right;
-            Bottom = bottom;
-            Left = left;
-            Visible = visible;
-        }
-
-        public Rect ComponentRect { get; }
-        public Rect Top { get; }
-        public Rect Right { get; }
-        public Rect Bottom { get; }
-        public Rect Left { get; }
-        public bool Visible { get; }
-
-        public bool IsContained()
-        {
-            return !Visible || Contains(ComponentRect, Top)
-                && Contains(ComponentRect, Right)
-                && Contains(ComponentRect, Bottom)
-                && Contains(ComponentRect, Left);
-        }
-
-        private static bool Contains(Rect outer, Rect inner)
-        {
-            return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin
-                && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;
-        }
-    }
-
     public readonly struct RuntimeUiInlineContentLayout
     {
         internal RuntimeUiInlineContentLayout(Rect contentRect, Rect iconRect,
@@ -326,7 +291,7 @@ namespace FruitDefense.UI
                 for (var anchorIndex = 0; anchorIndex < TextAnchorCount; anchorIndex++)
                 {
                     textStyles[roleIndex, anchorIndex] = CreateTextStyle(
-                        theme.PackagedChineseFont, token, scale, (TextAnchor)anchorIndex);
+                        token, scale, (TextAnchor)anchorIndex);
                 }
             }
         }
@@ -408,14 +373,14 @@ namespace FruitDefense.UI
             };
         }
 
-        private static GUIStyle CreateTextStyle(Font font, RuntimeUiTypographyStyle token,
+        private static GUIStyle CreateTextStyle(RuntimeUiTypographyStyle token,
             float scale, TextAnchor alignment)
         {
             var style = new GUIStyle
             {
-                font = font,
+                font = token.Font,
                 fontSize = Mathf.Max(1, Mathf.RoundToInt(token.FontSize * scale)),
-                fontStyle = token.FontStyle,
+                fontStyle = FontStyle.Normal,
                 alignment = alignment,
                 contentOffset = new Vector2(0f,
                     Mathf.Round(token.OpticalOffsetY * scale)),

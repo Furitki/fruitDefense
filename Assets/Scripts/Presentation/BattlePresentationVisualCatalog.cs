@@ -63,38 +63,38 @@ namespace FruitDefense.Presentation
                 BattleContentIds.Equipment.Chili,
             });
 
-        public static PlantVisualArchetype Plant(string definitionId)
+        public static PlantVisualArchetype Plant(string presentationId)
         {
-            if (definitionId == BattleContentIds.Plants.Pea) return PlantVisualArchetype.Pea;
-            if (definitionId == BattleContentIds.Plants.Watermelon) return PlantVisualArchetype.Watermelon;
-            if (definitionId == BattleContentIds.Plants.Banana) return PlantVisualArchetype.Banana;
-            if (definitionId == BattleContentIds.Plants.Durian) return PlantVisualArchetype.Durian;
-            if (definitionId == BattleContentIds.Plants.Sunflower) return PlantVisualArchetype.Sunflower;
+            if (presentationId == BattleContentIds.Presentation.PlantPea) return PlantVisualArchetype.Pea;
+            if (presentationId == BattleContentIds.Presentation.PlantWatermelon) return PlantVisualArchetype.Watermelon;
+            if (presentationId == BattleContentIds.Presentation.PlantBanana) return PlantVisualArchetype.Banana;
+            if (presentationId == BattleContentIds.Presentation.PlantDurian) return PlantVisualArchetype.Durian;
+            if (presentationId == BattleContentIds.Presentation.PlantSunflower) return PlantVisualArchetype.Sunflower;
             return PlantVisualArchetype.Generic;
         }
 
-        public static EnemyVisualArchetype Enemy(string definitionId)
+        public static EnemyVisualArchetype Enemy(string presentationId)
         {
-            if (definitionId == BattleContentIds.Enemies.Normal) return EnemyVisualArchetype.Normal;
-            if (definitionId == BattleContentIds.Enemies.Runner) return EnemyVisualArchetype.Runner;
-            if (definitionId == BattleContentIds.Enemies.Armored) return EnemyVisualArchetype.Armored;
-            if (definitionId == BattleContentIds.Enemies.Boss) return EnemyVisualArchetype.Boss;
+            if (presentationId == BattleContentIds.Presentation.EnemyNormal) return EnemyVisualArchetype.Normal;
+            if (presentationId == BattleContentIds.Presentation.EnemyRunner) return EnemyVisualArchetype.Runner;
+            if (presentationId == BattleContentIds.Presentation.EnemyArmored) return EnemyVisualArchetype.Armored;
+            if (presentationId == BattleContentIds.Presentation.EnemyBoss) return EnemyVisualArchetype.Boss;
             return EnemyVisualArchetype.Generic;
         }
 
-        public static ProjectileVisualArchetype Projectile(string definitionId)
+        public static ProjectileVisualArchetype Projectile(string presentationId)
         {
-            if (definitionId == BattleContentIds.Projectiles.Pea) return ProjectileVisualArchetype.Pea;
-            if (definitionId == BattleContentIds.Projectiles.Watermelon) return ProjectileVisualArchetype.Watermelon;
-            if (definitionId == BattleContentIds.Projectiles.Banana) return ProjectileVisualArchetype.Banana;
+            if (presentationId == BattleContentIds.Presentation.ProjectilePea) return ProjectileVisualArchetype.Pea;
+            if (presentationId == BattleContentIds.Presentation.ProjectileWatermelon) return ProjectileVisualArchetype.Watermelon;
+            if (presentationId == BattleContentIds.Presentation.ProjectileBanana) return ProjectileVisualArchetype.Banana;
             return ProjectileVisualArchetype.Generic;
         }
 
-        public static EquipmentVisualArchetype Equipment(string definitionId)
+        public static EquipmentVisualArchetype Equipment(string presentationId)
         {
-            if (definitionId == BattleContentIds.Equipment.Gatling) return EquipmentVisualArchetype.Gatling;
-            if (definitionId == BattleContentIds.Equipment.Ice) return EquipmentVisualArchetype.Ice;
-            if (definitionId == BattleContentIds.Equipment.Chili) return EquipmentVisualArchetype.Chili;
+            if (presentationId == BattleContentIds.Presentation.EquipmentGatling) return EquipmentVisualArchetype.Gatling;
+            if (presentationId == BattleContentIds.Presentation.EquipmentIce) return EquipmentVisualArchetype.Ice;
+            if (presentationId == BattleContentIds.Presentation.EquipmentChili) return EquipmentVisualArchetype.Chili;
             return EquipmentVisualArchetype.Generic;
         }
 

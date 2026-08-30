@@ -219,7 +219,7 @@ namespace FruitDefense.Core
             {
                 var seconds = BattleAbilityTiming.TicksToSeconds(ability.Activation.CooldownTicks);
                 var plant = owner as Plant;
-                if (plant != null) seconds /= StarTier(plant).attackSpeedMultiplier;
+                if (plant != null) seconds /= UpgradeTier(plant).attackSpeedMultiplier;
                 runtime.CooldownTicks = Math.Max(1, BattleAbilityTiming.SecondsToTicks(
                     GetEffectiveAttribute(owner, CombatAttributeKind.AttackInterval, seconds)));
             }

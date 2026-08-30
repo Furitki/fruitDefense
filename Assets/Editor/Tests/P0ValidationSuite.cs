@@ -14,6 +14,7 @@ namespace FruitDefense.Editor
             LocalServicePortsSmoke.Run();
             DeterministicSimulationSmoke.Run();
             ComposableBattleAbilitiesSmoke.Run();
+            ModularGameConfigSmoke.Run();
             ProjectSetup.SmokeValidate();
             Debug.Log("FRUIT_DEFENSE_P0_RELEASE_GATE_OK");
         }

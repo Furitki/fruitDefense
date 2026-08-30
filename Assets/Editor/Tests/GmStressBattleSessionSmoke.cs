@@ -81,7 +81,8 @@ namespace FruitDefense.Editor
                     && result.ErrorCode
                         == BattleSessionInitializationResult.ContentVersionMismatch
                     && !host.Status.IsInitialized,
-                    "GM host rejects a request with a mismatched battle-content version");
+                    "GM host rejects a request with a mismatched battle-content version; actual="
+                    + result.ErrorCode);
             });
         }
 

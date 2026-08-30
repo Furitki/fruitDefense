@@ -19,7 +19,7 @@ namespace FruitDefense.Presentation
     {
         public CombatFloatingTextStyle(CombatFloatingTextRole role, int fontSize,
             Color fillColor,
-            float duration, float riseDistance, float startScale, float peakScale,
+            float duration, float riseDistance, float peakScale,
             bool countsAsOrdinary)
         {
             Role = role;
@@ -27,7 +27,6 @@ namespace FruitDefense.Presentation
             FillColor = fillColor;
             Duration = duration;
             RiseDistance = riseDistance;
-            StartScale = startScale;
             PeakScale = peakScale;
             CountsAsOrdinary = countsAsOrdinary;
         }
@@ -37,7 +36,6 @@ namespace FruitDefense.Presentation
         public Color FillColor { get; }
         public float Duration { get; }
         public float RiseDistance { get; }
-        public float StartScale { get; }
         public float PeakScale { get; }
         public bool CountsAsOrdinary { get; }
     }
@@ -58,10 +56,9 @@ namespace FruitDefense.Presentation
 
     public sealed class CombatFloatingTextStyleCatalog
     {
-        public const int TotalCapacity = 12;
-        public const int OrdinaryCapacity = 8;
+        public const int TotalCapacity = 9999;
+        public const int OrdinaryCapacity = 9999;
         public const int VisualLaneCount = 3;
-        public const int CollisionCandidateCount = 9;
         public const int SameProfileTickCapacity = 3;
         public const float FollowSeconds = .12f;
         public const float TerminalLaneDistance = 26f;
@@ -72,9 +69,7 @@ namespace FruitDefense.Presentation
         public static readonly Color SharedOutlineColor =
             new Color32(58, 35, 26, 255);
 
-        private const float EntryEnd = .12f;
         private const float ReboundEnd = .38f;
-        private const float FadeStart = .65f;
         private readonly CombatFloatingTextStyle[] _styles;
 
         private CombatFloatingTextStyleCatalog(CombatFloatingTextStyle[] styles)
@@ -114,8 +109,7 @@ namespace FruitDefense.Presentation
                 if (style.FontSize < minimum) issues.Add("font-too-small:" + role);
                 if (style.Duration <= 0f || style.RiseDistance <= 0f)
                     issues.Add("invalid-motion:" + role);
-                if (style.StartScale <= 0f || style.StartScale > 1f
-                    || style.PeakScale < 1f || style.PeakScale > 1.3f)
+                if (style.PeakScale < 1f || style.PeakScale > 1.3f)
                     issues.Add("invalid-rebound:" + role);
                 if (ContrastRatio(style.FillColor, SharedOutlineColor) < 3f)
                     issues.Add("low-fill-outline-contrast:" + role);
@@ -130,27 +124,27 @@ namespace FruitDefense.Presentation
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.NormalDamage, 16,
                 Rgb(255, 245, 218),
-                .62f, 20f, .78f, 1.08f, true));
+                .62f, 20f, 1.08f, true));
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.HeavyDamage, 20,
                 Rgb(255, 116, 72),
-                .82f, 27f, .62f, 1.22f, false));
+                .82f, 27f, 1.22f, false));
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.PeriodicDamage, 15,
                 Rgb(255, 184, 68),
-                .50f, 15f, .90f, 1.02f, true));
+                .50f, 15f, 1.02f, true));
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.Resource, 17,
                 Rgb(255, 221, 77),
-                .86f, 25f, .72f, 1.14f, false));
+                .86f, 25f, 1.14f, false));
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.Control, 17,
                 Rgb(185, 232, 255),
-                .78f, 20f, .72f, 1.14f, false));
+                .78f, 20f, 1.14f, false));
             Add(styles, new CombatFloatingTextStyle(
                 CombatFloatingTextRole.Defeat, 19,
                 Rgb(255, 242, 166),
-                .92f, 30f, .62f, 1.24f, false));
+                .92f, 30f, 1.24f, false));
             var catalog = new CombatFloatingTextStyleCatalog(styles);
             var issues = catalog.Validate();
             if (issues.Count > 0)
@@ -161,81 +155,31 @@ namespace FruitDefense.Presentation
         }
 
         public static CombatFloatingTextMotionSample Sample(
-            CombatFloatingTextStyle style, float lifetimeProgress,
-            float detachedProgress)
+            CombatFloatingTextStyle style, float lifetimeProgress)
         {
             var value = Mathf.Clamp01(lifetimeProgress);
-            float scale;
-            if (value < EntryEnd)
-            {
-                var phase = Smooth(value / EntryEnd);
-                scale = Mathf.Lerp(style.StartScale, style.PeakScale, phase);
-            }
-            else if (value < ReboundEnd)
-            {
-                var phase = Smooth((value - EntryEnd) / (ReboundEnd - EntryEnd));
-                scale = Mathf.Lerp(style.PeakScale, 1f, phase);
-            }
-            else
-            {
-                scale = 1f;
-            }
-            var opacity = value < EntryEnd
-                ? Smooth(value / EntryEnd)
-                : value <= FadeStart
-                    ? 1f
-                    : 1f - Smooth((value - FadeStart) / (1f - FadeStart));
+            var scale = value < ReboundEnd
+                ? Mathf.Lerp(style.PeakScale, 1f, Smooth(value / ReboundEnd))
+                : 1f;
             return new CombatFloatingTextMotionSample(
-                scale, -style.RiseDistance * RiseProgress(detachedProgress),
-                Mathf.Clamp01(opacity));
+                scale, -style.RiseDistance * RiseProgress(value),
+                1f - value);
         }
 
-        public static Vector2 VisualLaneOffset(int lane, bool towardBattlefieldInterior)
+        public static Vector2 VisualLaneOffset(int lane)
         {
-            var verticalDirection = towardBattlefieldInterior ? 1f : -1f;
             switch (Mathf.Clamp(lane, 0, VisualLaneCount - 1))
             {
                 case 0: return Vector2.zero;
-                case 2: return new Vector2(8f, 28f * verticalDirection);
-                default: return new Vector2(-8f, 14f * verticalDirection);
+                case 2: return new Vector2(8f, -28f);
+                default: return new Vector2(-8f, -14f);
             }
         }
 
-        public static Vector2 CollisionCandidateLaneOffset(int originalLane,
-            int candidateIndex, bool towardBattlefieldInterior)
-        {
-            var lane = Mathf.Clamp(originalLane, 0, VisualLaneCount - 1);
-            var candidate = Mathf.Clamp(candidateIndex, 0,
-                CollisionCandidateCount - 1);
-            var original = VisualLaneOffset(lane, towardBattlefieldInterior);
-            var mirrorX = Mathf.Approximately(original.x, 0f)
-                ? -8f : -original.x;
-            var otherX = Mathf.Approximately(original.x, 0f) ? 8f : 0f;
-            var nextLane = lane < VisualLaneCount - 1 ? lane + 1 : lane - 1;
-            var remainingLane = lane == 0 ? 2 : 0;
-            var verticalDirection = towardBattlefieldInterior ? 1f : -1f;
-            var nextY = nextLane * 14f * verticalDirection;
-            var remainingY = remainingLane * 14f * verticalDirection;
-            switch (candidate)
-            {
-                case 0: return original;
-                case 1: return new Vector2(mirrorX, original.y);
-                case 2: return new Vector2(original.x, nextY);
-                case 3: return new Vector2(mirrorX, nextY);
-                case 4: return new Vector2(otherX, nextY);
-                case 5: return new Vector2(original.x, remainingY);
-                case 6: return new Vector2(mirrorX, remainingY);
-                case 7: return new Vector2(otherX, remainingY);
-                default: return new Vector2(otherX, original.y);
-            }
-        }
-
-        public static Vector2 SemanticLaneOffset(CombatFloatingTextRole role,
-            bool towardBattlefieldInterior)
+        public static Vector2 SemanticLaneOffset(CombatFloatingTextRole role)
         {
             if (role != CombatFloatingTextRole.Defeat) return Vector2.zero;
-            return new Vector2(0f, TerminalLaneDistance
-                * (towardBattlefieldInterior ? 1f : -1f));
+            return new Vector2(0f, -TerminalLaneDistance);
         }
 
         public static float ContrastRatio(Color first, Color second)
@@ -262,15 +206,7 @@ namespace FruitDefense.Presentation
         private static float RiseProgress(float progress)
         {
             var value = Mathf.Clamp01(progress);
-            if (value < EntryEnd)
-                return Smooth(value / EntryEnd) * .08f;
-            if (value < ReboundEnd)
-            {
-                var phase = Smooth((value - EntryEnd) / (ReboundEnd - EntryEnd));
-                return Mathf.Lerp(.08f, .18f, phase);
-            }
-            return Mathf.Lerp(.18f, 1f,
-                Smooth((value - ReboundEnd) / (1f - ReboundEnd)));
+            return 1f - (1f - value) * (1f - value);
         }
 
         private static Color Rgb(byte red, byte green, byte blue)

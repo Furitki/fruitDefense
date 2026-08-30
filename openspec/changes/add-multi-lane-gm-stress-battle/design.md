@@ -98,6 +98,12 @@ The five unlimited GM plant cards are drag sources, not click-to-place mode sele
 
 Combat execution is not specialized for GM. A deployed plant resolves the same compiled ability loadout and advances through `GameSimulation`'s fixed-step ability runtime. Legacy combat distances are calibrated from map units per cell and the canonical standard-route scale, not from the active route's total length; otherwise the deliberately short four-segment GM lanes collapse every attack range below one cell.
 
+### 10. GM combat presentation uses the normal battle renderer and combat atlas
+
+Consuming the shared event stream is not sufficient if the GM presenter translates those events into debug primitives. The GM battle therefore loads the same `combat-vfx-atlas` as the normal battle and delegates plant motion, projectile identity, combat-effect identity, sizing, tint, and rotation to one shared allocation-free GUI combat renderer. Enemy status overlays and floating-text anchors continue to resolve from the same route-aware simulation positions.
+
+The GM presenter must fail initialization when the required combat atlas is unavailable or invalid. It does not draw a yellow-square projectile, generic outline impact, missing-asset fallback, or a GM-local copy of the combat animation switch. This makes the GM surface a truthful integration test for the complete `simulation event -> presentation buffer -> gameplay visual` path rather than only a damage-loop test.
+
 ## Risks / Trade-offs
 
 - [Risk] Existing code may access the former singular route directly and silently place a multi-lane enemy on the primary route. → Replace direct accesses with route-aware map helpers and add tests that place simultaneous enemies on different columns.
@@ -108,6 +114,7 @@ Combat execution is not specialized for GM. A deployed plant resolves the same c
 - [Risk] GM-only terrain drawing could drift from the released battle renderer or silently fall back to debug colors. → Extract one shared GUI terrain renderer, require the registered orchard palette at composition time, and validate the exact square grass-on-soil binding before launch.
 - [Risk] A short GM route can shrink legacy range/speed conversion and make correctly loaded abilities appear inert. → Calibrate legacy distance per map cell, assert standard-map parity, and execute real damage/producer abilities in the GM regression suite.
 - [Risk] Click-to-place GM controls can conceal regressions in the normal drag interaction. → Reuse the shared drag geometry and require drag-only deployment tests, including tap and missed-drop atomicity.
+- [Risk] A GM-only debug renderer can consume correct skill events while hiding attack identity and making working plants appear inert. → Share the combat atlas renderer with the normal battle and validate every bundled plant's event-to-visual route.
 - [Trade-off] Plants may attack across adjacent lanes. This intentionally preserves current combat semantics; the GM level tests multi-route movement and density rather than introducing a new targeting game rule.
 
 ## Migration Plan

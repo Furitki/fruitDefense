@@ -9,8 +9,9 @@ namespace FruitDefense.Shell
     public enum SettlementOutcomeRevealPhase
     {
         Hidden = 0,
-        Appearing = 1,
-        Stable = 2,
+        SettledHidden = 1,
+        Appearing = 2,
+        Stable = 3,
     }
 
     [DisallowMultipleComponent]
@@ -38,6 +39,9 @@ namespace FruitDefense.Shell
         private string _observedErrorCode = string.Empty;
         private bool _wasTransitioning;
         private SettlementOutcomeRevealPhase? _publishedOutcomeRevealPhase;
+#if FRUIT_DEFENSE_ACCEPTANCE
+        private bool _acceptanceOutcomeRevealHeld;
+#endif
 
         private const string RetryFeedbackTarget = "retry";
         private const string ReturnFeedbackTarget = "return";
@@ -80,6 +84,9 @@ namespace FruitDefense.Shell
             _transitionTarget = string.Empty;
             _observedErrorCode = string.Empty;
             _publishedOutcomeRevealPhase = null;
+#if FRUIT_DEFENSE_ACCEPTANCE
+            _acceptanceOutcomeRevealHeld = false;
+#endif
             _wasTransitioning = context?.Navigator == null
                 || context.Navigator.TransitionState != AppTransitionState.Idle;
             BindResultOrRecover();
@@ -88,9 +95,14 @@ namespace FruitDefense.Shell
                 runtimeUiTheme.Feedback, 5);
             if (HasViewData)
             {
+#if FRUIT_DEFENSE_ACCEPTANCE
+                _resultEmphasisPulse = default;
+                _acceptanceOutcomeRevealHeld = true;
+#else
                 _resultEmphasisPulse = RuntimeUiFeedbackPulse.Begin(
                     ResolveOutcomeVisibleAt(revealStartedAt, runtimeUiTheme.Feedback),
                     runtimeUiTheme.Feedback.UnscaledPopSeconds);
+#endif
             }
         }
 
@@ -222,6 +234,11 @@ namespace FruitDefense.Shell
                     _routeRevealPulse, _resultEmphasisPulse, unscaledTime,
                     _runtimeUiTheme.Feedback)
                 : SettlementOutcomeRevealPhase.Hidden;
+#if FRUIT_DEFENSE_ACCEPTANCE
+            if (_acceptanceOutcomeRevealHeld
+                && outcomeRevealPhase != SettlementOutcomeRevealPhase.Hidden)
+                outcomeRevealPhase = SettlementOutcomeRevealPhase.SettledHidden;
+#endif
             PublishOutcomeRevealPhase(outcomeRevealPhase);
             var resultMotion = RuntimeUiMotionSample.Combine(resultReveal, resultPop);
             var resultCardRect = resultMotion.Transform(layout.ResultCard);
@@ -240,7 +257,8 @@ namespace FruitDefense.Shell
 
             if (HasViewData)
             {
-                if (outcomeRevealPhase != SettlementOutcomeRevealPhase.Hidden)
+                if (outcomeRevealPhase == SettlementOutcomeRevealPhase.Appearing
+                    || outcomeRevealPhase == SettlementOutcomeRevealPhase.Stable)
                 {
                     var outcomeCopy = RuntimeUiCopyCatalog.Get(ViewData.Victory
                         ? RuntimeUiCopyId.SettlementVictory
@@ -470,7 +488,8 @@ namespace FruitDefense.Shell
             RuntimeUiFeedbackTokens tokens)
         {
             return revealStartedAt + tokens.UnscaledStaggerSeconds
-                + tokens.UnscaledRevealSeconds;
+                + tokens.UnscaledRevealSeconds
+                + tokens.UnscaledTransitionSeconds;
         }
 
         public static SettlementOutcomeRevealPhase ResolveOutcomeRevealPhase(
@@ -485,6 +504,9 @@ namespace FruitDefense.Shell
                 tokens, RuntimeUiMotionPattern.Stagger, 1);
             if (!reveal.IsResting)
                 return SettlementOutcomeRevealPhase.Hidden;
+            if (resultEmphasisPulse.IsScheduled
+                && unscaledTime < resultEmphasisPulse.StartedAt)
+                return SettlementOutcomeRevealPhase.SettledHidden;
             return resultEmphasisPulse.IsActive(unscaledTime)
                 ? SettlementOutcomeRevealPhase.Appearing
                 : SettlementOutcomeRevealPhase.Stable;
@@ -498,6 +520,17 @@ namespace FruitDefense.Shell
             FruitDefensePublishSettlementOutcomeReveal((int)phase);
 #endif
         }
+
+#if FRUIT_DEFENSE_ACCEPTANCE
+        public void ReleaseAcceptanceOutcomeReveal()
+        {
+            if (!_acceptanceOutcomeRevealHeld || !HasViewData) return;
+            _acceptanceOutcomeRevealHeld = false;
+            _resultEmphasisPulse = RuntimeUiFeedbackPulse.Begin(
+                Time.unscaledTime, _runtimeUiTheme.Feedback.UnscaledPopSeconds);
+            PublishOutcomeRevealPhase(SettlementOutcomeRevealPhase.Appearing);
+        }
+#endif
 
         internal static RuntimeUiInteractionState ResolveActionState(bool transitioning,
             bool available, bool pointerInside, bool pointerPressed)

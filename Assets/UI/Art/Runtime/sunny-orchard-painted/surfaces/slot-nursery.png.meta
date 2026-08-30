@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-set=sunny-orchard-painted;group=surfaces;slot=slot-nursery;source-scale=2
+  userData: ui-art-set=sunny-orchard-painted;slot=slot.nursery;source-scale=2;authored=imagegen-direct-master;transform=connected-neutral-background-cleanup;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/slot-nursery.png;asset-sha256=335028CADB393454E90B8D0D66DC27B3F39C2839D13C12084B3BB4204131ABFE
   assetBundleName:
   assetBundleVariant:

@@ -89,7 +89,9 @@ namespace FruitDefense.Editor
                 && simulation.MoveOrMergePlant(boardPlant.Id, pot.Id, out _),
                 "cross-location swap commits after cooldown clears");
             Assert(boardPlant.PotId == pot.Id && Mathf.Approximately(boardPlant.MoveCooldown, 0f)
-                && nurseryPlant.NurseryIndex == 0 && Mathf.Approximately(nurseryPlant.MoveCooldown, 2f),
+                && nurseryPlant.NurseryIndex == 0 && Mathf.Approximately(
+                    nurseryPlant.MoveCooldown,
+                    simulation.RuleSet.RelocationCooldownSeconds),
                 "active-wave cooldown applies only to the plant moved from the board");
         }
 

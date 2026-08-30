@@ -1,0 +1,31 @@
+{
+  "schema": "fruit-defense.dual-grid-art-profile.v1",
+  "id": "A-grass-soil-s1-flat-cel",
+  "route": "A",
+  "landformLabel": "Grass",
+  "baseLabel": "Soil",
+  "landformColor": "#FF4779",
+  "baseColor": "#FFFFFF",
+  "reviewSize": 256,
+  "runtimeSize": 64,
+  "runtimeSampling": "lanczos",
+  "boundaryBandWidth": 12,
+  "candidateMode": "route-default",
+  "protectedReviewWidth": 32,
+  "crossoverWidth": 16,
+  "topologyGuide": "Assets/LayeredTerrain/GrassSoil/Square/Topology/SquareContourTopologyGuide.png",
+  "stylePrompt": "Match the supplied S1 flat-cel reference: fresh airy hand-painted cartoon grass and soil, orthographic top-down, one dominant flat grass color with one single very large irregular lighter patch, one dominant flat soil color with one single very large warmer patch, chunky rounded shapes, slightly wobbly hand-drawn silhouette, at most three oversized simple grass-tuft symbols, no visible paper or brush texture inside the fills, no fine texture, no tiny marks, no pebbles, no cracks, no repeated motifs, central seventy percent visually calm, softened orchard leaf green grass and warm light caramel-biscuit soil harmonious with the current cream-paper UI.",
+  "unityBrush": {
+    "brushId": "terrain-brush.grass-on-soil",
+    "assetFolderName": "GrassSoil",
+    "displayName": "草地 + 泥土",
+    "landformDisplayName": "草地",
+    "baseDisplayName": "泥土",
+    "landformSurfaceId": "surface.grass",
+    "baseSurfaceId": "surface.soil",
+    "contourStyleId": "contour.square",
+    "edgeStyleId": "edge.refined",
+    "foregroundMask": 15,
+    "backgroundMask": 0
+  }
+}

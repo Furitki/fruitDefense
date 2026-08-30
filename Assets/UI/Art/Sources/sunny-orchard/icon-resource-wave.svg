@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="icon.resource-wave">
-  <title>icon.resource-wave</title>
-  <polyline points="20.28,37.92 30.36,31.2 40.44,37.92 50.52,31.2 60.6,37.92 70.68,31.2 76.56,36.24" fill="none" stroke="#67AFC4" stroke-opacity="1.0000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="20.28,53.04 30.36,46.32 40.44,53.04 50.52,46.32 60.6,53.04 70.68,46.32 76.56,51.36" fill="none" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="27,66.48 69,66.48" fill="none" stroke="#FFD24D" stroke-opacity="1.0000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

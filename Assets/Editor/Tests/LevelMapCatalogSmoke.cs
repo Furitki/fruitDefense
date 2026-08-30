@@ -21,6 +21,8 @@ namespace FruitDefense.Editor
 
             ValidateOrderedResolution(catalog);
             ValidateMapTopology(catalog);
+            ValidateCombatDistanceCalibration(catalog);
+            ValidateShortRouteCombatAndInspectionRange(catalog);
             ValidateWavePressure(catalog);
             ValidateResolutionFailures(catalog);
             ValidateInvalidCatalogs(source);
@@ -132,6 +134,104 @@ namespace FruitDefense.Editor
                 "Pressure final wave does not include the existing boss enemy.");
             Expect(pressure.RuleSet.MaxWaves == pressure.OrderedWaves.Count,
                 "Pressure wave/rule composition mismatch.");
+        }
+
+        private static void ValidateCombatDistanceCalibration(CompiledLevelCatalog catalog)
+        {
+            var teaching = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard01).Value.Map;
+            var coverage = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard02).Value.Map;
+            var pressure = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard03).Value.Map;
+            const float legacyDistance = 44f;
+            var expectedScale = BattlefieldMapDefinition.LegacyReferenceDistanceScale;
+            var expectedCellCoverage = legacyDistance
+                * BattlefieldMapDefinition.LegacyReferenceDistanceScale
+                / BattlefieldMapDefinition.LegacyReferenceMapUnitsPerCell;
+            foreach (var map in new[] { teaching, coverage, pressure })
+            {
+                Expect(Mathf.Approximately(map.LegacyToMapScale, expectedScale),
+                    map.MapId + " uses the canonical per-cell combat-distance scale");
+                Expect(Mathf.Approximately(map.FromLegacyDistance(legacyDistance)
+                        / map.MapUnitsPerCell, expectedCellCoverage),
+                    map.MapId + " keeps legacy combat distance in map cells");
+            }
+            Expect(pressure.Route.TotalLength < teaching.Route.TotalLength
+                && Mathf.Approximately(teaching.LegacyToMapScale, pressure.LegacyToMapScale),
+                "a short normal route cannot compress combat distance calibration");
+        }
+
+        private static void ValidateShortRouteCombatAndInspectionRange(
+            CompiledLevelCatalog catalog)
+        {
+            var pressure = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard03).Value;
+            var simulation = CreateShortRouteCombatSimulation(pressure, 28101, out var plant);
+            var range = global::FruitDefense.FruitDefenseGame.EffectiveAttackRange(simulation, plant);
+            var expectedRange = simulation.Map.FromLegacyDistance(
+                simulation.Content.Plants[BattleContentIds.Plants.Pea].rangeLegacyUnits);
+            Expect(Mathf.Approximately(range, expectedRange),
+                "inspected short-route plant resolves the same calibrated effective range as combat");
+
+            var projection = new BattlefieldProjection(simulation.Map, new Rect(0f, 0f, 402f, 874f));
+            var overlay = projection.MapRect(simulation.PotPoint(simulation.PotById(plant.PotId)),
+                range * 2f, range * 2f);
+            Expect(Mathf.Approximately(overlay.width * .5f,
+                    projection.MapDistanceToScreen(range))
+                && Mathf.Approximately(overlay.height * .5f,
+                    projection.MapDistanceToScreen(range)),
+                "short-route inspected range overlay projects the combat range without a second scale");
+
+            var inside = simulation.Map.CellToMap(new Vector2Int(5, 3));
+            var outside = simulation.Map.CellToMap(new Vector2Int(6, 3));
+            var origin = simulation.PotPoint(simulation.PotById(plant.PotId));
+            Expect(Vector2.Distance(origin, inside) < range
+                && Vector2.Distance(origin, outside) > range,
+                "short-route boundary fixture places one route enemy on each side of the range");
+            Expect(ShortRoutePlantDamagesTargetAt(pressure, new Vector2Int(5, 3), 28102),
+                "short-route combat selects the enemy inside the inspected range overlay");
+            Expect(!ShortRoutePlantDamagesTargetAt(pressure, new Vector2Int(6, 3), 28103),
+                "short-route combat rejects the enemy outside the inspected range overlay");
+        }
+
+        private static GameSimulation CreateShortRouteCombatSimulation(
+            ResolvedLevelDefinition level, int seed, out Plant plant)
+        {
+            var simulation = new GameSimulation(level, seed);
+            simulation.State.Plants.Clear();
+            simulation.State.Zombies.Clear();
+            simulation.State.Phase = GamePhase.Playing;
+            var pot = simulation.State.Pots.Single(value => value.Cell == new Vector2Int(2, 2));
+            plant = new Plant
+            {
+                Id = simulation.State.NextId++,
+                DefinitionId = BattleContentIds.Plants.Pea,
+                Star = 1,
+                PotId = pot.Id,
+                NurseryIndex = -1,
+            };
+            simulation.State.Plants.Add(plant);
+            return simulation;
+        }
+
+        private static bool ShortRoutePlantDamagesTargetAt(ResolvedLevelDefinition level,
+            Vector2Int targetCell, int seed)
+        {
+            Plant plant;
+            var simulation = CreateShortRouteCombatSimulation(level, seed, out plant);
+            var routeIndex = Array.IndexOf(simulation.Map.RouteCells.ToArray(), targetCell);
+            Expect(routeIndex >= 0, "short-route target cell belongs to the enemy route");
+            var enemy = new Zombie
+            {
+                Id = simulation.State.NextId++,
+                DefinitionId = BattleContentIds.Enemies.Normal,
+                RouteId = simulation.Map.PrimaryRouteId,
+                Hp = 100f,
+                MaxHp = 100f,
+                Speed = 0f,
+                PathProgress = simulation.Map.Route.CumulativeLengths[routeIndex],
+            };
+            simulation.State.Zombies.Add(enemy);
+            for (var step = 0; step < 200 && Mathf.Approximately(enemy.Hp, enemy.MaxHp); step++)
+                simulation.Step();
+            return enemy.Hp < enemy.MaxHp;
         }
 
         private static void ValidateResolutionFailures(CompiledLevelCatalog catalog)

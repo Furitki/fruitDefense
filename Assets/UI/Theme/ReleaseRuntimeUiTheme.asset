@@ -13,75 +13,74 @@ MonoBehaviour:
   m_Name: ReleaseRuntimeUiTheme
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.UI.RuntimeUiTheme
   themeId: ui.sunny-orchard
-  revision: 2
+  revision: 9
   colors:
-    edgeBackground: {r: 0.9607843, g: 0.8666667, b: 0.68235296, a: 1}
-    baseSurface: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
-    raisedSurface: {r: 1, g: 0.90588236, b: 0.6392157, a: 1}
-    selectionAccent: {r: 1, g: 0.8235294, b: 0.3019608, a: 1}
-    success: {r: 0.42745098, g: 0.74509805, b: 0.29411766, a: 1}
-    warning: {r: 1, g: 0.7254902, b: 0.25882354, a: 1}
-    danger: {r: 0.827451, g: 0.30588236, b: 0.27058825, a: 1}
-    disabled: {r: 0.56078434, g: 0.7490196, b: 0.45490196, a: 1}
-    scrim: {r: 0.23921569, g: 0.16470589, b: 0.1254902, a: 1}
-    primaryText: {r: 0.54509807, g: 0.36862746, b: 0.23529412, a: 1}
-    secondaryText: {r: 0.43529412, g: 0.3529412, b: 0.27058825, a: 1}
-    inverseText: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+    edgeBackground: {r: 0.4509804, g: 0.7882353, b: 0.95686275, a: 1}
+    baseSurface: {r: 1, g: 0.9764706, b: 0.93333334, a: 1}
+    raisedSurface: {r: 1, g: 0.94509804, b: 0.8235294, a: 1}
+    selectionAccent: {r: 1, g: 0.77254903, b: 0.25882354, a: 1}
+    success: {r: 0.32941177, g: 0.6627451, b: 0.15686275, a: 1}
+    warning: {r: 0.9019608, g: 0.6039216, b: 0.09803922, a: 1}
+    danger: {r: 0.78431374, g: 0.3019608, b: 0.24705882, a: 1}
+    disabled: {r: 0.654902, g: 0.7254902, b: 0.60784316, a: 1}
+    scrim: {r: 0.23137255, g: 0.14117648, b: 0.08627451, a: 1}
+    primaryText: {r: 0.3372549, g: 0.20392157, b: 0.12156863, a: 1}
+    secondaryText: {r: 0.43529412, g: 0.34509805, b: 0.27450982, a: 1}
+    inverseText: {r: 1, g: 0.9764706, b: 0.93333334, a: 1}
   actionStyles:
     primary:
-      container: {r: 0.2627451, g: 0.42352942, b: 0.08235294, a: 1}
-      content: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+      container: {r: 0.627451, g: 0.78039217, b: 0.23921569, a: 1}
+      content: {r: 0.3372549, g: 0.20392157, b: 0.12156863, a: 1}
     secondary:
-      container: {r: 0.9607843, g: 0.8666667, b: 0.68235296, a: 1}
-      content: {r: 0.33333334, g: 0.21568628, b: 0.1254902, a: 1}
+      container: {r: 0.627451, g: 0.78039217, b: 0.23921569, a: 1}
+      content: {r: 0.3372549, g: 0.20392157, b: 0.12156863, a: 1}
     quiet:
-      container: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
-      content: {r: 0.43529412, g: 0.3529412, b: 0.27058825, a: 1}
+      container: {r: 1, g: 0.9764706, b: 0.93333334, a: 1}
+      content: {r: 0.3372549, g: 0.20392157, b: 0.12156863, a: 1}
     danger:
-      container: {r: 0.62352943, g: 0.1882353, b: 0.16862746, a: 1}
-      content: {r: 1, g: 0.9647059, b: 0.8784314, a: 1}
+      container: {r: 0.65882355, g: 0.21960784, b: 0.19215687, a: 1}
+      content: {r: 1, g: 0.9764706, b: 0.93333334, a: 1}
     modeActive:
-      container: {r: 1, g: 0.7254902, b: 0.25882354, a: 1}
-      content: {r: 0.23921569, g: 0.16470589, b: 0.1254902, a: 1}
+      container: {r: 1, g: 0.77254903, b: 0.25882354, a: 1}
+      content: {r: 0.23137255, g: 0.14117648, b: 0.08627451, a: 1}
     disabled:
-      container: {r: 0.8784314, g: 0.8392157, b: 0.7647059, a: 1}
-      content: {r: 0.36078432, g: 0.32941177, b: 0.29411766, a: 1}
-  packagedChineseFont: {fileID: 12800000, guid: 0445ac40b415f994eb06b41378ac9953, type: 3}
+      container: {r: 0.8745098, g: 0.8901961, b: 0.84705883, a: 1}
+      content: {r: 0.3372549, g: 0.20392157, b: 0.12156863, a: 1}
   typography:
     display:
-      fontSize: 40
-      lineHeight: 46
-      fontStyle: 1
-      opticalOffsetY: 0
-    screenTitle:
-      fontSize: 32
-      lineHeight: 38
-      fontStyle: 1
-      opticalOffsetY: 0
-    sectionTitle:
+      font: {fileID: 12800000, guid: eebbf43087f44e06b3242ca5b023ae98, type: 3}
       fontSize: 28
       lineHeight: 34
-      fontStyle: 1
-      opticalOffsetY: -1
+      opticalOffsetY: -2
+    screenTitle:
+      font: {fileID: 12800000, guid: eebbf43087f44e06b3242ca5b023ae98, type: 3}
+      fontSize: 32
+      lineHeight: 38
+      opticalOffsetY: 0
+    sectionTitle:
+      font: {fileID: 12800000, guid: eebbf43087f44e06b3242ca5b023ae98, type: 3}
+      fontSize: 28
+      lineHeight: 34
+      opticalOffsetY: 0
     body:
+      font: {fileID: 12800000, guid: 82bf12e4b7d04b14ad1b23a984c799b2, type: 3}
       fontSize: 20
       lineHeight: 28
-      fontStyle: 0
       opticalOffsetY: 0
     controlLabel:
+      font: {fileID: 12800000, guid: eebbf43087f44e06b3242ca5b023ae98, type: 3}
       fontSize: 20
       lineHeight: 24
-      fontStyle: 1
       opticalOffsetY: 0
     metric:
+      font: {fileID: 12800000, guid: 82bf12e4b7d04b14ad1b23a984c799b2, type: 3}
       fontSize: 24
       lineHeight: 28
-      fontStyle: 1
       opticalOffsetY: 0
     supplemental:
+      font: {fileID: 12800000, guid: 82bf12e4b7d04b14ad1b23a984c799b2, type: 3}
       fontSize: 16
       lineHeight: 22
-      fontStyle: 0
       opticalOffsetY: 0
   metrics:
     spacingXs: 4

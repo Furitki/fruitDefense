@@ -32,14 +32,6 @@ namespace FruitDefense
             Boss, Gatling, Ice, Chili,
             EmptyPot, OccupiedPot, ExpansionPot, LockedPot,
         }
-        private enum CombatSprite
-        {
-            PeaProjectile, WatermelonProjectile, BananaProjectile, DurianDrop,
-            PeaImpact, WatermelonBlast, DurianShockwave, SunBurst,
-            GatlingMuzzle, IceImpact, FrozenAura, ChiliImpact,
-            Burning, HitSpark, ShockwaveRing, SunCollectible,
-        }
-
         private sealed class DragSession
         {
             public DragPayloadType Type;
@@ -47,6 +39,7 @@ namespace FruitDefense
             public string EquipmentId = string.Empty;
             public Vector2 Start;
             public Vector2 Current;
+            public Rect SourceRect;
             public bool Active;
         }
 
@@ -200,7 +193,8 @@ namespace FruitDefense
         {
             Screen.orientation = ScreenOrientation.Portrait;
             _tempArtAtlas = Resources.Load<Texture2D>("TempArt/fruit-defense-temp-atlas");
-            _combatVfxAtlas = Resources.Load<Texture2D>("TempArt/combat-vfx-atlas");
+            _combatVfxAtlas = Resources.Load<Texture2D>(
+                BattleCombatGuiRenderer.AtlasResourcePath);
             _attackRangeTexture = CreateAttackRangeTexture();
             if (_tempArtAtlas != null)
             {
@@ -360,7 +354,9 @@ namespace FruitDefense
             _navigator = navigator;
             _resultSink = resultSink;
             _runtimeUiTheme = runtimeUiTheme;
-            BuildWorldRenderingStyles(runtimeUiTheme.PackagedChineseFont);
+            BuildWorldRenderingStyles(
+                runtimeUiTheme.Typography.For(RuntimeUiTypographyRole.Body).Font,
+                runtimeUiTheme.Typography.For(RuntimeUiTypographyRole.ControlLabel).Font);
             _game = simulation;
             _observedSun = simulation.State.Sun;
             _observedLives = simulation.State.Lives;
@@ -375,7 +371,7 @@ namespace FruitDefense
             RefreshTerrainPresentationStatus();
             _presentation.Clear();
             _renderSamples.SnapTo(_game.State);
-            _battleUiLayout = new BattleUiLayout(_game.Map);
+            _battleUiLayout = new BattleUiLayout(_game.Map, _game.NurserySlotCount);
             _hasEnteredBattleRoute = navigator.CurrentRoute == AppRoute.Battle;
             _navigator.RouteChanged += OnAppRouteChanged;
 
@@ -564,18 +560,18 @@ namespace FruitDefense
             _potToolSelected = false;
         }
 
-        private void BuildWorldRenderingStyles(Font packagedChineseFont)
+        private void BuildWorldRenderingStyles(Font readingFont, Font displayFont)
         {
             _worldLabelStyle = new GUIStyle
             {
-                font = packagedChineseFont,
-                fontStyle = FontStyle.Bold,
+                font = displayFont,
+                fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleCenter,
                 richText = true,
             };
             _terrainFailureStyle = new GUIStyle
             {
-                font = packagedChineseFont,
+                font = readingFont,
                 fontSize = 15,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleCenter,

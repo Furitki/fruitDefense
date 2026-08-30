@@ -39,7 +39,7 @@ mergeInto(LibraryManager.library, {
   },
 
   FruitDefensePublishSettlementOutcomeReveal: function (state) {
-    var stateNames = ['hidden', 'appearing', 'stable'];
+    var stateNames = ['hidden', 'settled-hidden', 'appearing', 'stable'];
     if (state < 0 || state >= stateNames.length) {
       throw new Error('Unknown settlement outcome reveal state: ' + state);
     }

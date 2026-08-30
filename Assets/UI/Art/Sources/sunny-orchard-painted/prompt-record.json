@@ -4,46 +4,147 @@
   "provider": "built-in-imagegen",
   "references": [
     "Assets/UI/Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png",
-    "openspec/changes/unify-runtime-ui-visual-system/evidence/sunny-orchard-redo-proof/sunny-orchard-core-components-v2.png"
+    "openspec/changes/unify-runtime-ui-visual-system/evidence/sunny-orchard-redo-proof/sunny-orchard-core-components-v2.png",
+    "openspec/changes/reset-sky-paper-orchard-ui/evidence/reference/sky-paper-orchard-reference.png",
+    "openspec/changes/reset-sky-paper-orchard-ui/evidence/imagegen/reference-faithful-battle-chrome-styleboard.png"
   ],
-  "generationBoundary": "All visible forms were produced by built-in imagegen. Deterministic processing is limited to connected-background alpha cleanup for legacy assets, action-glyph visible-RGB normalization to neutral white with alpha preserved byte-for-byte, semantic Primary/Danger content-ink median re-anchoring with texture deltas and alpha preserved, low-alpha cleanup, significant-alpha crop, premultiplied resize, declared target-size aspect-fit, centered 128px nine-slice or 96px glyph placement, optical placement, gallery composition, metadata, and hashes.",
-  "semanticContainerNormalization": [
-    {
-      "semanticId": "action.primary",
-      "targetRgb": "#436C15",
-      "contentReferenceRgb": "#FFF6E0",
-      "minimumContrast": 4.5,
-      "measuredContentRegionMinimumContrast": 5.2068,
-      "sourceSha256": "186C3BB10FEC589177F353316634219C720BB2B5BAB1D0376CF5BC05336B8A9D",
-      "deterministicTransform": "Re-anchor green content-ink channel medians while preserving per-pixel texture deltas, alpha bytes, outline, canvas, and nine-slice geometry."
+  "generationBoundary": "This record owns retained built-in ImageGen materials, icons, ornaments, background, and illustrations. Six action surfaces and eight high-exposure structural surfaces now enter export as individual hash-locked ImageGen masters; no generated component sheet remains in the active path. Explicitly supplied or user-approved reference visual parameters are P0 authority, while generic visual guidance fills only unspecified parameters. Export crops transparent content and applies alpha-safe scaling. The action-green RGB plate uses its separately hash-locked approved geometry alpha; the line-free nursery and metric RGB plates each use one deterministic connected-neutral-background cleanup derived from their own pixels so legacy or foreign geometry cannot expose hidden gray/orange edge RGB. A master cannot be shared across incompatible edge/anatomy contracts. Every transparent ImageGen nine-slice clears low-alpha ringing after source and runtime resize and stores zero RGB under zero alpha. It never paints or recolors visible generated material pixels, and contrast failures are corrected through the separate text/icon content token before any resource change. Remaining non-selected nine-slice surfaces retain their owned deterministic source path.",
+  "supersededActionMaterialSheet": {
+    "semanticIds": [
+      "action.compact-control",
+      "action.compact-control-active",
+      "action.primary",
+      "action.secondary",
+      "action.quiet",
+      "action.danger"
+    ],
+    "generatedOutput": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
+    "componentOutputs": {
+      "baseFiveCells": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
+      "action.compact-control-active": "exec-9972394c-2d59-4fd2-98dc-57d033bceed6.png"
     },
-    {
-      "semanticId": "action.danger",
-      "targetRgb": "#9F302B",
-      "contentReferenceRgb": "#FFF6E0",
-      "minimumContrast": 4.5,
-      "measuredContentRegionMinimumContrast": 5.7689,
-      "sourceSha256": "2D9AE59E0FC3250801172940921E3E84FE29BE55515DA52B38241D20F843881F",
-      "deterministicTransform": "Re-anchor red content-ink channel medians while preserving per-pixel texture deltas, alpha bytes, outline, canvas, and nine-slice geometry."
-    }
-  ],
+    "selectedOutput": "openspec/changes/polish-sky-paper-ui-eight-point/evidence/imagegen/imagegen-action-material-sheet-selected.png",
+    "sourceSha256": "636D372D867A75BF1B5A0E3E31B2BB2E3CF35A9E8692F73A01327DF202BC9E36",
+    "sourceSize": "1024x1536",
+    "backgroundContract": "Opaque generated chroma plate; exterior magenta is removed only during fixed-source extraction and never enters runtime pixels.",
+    "deterministicTransform": "Fixed semantic crop rectangles, exterior chroma-alpha cleanup/despill, alpha-safe resize, transparent padding, significant-alpha measurement, and PNG export. No rim, face, outline, highlight, shadow, texture, or decoration pixels are procedurally drawn.",
+    "styleReference": "openspec/changes/reset-sky-paper-orchard-ui/evidence/reference/sky-paper-orchard-reference.png",
+    "initialPrompt": "Generate a new text-free and icon-free 2x3 action-surface sheet preserving the accepted cream rim, soil outline, upper-left highlight, rounded silhouette, and short shadow while making the two green roles visibly fresher and more yellow-leaf than the approved dark baseline.",
+    "backgroundCorrectionPrompt": "Change only the baked checkerboard exterior to one perfectly uniform opaque #FF00FF background; preserve all six components and their pixels, grid positions, proportions, highlights, outlines, and shadows.",
+    "finalCorrectionPrompt": "Change only the middle-left primary central face to a medium fresh leaf green near #397509 while retaining the vivid lime top plane; preserve the other five components, all material anatomy, and the uniform #FF00FF background.",
+    "compactActiveCorrectionPrompt": "From the selected action output, change only the top-right compact-control-active central face to a lighter sunny golden yellow-orange centered near #F8B800 so dark brown #56341F content remains above 4.8:1; preserve its silhouette, rim, outline, highlight, shadow, texture, position, and the uniform #FF00FF background.",
+    "compositeContract": "The selected plate is a deterministic crop-only composition: five original cells remain from exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png and crop [512,80,992,528] is copied from exec-9972394c-2d59-4fd2-98dc-57d033bceed6.png. No pixel is painted or recolored by script.",
+    "measuredWarmWhiteContrast": {
+      "action.primary": 5.5671,
+      "action.secondary": 6.3277,
+      "action.danger": 5.6285
+    },
+    "measuredDarkBrownCompactActiveContrast": 5.9965
+  },
+  "supersededStructuralMaterialSheet": {
+    "semanticIds": [
+      "surface.safe-area",
+      "surface.panel-standard",
+      "surface.panel-raised",
+      "surface.metric",
+      "surface.card-selectable",
+      "slot.tool",
+      "slot.nursery",
+      "surface.gameplay-stage"
+    ],
+    "generatedOutput": "exec-2c26a7da-cbf2-43dc-b962-5cdf8b9b8478.png",
+    "componentOutputs": {
+      "baseSevenCells": "exec-2c26a7da-cbf2-43dc-b962-5cdf8b9b8478.png",
+      "surface.gameplay-stage": "exec-868e1b66-45d8-4a2a-bfdb-32c5f639c9ca.png"
+    },
+    "selectedOutput": "openspec/changes/polish-sky-paper-ui-eight-point/evidence/imagegen/imagegen-structural-material-sheet-chroma.png",
+    "sourceSha256": "EEFF38C2C504FB81C40DB4C19EC1ABC01266FE519A92C6AF18E77837D755A5BF",
+    "sourceSize": "1024x1536",
+    "backgroundContract": "Opaque generated #FF00FF chroma plate, including the gameplay-stage center; only exterior/background magenta is removed during fixed-source extraction.",
+    "deterministicTransform": "Fixed semantic crop rectangles, exterior chroma-alpha cleanup/despill, alpha-safe resize, transparent padding, significant-alpha measurement, and PNG export. No face, rim, outline, highlight, shadow, texture, dashed rail, or stage rail pixels are procedurally drawn.",
+    "initialPrompt": "Generate exactly eight isolated hand-painted orchard UI structural surfaces in a 2x4 grid: warm-paper page shell, standard panel, raised panel, metric capsule, pale leaf selectable card, recipe/tool card, dashed nursery slot, and transparent-center cream-rimmed soil stage frame; no text or icons.",
+    "backgroundCorrectionPrompt": "Change only the baked checkerboard exterior and stage opening to one perfectly uniform opaque #FF00FF background while preserving all eight components, their grid, textures, rims, outlines, dashed rail, and shadows.",
+    "stageCorrectionPrompt": "From the selected structural output, change only the bottom-right gameplay-stage frame to substantially thinner inner rails so every visible frame pixel remains inside the fixed 20px nine-slice border; preserve its outer silhouette, cream rim, soil rail, rounded corners, shallow shadow, position, and uniform #FF00FF opening.",
+    "compositeContract": "The selected plate is a deterministic crop-only composition: seven original cells remain from exec-2c26a7da-cbf2-43dc-b962-5cdf8b9b8478.png and crop [512,1168,992,1528] is copied from exec-868e1b66-45d8-4a2a-bfdb-32c5f639c9ca.png. No pixel is painted or recolored by script."
+  },
+  "directMaterialAssets": {
+    "root": "openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen",
+    "deterministicTransform": "Hash validation, content-alpha crop, transparent padding, alpha-safe resize, low-alpha cleanup after source/runtime resize, zero-RGB transparent pixels, and PNG export. The green action RGB output alone receives its separately hash-locked approved geometry alpha. The line-free nursery and metric RGB plates derive alpha only from their own edge-connected neutral background; no generated color or material pixel is repainted or recolored.",
+    "groups": [
+      {
+        "semanticIds": ["action.primary", "action.secondary"],
+        "file": "action-green.png",
+        "generatedOutput": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
+        "sourceSha256": "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA",
+        "alphaContract": "Generated RGB material pixels plus approved action-geometry alpha mask."
+      },
+      {
+        "semanticIds": ["action.compact-control", "action.compact-control-active"],
+        "file": "action-yellow.png",
+        "generatedOutput": "exec-dc14d5db-4629-4cb2-9b3c-357061c5bf4f.png",
+        "sourceSha256": "BE9E3F520F570CDD44A11950515A023EB1E785309F5EC81F432394DB8395C094"
+      },
+      {
+        "semanticIds": ["surface.safe-area", "surface.panel-standard", "surface.panel-raised"],
+        "file": "panel-paper.png",
+        "generatedOutput": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
+        "sourceSha256": "475B96F6E034081DC23B68D6D7EB27F5729C5E87421301E43B61703A5D733F0F"
+      },
+      {
+        "semanticIds": ["surface.metric"],
+        "file": "metric-capsule.png",
+        "generatedOutput": "exec-69f7835e-0e63-4461-9bb8-4260eb8f3961.png",
+        "sourceSha256": "5539902850BA5EA59A20B356B34A7539516108D349B95F3E458AA2EA4590DC51",
+        "editPrompt": "Use case: precise-object-edit. Asset type: Unity UI nine-slice master for the compact Battle header metric capsule. Image 1 is the edit target and exact style/material reference. Make a dedicated line-free warm-paper metric capsule. Preserve the warm cream paper face, subtle hand-painted texture, rounded silhouette, soft shallow tonal depth, gentle highlight, centered single-component framing, broad stretch-safe center, and protected transparent gutter. Remove every visible perimeter rail and border line, including the inner tan outline and any outer solid line. Keep the carrier present through its cream face, rounded silhouette, and tonal depth without looking outlined. Require genuine transparent background, cream/material-aligned partial-alpha RGB, zero RGB under full transparency, and no checkerboard, matte, dark/gray/orange fringe, text, icon, fruit, leaf, label, badge, seam, grid, dashed/dotted/solid rail, watermark, clipped corner, or unsafe center.",
+        "alphaContract": "The generated RGB plate uses one deterministic center-connected neutral-background cleanup from its own pixels, followed by alpha-safe resize and low-alpha fringe clearing after every resize. It never shares panel-paper.png or any foreign geometry mask."
+      },
+      {
+        "semanticIds": ["surface.card-selectable", "slot.tool"],
+        "file": "card-lime.png",
+        "generatedOutput": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
+        "sourceSha256": "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"
+      },
+      {
+        "semanticIds": ["slot.nursery"],
+        "file": "slot-nursery.png",
+        "generatedOutput": "exec-e30c0381-7420-4cad-9d29-b51464b8339f.png",
+        "sourceSha256": "335028CADB393454E90B8D0D66DC27B3F39C2839D13C12084B3BB4204131ABFE",
+        "editPrompt": "Clean only the alpha fringe and outer edge of this warm cream rounded-paper carrier so it has no visible dark, black, gray, orange, yellow, solid, dashed, dotted, or rectangular perimeter line at any scale. Preserve the cream paper face, subtle texture, rounded silhouette and shallow bottom depth. Output genuine RGBA transparency, with alpha-safe cream edge RGB and no checkerboard, border, marker, text or icon.",
+        "alphaContract": "The generated RGB plate uses one deterministic center-connected neutral-background cleanup from its own pixels, followed by alpha-safe resize and low-alpha fringe clearing after every resize. No legacy slot geometry mask remains active.",
+        "supersededGeometryMaskSha256": "9739CB264370D075E67AB9E924688E1E8B9EA455A4C9D4D2A3E5C067C2CC8B7E",
+        "rejectedMaskFringeAssetSha256": "995C3C6188886D6D75801204569C62C3768C9DF031334695AB48A9B2C810038D",
+        "supersededRailAssetSha256": "130E845511C06FCDD9816AA113B6C12E2683F05E1C41AECD2A738E863ACDDEEF"
+      },
+      {
+        "semanticIds": ["surface.gameplay-stage"],
+        "file": "stage-frame.png",
+        "generatedOutput": "exec-26bcbc75-0425-4308-91bb-6296e8465e12.png",
+        "sourceSha256": "DB106DA52028C9128DD56FD76D6FC7084DFDDC639634AF3C3D359537C0EF9750"
+      }
+    ]
+  },
   "assets": [
     {
+      "semanticId": "surface.screen-background",
+      "generatedOutput": "exec-baa970e9-395b-413a-ad5d-6eaf37f7fc04.png",
+      "selectedOutput": "sky-paper-screen-background-master.png",
+      "sourceSha256": "5A75FC83DF74CE15F6C975743564A6FF3BC8D364EE9922D19CDA301B5A2039A6",
+      "alphaContract": "Opaque RGB source master; deterministic exporter owns the 256x256 runtime tier and source/runtime hashes.",
+      "references": [
+        "openspec/changes/reset-sky-paper-orchard-ui/evidence/reference/sky-paper-orchard-reference.png"
+      ],
+      "prompt": "Clear light-sky-blue painted paper texture: subtle hand-painted mobile UI background, soft sky-blue wash over fine matte paper grain, uniform low-contrast square field, no focal point, direction, text, icons, fruit, leaves, clouds, panels, borders, vignette, watermark, checkerboard, or transparency."
+    },
+    {
       "semanticId": "ornament.screen-corner",
-      "generatedOutput": "exec-2edece6a-b030-4119-bdd5-5c4bb28b9b6c.png",
-      "chromaOutput": "exec-28f6b765-731b-4c77-94b0-ab730dd0c7a6.png",
-      "prompt": "Transparent square screen-corner ornament: compact hand-painted cluster of 3–4 orchard leaves and one tiny five-petal white blossom, mirror-friendly, visible art inside the centered 72% safe box, warm Sunny Orchard palette, thin soil-brown outline, no fruit or text."
-    },
-    {
-      "semanticId": "surface.section-ribbon",
-      "generatedOutput": "exec-126cc9fd-8685-4f4e-b686-03b651a95ad7.png",
-      "prompt": "Square 3x3 nine-slice pale leaf-green section ribbon/panel with thin soil-brown hand-painted outline; central 50% text-safe field and full stretch bands contain only calm repeatable paint; leaves and tiny white blossoms confined to the four protected 25% corners; no text or emblem."
-    },
-    {
-      "semanticId": "surface.illustration-frame",
-      "generatedOutput": "exec-6a1a261d-446f-40a4-b86a-d7fd379f9802.png",
-      "chromaOutput": "exec-14f11150-8e84-4db8-a81b-b6ce0766d1e3.png",
-      "prompt": "Transparent square 3x3 nine-slice illustration-frame overlay: slender warm-cream and leaf-green rails, transparent center, straight repeatable stretch rails, leaf/white-flower motifs only in protected 25% corners, hand-painted Sunny Orchard treatment, no text."
+      "generatedOutput": "exec-105cc3a4-dd53-4038-9edd-9bba5df28ca9.png",
+      "selectedOutput": "orange-leaf-corner-master.png",
+      "sourceSha256": "6C32743E24537F90860B1151609938F9A625D6AA3CF770D7D7AB0A1B3C633EC9",
+      "alphaContract": "Native RGBA source with transparent exterior, at least 20% canvas padding, and one mirror-safe orange/three-leaf silhouette.",
+      "references": [
+        "openspec/changes/reset-sky-paper-orchard-ui/evidence/reference/sky-paper-orchard-reference.png"
+      ],
+      "prompt": "One tiny original orchard sticker containing exactly one small orange attached to three clean green leaves; hand-painted 2D mobile UI, crisp silhouette, restrained shading, soil-brown/leaf-green outline, thin warm-white sticker rim, compact mirror-safe composition, genuinely transparent background, no blossom, strawberry, extra fruit, text, panel, checkerboard, watermark, or shadow."
     },
     {
       "semanticId": "ornament.metric-divider",
@@ -76,14 +177,6 @@
       "semanticId": "illustration.lobby-orchard-03",
       "generatedOutput": "exec-b5fb53c6-42de-4c61-95a9-7a2dc3a2171e.png",
       "prompt": "Landscape core-corridor-at-dusk thumbnail: two dense parallel fruit-tree rows create a straight central path toward a softly glowing core tree, warm amber dusk with gameplay clarity, readable at 84x54, no labels or UI."
-    },
-    {
-      "semanticId": "action.primary",
-      "generatedOutput": "exec-52fb463b-9dea-44f8-b66a-f0c0b3a97747.png",
-      "chromaOutput": "exec-5fe6e775-c73d-40cd-8272-cbea83a621a5.png",
-      "sourceSha256": "186C3BB10FEC589177F353316634219C720BB2B5BAB1D0376CF5BC05336B8A9D",
-      "deterministicTransform": "Green content-ink median is re-anchored to #436C15 while texture deltas, alpha, outline, canvas, and nine-slice geometry remain unchanged.",
-      "prompt": "Edit the existing painted primary nine-slice: preserve silhouette, border and brush texture; replace the broad empty center with deep matte leaf green visually centered near #477F2A; keep highlights thin and subdued for inverse CJK contrast; no ornament or text."
     },
     {
       "semanticId": "illustration.shell-orchard-depth",
@@ -133,74 +226,72 @@
       "deterministicTransform": "Visible RGB normalized to #FFFFFF; hidden RGBA normalized to 0; canvas and alpha bytes preserved.",
       "references": [],
       "prompt": "Use case: logo-brand. Asset type: Sunny Orchard Painted close glyph, transparent PNG. Exactly one centered X made from two identical diagonal rounded-ended bars, flat single brown silhouette with only a barely perceptible handmade edge. No plate, badge, outline, extra line, gradient, highlight, shadow, texture, leaf, decoration, text, checkerboard, or watermark."
-    },
-    {
-      "semanticId": "action.compact-control",
-      "generatedOutput": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
-      "selectedOutput": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
-      "sourceSha256": "62A379B5F3D8AE2E81D4E26329F04DD7DBC3FE56F1DD80DD05C7BB5AF643E3AB",
-      "alphaContract": "Native RGBA; transparent outside one filled rounded square; runtime significant bbox [4,4,124,124).",
-      "references": [],
-      "prompt": "Use case: stylized-concept. Asset type: Sunny Orchard Painted compact-control source master. Create exactly one flat rounded-square button: warm cream solid fill enclosed by exactly one thin soil-brown outer outline. Allow only subpixel handmade edge wobble at the final 52px target. Fill 94% of the canvas with equal transparent padding. Avoid inner highlight, inner outline, second border, shadow, gradient, texture, bevel, depth, decoration, leaf, flower, dot, icon, text, checkerboard, watermark."
-    },
-    {
-      "semanticId": "action.compact-control-active",
-      "generatedOutput": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
-      "selectedOutput": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
-      "sourceSha256": "62C0276FAFEE8A33C1C878B6763772EC1A66C642FCE0766288A9AE0A1F87DBCE",
-      "alphaContract": "Native RGBA; transparent outside one filled rounded square; the complete Painted active surface is normalized to the same runtime bbox [4,4,124,124), 32px slice border and 2.0 pixels-per-logical-unit contract as its inactive surface.",
-      "references": [],
-      "prompt": "Strict flat 2D production game UI sprite on native transparent RGBA: one complete Painted Orchard ACTIVE compact-control surface. One centered filled rounded square. Interior is a perfectly uniform single solid warm-cream color near RGB (250,236,194) from edge to edge, with no tonal variation. Surround it with exactly one perfectly uniform single solid muted amber-orange outer contour near RGB (194,126,58). Simple symmetric geometry, front view, outer footprint about 94% of square canvas, rounded corner radius about 15%, contour thickness about 3.5% of canvas so it reads as 2-3px at 52x52. Cream directly meets amber. Exactly one contour. True alpha transparency outside. ABSOLUTELY NO central mark, vignette, lighting, shading, gradient, shadow, highlight, texture, brush pattern, noise, bevel, glow, brown under-edge, inner line, second rim, decoration, icon, text, background, or checkerboard. The entire cream center must be visually blank and calm. Return only the native transparent PNG."
     }
   ],
-  "rejectedAttempts": [],
+  "rejectedAttempts": [
+    {
+      "generatedOutput": "exec-8bc667d9-8850-4e6c-8678-e81056973114.png",
+      "reason": "The six button shells were accepted as a visual direction, but the requested transparent exterior was delivered as baked checkerboard RGB and could not become production alpha."
+    }
+  ],
   "supersededAttempts": [
     {
-      "semanticId": "action.compact-control",
-      "output": "exec-72e2db02-eec5-4462-bdf6-dda22e9172d2.png",
-      "reason": "User review rejected the inner rim, lower leaf decoration, and textured center because they competed with the 52×52 control icon."
+      "generatedOutput": "exec-936d7b44-6b4a-4eaf-8dfe-321f23e20e19.png",
+      "reason": "User-approved 7.5/10 production action sheet, superseded in place by the separately reviewed fresh-green eight-point increment."
     },
     {
-      "semanticId": "action.compact-control",
-      "output": "exec-0fac4d27-8bca-4503-8aa7-dae7451dd74f.png",
-      "reason": "Superseded after direct user review: the refined base still left an over-heavy frame in the retired layered active treatment."
+      "generatedOutput": "exec-f574a786-1085-45c6-a55d-ee4475b172b9.png",
+      "reason": "Valid chroma extraction plate, superseded by the accessible dark-container correction."
+    },
+    {
+      "generatedOutput": "exec-763a2e37-51c5-4ab6-9af4-1662a762683a.png",
+      "reason": "Primary and danger passed, but the secondary central region contained pixels below the 4.5:1 warm-white content contrast gate."
     }
   ],
   "revisionRejectedAttempts": [
     {
-      "semanticId": "action.compact-control",
-      "output": "exec-96349a36-6449-46ab-9a3b-1da5e2bc5b01.png",
-      "reason": "Visual structure was accepted, but the output was RGB with a baked checkerboard."
+      "generatedOutput": "exec-6516d18a-0189-4734-a758-8fc5a9211291.png",
+      "reason": "User rejected the integrated v4 action master because it made the runtime green visibly too dark; the accepted light-green output now uses the approved geometry-alpha mask."
     },
     {
-      "semanticId": "action.compact-control",
-      "output": "exec-9b08d70a-5a8c-4f79-a3de-b57ebb776803.png",
-      "reason": "First background-extraction edit remained RGB with a baked checkerboard."
+      "generatedOutput": "exec-6c8aa834-df2d-4eb7-afc5-ecdfb161f636.png",
+      "reason": "Valid chroma sheet, but green central content contrast measured below 4.5:1."
     },
     {
-      "semanticId": "action.compact-control-active",
-      "output": "exec-4ef7aa94-dfb1-4acc-984b-ec931295dee6.png",
-      "reason": "Rejected because the Painted base-reference edit baked a checkerboard into an opaque RGB image."
+      "generatedOutput": "exec-f22a0f48-6f41-4046-a9f4-e4467c9316e0.png",
+      "reason": "Danger passed, but primary and secondary central content contrast remained below 4.5:1."
     },
     {
-      "semanticId": "action.compact-control-active",
-      "output": "exec-174c1958-0d5f-4329-98c5-504d1b4c2df1.png",
-      "reason": "Rejected because the nominally flat active surface introduced a large visible center shadow and vignette."
+      "generatedOutput": "exec-7f875c23-6520-4769-8973-a0410944289b.png",
+      "reason": "Secondary and danger passed; primary minimum content pixels remained slightly below 4.5:1 before the final ImageGen correction."
     }
   ],
   "alphaProcess": {
-    "method": "imagegen flat magenta background followed by deterministic connected-background removal; enclosed frame center additionally seeded; residual keyed spill and runtime alpha below 48 removed",
+    "method": "Active direct materials use reviewed native alpha plus content cropping. The green action RGB plate uses its separately hash-locked approved geometry alpha. The line-free nursery and metric RGB plates each use their own center-connected neutral-background cleanup. Every transparent ImageGen nine-slice clears low-alpha fringe after source and runtime resize and stores zero RGB under zero alpha. Retained legacy art keeps its previously recorded native-alpha or deterministic cleanup contract.",
     "nativeRgba": [
       "ornament.result-banner",
       "icon.control-pause",
       "icon.control-continue",
       "icon.control-speed",
-      "icon.control-close",
+      "icon.control-close"
+    ],
+    "chromaKeyed": [
       "action.compact-control",
-      "action.compact-control-active"
+      "action.compact-control-active",
+      "action.primary",
+      "action.secondary",
+      "action.quiet",
+      "action.danger",
+      "surface.safe-area",
+      "surface.panel-standard",
+      "surface.panel-raised",
+      "surface.metric",
+      "surface.card-selectable",
+      "slot.tool",
+      "slot.nursery",
+      "surface.gameplay-stage"
     ],
     "opaque": [
-      "surface.section-ribbon",
       "illustration.orchard-vista",
       "illustration.lobby-orchard-01",
       "illustration.lobby-orchard-02",

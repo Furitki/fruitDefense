@@ -287,6 +287,34 @@ namespace FruitDefense.Tilemaps
     {
         private const float TileSeamOverlap = .75f;
 
+        public static void DrawBackdrop(BattlefieldMapDefinition map,
+            BattlefieldProjection projection, BattlefieldTerrainPalette palette,
+            Rect backdropRect)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (projection == null) throw new ArgumentNullException(nameof(projection));
+            if (palette == null) throw new ArgumentNullException(nameof(palette));
+            if (backdropRect.width <= 0f || backdropRect.height <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(backdropRect));
+
+            var surfaceId = map.BaseSurfaceAt(Vector2Int.zero);
+            if (!palette.TryGetBaseTexture(surfaceId, out var texture))
+                throw new InvalidOperationException(
+                    "Battlefield backdrop has no base texture for '" + surfaceId + "'.");
+            var tileSize = projection.TileSize;
+            if (tileSize <= 0f)
+                throw new InvalidOperationException(
+                    "Battlefield backdrop requires a positive projected tile size.");
+
+            var grid = projection.GridRect;
+            var uv = new Rect(
+                (backdropRect.xMin - grid.xMin) / tileSize,
+                map.GridHeight - (backdropRect.yMax - grid.yMin) / tileSize,
+                backdropRect.width / tileSize,
+                backdropRect.height / tileSize);
+            GUI.DrawTextureWithTexCoords(backdropRect, texture, uv, true);
+        }
+
         public static void DrawValidated(BattlefieldMapDefinition map,
             BattlefieldProjection projection, BattlefieldTerrainPalette palette)
         {

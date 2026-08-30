@@ -37,22 +37,22 @@ namespace FruitDefense
                     EmitAcceptanceRoleInventory(
                         stream, AcceptanceRouteAnchors(), routeTarget.Id);
                     break;
-                case "combat-feedback-rebound-entry":
-                    phase = "entry";
+                case "combat-feedback-motion-start":
+                    phase = "start";
                     advanceSeconds = AcceptanceHeavyLifetimeSeconds(.06f);
                     EmitAcceptanceHeavy(stream, AcceptanceRoutePoint(.48f));
                     break;
-                case "combat-feedback-rebound-peak":
-                    phase = "peak";
+                case "combat-feedback-motion-early":
+                    phase = "early";
                     advanceSeconds = AcceptanceHeavyLifetimeSeconds(.12f);
                     EmitAcceptanceHeavy(stream, AcceptanceRoutePoint(.48f));
                     break;
-                case "combat-feedback-rebound-return":
-                    phase = "rebound";
+                case "combat-feedback-motion-settle":
+                    phase = "settle";
                     advanceSeconds = AcceptanceHeavyLifetimeSeconds(.28f);
                     EmitAcceptanceHeavy(stream, AcceptanceRoutePoint(.48f));
                     break;
-                case "combat-feedback-rebound-hold":
+                case "combat-feedback-motion-hold":
                     phase = "hold";
                     advanceSeconds = AcceptanceHeavyLifetimeSeconds(.50f);
                     EmitAcceptanceHeavy(stream, AcceptanceRoutePoint(.48f));
@@ -332,7 +332,7 @@ namespace FruitDefense
                 if (!roles.Contains(role)) roles.Add(role);
                 var style = _presentation.FloatingTextStyles.Resolve(feedback.Role);
                 var motion = CombatFloatingTextStyleCatalog.Sample(
-                    style, feedback.LifetimeProgress, feedback.DetachedProgress);
+                    style, feedback.LifetimeProgress);
                 Vector2 finalScreenCenter;
                 Vector2 anchorScreen;
                 float anchorScreenError;

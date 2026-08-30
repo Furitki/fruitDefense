@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="indicator.loading">
-  <title>indicator.loading</title>
-  <path d="M 20.7339 36.498 A 27.216 27.216 0 1 1 24.5513 65.4941" fill="none" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="8" stroke-linecap="round"/>
-  <polygon points="66.2656,22.5984 74.4304,38.928 57.1936,36.2064" fill="#FFD24D" fill-opacity="1.0000" stroke="#8B5E3C" stroke-opacity="1.0000" stroke-width="2" stroke-linejoin="round"/>
-</svg>

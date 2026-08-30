@@ -17,8 +17,9 @@ namespace FruitDefense.Editor
         public static void Run()
         {
             ValidateContactFollowDetachAndMergeClock();
+            ValidateHighCapacityAdmission();
             ValidateMissingTargetAndDefeatCentroid();
-            ValidateCompactLanesAndUpperEdge();
+            ValidateCompactUpwardLanes();
             ValidateSafeAreaProjection();
             ValidateMonotonicAllocationCounter();
             ValidatePooledSdfOverlay();
@@ -79,6 +80,31 @@ namespace FruitDefense.Editor
                 "detach locks the last resolved point, clears target identity, and ignores later movement");
         }
 
+        private static void ValidateHighCapacityAdmission()
+        {
+            Assert(CombatFloatingTextStyleCatalog.TotalCapacity == 9999
+                && CombatFloatingTextStyleCatalog.OrdinaryCapacity == 9999,
+                "combat floating-text admission uses the requested 9999 total and ordinary caps");
+            var buffer = new BattlePresentationBuffer(CreateCatalog());
+            var stream = new BattlePresentationEventStream(
+                CombatFloatingTextStyleCatalog.TotalCapacity);
+            for (var index = 0;
+                 index < CombatFloatingTextStyleCatalog.TotalCapacity;
+                 index++)
+            {
+                stream.EmitDamageResolved(index, DamageId, string.Empty,
+                    "plant.test", EnemyId, 1, index + 1,
+                    new Vector2(index, 0f), Vector2.right, 1f, false);
+            }
+            Drain(stream, buffer);
+            Assert(stream.DroppedCount == 0
+                && buffer.Feedback.Count
+                    == CombatFloatingTextStyleCatalog.TotalCapacity
+                && buffer.OrdinaryFeedbackCount
+                    == CombatFloatingTextStyleCatalog.OrdinaryCapacity,
+                "a 9999-record ordinary feedback burst is admitted without capacity eviction");
+        }
+
         private static void ValidateMissingTargetAndDefeatCentroid()
         {
             var missing = new BattlePresentationBuffer(CreateCatalog());
@@ -121,54 +147,19 @@ namespace FruitDefense.Editor
                 "same-tick defeat anchor is the arithmetic centroid and retains no target");
         }
 
-        private static void ValidateCompactLanesAndUpperEdge()
+        private static void ValidateCompactUpwardLanes()
         {
-            var lane0 = CombatFloatingTextStyleCatalog.VisualLaneOffset(0, true);
-            var lane1 = CombatFloatingTextStyleCatalog.VisualLaneOffset(1, true);
-            var lane2 = CombatFloatingTextStyleCatalog.VisualLaneOffset(2, true);
+            var lane0 = CombatFloatingTextStyleCatalog.VisualLaneOffset(0);
+            var lane1 = CombatFloatingTextStyleCatalog.VisualLaneOffset(1);
+            var lane2 = CombatFloatingTextStyleCatalog.VisualLaneOffset(2);
             Assert(lane0 == Vector2.zero
-                && lane1 == new Vector2(-8f, 14f)
-                && lane2 == new Vector2(8f, 28f)
+                && lane1 == new Vector2(-8f, -14f)
+                && lane2 == new Vector2(8f, -28f)
                 && Mathf.Max(Mathf.Abs(lane1.x), Mathf.Abs(lane2.x)) <= 8f,
-                "the three inward lanes are exactly 0/14/28 with at most 8 horizontal pixels");
-            Assert(CombatFloatingTextStyleCatalog.VisualLaneOffset(1, false)
-                    == new Vector2(-8f, -14f)
-                && CombatFloatingTextStyleCatalog.VisualLaneOffset(2, false)
-                    == new Vector2(8f, -28f),
-                "lane direction flips without changing compact separation");
+                "the three lanes are fixed at 0/-14/-28 with at most 8 horizontal pixels");
             Assert(CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                    CombatFloatingTextRole.Defeat, true) == new Vector2(0f, 26f)
-                && CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                    CombatFloatingTextRole.Defeat, false) == new Vector2(0f, -26f),
-                "defeat owns the target-proximate 26-pixel semantic band");
-            for (var lane = 0;
-                 lane < CombatFloatingTextStyleCatalog.VisualLaneCount; lane++)
-            {
-                var candidates = Enumerable.Range(0,
-                        CombatFloatingTextStyleCatalog.CollisionCandidateCount)
-                    .Select(index =>
-                        CombatFloatingTextStyleCatalog.CollisionCandidateLaneOffset(
-                            lane, index, true))
-                    .ToArray();
-                Assert(candidates.Length == 9
-                    && candidates.Distinct().Count() == 9
-                    && candidates[0]
-                        == CombatFloatingTextStyleCatalog.VisualLaneOffset(lane, true)
-                    && candidates.All(value => Mathf.Abs(value.x) <= 8f
-                        && value.y >= 0f && value.y <= 28f),
-                    "lane " + lane
-                    + " owns nine unique stable collision candidates inside the compact envelope");
-            }
-
-            var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
-            var grid = layout.Battlefield.GridRect;
-            var upperAnchor = new Vector2(grid.center.x, grid.yMin + 2f);
-            var upper = BattleUiLayout.BattlefieldFeedback(
-                grid, upperAnchor, 72f, 30f, true);
-            Assert(upper.yMin >= upperAnchor.y
-                && upper.yMax <= grid.yMax + .0001f
-                && upper.xMin >= grid.xMin && upper.xMax <= grid.xMax,
-                "upper-edge feedback unfolds into the battlefield and remains clamped");
+                    CombatFloatingTextRole.Defeat) == new Vector2(0f, -26f),
+                "defeat owns the upward target-proximate 26-pixel semantic band");
         }
 
         private static void ValidateSafeAreaProjection()
@@ -210,9 +201,11 @@ namespace FruitDefense.Editor
                 var fields = typeof(CombatFloatingTextSdfOverlay).GetFields(
                     BindingFlags.Instance | BindingFlags.Static
                     | BindingFlags.Public | BindingFlags.NonPublic);
-                Assert(CombatFloatingTextSdfOverlay.PoolCapacity == 12
+                Assert(CombatFloatingTextSdfOverlay.PoolCapacity == 9999
                     && CombatFloatingTextSdfOverlay.SharedMaterialCount == 0
-                    && CombatFloatingTextSdfOverlay.DrawCommandCapacity == 192
+                    && CombatFloatingTextSdfOverlay.DrawCommandCapacity
+                        == CombatFloatingTextSdfOverlay.PoolCapacity
+                            * CombatFloatingTextSdfOverlay.MaximumGlyphsPerLabel
                     && CombatFloatingTextSdfOverlay.MaximumGlyphsPerLabel == 16
                     && typeof(CombatFloatingTextSdfOverlay).GetMethod(
                         "DrawOnGuiRepaint", BindingFlags.Instance | BindingFlags.Public) != null
@@ -249,8 +242,11 @@ namespace FruitDefense.Editor
                     "FruitDefenseGame calls the atlas renderer after its final battle/HUD overlay layer");
                 Assert(!overlaySource.Contains("previousMatrix", StringComparison.Ordinal)
                     && overlaySource.Contains(
-                        "for (var rangeIndex = 0;", StringComparison.Ordinal),
-                    "final-layer rendering delegates matrix restoration to the host and changes GUI color once per label range");
+                        "for (var rangeIndex = 0;", StringComparison.Ordinal)
+                    && !overlaySource.Contains("towardInterior", StringComparison.Ordinal)
+                    && !overlaySource.Contains("CollisionCandidate", StringComparison.Ordinal)
+                    && !overlaySource.Contains("TotalOverlapArea", StringComparison.Ordinal),
+                    "final-layer rendering has no upper-edge inward redirection or collision-avoidance branch");
 
                 var buffer = BuildDenseOverlayRecords();
                 Assert(buffer.Feedback.Count == 12
@@ -272,13 +268,24 @@ namespace FruitDefense.Editor
                     BuildAcceptanceRoleOverlayRecords(true), layout, viewport,
                     "role-route");
                 ValidateFixtureBounds(overlay, buffer, layout, viewport, "dense");
-                var routeSideX = Mathf.Min(layout.BattleStage.xMax - 5f,
-                    layout.Battlefield.GridRect.xMax + 3f);
+                var routeSideGutter = layout.BattleStage.xMax
+                    - layout.Battlefield.GridRect.xMax;
+                Assert(routeSideGutter > 0f,
+                    "the inset BattleStage retains a finite route-side gutter");
+                var routeSideX = layout.Battlefield.GridRect.xMax
+                    + Mathf.Min(.05f, routeSideGutter * .25f);
                 var originalRoutePoint = buffer.Feedback[0].Point;
                 var routeSidePoint = originalRoutePoint;
                 routeSidePoint.x += (routeSideX
                     - layout.Battlefield.MapToScreen(routeSidePoint).x)
                     / layout.Battlefield.MapScale;
+                var reconstructedRouteSideAnchor = layout.Battlefield.MapToScreen(
+                    routeSidePoint);
+                Assert(Mathf.Abs(reconstructedRouteSideAnchor.x - routeSideX) <= .001f
+                    && reconstructedRouteSideAnchor.x
+                        > layout.Battlefield.GridRect.xMax
+                    && reconstructedRouteSideAnchor.x < layout.BattleStage.xMax,
+                    "route-side fixture reconstructs inside the audited two-point Stage gutter");
                 buffer.Feedback[0].Point = routeSidePoint;
                 var routeSideRecords = new[] { buffer.Feedback[0] };
                 overlay.Sync(routeSideRecords, buffer.FloatingTextStyles,
@@ -304,8 +311,17 @@ namespace FruitDefense.Editor
                     && routeBounds.yMin >= surfaceScreen.yMin - .05f
                     && routeBounds.xMax <= surfaceScreen.xMax + .05f
                     && routeBounds.yMax <= surfaceScreen.yMax + .05f
-                    && routeError <= 8f * viewport.Scale + .05f,
-                    "a route-side label prepares bounded one-page glyph commands and clamps to BattleStage");
+                    && routeError <= CombatFloatingTextSdfOverlay
+                        .MaximumAnchorHorizontalError * viewport.Scale + .05f,
+                    "a route-side label prepares bounded one-page glyph commands and clamps to BattleStage"
+                    + " active=" + overlay.ActiveTextCount
+                    + " valid=" + overlay.PlacementValid
+                    + " draws=" + overlay.PreparedAtlasDrawCount
+                    + " anchor=" + routeAnchor
+                    + " bounds=" + routeBounds
+                    + " grid=" + gridScreen
+                    + " surface=" + surfaceScreen
+                    + " error=" + routeError);
 
                 buffer.Feedback[0].Point = originalRoutePoint;
                 buffer.Advance(.08f, false, 1);
@@ -326,10 +342,13 @@ namespace FruitDefense.Editor
                     : commandField.GetValue(overlay) as Array;
                 var ranges = rangeField == null ? null
                     : rangeField.GetValue(overlay) as Array;
-                Assert(commands != null && commands.Length == 192
-                    && ranges != null && ranges.Length == 12
+                Assert(commands != null
+                    && commands.Length == CombatFloatingTextSdfOverlay
+                        .DrawCommandCapacity
+                    && ranges != null
+                    && ranges.Length == CombatFloatingTextSdfOverlay.PoolCapacity
                     && overlay.PreparedLabelDrawCount == 12,
-                    "preallocated 192-glyph and 12-label arrays own every atlas draw");
+                    "preallocated pool-sized glyph and label arrays own every atlas draw");
                 var first = commands.GetValue(0);
                 var commandType = first.GetType();
                 var screenRect = (Rect)commandType.GetField("ScreenRect").GetValue(first);
@@ -594,7 +613,10 @@ namespace FruitDefense.Editor
                 layout.Battlefield, viewport, layout.BattleStage, Vector2.zero);
             Assert(overlay.PlacementValid
                 && overlay.ActiveTextCount == buffer.Feedback.Count,
-                fixtureName + " prepares every admitted label");
+                fixtureName + " prepares every admitted label"
+                + " (active=" + overlay.ActiveTextCount
+                + ", expected=" + buffer.Feedback.Count
+                + ", failure=" + overlay.PlacementFailure + ")");
             var surface = viewport.ProjectDesignRect(layout.BattleStage);
             var bounds = new Rect[buffer.Feedback.Count];
             var centers = new Vector2[buffer.Feedback.Count];
@@ -611,16 +633,14 @@ namespace FruitDefense.Editor
                     && bounds[index].yMin >= surface.yMin - .05f
                     && bounds[index].xMax <= surface.xMax + .05f
                     && bounds[index].yMax <= surface.yMax + .05f
-                    && anchorError <= 8f * viewport.Scale + .05f,
+                    && anchorError <= CombatFloatingTextSdfOverlay
+                        .MaximumAnchorHorizontalError * viewport.Scale + .05f,
                     fixtureName + " label " + index
-                    + " remains inside BattleStage and the 8-pixel contact envelope");
+                    + " remains inside BattleStage and the contact envelope"
+                    + " (anchorError=" + anchorError
+                    + ", maximum=" + CombatFloatingTextSdfOverlay
+                        .MaximumAnchorHorizontalError * viewport.Scale + ")");
             }
-            for (var first = 0; first < bounds.Length; first++)
-            for (var second = first + 1; second < bounds.Length; second++)
-                Assert(OverlapArea(bounds[first], bounds[second]) <= .0001f,
-                    fixtureName + " bounds " + first + "/" + second
-                    + " have zero overlap area");
-
             overlay.Sync(buffer.Feedback, buffer.FloatingTextStyles,
                 layout.Battlefield, viewport, layout.BattleStage, Vector2.zero);
             for (var index = 0; index < buffer.Feedback.Count; index++)
@@ -638,6 +658,23 @@ namespace FruitDefense.Editor
                     fixtureName + " label " + index
                     + " preserves stable event-order placement across Sync");
             }
+            var reordered = buffer.Feedback.Reverse().ToArray();
+            overlay.Sync(reordered, buffer.FloatingTextStyles,
+                layout.Battlefield, viewport, layout.BattleStage, Vector2.zero);
+            for (var index = 0; index < buffer.Feedback.Count; index++)
+            {
+                Vector2 center;
+                Vector2 anchor;
+                float anchorError;
+                Rect reorderedBounds;
+                Assert(overlay.TryGetScreenPlacement(
+                        buffer.Feedback[index].EventSequence,
+                        out center, out anchor, out anchorError, out reorderedBounds)
+                    && Vector2.Distance(center, centers[index]) <= .0001f
+                    && RectApproximately(reorderedBounds, bounds[index]),
+                    fixtureName + " label " + index
+                    + " keeps its authored-lane placement when dense record order changes");
+            }
         }
 
         private static bool RectApproximately(Rect first, Rect second)
@@ -646,17 +683,6 @@ namespace FruitDefense.Editor
                 && Mathf.Abs(first.y - second.y) <= .0001f
                 && Mathf.Abs(first.width - second.width) <= .0001f
                 && Mathf.Abs(first.height - second.height) <= .0001f;
-        }
-
-        private static float OverlapArea(Rect first, Rect second)
-        {
-            var width = Mathf.Max(0f,
-                Mathf.Min(first.xMax, second.xMax)
-                - Mathf.Max(first.xMin, second.xMin));
-            var height = Mathf.Max(0f,
-                Mathf.Min(first.yMax, second.yMax)
-                - Mathf.Max(first.yMin, second.yMin));
-            return width * height;
         }
 
         private static BattlePresentationBuffer BuildAcceptanceRoleOverlayRecords(

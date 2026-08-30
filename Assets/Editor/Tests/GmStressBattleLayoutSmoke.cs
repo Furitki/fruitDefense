@@ -143,7 +143,7 @@ namespace FruitDefense.Editor
                     "DrawCompactControlVisual(_drawContext,_layout.SpeedAction,BattleUiPresentationState.ResolveActionSpec(BattleUiActionSemantic.Speed)"),
                 "GM speed visual uses ResolveActionSpec(Speed) on SpeedAction");
             Assert(compact.Contains(
-                    "multiplierText:Simulation.State.Speed+\"×\""),
+                    "multiplierText:_controller.Simulation.State.Speed+\"×\""),
                 "GM speed compact control renders the authoritative speed multiplier text");
             Assert(compact.Contains(
                     "GUI.Button(_layout.PauseAction,GUIContent.none,_drawContext.Styles.HitTarget)"),
@@ -200,7 +200,7 @@ namespace FruitDefense.Editor
 
             var presenter = CompactPresenterSource();
             Assert(presenter.Contains(
-                    "BattlefieldTerrainGuiRenderer.DrawValidated(Simulation.Map,_layout.Battlefield,_terrainPalette)")
+                    "BattlefieldTerrainGuiRenderer.DrawValidated(_controller.Simulation.Map,_layout.Battlefield,_terrainPalette)")
                 && !presenter.Contains("DrawRect(Inset(visual,1f),color)"),
                 "GM presenter uses the shared terrain renderer and removes flat cell colors");
             var releaseGame = new string(RuntimeUiSourceAuthority.ReadFruitDefenseGame()

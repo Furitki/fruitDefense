@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;group=surfaces;slot=surface-metric;imagegen-master=1
+  userData: ui-art-source=sunny-orchard-painted;slot=surface.metric;source-scale=2;authored=imagegen-direct-master;transform=connected-neutral-background-cleanup;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/metric-capsule.png;asset-sha256=5539902850BA5EA59A20B356B34A7539516108D349B95F3E458AA2EA4590DC51
   assetBundleName:
   assetBundleVariant:

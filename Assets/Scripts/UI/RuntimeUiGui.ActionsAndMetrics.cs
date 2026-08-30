@@ -38,10 +38,9 @@ namespace FruitDefense.UI
         {
             context = Require(context);
             RequireStandardActionContent(spec, label, iconSlot);
-            var heldMotion = state == RuntimeUiInteractionState.Pressed
-                ? RuntimeUiMotion.HeldPress(context.Theme.Feedback)
-                : RuntimeUiMotionSample.Rest;
-            var visualMotion = RuntimeUiMotionSample.Combine(motion, heldMotion);
+            var interactionMotion = RuntimeUiMotion.InteractionState(
+                state, context.Theme.Feedback);
+            var visualMotion = RuntimeUiMotionSample.Combine(motion, interactionMotion);
             var visualRect = visualMotion.Transform(rect);
             var style = context.Theme.ResolveActionStyle(spec, state, false);
             var visualState = ResolveActionDrawState(spec.Role, state, emphasized);
@@ -52,9 +51,6 @@ namespace FruitDefense.UI
             {
                 DrawSlotArt(context, visualRect, style.ContainerSlot,
                     RuntimeUiInteractionState.Normal);
-                DrawActionInteractionCue(context, visualRect, state,
-                    style.OutlineColor);
-
                 var contentLayout = ResolveActionContentLayout(context, visualRect, label,
                     spec, state, iconSlot, labelRole, emphasized);
                 RequireContentFit(contentLayout.Fits, "action", label);
@@ -74,7 +70,8 @@ namespace FruitDefense.UI
                         style.ContentColor);
                 }
 
-                DrawStateIndicator(context, visualRect, state);
+                if (state != RuntimeUiInteractionState.Selected)
+                    DrawStateIndicator(context, visualRect, state);
             }
             finally
             {
@@ -118,9 +115,6 @@ namespace FruitDefense.UI
             {
                 DrawSlotArt(context, layout.SurfaceRect,
                     style.ContainerSlot, RuntimeUiInteractionState.Normal);
-                DrawActionInteractionCue(context, layout.SurfaceRect,
-                    interactionState, style.OutlineColor);
-
                 if (hasIcon)
                 {
                     DrawSlotArt(context, layout.ContentRect, iconSlot.Value,
@@ -158,10 +152,9 @@ namespace FruitDefense.UI
                     "Compact-control geometry must be finite and positive.");
             }
 
-            var heldMotion = interactionState == RuntimeUiInteractionState.Pressed
-                ? RuntimeUiMotion.HeldPress(feedback)
-                : RuntimeUiMotionSample.Rest;
-            var visualMotion = RuntimeUiMotionSample.Combine(motion, heldMotion);
+            var interactionMotion = RuntimeUiMotion.InteractionState(
+                interactionState, feedback);
+            var visualMotion = RuntimeUiMotionSample.Combine(motion, interactionMotion);
             var baseRect = ContainedTransform(rect, visualMotion);
             var shortest = Mathf.Min(baseRect.width, baseRect.height);
             var contentSize = shortest * (usesMultiplierText ? .78f : .56f);
@@ -319,7 +312,7 @@ namespace FruitDefense.UI
             RuntimeUiArtSlot resourceIcon, string label, string value,
             RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal,
             bool compactInline = false, float compactIconSize = 24f,
-            RuntimeUiMotionSample motion = default)
+            RuntimeUiMotionSample motion = default, bool drawSurface = false)
         {
             context = Require(context);
             RequireMetricIcon(resourceIcon);
@@ -327,11 +320,13 @@ namespace FruitDefense.UI
             var previousColor = ApplyMotionAlpha(motion);
             try
             {
+                if (drawSurface)
+                    DrawMetricSurface(context, rect, state);
                 if (compactInline)
                 {
                     var compactLayout = ResolveCompactInlineMetricContentLayout(
                         context, rect, resourceIcon, label, value,
-                        state, compactIconSize);
+                        state, compactIconSize, drawSurface);
                     RequireContentFit(compactLayout.Fits, "compact metric",
                         label + " " + value);
                     DrawSlotArt(context, compactLayout.IconRect, resourceIcon, state);
@@ -368,11 +363,14 @@ namespace FruitDefense.UI
             RuntimeUiDrawContext context, Rect rect, RuntimeUiArtSlot resourceIcon,
             string label, string value,
             RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal,
-            float compactIconSize = 24f)
+            float compactIconSize = 24f, bool reserveSurfaceInset = false)
         {
             context = Require(context);
             RequireMetricIcon(resourceIcon);
-            var content = context.ContentRect(rect, state);
+            var contentOwner = reserveSurfaceInset
+                ? Inset(rect, context.Scaled(context.Theme.Metrics.SpacingXs))
+                : rect;
+            var content = context.ContentRect(contentOwner, state);
             var iconSize = Mathf.Min(content.height,
                 context.Scaled(Mathf.Max(0f, compactIconSize)));
             var probeIcon = CenterSquare(content, iconSize);
@@ -478,90 +476,6 @@ namespace FruitDefense.UI
                 + (content ?? string.Empty));
         }
 
-        public static RuntimeUiActionInteractionCueLayout
-            ResolveActionInteractionCueLayout(RuntimeUiDrawContext context,
-                Rect rect, RuntimeUiInteractionState state)
-        {
-            context = Require(context);
-            if (state != RuntimeUiInteractionState.HoveredOrFocused)
-            {
-                return new RuntimeUiActionInteractionCueLayout(
-                    rect, default, default, default, default, false);
-            }
-            if (rect.width <= 0f || rect.height <= 0f
-                || !IsFinite(rect.x) || !IsFinite(rect.y)
-                || !IsFinite(rect.width) || !IsFinite(rect.height))
-            {
-                throw new ArgumentOutOfRangeException(nameof(rect), rect,
-                    "Action interaction-cue geometry must be finite and positive.");
-            }
-
-            var thickness = Mathf.Max(1f,
-                context.Scaled(context.Theme.Metrics.OutlineThin));
-            var inset = Mathf.Max(thickness,
-                context.Scaled(context.Theme.Metrics.SpacingXs));
-            var inner = Inset(rect, inset);
-            if (inner.width <= thickness * 2f || inner.height <= thickness * 2f)
-            {
-                return new RuntimeUiActionInteractionCueLayout(
-                    rect, default, default, default, default, false);
-            }
-
-            var cornerGap = Mathf.Min(
-                context.Scaled(context.Theme.Metrics.CornerSmall),
-                Mathf.Min(inner.width, inner.height) * .25f);
-            var horizontalLength = inner.width - cornerGap * 2f;
-            var verticalLength = inner.height - cornerGap * 2f;
-            if (horizontalLength <= 0f || verticalLength <= 0f)
-            {
-                return new RuntimeUiActionInteractionCueLayout(
-                    rect, default, default, default, default, false);
-            }
-
-            var top = new Rect(inner.xMin + cornerGap, inner.yMin,
-                horizontalLength, thickness);
-            var right = new Rect(inner.xMax - thickness,
-                inner.yMin + cornerGap, thickness, verticalLength);
-            var bottom = new Rect(inner.xMin + cornerGap,
-                inner.yMax - thickness, horizontalLength, thickness);
-            var left = new Rect(inner.xMin, inner.yMin + cornerGap,
-                thickness, verticalLength);
-            var result = new RuntimeUiActionInteractionCueLayout(
-                rect, top, right, bottom, left, true);
-            if (!result.IsContained())
-            {
-                throw new InvalidOperationException(
-                    "Action interaction cue escaped its authoritative rectangle.");
-            }
-            return result;
-        }
-
-        private static void DrawActionInteractionCue(RuntimeUiDrawContext context,
-            Rect rect, RuntimeUiInteractionState state, Color outlineColor)
-        {
-            var layout = ResolveActionInteractionCueLayout(context, rect, state);
-            if (!layout.Visible)
-                return;
-
-            var previousColor = GUI.color;
-            try
-            {
-                outlineColor.a *= previousColor.a;
-                GUI.color = outlineColor;
-                // This built-in pixel is only a primitive for the four contained
-                // focus segments; it never substitutes for an ArtSet surface.
-                var pixel = Texture2D.whiteTexture;
-                GUI.DrawTexture(layout.Top, pixel);
-                GUI.DrawTexture(layout.Right, pixel);
-                GUI.DrawTexture(layout.Bottom, pixel);
-                GUI.DrawTexture(layout.Left, pixel);
-            }
-            finally
-            {
-                GUI.color = previousColor;
-            }
-        }
-
         private static void RequireStandardActionContent(RuntimeUiActionSpec spec,
             string label, RuntimeUiArtSlot? iconSlot)
         {
@@ -639,7 +553,9 @@ namespace FruitDefense.UI
         {
             if (state != RuntimeUiInteractionState.Loading)
                 return state;
-            return kind == RuntimeUiActionKind.Primary || kind == RuntimeUiActionKind.Danger
+            return kind == RuntimeUiActionKind.Primary
+                    || kind == RuntimeUiActionKind.Secondary
+                    || kind == RuntimeUiActionKind.Danger
                 ? RuntimeUiInteractionState.Normal
                 : state;
         }

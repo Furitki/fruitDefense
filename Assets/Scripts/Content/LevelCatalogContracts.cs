@@ -88,7 +88,8 @@ namespace FruitDefense.Content
         public int InitialPotCount { get; private set; }
         public float BetweenWaveSeconds { get; private set; }
         public int NurserySlotCount { get; private set; }
-        public float NurseryPotChance { get; private set; }
+        public string NurseryProfileId { get; private set; }
+        public float RelocationCooldownSeconds { get; private set; }
         public int RefreshBaseCost { get; private set; }
         public int RefreshCostStep { get; private set; }
         public IReadOnlyList<LevelMilestoneDefinition> MilestoneRewards { get; private set; }
@@ -103,7 +104,8 @@ namespace FruitDefense.Content
             InitialPotCount = rules.initialPotCount;
             BetweenWaveSeconds = rules.betweenWaveSeconds;
             NurserySlotCount = rules.nurserySlotCount;
-            NurseryPotChance = rules.nurseryPotChance;
+            NurseryProfileId = rules.nurseryProfileId ?? string.Empty;
+            RelocationCooldownSeconds = rules.relocationCooldownSeconds;
             RefreshBaseCost = rules.refreshBaseCost;
             RefreshCostStep = rules.refreshCostStep;
             MilestoneRewards = Array.AsReadOnly((rules.milestoneRewards
@@ -125,7 +127,8 @@ namespace FruitDefense.Content
                 initialPotCount = InitialPotCount,
                 betweenWaveSeconds = BetweenWaveSeconds,
                 nurserySlotCount = NurserySlotCount,
-                nurseryPotChance = NurseryPotChance,
+                nurseryProfileId = NurseryProfileId,
+                relocationCooldownSeconds = RelocationCooldownSeconds,
                 refreshBaseCost = RefreshBaseCost,
                 refreshCostStep = RefreshCostStep,
                 milestoneRewards = MilestoneRewards.Select(value => new MilestoneRewardDefinitionDto

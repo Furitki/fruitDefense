@@ -44,3 +44,10 @@
 - [x] 7.2 Replace click-to-place GM controls with unlimited plant drag sources using the normal drag threshold, preview overlap, target cue, cancellation, and release semantics.
 - [x] 7.3 Correct route-length-dependent combat distance calibration and add regressions proving all four damage plants attack, the producer ability advances, and tap/missed-drop commands are atomic.
 - [x] 7.4 Run focused and aggregate validation, rebuild the Development WebGL artifact, and republish the corrected GM route locally and externally without changing the normal release artifact.
+
+## 8. Shared GM combat presentation correction
+
+- [x] 8.1 Replace the GM yellow-square/generic-outline combat path with the normal battle's shared allocation-free plant-motion, projectile, effect, and status renderer backed by the existing combat atlas.
+- [x] 8.2 Make the GM combat atlas a required validated dependency and add regressions for every bundled plant's event-to-visual route, including producer activation.
+- [x] 8.3 Run focused and aggregate validation and confirm bounded presentation behavior under GM combat density.
+- [x] 8.4 Rebuild and republish the Development WebGL GM route locally and externally while proving the normal release artifact remains unchanged.

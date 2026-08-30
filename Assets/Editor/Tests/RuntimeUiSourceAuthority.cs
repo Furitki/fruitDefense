@@ -47,6 +47,7 @@ namespace FruitDefense.Editor
             "transport.ps1",
             "evidence-helpers.ps1",
             "image-analysis.ps1",
+            "image-presentation-analysis.ps1",
             "settlement-ink-analysis.ps1",
             "settlement-optical-analysis.ps1",
             "self-check.ps1",

@@ -56,6 +56,37 @@ namespace FruitDefense.Content
     {
         private static readonly Regex StableIdPattern = new Regex(
             "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", RegexOptions.CultureInvariant);
+        private static readonly HashSet<string> SupportedPlantPresentationIds = new HashSet<string>(
+            new[]
+            {
+                BattleContentIds.Presentation.PlantPea,
+                BattleContentIds.Presentation.PlantWatermelon,
+                BattleContentIds.Presentation.PlantBanana,
+                BattleContentIds.Presentation.PlantDurian,
+                BattleContentIds.Presentation.PlantSunflower,
+            }, StringComparer.Ordinal);
+        private static readonly HashSet<string> SupportedEnemyPresentationIds = new HashSet<string>(
+            new[]
+            {
+                BattleContentIds.Presentation.EnemyNormal,
+                BattleContentIds.Presentation.EnemyRunner,
+                BattleContentIds.Presentation.EnemyArmored,
+                BattleContentIds.Presentation.EnemyBoss,
+            }, StringComparer.Ordinal);
+        private static readonly HashSet<string> SupportedEquipmentPresentationIds = new HashSet<string>(
+            new[]
+            {
+                BattleContentIds.Presentation.EquipmentGatling,
+                BattleContentIds.Presentation.EquipmentIce,
+                BattleContentIds.Presentation.EquipmentChili,
+            }, StringComparer.Ordinal);
+        private static readonly HashSet<string> SupportedProjectilePresentationIds = new HashSet<string>(
+            new[]
+            {
+                BattleContentIds.Presentation.ProjectilePea,
+                BattleContentIds.Presentation.ProjectileWatermelon,
+                BattleContentIds.Presentation.ProjectileBanana,
+            }, StringComparer.Ordinal);
 
         public static ContentValidationResult Validate(BattleContentCatalogDto catalog)
         {
@@ -74,7 +105,8 @@ namespace FruitDefense.Content
             RequireCollection(catalog.projectiles, "projectiles", result);
             RequireCollection(catalog.statuses, "statuses", result);
             RequireCollection(catalog.waves, "waves", result);
-            RequireCollection(catalog.starTiers, "starTiers", result);
+            RequireCollection(catalog.upgradeProfiles, "upgradeProfiles", result);
+            RequireCollection(catalog.nurseryProfiles, "nurseryProfiles", result);
 
             var plantIds = ValidateIds(catalog.plants, "plants", value => value.id, result);
             var enemyIds = ValidateIds(catalog.enemies, "enemies", value => value.id, result);
@@ -83,9 +115,12 @@ namespace FruitDefense.Content
             var projectileIds = ValidateIds(catalog.projectiles, "projectiles", value => value.id, result);
             var statusIds = ValidateIds(catalog.statuses, "statuses", value => value.id, result);
             ValidateIds(catalog.waves, "waves", value => value.id, result);
-            ValidateIds(catalog.starTiers, "starTiers", value => value.id, result);
+            var upgradeProfileIds = ValidateIds(catalog.upgradeProfiles, "upgradeProfiles",
+                value => value.id, result);
+            var nurseryProfileIds = ValidateIds(catalog.nurseryProfiles, "nurseryProfiles",
+                value => value.id, result);
 
-            ValidatePlants(catalog.plants, abilityIds, equipmentIds, result);
+            ValidatePlants(catalog.plants, abilityIds, equipmentIds, upgradeProfileIds, result);
             ValidateEnemies(catalog.enemies, abilityIds, result);
             ValidateEquipment(catalog.equipment, abilityIds, plantIds, result);
             ValidateAbilities(catalog.abilities, projectileIds, statusIds, result);
@@ -95,8 +130,9 @@ namespace FruitDefense.Content
             ValidateStatusProcCycles(catalog.statuses, result);
             ValidateEquipmentAbilityBindings(catalog, result);
             ValidateWaves(catalog.waves, enemyIds, catalog.battleRules, result);
-            ValidateStarTiers(catalog.starTiers, result);
-            ValidateBattleRules(catalog.battleRules, equipmentIds, result);
+            ValidateUpgradeProfiles(catalog.upgradeProfiles, result);
+            ValidateNurseryProfiles(catalog.nurseryProfiles, plantIds, catalog.plants, result);
+            ValidateBattleRules(catalog.battleRules, equipmentIds, nurseryProfileIds, result);
             return result;
         }
 
@@ -104,11 +140,7 @@ namespace FruitDefense.Content
         {
             var result = Validate(catalog);
             if (catalog == null) return result;
-            ExpectCount(catalog.plants, 5, "plants", result);
-            ExpectCount(catalog.enemies, 4, "enemies", result);
-            ExpectCount(catalog.equipment, 3, "equipment", result);
             ExpectCount(catalog.waves, 15, "waves", result);
-            ExpectCount(catalog.starTiers, 4, "starTiers", result);
             RequireIds(catalog.plants, value => value.id, "plants", new[]
             {
                 BattleContentIds.Plants.Pea, BattleContentIds.Plants.Watermelon,
@@ -131,6 +163,14 @@ namespace FruitDefense.Content
                 BattleContentIds.Abilities.BananaAttack, BattleContentIds.Abilities.DurianAttack,
                 BattleContentIds.Abilities.SunflowerProduce, BattleContentIds.Abilities.IceOnHit,
                 BattleContentIds.Abilities.IceProducerOpening, BattleContentIds.Abilities.ChiliOnHit,
+            }, result);
+            RequireIds(catalog.upgradeProfiles, value => value.id, "upgradeProfiles", new[]
+            {
+                BattleContentIds.UpgradeProfiles.Baseline,
+            }, result);
+            RequireIds(catalog.nurseryProfiles, value => value.id, "nurseryProfiles", new[]
+            {
+                BattleContentIds.NurseryProfiles.Baseline,
             }, result);
             if (catalog.header != null && catalog.header.catalogId != BattleContentSchema.BundledCatalogId)
                 result.Add("bundled.header.mismatch", "header", string.Empty, "catalogId",
@@ -158,16 +198,22 @@ namespace FruitDefense.Content
         }
 
         private static void ValidatePlants(PlantDefinitionDto[] values, HashSet<string> abilityIds,
-            HashSet<string> equipmentIds, ContentValidationResult result)
+            HashSet<string> equipmentIds, HashSet<string> upgradeProfileIds,
+            ContentValidationResult result)
         {
             if (values == null) return;
             foreach (var value in values)
             {
                 if (value == null) continue;
+                RequireSupportedPresentation(value.presentationId, SupportedPlantPresentationIds,
+                    "plants", value.id, result);
+                RequireOptionalReference(value.upgradeProfileId, upgradeProfileIds, "plants",
+                    value.id, "upgradeProfileId", result);
+                if (string.IsNullOrEmpty(value.upgradeProfileId))
+                    result.Add("reference.required", "plants", value.id, "upgradeProfileId",
+                        "Plant upgrade profile is required.");
                 RequireText(value.displayName, "plants", value.id, "displayName", result);
                 RequireFiniteAtLeast(value.damage, 0f, "plants", value.id, "damage", result);
-                RequireFiniteGreater(value.attackIntervalSeconds, 0f, "plants", value.id,
-                    "attackIntervalSeconds", result);
                 RequireFiniteAtLeast(value.rangeLegacyUnits, 0f, "plants", value.id,
                     "rangeLegacyUnits", result);
                 RequireFiniteAtLeast(value.potVisualHeightOffset, 0f, "plants", value.id,
@@ -187,6 +233,8 @@ namespace FruitDefense.Content
             foreach (var value in values)
             {
                 if (value == null) continue;
+                RequireSupportedPresentation(value.presentationId, SupportedEnemyPresentationIds,
+                    "enemies", value.id, result);
                 RequireText(value.displayName, "enemies", value.id, "displayName", result);
                 RequireFiniteGreater(value.health, 0f, "enemies", value.id, "health", result);
                 RequireFiniteGreater(value.speedLegacyUnits, 0f, "enemies", value.id,
@@ -206,6 +254,8 @@ namespace FruitDefense.Content
             foreach (var value in values)
             {
                 if (value == null) continue;
+                RequireSupportedPresentation(value.presentationId, SupportedEquipmentPresentationIds,
+                    "equipment", value.id, result);
                 RequireText(value.displayName, "equipment", value.id, "displayName", result);
                 RequireReferences(value.compatiblePlantIds, plantIds, "equipment", value.id,
                     "compatiblePlantIds", true, result);
@@ -418,6 +468,8 @@ namespace FruitDefense.Content
             foreach (var value in values)
             {
                 if (value == null) continue;
+                RequireSupportedPresentation(value.presentationId, SupportedProjectilePresentationIds,
+                    "projectiles", value.id, result);
                 if (!BattleAbilityCompiler.SupportsProjectileMode(value.travelMode))
                     result.Add("mechanism.unknown", "projectiles", value.id, "travelMode",
                         "Unsupported projectile mode '" + value.travelMode + "'.");
@@ -805,28 +857,107 @@ namespace FruitDefense.Content
                     "wave." + index, "index", "Missing ordered wave index " + index + ".");
         }
 
-        private static void ValidateStarTiers(StarTierDefinitionDto[] values,
+        private static void ValidateUpgradeProfiles(UpgradeProfileDefinitionDto[] values,
             ContentValidationResult result)
         {
             if (values == null) return;
-            var stars = new HashSet<int>();
-            foreach (var value in values)
+            foreach (var profile in values)
             {
-                if (value == null) continue;
-                if (value.star <= 0 || !stars.Add(value.star))
-                    result.Add("star.duplicate", "starTiers", value.id, "star",
-                        "Star levels must be unique positive values.");
-                RequireFiniteGreater(value.damageMultiplier, 0f, "starTiers", value.id,
-                    "damageMultiplier", result);
-                RequireFiniteGreater(value.attackSpeedMultiplier, 0f, "starTiers", value.id,
-                    "attackSpeedMultiplier", result);
-                RequireFiniteGreater(value.rangeMultiplier, 0f, "starTiers", value.id,
-                    "rangeMultiplier", result);
+                if (profile == null) continue;
+                if (profile.tiers == null || profile.tiers.Length == 0)
+                {
+                    result.Add("collection.required", "upgradeProfiles", profile.id, "tiers",
+                        "Upgrade profile must define at least one tier.");
+                    continue;
+                }
+                var tiers = new HashSet<int>();
+                foreach (var value in profile.tiers)
+                {
+                    if (value == null)
+                    {
+                        result.Add("definition.null", "upgradeProfiles", profile.id, "tiers",
+                            "Upgrade tier entry is null.");
+                        continue;
+                    }
+                    if (value.tier <= 0 || !tiers.Add(value.tier))
+                        result.Add("upgrade.tier.duplicate", "upgradeProfiles", profile.id, "tiers",
+                            "Upgrade tiers must be unique positive values.");
+                    RequireFiniteGreater(value.damageMultiplier, 0f, "upgradeProfiles", profile.id,
+                        "tiers.damageMultiplier", result);
+                    RequireFiniteGreater(value.attackSpeedMultiplier, 0f, "upgradeProfiles", profile.id,
+                        "tiers.attackSpeedMultiplier", result);
+                    RequireFiniteGreater(value.rangeMultiplier, 0f, "upgradeProfiles", profile.id,
+                        "tiers.rangeMultiplier", result);
+                }
+                for (var tier = 1; tier <= tiers.Count; tier++)
+                    if (!tiers.Contains(tier))
+                        result.Add("upgrade.tier.order", "upgradeProfiles", profile.id, "tiers",
+                            "Upgrade tiers must be contiguous and start at tier 1.");
+            }
+        }
+
+        private static void ValidateNurseryProfiles(NurseryProfileDefinitionDto[] values,
+            HashSet<string> plantIds, PlantDefinitionDto[] plants, ContentValidationResult result)
+        {
+            if (values == null) return;
+            var plantById = new Dictionary<string, PlantDefinitionDto>(StringComparer.Ordinal);
+            foreach (var plant in plants ?? Array.Empty<PlantDefinitionDto>())
+                if (plant != null && !string.IsNullOrEmpty(plant.id)
+                    && !plantById.ContainsKey(plant.id)) plantById.Add(plant.id, plant);
+            foreach (var profile in values)
+            {
+                if (profile == null) continue;
+                RequireFiniteRange(profile.potChance, 0f, 1f, "nurseryProfiles", profile.id,
+                    "potChance", result);
+                RequireOptionalStableName(profile.firstRefreshGuaranteedTag, "nurseryProfiles",
+                    profile.id, "firstRefreshGuaranteedTag", result);
+                RequireOptionalStableName(profile.cappedTag, "nurseryProfiles", profile.id,
+                    "cappedTag", result);
+                RequireIntAtLeast(profile.firstRefreshGuaranteedCount, 0, "nurseryProfiles",
+                    profile.id, "firstRefreshGuaranteedCount", result);
+                RequireIntAtLeast(profile.maxCappedTagCount, 0, "nurseryProfiles", profile.id,
+                    "maxCappedTagCount", result);
+                if (profile.entries == null || profile.entries.Length == 0)
+                {
+                    result.Add("collection.required", "nurseryProfiles", profile.id, "entries",
+                        "Nursery profile must contain at least one weighted plant entry.");
+                    continue;
+                }
+                var entries = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var entry in profile.entries)
+                {
+                    if (entry == null)
+                    {
+                        result.Add("definition.null", "nurseryProfiles", profile.id, "entries",
+                            "Nursery entry is null.");
+                        continue;
+                    }
+                    if (!plantIds.Contains(entry.plantId))
+                        result.Add("reference.missing", "nurseryProfiles", profile.id,
+                            "entries.plantId", "Referenced plant '" + entry.plantId + "' does not exist.");
+                    else if (!entries.Add(entry.plantId))
+                        result.Add("reference.duplicate", "nurseryProfiles", profile.id,
+                            "entries.plantId", "Plant entry '" + entry.plantId + "' is duplicated.");
+                    RequireIntAtLeast(entry.weight, 1, "nurseryProfiles", profile.id,
+                        "entries.weight", result);
+                }
+                if (profile.firstRefreshGuaranteedCount > 0
+                    && (string.IsNullOrEmpty(profile.firstRefreshGuaranteedTag)
+                        || !profile.entries.Any(entry => entry != null
+                            && plantById.ContainsKey(entry.plantId)
+                            && (plantById[entry.plantId].tags ?? Array.Empty<string>())
+                                .Contains(profile.firstRefreshGuaranteedTag))))
+                    result.Add("nursery.guarantee.unsatisfied", "nurseryProfiles", profile.id,
+                        "firstRefreshGuaranteedTag",
+                        "Guaranteed tag must be present on at least one weighted plant.");
+                if (!string.IsNullOrEmpty(profile.cappedTag) && profile.maxCappedTagCount <= 0)
+                    result.Add("nursery.cap.invalid", "nurseryProfiles", profile.id,
+                        "maxCappedTagCount", "A capped tag requires a positive maximum count.");
             }
         }
 
         private static void ValidateBattleRules(BattleRulesDto rules, HashSet<string> equipmentIds,
-            ContentValidationResult result)
+            HashSet<string> nurseryProfileIds, ContentValidationResult result)
         {
             if (rules == null)
             {
@@ -844,8 +975,13 @@ namespace FruitDefense.Content
                 "betweenWaveSeconds", result);
             RequireIntAtLeast(rules.nurserySlotCount, 1, "battleRules", rules.id,
                 "nurserySlotCount", result);
-            RequireFiniteRange(rules.nurseryPotChance, 0f, 1f, "battleRules", rules.id,
-                "nurseryPotChance", result);
+            RequireOptionalReference(rules.nurseryProfileId, nurseryProfileIds, "battleRules",
+                rules.id, "nurseryProfileId", result);
+            if (string.IsNullOrEmpty(rules.nurseryProfileId))
+                result.Add("reference.required", "battleRules", rules.id, "nurseryProfileId",
+                    "Battle rules must reference a nursery profile.");
+            RequireFiniteAtLeast(rules.relocationCooldownSeconds, 0f, "battleRules", rules.id,
+                "relocationCooldownSeconds", result);
             RequireIntAtLeast(rules.refreshBaseCost, 0, "battleRules", rules.id,
                 "refreshBaseCost", result);
             RequireIntAtLeast(rules.refreshCostStep, 0, "battleRules", rules.id,
@@ -917,6 +1053,16 @@ namespace FruitDefense.Content
         {
             if (!string.IsNullOrEmpty(value))
                 RequireStableReferenceName(value, category, id, field, result);
+        }
+
+        private static void RequireSupportedPresentation(string value,
+            HashSet<string> supported, string category, string id,
+            ContentValidationResult result)
+        {
+            RequireStableReferenceName(value, category, id, "presentationId", result);
+            if (!string.IsNullOrEmpty(value) && !supported.Contains(value))
+                result.Add("presentation.unsupported", category, id, "presentationId",
+                    "Presentation identity '" + value + "' is not supported by the runtime renderer.");
         }
 
         private static void RequireStableNames(string[] values, string category, string id,

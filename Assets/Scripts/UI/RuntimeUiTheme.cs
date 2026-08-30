@@ -7,12 +7,11 @@ namespace FruitDefense.UI
     public sealed class RuntimeUiTheme : ScriptableObject
     {
         [SerializeField] private string themeId = "ui.sunny-orchard";
-        [SerializeField] private string revision = "2";
+        [SerializeField] private string revision = "3";
         [SerializeField] private RuntimeUiSemanticColors colors =
             RuntimeUiSemanticColors.SunnyOrchardDefault();
         [SerializeField] private RuntimeUiActionStyleTokens actionStyles =
             RuntimeUiActionStyleTokens.SunnyOrchardDefault();
-        [SerializeField] private Font packagedChineseFont;
         [SerializeField] private RuntimeUiTypographyTokens typography =
             RuntimeUiTypographyTokens.SunnyOrchardDefault();
         [SerializeField] private RuntimeUiMetrics metrics =
@@ -25,7 +24,6 @@ namespace FruitDefense.UI
         public string Revision => revision;
         public RuntimeUiSemanticColors Colors => colors;
         public RuntimeUiActionStyleTokens ActionStyles => actionStyles;
-        public Font PackagedChineseFont => packagedChineseFont;
         public RuntimeUiTypographyTokens Typography => typography;
         public RuntimeUiMetrics Metrics => metrics;
         public RuntimeUiFeedbackTokens Feedback => feedback;
@@ -51,12 +49,6 @@ namespace FruitDefense.UI
             typography.AppendValidation(result, "typography");
             metrics.AppendValidation(result, "metrics");
             feedback.AppendValidation(result, "feedback");
-
-            if (packagedChineseFont == null)
-            {
-                result.Add("theme.font.null", "packagedChineseFont",
-                    "The release theme must reference its packaged Chinese font.");
-            }
 
             if (activeArtSet == null)
             {
@@ -102,12 +94,9 @@ namespace FruitDefense.UI
                     ? RuntimeUiActionVisualRole.ModeActive
                     : ResolveVisualRole(spec.Role);
             var pair = actionStyles.For(visualRole);
-            // The ring geometry carries focus/state structure. Reusing the paired
-            // content token keeps that cue above 3:1 on every resolved container.
-            var outlineColor = pair.Content;
             return new RuntimeUiResolvedActionStyle(spec, interactionState, visualRole,
                 ResolveContainerSlot(spec, modeActive, disabledState), pair,
-                outlineColor, modeActive);
+                modeActive);
         }
 
         private static RuntimeUiActionVisualRole ResolveVisualRole(RuntimeUiActionKind role)

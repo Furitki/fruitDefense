@@ -82,9 +82,9 @@ namespace FruitDefense.Editor
         public const int EmphasisOutlineCapturePixels = 2;
         public const int SettlementOutcomeInkHeightMinimum = 28;
         public const int SettlementOutcomeInkHeightMaximum = 32;
-        public const float SettlementOutcomeOccupancyMinimum = .52f;
-        public const float SettlementOutcomeOccupancyMaximum = .64f;
-        public const int SettlementOutcomePaddingMinimum = 8;
+        public const float SettlementOutcomeOccupancyMinimum = .64f;
+        public const float SettlementOutcomeOccupancyMaximum = .72f;
+        public const int SettlementOutcomePaddingMinimum = 6;
         public const int SettlementOutcomePaddingImbalanceMaximum = 2;
         public const int OccupiedContentCenterTolerance = 24;
         public const int OccupiedContentBottomGapMaximum = 100;
@@ -124,7 +124,7 @@ namespace FruitDefense.Editor
         {
             switch (role)
             {
-                case RuntimeUiTypographyRole.Display: return 40;
+                case RuntimeUiTypographyRole.Display: return 28;
                 case RuntimeUiTypographyRole.ScreenTitle: return 32;
                 case RuntimeUiTypographyRole.SectionTitle: return 28;
                 case RuntimeUiTypographyRole.Body: return 20;
@@ -139,7 +139,7 @@ namespace FruitDefense.Editor
         {
             switch (role)
             {
-                case RuntimeUiTypographyRole.Display: return 46;
+                case RuntimeUiTypographyRole.Display: return 34;
                 case RuntimeUiTypographyRole.ScreenTitle: return 38;
                 case RuntimeUiTypographyRole.SectionTitle: return 34;
                 case RuntimeUiTypographyRole.Body: return 28;
@@ -150,7 +150,7 @@ namespace FruitDefense.Editor
             }
         }
 
-        public static FontStyle FontStyle(RuntimeUiTypographyRole role)
+        public static bool UsesDisplayFace(RuntimeUiTypographyRole role)
         {
             switch (role)
             {
@@ -158,11 +158,11 @@ namespace FruitDefense.Editor
                 case RuntimeUiTypographyRole.ScreenTitle:
                 case RuntimeUiTypographyRole.SectionTitle:
                 case RuntimeUiTypographyRole.ControlLabel:
-                case RuntimeUiTypographyRole.Metric:
-                    return UnityEngine.FontStyle.Bold;
+                    return true;
                 case RuntimeUiTypographyRole.Body:
+                case RuntimeUiTypographyRole.Metric:
                 case RuntimeUiTypographyRole.Supplemental:
-                    return UnityEngine.FontStyle.Normal;
+                    return false;
                 default: throw new ArgumentOutOfRangeException(nameof(role), role, null);
             }
         }

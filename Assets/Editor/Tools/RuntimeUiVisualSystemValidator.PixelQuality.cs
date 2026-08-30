@@ -75,8 +75,12 @@ namespace FruitDefense.Editor
                 }
 
                 if (binding.Geometry == RuntimeUiArtGeometry.NineSlice)
+                {
                     ValidateNineSlicePixels(report, assetPath, binding, pixels,
                         texture.width, texture.height);
+                    ValidateReferenceMaterialPixels(report, assetPath, binding, row,
+                        pixels, texture.width, texture.height);
+                }
 
                 ValidateFixedAspectOrnament(report, assetPath, binding, row,
                     texture.width, texture.height);
@@ -281,20 +285,26 @@ namespace FruitDefense.Editor
             switch (slot)
             {
                 case RuntimeUiArtSlot.ActionPrimary:
-                    expectedContainer = "436C15";
+                    expectedContainer = "A0C73D";
+                    break;
+                case RuntimeUiArtSlot.ActionSecondary:
+                    expectedContainer = "A0C73D";
                     break;
                 case RuntimeUiArtSlot.ActionDanger:
-                    expectedContainer = "9F302B";
+                    expectedContainer = "C81409";
                     break;
                 default:
                     return;
             }
+            var expectedContent = slot == RuntimeUiArtSlot.ActionDanger
+                ? "FFF9EE"
+                : "56341F";
 
             if (!string.Equals(row.container_contract,
                     "semantic-action-container", StringComparison.Ordinal)
                 || !string.Equals(row.target_rgb, expectedContainer,
                     StringComparison.OrdinalIgnoreCase)
-                || !string.Equals(row.content_reference_rgb, "FFF6E0",
+                || !string.Equals(row.content_reference_rgb, expectedContent,
                     StringComparison.OrdinalIgnoreCase)
                 || row.content_region_min_contrast + .001f
                     < RuntimeUiQualityProfile.NormalTextContrast)
@@ -303,7 +313,7 @@ namespace FruitDefense.Editor
                     RuntimeUiArtSlots.SemanticId(slot)
                     + " does not record a passing final-pixel content-region contract; contrast="
                     + row.content_region_min_contrast.ToString("0.00") + ":1.",
-                    "Record the semantic container target, FFF6E0 content reference, and measured central-region contrast >=4.5:1.");
+                    "Keep the reference-authoritative container unchanged; recalibrate the separate text/icon content token first, then record the measured central-region contrast >=4.5:1.");
             }
         }
 
@@ -519,55 +529,353 @@ namespace FruitDefense.Editor
             }
         }
 
-        private static void ValidateImagegenProvenance(
-            RuntimeUiVisualValidationReport report, RuntimeUiArtSet artSet,
-            RuntimeUiArtBinding binding, ArtManifestBinding row, string manifestPath)
+        private const string ReferenceMaterialAnatomy =
+            "outer-cream-rim|face|soil-outline|upper-highlight|short-bottom-shadow";
+        private const string LineFreeCarrierMaterialAnatomy =
+            "rounded-paper-face|soft-tonal-edge|upper-highlight|short-bottom-shadow|no-linear-rail";
+        private const byte DirectMaterialAlphaCleanupThreshold = 48;
+
+        private static void ValidateReferenceMaterialManifest(
+            RuntimeUiVisualValidationReport report, RuntimeUiArtBinding binding,
+            ArtManifestBinding row, string manifestPath)
         {
-            if (binding.Slot != RuntimeUiArtSlot.ActionCompactControl
-                && binding.Slot != RuntimeUiArtSlot.ActionCompactControlActive)
-                return;
-            var expectedRecord = RuntimeUiArtSetRegistry.SourceDirectory(artSet)
-                + "/prompt-record.json";
-            if (!string.Equals(row.imagegen_provider, "built-in-imagegen",
-                    StringComparison.Ordinal)
-                || string.IsNullOrWhiteSpace(row.imagegen_output)
-                || RuntimeUiArtSetRegistry.Normalize(row.prompt_record) != expectedRecord)
+            if (binding.Geometry != RuntimeUiArtGeometry.NineSlice) return;
+            var semantic = RuntimeUiArtSlots.SemanticId(binding.Slot);
+            if (IsImagegenMaterialSlot(binding.Slot))
             {
-                report.Error("manifest.imagegen.provenance", manifestPath,
-                    RuntimeUiArtSlots.SemanticId(binding.Slot)
-                    + " lacks its built-in imagegen output and prompt-record ownership.",
-                    "Record imagegen_provider, imagegen_output, and the local prompt_record path.");
+                var usesGeometryMask = binding.Slot == RuntimeUiArtSlot.ActionPrimary
+                    || binding.Slot == RuntimeUiArtSlot.ActionSecondary;
+                var lineFreeCarrier = binding.Slot == RuntimeUiArtSlot.SurfaceMetric
+                    || binding.Slot == RuntimeUiArtSlot.SlotNursery;
+                var expectedAnatomy = lineFreeCarrier
+                    ? LineFreeCarrierMaterialAnatomy
+                    : ReferenceMaterialAnatomy;
+                var expectedTransform =
+                    "content-crop|transparent-padding|alpha-safe-resize"
+                    + (usesGeometryMask ? "|approved-geometry-alpha-mask" : string.Empty)
+                    + (lineFreeCarrier
+                        ? "|connected-neutral-background-cleanup"
+                        : string.Empty);
+                var expectedRenderContract = binding.Slot
+                    == RuntimeUiArtSlot.SurfaceMetric
+                    ? "line-free-rounded-paper-metric"
+                    : binding.Slot == RuntimeUiArtSlot.SlotNursery
+                        ? "line-free-rounded-paper-slot"
+                        : string.Empty;
+                if (!string.Equals(row.authoring_contract,
+                        "imagegen-direct-master", StringComparison.Ordinal)
+                    || !string.Equals(row.material_anatomy,
+                        expectedAnatomy, StringComparison.Ordinal)
+                    || lineFreeCarrier && !string.Equals(row.render_contract,
+                        expectedRenderContract, StringComparison.Ordinal)
+                    || !string.Equals(row.imagegen_provider,
+                        "built-in-imagegen", StringComparison.Ordinal)
+                    || string.IsNullOrWhiteSpace(row.imagegen_output)
+                    || string.IsNullOrWhiteSpace(row.prompt_record)
+                    || string.IsNullOrWhiteSpace(row.generated_asset)
+                    || string.IsNullOrWhiteSpace(row.generated_asset_sha256)
+                    || row.deterministic_transform != expectedTransform
+                    || !string.IsNullOrWhiteSpace(row.generated_sheet)
+                    || !string.IsNullOrWhiteSpace(row.generated_sheet_sha256)
+                    || row.generated_crop != null
+                    || !string.IsNullOrWhiteSpace(row.material_recipe)
+                    || !string.IsNullOrWhiteSpace(row.outer_cream_rgb)
+                    || !string.IsNullOrWhiteSpace(row.face_rgb)
+                    || !string.IsNullOrWhiteSpace(row.soil_outline_rgb)
+                    || !string.IsNullOrWhiteSpace(row.upper_highlight_rgb)
+                    || !string.IsNullOrWhiteSpace(row.bottom_shadow_rgb))
+                {
+                    report.Error("material.imagegen-direct.manifest", manifestPath,
+                        semantic + " does not own the reviewed individual-master ImageGen contract.",
+                        "Record one generated asset/output/hash and the permitted direct transform; remove sheet and procedural fields.");
+                }
+                else
+                    ValidateOwnedFile(report, row.generated_asset,
+                        row.generated_asset_sha256, string.Empty, "generated-asset");
+                if ((binding.Slot == RuntimeUiArtSlot.ActionPrimary
+                        || binding.Slot == RuntimeUiArtSlot.ActionSecondary)
+                    && row.content_tone != "primary"
+                    || binding.Slot == RuntimeUiArtSlot.ActionDanger
+                    && row.content_tone != "inverse")
+                {
+                    report.Error("material.action.content-tone", manifestPath,
+                        semantic + " does not declare its semantic content tone.",
+                        "Keep the reference-authoritative action raster unchanged and restore its approved separate content token: primary soil brown for light-green actions, inverse warm white for danger.");
+                }
                 return;
+            }
+            var colors = new[]
+            {
+                row.outer_cream_rgb, row.face_rgb, row.soil_outline_rgb,
+                row.upper_highlight_rgb, row.bottom_shadow_rgb,
+            };
+            if (!string.Equals(row.authoring_contract,
+                    "deterministic-reference-material-kit", StringComparison.Ordinal)
+                || string.IsNullOrWhiteSpace(row.material_recipe)
+                || !string.Equals(row.material_anatomy, ReferenceMaterialAnatomy,
+                    StringComparison.Ordinal)
+                || colors.Any(color => !IsRgbHex(color))
+                || colors.Distinct(StringComparer.OrdinalIgnoreCase).Count() != colors.Length)
+            {
+                report.Error("material.anatomy.manifest", manifestPath,
+                    semantic + " does not own five distinct reference-material layers.",
+                    "Regenerate the text-free material kit with cream rim, face, soil outline, upper highlight, and short bottom shadow records.");
+            }
+            if (!string.IsNullOrWhiteSpace(row.imagegen_provider)
+                || !string.IsNullOrWhiteSpace(row.imagegen_output))
+            {
+                report.Error("material.v1-generation-path", manifestPath,
+                    semantic + " still records the rejected v1 generated-surface path.",
+                    "Remove the superseded imagegen surface binding and keep the deterministic reference kit only.");
             }
 
-            ImagegenPromptRecord record;
+            var expectedRecipe = ExpectedReferenceMaterialRecipe(binding.Slot);
+            if (!string.IsNullOrEmpty(expectedRecipe)
+                && !string.Equals(row.material_recipe, expectedRecipe,
+                    StringComparison.Ordinal))
+            {
+                report.Error("material.recipe.semantic", manifestPath,
+                    semantic + " uses recipe '" + row.material_recipe
+                    + "' instead of '" + expectedRecipe + "'.",
+                    "Restore the reference-faithful semantic material recipe.");
+            }
+            if (binding.Slot == RuntimeUiArtSlot.SlotTool
+                && row.content_layout_contract
+                    != "main-icon|multiply|target-glyph|corner-inventory-badge")
+            {
+                report.Error("material.recipe-card.content-layout", manifestPath,
+                    "slot.tool does not reserve the approved recipe-card content sequence.",
+                    "Record the main-icon, multiply, target-glyph, and corner inventory-badge contract.");
+            }
+            if ((binding.Slot == RuntimeUiArtSlot.ActionPrimary
+                    || binding.Slot == RuntimeUiArtSlot.ActionSecondary)
+                && row.content_tone != "primary"
+                || binding.Slot == RuntimeUiArtSlot.ActionDanger
+                && row.content_tone != "inverse")
+            {
+                report.Error("material.action.content-tone", manifestPath,
+                    semantic + " does not declare its semantic content tone.",
+                    "Keep the reference-authoritative action raster unchanged and restore its approved separate content token: primary soil brown for light-green actions, inverse warm white for danger.");
+            }
+        }
+
+        private static void ValidateReferenceMaterialPixels(
+            RuntimeUiVisualValidationReport report, string assetPath,
+            RuntimeUiArtBinding binding, ArtManifestBinding row, Color32[] pixels,
+            int width, int height)
+        {
+            if (binding.Geometry != RuntimeUiArtGeometry.NineSlice) return;
+            if (IsImagegenMaterialSlot(binding.Slot))
+            {
+                var hiddenRgbPixels = pixels.Count(pixel => pixel.a == 0
+                    && (pixel.r != 0 || pixel.g != 0 || pixel.b != 0));
+                var lowAlphaPixels = pixels.Count(pixel => pixel.a > 0
+                    && pixel.a < DirectMaterialAlphaCleanupThreshold);
+                if (hiddenRgbPixels > 0 || lowAlphaPixels > 0)
+                {
+                    report.Error("material.imagegen.alpha-hygiene", assetPath,
+                        RuntimeUiArtSlots.SemanticId(binding.Slot) + " contains "
+                        + hiddenRgbPixels + " hidden RGB pixel(s) and "
+                        + lowAlphaPixels + " low-alpha ringing pixel(s).",
+                        "Clear RGB at alpha zero and clear low-alpha ringing after every source/runtime resize for every transparent ImageGen nine-slice material.");
+                }
+            }
+
+            var lineFreeCarrier = binding.Slot == RuntimeUiArtSlot.SurfaceMetric
+                || binding.Slot == RuntimeUiArtSlot.SlotNursery;
+            if (lineFreeCarrier)
+            {
+                var darkPartialFringePixels = pixels.Count(pixel =>
+                {
+                    if (pixel.a == 0 || pixel.a == 255) return false;
+                    var minimum = Mathf.Min(pixel.r, Mathf.Min(pixel.g, pixel.b));
+                    var maximum = Mathf.Max(pixel.r, Mathf.Max(pixel.g, pixel.b));
+                    return maximum < 160
+                        || maximum - minimum <= 10 && minimum < 225;
+                });
+                if (darkPartialFringePixels > 0)
+                {
+                    report.Error("material.line-free-carrier.alpha-fringe", assetPath,
+                        RuntimeUiArtSlots.SemanticId(binding.Slot) + " contains "
+                        + darkPartialFringePixels
+                        + " dark/neutral partial-alpha fringe pixel(s).",
+                        "Derive alpha from the selected carrier's own pixels, clear low-alpha ringing after each resize, and never reuse another component's geometry mask.");
+                }
+            }
+
+            if (binding.Slot == RuntimeUiArtSlot.SurfaceMetric
+                && HasContinuousMetricPerimeterRail(pixels, width, height))
+            {
+                report.Error("material.metric.linear-rail.pixels", assetPath,
+                    "The compact metric carrier contains a continuous dark perimeter rail.",
+                    "Use the dedicated line-free surface.metric master; do not reuse a bordered panel master or suppress the metric surface.");
+            }
+
+            if (binding.Slot == RuntimeUiArtSlot.SlotNursery)
+            {
+                var railPixels = pixels.Count(pixel => pixel.a >= 96
+                    && pixel.r >= 190 && pixel.g >= 120 && pixel.b <= 135
+                    && pixel.r - pixel.g >= 20 && pixel.g - pixel.b >= 40);
+                if (railPixels > 4)
+                {
+                    report.Error("material.nursery.linear-rail.pixels", assetPath,
+                        "The rail-free nursery slot still contains " + railPixels
+                        + " orange solid/dashed rail pixel(s).",
+                        "Replace only slot.nursery with the reviewed line-free rounded paper master; do not hide its surface or change the nine-slice renderer.");
+                }
+            }
+            var witnesses = new[]
+            {
+                new KeyValuePair<string, string>("outer cream rim", row.outer_cream_rgb),
+                new KeyValuePair<string, string>("face", row.face_rgb),
+                new KeyValuePair<string, string>("soil outline", row.soil_outline_rgb),
+                new KeyValuePair<string, string>("upper highlight", row.upper_highlight_rgb),
+                new KeyValuePair<string, string>("short bottom shadow", row.bottom_shadow_rgb),
+            };
+            foreach (var witness in witnesses)
+            {
+                if (!TryParseRgb(witness.Value, out var expected)) continue;
+                var minimumAlpha = witness.Key == "short bottom shadow" ? 24 : 96;
+                var count = pixels.Count(pixel => pixel.a >= minimumAlpha
+                    && Mathf.Abs(pixel.r - expected.r) <= 12
+                    && Mathf.Abs(pixel.g - expected.g) <= 12
+                    && Mathf.Abs(pixel.b - expected.b) <= 12);
+                if (count >= 4) continue;
+                report.Error("material.anatomy.pixel-witness", assetPath,
+                    RuntimeUiArtSlots.SemanticId(binding.Slot) + " has only " + count
+                    + " visible pixel witness(es) for " + witness.Key + ".",
+                    "Rebuild the layer as independently visible runtime ink rather than a flat gradient.");
+            }
+            var stage = binding.Slot == RuntimeUiArtSlot.SurfaceGameplayStage;
+            ValidateLayerWitness(report, assetPath, "outer cream rim",
+                row.outer_cream_rgb, pixels, width, height, 64, stage ? 9 : 5, 96);
+            ValidateLayerWitness(report, assetPath, "soil outline",
+                row.soil_outline_rgb, pixels, width, height, 64, stage ? 12 : 8, 96);
+            ValidateLayerWitness(report, assetPath, "upper highlight",
+                row.upper_highlight_rgb, pixels, width, height, 64, stage ? 14 : 11, 96);
+            ValidateLayerWitness(report, assetPath, "face",
+                row.face_rgb, pixels, width, height, 64, stage ? 113 : 20, 96);
+            ValidateLayerWitness(report, assetPath, "short bottom shadow",
+                row.bottom_shadow_rgb, pixels, width, height, 64, 122, 24);
+        }
+
+        private static bool HasContinuousMetricPerimeterRail(
+            Color32[] pixels, int width, int height)
+        {
+            if (pixels == null || pixels.Length != width * height
+                || width < 8 || height < 8)
+                return false;
+            var minimumX = width / 4;
+            var maximumX = width - minimumX;
+            var minimumY = height / 4;
+            var maximumY = height - minimumY;
+            var searchDepth = Mathf.Max(1, Mathf.Min(width, height) / 4);
+            for (var offset = 0; offset < searchDepth; offset++)
+            {
+                if (HasDarkHorizontalRail(pixels, width, offset,
+                        minimumX, maximumX)
+                    || HasDarkHorizontalRail(pixels, width,
+                        height - 1 - offset, minimumX, maximumX)
+                    || HasDarkVerticalRail(pixels, width, offset,
+                        minimumY, maximumY)
+                    || HasDarkVerticalRail(pixels, width,
+                        width - 1 - offset, minimumY, maximumY))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool HasDarkHorizontalRail(Color32[] pixels, int width,
+            int y, int minimumX, int maximumX)
+        {
+            var dark = 0;
+            for (var x = minimumX; x < maximumX; x++)
+                if (IsDarkCarrierRailPixel(pixels[y * width + x])) dark++;
+            return dark * 4 >= (maximumX - minimumX) * 3;
+        }
+
+        private static bool HasDarkVerticalRail(Color32[] pixels, int width,
+            int x, int minimumY, int maximumY)
+        {
+            var dark = 0;
+            for (var y = minimumY; y < maximumY; y++)
+                if (IsDarkCarrierRailPixel(pixels[y * width + x])) dark++;
+            return dark * 4 >= (maximumY - minimumY) * 3;
+        }
+
+        private static bool IsDarkCarrierRailPixel(Color32 pixel)
+        {
+            return pixel.a >= 96 && pixel.r + pixel.g + pixel.b < 225 * 3;
+        }
+
+        private static void ValidateLayerWitness(
+            RuntimeUiVisualValidationReport report, string assetPath, string layer,
+            string expectedRgb, Color32[] pixels, int width, int height,
+            int x, int yFromTop, byte minimumAlpha)
+        {
+            if (!TryParseRgb(expectedRgb, out var expected) || width <= x
+                || height <= yFromTop)
+                return;
+            var pixel = pixels[(height - 1 - yFromTop) * width + x];
+            var tolerance = layer == "short bottom shadow" ? 30 : 12;
+            if (pixel.a >= minimumAlpha
+                && Mathf.Abs(pixel.r - expected.r) <= tolerance
+                && Mathf.Abs(pixel.g - expected.g) <= tolerance
+                && Mathf.Abs(pixel.b - expected.b) <= tolerance)
+                return;
+            report.Error("material.anatomy.layer-position", assetPath,
+                layer + " is not independently visible at its protected witness; actual=#"
+                + pixel.r.ToString("X2") + pixel.g.ToString("X2")
+                + pixel.b.ToString("X2") + "/" + pixel.a + ".",
+                "Restore the fixed five-layer material order in the deterministic master.");
+        }
+
+        private static string ExpectedReferenceMaterialRecipe(RuntimeUiArtSlot slot)
+        {
+            switch (slot)
+            {
+                case RuntimeUiArtSlot.SurfaceStatus: return "sunlight-phase-status";
+                default: return string.Empty;
+            }
+        }
+
+        private static bool IsImagegenMaterialSlot(RuntimeUiArtSlot slot)
+        {
+            return slot == RuntimeUiArtSlot.ActionPrimary
+                || slot == RuntimeUiArtSlot.ActionSecondary
+                || slot == RuntimeUiArtSlot.ActionQuiet
+                || slot == RuntimeUiArtSlot.ActionDanger
+                || slot == RuntimeUiArtSlot.ActionCompactControl
+                || slot == RuntimeUiArtSlot.ActionCompactControlActive
+                || slot == RuntimeUiArtSlot.SurfaceSafeArea
+                || slot == RuntimeUiArtSlot.SurfacePanelStandard
+                || slot == RuntimeUiArtSlot.SurfacePanelRaised
+                || slot == RuntimeUiArtSlot.SurfaceMetric
+                || slot == RuntimeUiArtSlot.SurfaceCardSelectable
+                || slot == RuntimeUiArtSlot.SlotTool
+                || slot == RuntimeUiArtSlot.SlotNursery
+                || slot == RuntimeUiArtSlot.SurfaceGameplayStage;
+        }
+
+        private static bool IsRgbHex(string value)
+        {
+            return TryParseRgb(value, out _);
+        }
+
+        private static bool TryParseRgb(string value, out Color32 color)
+        {
+            color = default;
+            if (string.IsNullOrWhiteSpace(value) || value.Length != 6) return false;
             try
             {
-                record = JsonUtility.FromJson<ImagegenPromptRecord>(
-                    File.ReadAllText(ToAbsolute(expectedRecord)));
+                color = new Color32(Convert.ToByte(value.Substring(0, 2), 16),
+                    Convert.ToByte(value.Substring(2, 2), 16),
+                    Convert.ToByte(value.Substring(4, 2), 16), byte.MaxValue);
+                return true;
             }
-            catch (Exception exception)
+            catch (FormatException)
             {
-                report.Error("manifest.imagegen.prompt-record", expectedRecord,
-                    exception.Message, "Restore the generated-art prompt record.");
-                return;
-            }
-            var semantic = RuntimeUiArtSlots.SemanticId(binding.Slot);
-            var asset = record?.assets?.SingleOrDefault(candidate =>
-                candidate != null && candidate.semanticId == semantic);
-            if (record == null || record.schema != "fruit-defense.imagegen-prompt-record.v1"
-                || record.setId != artSet.SetId || record.provider != "built-in-imagegen"
-                || asset == null || asset.generatedOutput != row.imagegen_output
-                || asset.selectedOutput != row.imagegen_output
-                || string.IsNullOrWhiteSpace(asset.prompt)
-                || asset.references == null
-                || string.IsNullOrWhiteSpace(asset.alphaContract)
-                || !string.Equals(asset.sourceSha256, row.sourceSha256,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                report.Error("manifest.imagegen.prompt-contract", expectedRecord,
-                    semantic + " prompt record does not match its manifest output/hash.",
-                    "Record the selected built-in imagegen output, prompt, references, alpha contract, and source hash.");
+                return false;
             }
         }
 

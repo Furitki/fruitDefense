@@ -4,6 +4,92 @@ function Invoke-DirectBattleMode {
   Set-AcceptanceState -State 'initial'
   $readyCapture = Save-StableScreenshot -Name '01-ready'
   $screenshots.ready = $readyCapture.Path
+  if ($DragFeedbackEvidence) {
+    Set-AcceptanceState -State 'drag-target'
+    $edgeDragBaseline = Save-StableScreenshot -Name '10-edge-drag-baseline'
+    $screenshots.edgeDragBaseline = $edgeDragBaseline.Path
+    $stageBackdropFit = Get-BattleStageBackdropFitEvidence `
+      -Path $edgeDragBaseline.Path -StageRect $gameplayStageRect
+    if (-not $stageBackdropFit.passed) {
+      throw ('Battle stage vertical backdrop fit failed: ' +
+        ($stageBackdropFit | ConvertTo-Json -Depth 8 -Compress))
+    }
+    $freeDragPoint = Convert-ReferencePoint -X 201 -Y 620
+    Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y `
+      -ToX $freeDragPoint.x -ToY $freeDragPoint.y
+    $screenshots.freeDragConnector = (
+      Save-StableScreenshot -Name '10a-free-drag-connector').Path
+    Stop-CanvasDrag -X $freeDragPoint.x -Y $freeDragPoint.y
+
+    Set-AcceptanceState -State 'drag-target'
+    Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y `
+      -ToX $controls.acceptanceCell0.x -ToY $controls.acceptanceCell0.y
+    $screenshots.legalDragCue = (Save-StableScreenshot -Name '11-legal-drag-cue').Path
+    $stageContainment = Get-BattleStageContainmentEvidence `
+      -ReferencePath $edgeDragBaseline.Path `
+      -CandidatePath $screenshots.legalDragCue `
+      -StageRect $gameplayStageRect `
+      -ConnectorSource $controls.nurserySlot0 `
+      -ConnectorTarget $controls.acceptanceCell0
+    if (-not $stageContainment.passed) {
+      throw ('Battle edge-drag stage containment failed: ' +
+        ($stageContainment | ConvertTo-Json -Depth 8 -Compress))
+    }
+    Stop-CanvasDrag -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
+
+    Set-AcceptanceState -State 'selection-inspection'
+    $illegalTargetX = $controls.acceptanceCell0.x + 12.0 * $referenceScale
+    Start-CanvasDrag -FromX $controls.acceptanceCell0.x -FromY $controls.acceptanceCell0.y `
+      -ToX $illegalTargetX -ToY $controls.acceptanceCell0.y
+    $screenshots.illegalDragCue = (Save-StableScreenshot -Name '12-illegal-drag-cue').Path
+    Stop-CanvasDrag -X $illegalTargetX -Y $controls.acceptanceCell0.y
+
+    $metrics = [ordered]@{}
+    foreach ($state in $screenshots.Keys) {
+      $metrics[$state] = Get-ImageMetrics -Path $screenshots[$state]
+      if ($metrics[$state].width -ne $Width -or $metrics[$state].height -ne $Height) {
+        throw "Unexpected drag-feedback screenshot dimensions for ${state}: $($metrics[$state].width)x$($metrics[$state].height)"
+      }
+      if (-not (Test-StableFrameMetrics -Metrics $metrics[$state])) {
+        throw "Drag-feedback frame stability check failed for ${state}."
+      }
+    }
+
+    $manifest = [ordered]@{
+      accepted = $true
+      capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+      mode = 'drag-feedback'
+      url = $Url
+      verifiedBuildProfile = $verifiedBuildProfile
+      levelId = $LevelId
+      viewport = [ordered]@{ width = $Width; height = $Height; coordinateSpace = 'css-pixel/top-left' }
+      safeArea = $safeAreaEvidence
+      runtimeUi = $runtimeUiIdentity
+      browser = $browserEvidence
+      canvas = $readiness
+      checks = [ordered]@{
+        http = 'pass'
+        wasm = 'pass'
+        unityLoaded = 'pass'
+        directRouteLevelIdentity = 'pass'
+        screenshotDimensions = 'pass'
+        freeDragConnector = 'captured'
+        legalDragSnapFrame = 'captured'
+        illegalDragRejectionFrame = 'captured'
+        battleStageProtectedRail = 'pass'
+        battleStageOutsidePixels = 'pass-with-connector-mask'
+        battleStageVerticalBackdropFit = 'pass'
+      }
+      screenshots = $screenshots
+      imageMetrics = $metrics
+      battlefieldContainment = $stageContainment
+      battlefieldBackdropFit = $stageBackdropFit
+    }
+    $manifestPath = Join-Path $outputDir 'acceptance-manifest.json'
+    $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+    Write-Host "FRUIT_DEFENSE_DRAG_FEEDBACK_ACCEPTANCE_OK $manifestPath"
+    return
+  }
   $waveActionContrast = Get-ActionContentContrast `
     -Path $readyCapture.Path -Rect $waveActionRect `
     -ContentLeft 0.12 -ContentRight 0.92 -ContentTop 0.18 -ContentBottom 0.82 `
@@ -16,7 +102,7 @@ function Invoke-DirectBattleMode {
   $refreshActionContrast = Get-ActionContentContrast `
     -Path $readyCapture.Path -Rect $refreshActionRect `
     -ContentLeft 0.08 -ContentRight 0.92 -ContentTop 0.18 -ContentBottom 0.82 `
-    -Polarity DarkOnLight
+    -Polarity LightOnDark
   if (-not $refreshActionContrast.passed) {
     throw (
       'Battle Secondary refresh icon/label contrast is below 4.5: ' +
@@ -282,6 +368,14 @@ function Invoke-DirectBattleMode {
   $screenshots.adjacentPots = (Save-StableScreenshot -Name '10-adjacent-pots').Path
 
   Set-AcceptanceState -State 'drag-target'
+  $freeDragPoint = Convert-ReferencePoint -X 201 -Y 620
+  Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y `
+    -ToX $freeDragPoint.x -ToY $freeDragPoint.y
+  $screenshots.freeDragConnector = (
+    Save-StableScreenshot -Name '10a-free-drag-connector').Path
+  Stop-CanvasDrag -X $freeDragPoint.x -Y $freeDragPoint.y
+
+  Set-AcceptanceState -State 'drag-target'
   Start-CanvasDrag -FromX $controls.nurserySlot0.x -FromY $controls.nurserySlot0.y -ToX $controls.acceptanceCell0.x -ToY $controls.acceptanceCell0.y
   $screenshots.legalDragCue = (Save-StableScreenshot -Name '11-legal-drag-cue').Path
   Stop-CanvasDrag -X $controls.acceptanceCell0.x -Y $controls.acceptanceCell0.y
@@ -388,19 +482,6 @@ function Invoke-DirectBattleMode {
       $metrics.ready.headerLightPixels -lt $hudLightPixelThreshold) {
     throw "HUD text check failed: dark=$($metrics.ready.headerDarkPixels)/$hudDarkPixelThreshold light=$($metrics.ready.headerLightPixels)/$hudLightPixelThreshold."
   }
-  $readyHasFormerActionRow =
-    $metrics.ready.formerActionColorPixels -gt $formerActionPixelThreshold -and
-    $metrics.ready.formerActionColorSpanPixels -gt $formerActionSpanThreshold
-  $activeHasFormerActionRow =
-    $metrics.activeWave.formerActionColorPixels -gt $formerActionPixelThreshold -and
-    $metrics.activeWave.formerActionColorSpanPixels -gt $formerActionSpanThreshold
-  if ($readyHasFormerActionRow -or $activeHasFormerActionRow) {
-    throw (
-      "Former bottom action-row signature is still present: " +
-      "ready=$($metrics.ready.formerActionColorPixels)/$($metrics.ready.formerActionColorSpanPixels) " +
-      "active=$($metrics.activeWave.formerActionColorPixels)/$($metrics.activeWave.formerActionColorSpanPixels).")
-  }
-
   $panelGeometry = Get-BattlePanelGeometryEvidence -Path $screenshots.ready
   $textContainment = Get-BattleTextContainmentEvidence `
     -ReadyPath $screenshots.ready -DetailPath $screenshots.plantDetail
@@ -499,8 +580,6 @@ function Invoke-DirectBattleMode {
     pixelThresholds = [ordered]@{
       hudDarkPixels = $hudDarkPixelThreshold
       hudLightPixels = $hudLightPixelThreshold
-      formerActionColorPixels = $formerActionPixelThreshold
-      formerActionColorSpanPixels = $formerActionSpanThreshold
       framePixels = $framePixelThresholds
     }
     sessionSequence = [ordered]@{

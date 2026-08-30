@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SunnyOrchardPaintedRuntimeUiArtSet
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.UI.RuntimeUiArtSet
   setId: sunny-orchard-painted
-  revision: '1'
+  revision: '9'
   bindings:
   - slot: 0
     texture: {fileID: 2800000, guid: 5fb878b839d12d1f37a65b2679a46488, type: 3}
@@ -48,9 +48,9 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 9
-      top: 14
-      right: 9
+      left: 4
+      top: 4
+      right: 4
       bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 2
@@ -67,9 +67,9 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 8
-      top: 14
-      right: 12
+      left: 4
+      top: 4
+      right: 4
       bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 3
@@ -86,10 +86,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 6
-      top: 14
-      right: 13
-      bottom: 3
+      left: 4
+      top: 4
+      right: 4
+      bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 4
     texture: {fileID: 2800000, guid: bb8b22a7c34fae3ac4757a58c64b776f, type: 3}
@@ -105,10 +105,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 12
-      top: 13
-      right: 7
-      bottom: 7
+      left: 4
+      top: 4
+      right: 4
+      bottom: 5
     pixelsPerLogicalUnit: 2
   - slot: 5
     texture: {fileID: 2800000, guid: 115def71075d5a3d3e3ab7727835dae6, type: 3}
@@ -124,10 +124,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 10
-      top: 13
-      right: 11
-      bottom: 7
+      left: 4
+      top: 4
+      right: 4
+      bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 6
     texture: {fileID: 2800000, guid: fe716352f6e5480af889aaecf98b5df8, type: 3}
@@ -143,10 +143,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 8
-      top: 13
-      right: 12
-      bottom: 7
+      left: 4
+      top: 4
+      right: 3
+      bottom: 3
     pixelsPerLogicalUnit: 2
   - slot: 7
     texture: {fileID: 2800000, guid: d462939c7b376f58b8d8dd4aedb7c28d, type: 3}
@@ -162,10 +162,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 7
-      top: 11
-      right: 7
-      bottom: 11
+      left: 4
+      top: 4
+      right: 3
+      bottom: 3
     pixelsPerLogicalUnit: 2
   - slot: 8
     texture: {fileID: 2800000, guid: ac2b1ee48d947c66d89c7f1d0efce993, type: 3}
@@ -181,10 +181,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 12
-      top: 10
-      right: 8
-      bottom: 14
+      left: 4
+      top: 4
+      right: 3
+      bottom: 3
     pixelsPerLogicalUnit: 2
   - slot: 9
     texture: {fileID: 2800000, guid: 9c09f2250803ee7a8a0533b475df6c32, type: 3}
@@ -200,10 +200,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 7
-      top: 11
-      right: 7
-      bottom: 11
+      left: 4
+      top: 4
+      right: 3
+      bottom: 3
     pixelsPerLogicalUnit: 2
   - slot: 10
     texture: {fileID: 2800000, guid: 5caaa4a48fae43875e333f0c92a00d96, type: 3}
@@ -314,10 +314,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 8
+      left: 4
       top: 4
-      right: 12
-      bottom: 17
+      right: 4
+      bottom: 5
     pixelsPerLogicalUnit: 2
   - slot: 16
     texture: {fileID: 2800000, guid: e1dc825dd016d7387ea066f85be08ab3, type: 3}
@@ -333,10 +333,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 7
-      top: 11
-      right: 7
-      bottom: 11
+      left: 4
+      top: 4
+      right: 4
+      bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 17
     texture: {fileID: 2800000, guid: cdb99773905648e7f2a7432cb509135e, type: 3}
@@ -789,10 +789,10 @@ MonoBehaviour:
       right: 12
       bottom: 12
     opticalInset:
-      left: 24
-      top: 26
-      right: 24
-      bottom: 26
+      left: 16
+      top: 12
+      right: 12
+      bottom: 16
     pixelsPerLogicalUnit: 2
   - slot: 41
     texture: {fileID: 2800000, guid: 22afc06bbb1b2476b565d5ddeb029bfa, type: 3}
@@ -808,10 +808,10 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 0
-      top: 0
-      right: 0
-      bottom: 0
+      left: 4
+      top: 4
+      right: 3
+      bottom: 3
     pixelsPerLogicalUnit: 2
   - slot: 42
     texture: {fileID: 2800000, guid: 24a137e3a7f3cbeccb0db0b0294c4c2b, type: 3}
@@ -827,8 +827,8 @@ MonoBehaviour:
       right: 20
       bottom: 20
     opticalInset:
-      left: 3
-      top: 3
+      left: 4
+      top: 4
       right: 3
       bottom: 3
     pixelsPerLogicalUnit: 2
@@ -1076,6 +1076,6 @@ MonoBehaviour:
     opticalInset:
       left: 8
       top: 8
-      right: 12
-      bottom: 8
+      right: 8
+      bottom: 3
     pixelsPerLogicalUnit: 2

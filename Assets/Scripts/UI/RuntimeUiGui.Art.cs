@@ -1,10 +1,29 @@
 using System;
+using FruitDefense.Core;
 using UnityEngine;
 
 namespace FruitDefense.UI
 {
     public static partial class RuntimeUiGui
     {
+        private const float GameplayStageMaskInset = 8f;
+        private const string NineSliceShaderName =
+            "Hidden/FruitDefense/RuntimeUiNineSlice";
+        private static readonly int NineSliceTintId = Shader.PropertyToID("_Tint");
+        private static readonly int NineSliceTargetBorderId =
+            Shader.PropertyToID("_TargetBorder");
+        private static readonly int NineSliceTargetSizeId =
+            Shader.PropertyToID("_TargetSize");
+        private static readonly int NineSliceSourceXId = Shader.PropertyToID("_SourceX");
+        private static readonly int NineSliceSourceXRightId =
+            Shader.PropertyToID("_SourceXRight");
+        private static readonly int NineSliceSourceYId = Shader.PropertyToID("_SourceY");
+        private static readonly int NineSliceSourceYTopId =
+            Shader.PropertyToID("_SourceYTop");
+        private static readonly int NineSliceClipRectPixelsId =
+            Shader.PropertyToID("_ClipRectPixels");
+        private static Material nineSliceMaterial;
+
         public static void DrawScreenBackground(RuntimeUiDrawContext context, Rect rect)
         {
             DrawSlotArt(Require(context), rect,
@@ -70,7 +89,7 @@ namespace FruitDefense.UI
 
         public static void DrawResultBanner(RuntimeUiDrawContext context, Rect rect)
         {
-            DrawOpticalEnvelopeFitSlotArt(Require(context), rect,
+            DrawOpticalEnvelopeStretchSlotArt(Require(context), rect,
                 RuntimeUiArtSlot.OrnamentResultBanner, RuntimeUiInteractionState.Normal);
         }
 
@@ -102,11 +121,31 @@ namespace FruitDefense.UI
                 RuntimeUiArtSlot.SurfacePanelRaised, state);
         }
 
+        public static void DrawMetricSurface(RuntimeUiDrawContext context, Rect rect,
+            RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal)
+        {
+            DrawStatefulSurface(Require(context), rect,
+                RuntimeUiArtSlot.SurfaceMetric, state);
+        }
+
         public static void DrawGameplayStage(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal)
         {
             DrawStatefulSurface(Require(context), rect,
                 RuntimeUiArtSlot.SurfaceGameplayStage, state);
+        }
+
+        public static Rect GameplayStageMaskRect(
+            RuntimeUiDrawContext context, Rect rect)
+        {
+            context = Require(context);
+            var inset = context.Scaled(GameplayStageMaskInset);
+            if (inset * 2f >= rect.width || inset * 2f >= rect.height)
+                throw new InvalidOperationException(
+                    "Gameplay-stage opening must leave a positive content rect.");
+            return Rect.MinMaxRect(
+                rect.xMin + inset, rect.yMin + inset,
+                rect.xMax - inset, rect.yMax - inset);
         }
 
         public static void DrawSelectableCard(RuntimeUiDrawContext context, Rect rect,
@@ -133,9 +172,9 @@ namespace FruitDefense.UI
             }
         }
 
-        public static void DrawSlot(RuntimeUiDrawContext context, Rect rect,
+        public static Rect DrawSlot(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiSlotKind kind, RuntimeUiInteractionState state,
-            bool emphasized = false)
+            bool emphasized = false, RuntimeUiMotionSample motion = default)
         {
             var slot = kind == RuntimeUiSlotKind.Tool
                 ? RuntimeUiArtSlot.SlotTool
@@ -143,11 +182,16 @@ namespace FruitDefense.UI
                     ? RuntimeUiArtSlot.SlotNursery
                     : throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
             context = Require(context);
-            DrawSlotArt(context, rect, slot,
+            var visualMotion = RuntimeUiMotionSample.Combine(motion,
+                RuntimeUiMotion.InteractionState(state, context.Theme.Feedback));
+            var visualRect = ContainedTransform(rect, visualMotion);
+            DrawSlotArt(context, visualRect, slot,
                 emphasized && state != RuntimeUiInteractionState.Disabled
                     ? RuntimeUiInteractionState.Pressed
-                    : ResolveSurfaceVisualState(state));
-            DrawStateIndicator(context, rect, state);
+                    : ResolveSlotSurfaceVisualState(state));
+            if (state != RuntimeUiInteractionState.Selected)
+                DrawStateIndicator(context, visualRect, state);
+            return visualRect;
         }
 
         public static void DrawIcon(RuntimeUiDrawContext context, Rect rect,
@@ -163,6 +207,49 @@ namespace FruitDefense.UI
         {
             DrawSlotArt(Require(context), rect, IndicatorSlot(kind),
                 RuntimeUiInteractionState.Normal);
+        }
+
+        public static void DrawDragConnector(RuntimeUiDrawContext context,
+            DragConnectorGeometry geometry, RuntimeUiInteractionState state)
+        {
+            if (!geometry.Visible)
+                return;
+            context = Require(context);
+            var matrix = GUI.matrix;
+            var projected = DragGeometry.ProjectConnector(geometry, matrix);
+            if (!projected.Visible)
+                return;
+            try
+            {
+                GUI.matrix = Matrix4x4.identity;
+                GUIUtility.RotateAroundPivot(
+                    projected.AngleDegrees, projected.Start);
+                var tint = context.Tint(state);
+                for (var index = 0; index < projected.DashCount; index++)
+                {
+                    DrawSlotArt(context, projected.DashRect(index),
+                        RuntimeUiArtSlot.SurfaceScrim,
+                        RuntimeUiInteractionState.Normal, .78f, tint);
+                }
+            }
+            finally
+            {
+                GUI.matrix = matrix;
+            }
+        }
+
+        public static void DrawDragTargetFrame(RuntimeUiDrawContext context,
+            Rect target, RuntimeUiInteractionState state,
+            Rect? designClip = null)
+        {
+            context = Require(context);
+            if (target.width <= 0f || target.height <= 0f
+                || !IsFinite(target.x) || !IsFinite(target.y)
+                || !IsFinite(target.width) || !IsFinite(target.height))
+                return;
+            DrawSlotArt(context, target,
+                RuntimeUiArtSlot.SurfaceIllustrationFrame, state,
+                designClip: designClip);
         }
 
         public static void DrawStateIndicator(RuntimeUiDrawContext context, Rect componentRect,
@@ -208,7 +295,8 @@ namespace FruitDefense.UI
         private static void DrawSlotArt(RuntimeUiDrawContext context, Rect destination,
             RuntimeUiArtSlot slot, RuntimeUiInteractionState state,
             float opacityMultiplier = 1f, Color? tintOverride = null,
-            bool mirrorX = false, bool mirrorY = false)
+            bool mirrorX = false, bool mirrorY = false,
+            Rect? designClip = null)
         {
             var binding = context.RequiredBinding(slot);
             ResolveSource(binding, out var texture, out var sourcePixels);
@@ -227,7 +315,8 @@ namespace FruitDefense.UI
                         break;
                     case RuntimeUiArtGeometry.NineSlice:
                         DrawNineSlice(destination, texture, sourcePixels,
-                            binding.SliceBorder, binding.PixelsPerLogicalUnit, context.Scale);
+                            binding.SliceBorder, binding.PixelsPerLogicalUnit,
+                            context.Scale, designClip);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(binding.Geometry),
@@ -264,7 +353,7 @@ namespace FruitDefense.UI
             DrawSlotArt(context, fitted, slot, state);
         }
 
-        private static void DrawOpticalEnvelopeFitSlotArt(RuntimeUiDrawContext context,
+        private static void DrawOpticalEnvelopeStretchSlotArt(RuntimeUiDrawContext context,
             Rect opticalDestination, RuntimeUiArtSlot slot,
             RuntimeUiInteractionState state)
         {
@@ -327,125 +416,177 @@ namespace FruitDefense.UI
         }
 
         private static void DrawNineSlice(Rect destination, Texture texture, Rect sourcePixels,
-            RuntimeUiPixelInsets border, float pixelsPerLogicalUnit, float scale)
+            RuntimeUiPixelInsets border, float pixelsPerLogicalUnit, float scale,
+            Rect? designClip)
         {
-            var left = border.Left / pixelsPerLogicalUnit * scale;
-            var right = border.Right / pixelsPerLogicalUnit * scale;
-            var top = border.Top / pixelsPerLogicalUnit * scale;
-            var bottom = border.Bottom / pixelsPerLogicalUnit * scale;
-            FitPair(ref left, ref right, Mathf.Max(0f, destination.width));
-            FitPair(ref top, ref bottom, Mathf.Max(0f, destination.height));
-
-            var dx0 = destination.xMin;
-            var dx1 = destination.xMin + left;
-            var dx2 = destination.xMax - right;
-            var dx3 = destination.xMax;
-            var dy0 = destination.yMin;
-            var dy1 = destination.yMin + top;
-            var dy2 = destination.yMax - bottom;
-            var dy3 = destination.yMax;
-            SnapNineSliceBoundaries(GUI.matrix,
-                ref dx0, ref dx1, ref dx2, ref dx3,
-                ref dy0, ref dy1, ref dy2, ref dy3);
-            var sx0 = sourcePixels.xMin;
-            var sx1 = sourcePixels.xMin + border.Left;
-            var sx2 = sourcePixels.xMax - border.Right;
-            var sx3 = sourcePixels.xMax;
-            var sy0 = sourcePixels.yMax;
-            var sy1 = sourcePixels.yMax - border.Top;
-            var sy2 = sourcePixels.yMin + border.Bottom;
-            var sy3 = sourcePixels.yMin;
-
-            DrawNineSlicePatch(texture, dx0, dy0, dx1, dy1, sx0, sy1, sx1, sy0);
-            DrawNineSlicePatch(texture, dx1, dy0, dx2, dy1, sx1, sy1, sx2, sy0);
-            DrawNineSlicePatch(texture, dx2, dy0, dx3, dy1, sx2, sy1, sx3, sy0);
-            DrawNineSlicePatch(texture, dx0, dy1, dx1, dy2, sx0, sy2, sx1, sy1);
-            DrawNineSlicePatch(texture, dx1, dy1, dx2, dy2, sx1, sy2, sx2, sy1);
-            DrawNineSlicePatch(texture, dx2, dy1, dx3, dy2, sx2, sy2, sx3, sy1);
-            DrawNineSlicePatch(texture, dx0, dy2, dx1, dy3, sx0, sy3, sx1, sy2);
-            DrawNineSlicePatch(texture, dx1, dy2, dx2, dy3, sx1, sy3, sx2, sy2);
-            DrawNineSlicePatch(texture, dx2, dy2, dx3, dy3, sx2, sy3, sx3, sy2);
-        }
-
-        private static void SnapNineSliceBoundaries(Matrix4x4 guiMatrix,
-            ref float destinationX0, ref float destinationX1,
-            ref float destinationX2, ref float destinationX3,
-            ref float destinationY0, ref float destinationY1,
-            ref float destinationY2, ref float destinationY3)
-        {
-            // IMGUI rasterizes each target Rect independently. Snapping only an internal edge
-            // still leaves a fractional outer origin, so the first patch can round its origin
-            // and width independently and miss the last device-pixel column. Build one complete
-            // device-pixel partition instead: outer and internal boundaries are snapped once,
-            // mapped back to GUI space, and then shared verbatim by all nine patches.
-            if (!IsAxisAlignedGuiMatrix(guiMatrix))
+            if (destination.width <= 0f || destination.height <= 0f
+                || sourcePixels.width <= 0f || sourcePixels.height <= 0f)
+                return;
+            if (Event.current != null && Event.current.type != EventType.Repaint)
                 return;
 
-            destinationX0 = SnapGuiAxis(destinationX0, guiMatrix.m00, guiMatrix.m03);
-            destinationX3 = Mathf.Max(destinationX0,
-                SnapGuiAxis(destinationX3, guiMatrix.m00, guiMatrix.m03));
-            destinationY0 = SnapGuiAxis(destinationY0, guiMatrix.m11, guiMatrix.m13);
-            destinationY3 = Mathf.Max(destinationY0,
-                SnapGuiAxis(destinationY3, guiMatrix.m11, guiMatrix.m13));
-
-            destinationX1 = Mathf.Clamp(SnapGuiAxis(destinationX1,
-                guiMatrix.m00, guiMatrix.m03), destinationX0, destinationX3);
-            destinationX2 = Mathf.Clamp(SnapGuiAxis(destinationX2,
-                guiMatrix.m00, guiMatrix.m03), destinationX1, destinationX3);
-            destinationY1 = Mathf.Clamp(SnapGuiAxis(destinationY1,
-                guiMatrix.m11, guiMatrix.m13), destinationY0, destinationY3);
-            destinationY2 = Mathf.Clamp(SnapGuiAxis(destinationY2,
-                guiMatrix.m11, guiMatrix.m13), destinationY1, destinationY3);
-        }
-
-        private static bool IsAxisAlignedGuiMatrix(Matrix4x4 matrix)
-        {
-            const float epsilon = .00001f;
-            return RuntimeUiNumbers.IsFinite(matrix.m00)
-                && RuntimeUiNumbers.IsFinite(matrix.m11)
-                && RuntimeUiNumbers.IsFinite(matrix.m03)
-                && RuntimeUiNumbers.IsFinite(matrix.m13)
-                && matrix.m00 > epsilon
-                && matrix.m11 > epsilon
-                && Mathf.Abs(matrix.m01) <= epsilon
-                && Mathf.Abs(matrix.m10) <= epsilon;
-        }
-
-        private static float SnapGuiAxis(float guiValue, float matrixScale,
-            float matrixOffset)
-        {
-            var deviceValue = guiValue * matrixScale + matrixOffset;
-            return (Mathf.Round(deviceValue) - matrixOffset) / matrixScale;
-        }
-
-        private static void DrawNineSlicePatch(Texture texture,
-            float destinationXMin, float destinationYMin,
-            float destinationXMax, float destinationYMax,
-            float sourceXMin, float sourceYMin, float sourceXMax, float sourceYMax)
-        {
-            var destinationWidth = destinationXMax - destinationXMin;
-            var destinationHeight = destinationYMax - destinationYMin;
-            var sourceWidth = sourceXMax - sourceXMin;
-            var sourceHeight = sourceYMax - sourceYMin;
-            if (destinationWidth <= 0f || destinationHeight <= 0f
-                || sourceWidth <= 0f || sourceHeight <= 0f)
+            int targetWidthPixels;
+            int targetHeightPixels;
+            var aligned = GUIUtility.AlignRectToDevice(destination,
+                out targetWidthPixels, out targetHeightPixels);
+            if (targetWidthPixels <= 0 || targetHeightPixels <= 0
+                || aligned.width <= 0f || aligned.height <= 0f)
                 return;
 
-            var target = new Rect(destinationXMin, destinationYMin,
-                destinationWidth, destinationHeight);
-            var uv = new Rect(sourceXMin / texture.width, sourceYMin / texture.height,
-                sourceWidth / texture.width, sourceHeight / texture.height);
-            GUI.DrawTextureWithTexCoords(target, texture, uv, true);
+            var screenMin = GUIUtility.GUIToScreenPoint(aligned.min);
+            var screenMax = GUIUtility.GUIToScreenPoint(aligned.max);
+            var screenRect = Rect.MinMaxRect(
+                Mathf.Min(screenMin.x, screenMax.x),
+                Mathf.Min(screenMin.y, screenMax.y),
+                Mathf.Max(screenMin.x, screenMax.x),
+                Mathf.Max(screenMin.y, screenMax.y));
+            if (screenRect.width <= 0f || screenRect.height <= 0f)
+                return;
+
+            var clipScreenRect = screenRect;
+            if (designClip.HasValue)
+            {
+                var clipMin = GUIUtility.GUIToScreenPoint(
+                    designClip.Value.min);
+                var clipMax = GUIUtility.GUIToScreenPoint(
+                    designClip.Value.max);
+                clipScreenRect = Intersect(
+                    screenRect, Rect.MinMaxRect(
+                        Mathf.Min(clipMin.x, clipMax.x),
+                        Mathf.Min(clipMin.y, clipMax.y),
+                        Mathf.Max(clipMin.x, clipMax.x),
+                        Mathf.Max(clipMin.y, clipMax.y)));
+                if (clipScreenRect.width <= 0f
+                    || clipScreenRect.height <= 0f)
+                    return;
+            }
+
+            var deviceScaleX = targetWidthPixels / aligned.width;
+            var deviceScaleY = targetHeightPixels / aligned.height;
+            var targetBorder = ResolveNineSliceTargetBorderPixels(border,
+                pixelsPerLogicalUnit, scale, deviceScaleX, deviceScaleY,
+                targetWidthPixels, targetHeightPixels);
+            Vector4 sourceXRight;
+            var sourceX = ResolveNineSliceSourceAxis(sourcePixels.xMin,
+                sourcePixels.xMax, border.Left, border.Right, texture.width,
+                out sourceXRight);
+            Vector4 sourceYTop;
+            var sourceY = ResolveNineSliceSourceAxis(sourcePixels.yMin,
+                sourcePixels.yMax, border.Bottom, border.Top, texture.height,
+                out sourceYTop);
+
+            var material = RequireNineSliceMaterial();
+            material.SetColor(NineSliceTintId, GUI.color);
+            material.SetVector(NineSliceTargetBorderId, targetBorder);
+            material.SetVector(NineSliceTargetSizeId,
+                new Vector4(targetWidthPixels, targetHeightPixels, 0f, 0f));
+            material.SetVector(NineSliceSourceXId, sourceX);
+            material.SetVector(NineSliceSourceXRightId, sourceXRight);
+            material.SetVector(NineSliceSourceYId, sourceY);
+            material.SetVector(NineSliceSourceYTopId, sourceYTop);
+            var fragmentYMin = SystemInfo.graphicsUVStartsAtTop
+                ? clipScreenRect.yMin
+                : Screen.height - clipScreenRect.yMax;
+            var fragmentYMax = SystemInfo.graphicsUVStartsAtTop
+                ? clipScreenRect.yMax
+                : Screen.height - clipScreenRect.yMin;
+            material.SetVector(NineSliceClipRectPixelsId,
+                new Vector4(clipScreenRect.xMin, fragmentYMin,
+                    clipScreenRect.xMax, fragmentYMax));
+
+            // One aligned quad owns the entire nine-slice. The shader remaps its UVs
+            // through shared source/target boundaries, so D3D/WebGL never rasterize
+            // nine independently rounded patches or sample across slice partitions.
+            var previousMatrix = GUI.matrix;
+            try
+            {
+                // Graphics.DrawTexture inherits IMGUI's current projection even though
+                // its public rectangle is screen-space. The rectangle above already
+                // includes the complete GUIClip/matrix conversion, so draw it once
+                // under identity instead of applying the PC viewport transform twice.
+                GUI.matrix = Matrix4x4.identity;
+                Graphics.DrawTexture(screenRect, texture, new Rect(0f, 0f, 1f, 1f),
+                    0, 0, 0, 0, Color.white, material);
+            }
+            finally
+            {
+                GUI.matrix = previousMatrix;
+            }
         }
 
-        private static void FitPair(ref float first, ref float second, float available)
+        private static Rect Intersect(Rect left, Rect right)
         {
-            var total = first + second;
-            if (total <= available || total <= 0f)
+            return Rect.MinMaxRect(
+                Mathf.Max(left.xMin, right.xMin),
+                Mathf.Max(left.yMin, right.yMin),
+                Mathf.Min(left.xMax, right.xMax),
+                Mathf.Min(left.yMax, right.yMax));
+        }
+
+        private static Vector4 ResolveNineSliceTargetBorderPixels(
+            RuntimeUiPixelInsets border, float pixelsPerLogicalUnit,
+            float logicalScale, float deviceScaleX, float deviceScaleY,
+            int targetWidthPixels, int targetHeightPixels)
+        {
+            var sourceScale = Mathf.Max(.0001f, pixelsPerLogicalUnit);
+            var left = Mathf.Max(0, Mathf.RoundToInt(
+                border.Left / sourceScale * logicalScale * deviceScaleX));
+            var right = Mathf.Max(0, Mathf.RoundToInt(
+                border.Right / sourceScale * logicalScale * deviceScaleX));
+            var top = Mathf.Max(0, Mathf.RoundToInt(
+                border.Top / sourceScale * logicalScale * deviceScaleY));
+            var bottom = Mathf.Max(0, Mathf.RoundToInt(
+                border.Bottom / sourceScale * logicalScale * deviceScaleY));
+            FitPixelPair(ref left, ref right, Mathf.Max(0, targetWidthPixels));
+            FitPixelPair(ref bottom, ref top, Mathf.Max(0, targetHeightPixels));
+            return new Vector4(left, bottom, right, top);
+        }
+
+        private static Vector4 ResolveNineSliceSourceAxis(float sourceMin,
+            float sourceMax, int leadingBorder, int trailingBorder,
+            float textureSize, out Vector4 trailing)
+        {
+            var inverseTextureSize = 1f / Mathf.Max(1f, textureSize);
+            var firstBoundary = sourceMin + leadingBorder;
+            var secondBoundary = sourceMax - trailingBorder;
+            var outerMin = (sourceMin + .5f) * inverseTextureSize;
+            var leadingEnd = (firstBoundary - .5f) * inverseTextureSize;
+            var centerStart = (firstBoundary + .5f) * inverseTextureSize;
+            var centerEnd = (secondBoundary - .5f) * inverseTextureSize;
+            var trailingStart = (secondBoundary + .5f) * inverseTextureSize;
+            var outerMax = (sourceMax - .5f) * inverseTextureSize;
+            trailing = new Vector4(trailingStart, outerMax, 0f, 0f);
+            return new Vector4(outerMin, leadingEnd, centerStart, centerEnd);
+        }
+
+        private static void FitPixelPair(ref int first, ref int second, int available)
+        {
+            var total = (long)first + second;
+            if (total <= available || total <= 0L)
                 return;
-            var factor = available / total;
-            first *= factor;
-            second *= factor;
+            first = Mathf.Clamp(Mathf.RoundToInt(available * (first / (float)total)),
+                0, available);
+            second = available - first;
+        }
+
+        private static Material RequireNineSliceMaterial()
+        {
+            if (nineSliceMaterial != null)
+                return nineSliceMaterial;
+            var shader = Shader.Find(NineSliceShaderName);
+            if (shader == null)
+            {
+                throw new InvalidOperationException(
+                    "Required runtime UI nine-slice shader is unavailable: "
+                    + NineSliceShaderName);
+            }
+
+            nineSliceMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+                name = "Fruit Defense Runtime UI Nine-Slice Material",
+            };
+            return nineSliceMaterial;
         }
 
         private static Rect Inset(Rect rect, float inset)
@@ -500,12 +641,12 @@ namespace FruitDefense.UI
                     "Runtime UI optical envelope must have positive dimensions for slot '"
                     + RuntimeUiArtSlots.SemanticId(slot) + "'.");
 
-            var scale = Mathf.Min(opticalDestination.width / opticalWidth,
-                opticalDestination.height / opticalHeight);
-            var drawWidth = source.width * scale;
-            var drawHeight = source.height * scale;
-            var opticalCenterX = (optical.Left + opticalWidth * .5f) * scale;
-            var opticalCenterY = (optical.Top + opticalHeight * .5f) * scale;
+            var scaleX = opticalDestination.width / opticalWidth;
+            var scaleY = opticalDestination.height / opticalHeight;
+            var drawWidth = source.width * scaleX;
+            var drawHeight = source.height * scaleY;
+            var opticalCenterX = (optical.Left + opticalWidth * .5f) * scaleX;
+            var opticalCenterY = (optical.Top + opticalHeight * .5f) * scaleY;
             return new Rect(
                 opticalDestination.center.x - opticalCenterX,
                 opticalDestination.center.y - opticalCenterY,
@@ -547,6 +688,19 @@ namespace FruitDefense.UI
                     return RuntimeUiInteractionState.Normal;
                 default:
                     return state;
+            }
+        }
+
+        private static RuntimeUiInteractionState ResolveSlotSurfaceVisualState(
+            RuntimeUiInteractionState state)
+        {
+            switch (state)
+            {
+                case RuntimeUiInteractionState.HoveredOrFocused:
+                case RuntimeUiInteractionState.Selected:
+                    return RuntimeUiInteractionState.Normal;
+                default:
+                    return ResolveSurfaceVisualState(state);
             }
         }
 

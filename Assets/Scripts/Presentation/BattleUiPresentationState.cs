@@ -14,7 +14,7 @@ namespace FruitDefense.Presentation
         Defeat = 5,
     }
 
-    public enum BattleUiBoardMode
+    public enum BattleUiPhaseMode
     {
         Ready = 0,
         ActiveWave = 1,
@@ -86,15 +86,15 @@ namespace FruitDefense.Presentation
     public readonly struct BattleUiPresentationState
     {
         private BattleUiPresentationState(
-            BattleUiChromeMode mode, BattleUiBoardMode boardMode, bool isPaused)
+            BattleUiChromeMode mode, BattleUiPhaseMode phaseMode, bool isPaused)
         {
             Mode = mode;
-            BoardMode = boardMode;
+            PhaseMode = phaseMode;
             IsPaused = isPaused;
         }
 
         public BattleUiChromeMode Mode { get; }
-        public BattleUiBoardMode BoardMode { get; }
+        public BattleUiPhaseMode PhaseMode { get; }
         public bool IsPaused { get; }
         public bool BlocksDrag => Mode == BattleUiChromeMode.Paused
             || Mode == BattleUiChromeMode.Victory
@@ -102,6 +102,7 @@ namespace FruitDefense.Presentation
         public bool ShowsOverlay => Mode == BattleUiChromeMode.Paused
             || Mode == BattleUiChromeMode.Victory
             || Mode == BattleUiChromeMode.Defeat;
+        public bool BlocksBackgroundInput => ShowsOverlay;
         public bool ShowsWaveAction => Mode == BattleUiChromeMode.Ready
             || Mode == BattleUiChromeMode.BetweenWaves;
         public int ModalActionCount => Mode == BattleUiChromeMode.Paused ? 2
@@ -114,51 +115,53 @@ namespace FruitDefense.Presentation
             : Mode == BattleUiChromeMode.BetweenWaves
                 ? RuntimeUiCopyCatalog.Get(RuntimeUiCopyId.BattleStartNextWave).Text
             : string.Empty;
-        public RuntimeUiInteractionState StatusInteractionState =>
-            BoardMode == BattleUiBoardMode.BetweenWaves ? RuntimeUiInteractionState.Warning
-            : BoardMode == BattleUiBoardMode.Victory ? RuntimeUiInteractionState.Success
-            : BoardMode == BattleUiBoardMode.Defeat ? RuntimeUiInteractionState.Error
+        public RuntimeUiInteractionState PhaseStatusInteractionState =>
+            PhaseMode == BattleUiPhaseMode.Ready
+                || PhaseMode == BattleUiPhaseMode.BetweenWaves
+                ? RuntimeUiInteractionState.Warning
+            : PhaseMode == BattleUiPhaseMode.Victory ? RuntimeUiInteractionState.Success
+            : PhaseMode == BattleUiPhaseMode.Defeat ? RuntimeUiInteractionState.Error
             : RuntimeUiInteractionState.Normal;
 
         public static BattleUiPresentationState Create(GamePhase phase, bool paused)
         {
-            var boardMode = phase == GamePhase.Playing ? BattleUiBoardMode.ActiveWave
-                : phase == GamePhase.BetweenWaves ? BattleUiBoardMode.BetweenWaves
-                : phase == GamePhase.Victory ? BattleUiBoardMode.Victory
-                : phase == GamePhase.Defeat ? BattleUiBoardMode.Defeat
-                : BattleUiBoardMode.Ready;
+            var phaseMode = phase == GamePhase.Playing ? BattleUiPhaseMode.ActiveWave
+                : phase == GamePhase.BetweenWaves ? BattleUiPhaseMode.BetweenWaves
+                : phase == GamePhase.Victory ? BattleUiPhaseMode.Victory
+                : phase == GamePhase.Defeat ? BattleUiPhaseMode.Defeat
+                : BattleUiPhaseMode.Ready;
             if (phase == GamePhase.Victory)
                 return new BattleUiPresentationState(
-                    BattleUiChromeMode.Victory, boardMode, paused);
+                    BattleUiChromeMode.Victory, phaseMode, paused);
             if (phase == GamePhase.Defeat)
                 return new BattleUiPresentationState(
-                    BattleUiChromeMode.Defeat, boardMode, paused);
+                    BattleUiChromeMode.Defeat, phaseMode, paused);
             if (paused)
                 return new BattleUiPresentationState(
-                    BattleUiChromeMode.Paused, boardMode, true);
+                    BattleUiChromeMode.Paused, phaseMode, true);
             if (phase == GamePhase.Playing)
                 return new BattleUiPresentationState(
-                    BattleUiChromeMode.ActiveWave, boardMode, false);
+                    BattleUiChromeMode.ActiveWave, phaseMode, false);
             if (phase == GamePhase.BetweenWaves)
                 return new BattleUiPresentationState(
-                    BattleUiChromeMode.BetweenWaves, boardMode, false);
-            return new BattleUiPresentationState(BattleUiChromeMode.Ready, boardMode, false);
+                    BattleUiChromeMode.BetweenWaves, phaseMode, false);
+            return new BattleUiPresentationState(BattleUiChromeMode.Ready, phaseMode, false);
         }
 
-        public string BoardStatusText(int waveIndex, int zombieCount, float betweenTimer)
+        public string PhaseStatusText(int waveIndex, int zombieCount, float betweenTimer)
         {
-            switch (BoardMode)
+            switch (PhaseMode)
             {
-                case BattleUiBoardMode.ActiveWave:
+                case BattleUiPhaseMode.ActiveWave:
                     return RuntimeUiCopyCatalog.FormatActiveWaveStatus(
                         waveIndex, zombieCount);
-                case BattleUiBoardMode.BetweenWaves:
+                case BattleUiPhaseMode.BetweenWaves:
                     return RuntimeUiCopyCatalog.FormatBetweenWaveStatus(
                         UnityEngine.Mathf.CeilToInt(betweenTimer));
-                case BattleUiBoardMode.Victory:
+                case BattleUiPhaseMode.Victory:
                     return RuntimeUiCopyCatalog.Get(
                         RuntimeUiCopyId.BattleVictoryStatus).Text;
-                case BattleUiBoardMode.Defeat:
+                case BattleUiPhaseMode.Defeat:
                     return RuntimeUiCopyCatalog.Get(
                         RuntimeUiCopyId.BattleDefeatStatus).Text;
                 default:
@@ -233,6 +236,13 @@ namespace FruitDefense.Presentation
                 case BattleUiDropCue.None: return RuntimeUiInteractionState.Normal;
                 default: throw new ArgumentOutOfRangeException(nameof(cue), cue, null);
             }
+        }
+
+        public static bool SnapsPlantDragFeedback(BattleUiDropCue cue)
+        {
+            return cue == BattleUiDropCue.Legal
+                || cue == BattleUiDropCue.Merge
+                || cue == BattleUiDropCue.Swap;
         }
 
         public static RuntimeUiIndicatorKind DropIndicatorKind(BattleUiDropCue cue)

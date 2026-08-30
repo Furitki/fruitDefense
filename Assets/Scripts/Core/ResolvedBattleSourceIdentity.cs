@@ -165,7 +165,8 @@ namespace FruitDefense.Core
             projection.Add("rules.initialPotCount", rules.InitialPotCount);
             projection.Add("rules.betweenWaveSeconds", rules.BetweenWaveSeconds);
             projection.Add("rules.nurserySlotCount", rules.NurserySlotCount);
-            projection.Add("rules.nurseryPotChance", rules.NurseryPotChance);
+            projection.Add("rules.nurseryProfileId", rules.NurseryProfileId);
+            projection.Add("rules.relocationCooldownSeconds", rules.RelocationCooldownSeconds);
             projection.Add("rules.refreshBaseCost", rules.RefreshBaseCost);
             projection.Add("rules.refreshCostStep", rules.RefreshCostStep);
             projection.Add("rules.milestoneCount", rules.MilestoneRewards.Count);
@@ -220,7 +221,9 @@ namespace FruitDefense.Core
                     StringComparer.Ordinal).ToArray(),
                 waves = content.Waves.Values.OrderBy(value => value.id,
                     StringComparer.Ordinal).ToArray(),
-                starTiers = content.StarTiers.Values.OrderBy(value => value.id,
+                upgradeProfiles = content.UpgradeProfiles.Values.OrderBy(value => value.id,
+                    StringComparer.Ordinal).ToArray(),
+                nurseryProfiles = content.NurseryProfiles.Values.OrderBy(value => value.id,
                     StringComparer.Ordinal).ToArray(),
             };
         }

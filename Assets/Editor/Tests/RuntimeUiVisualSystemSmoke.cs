@@ -170,6 +170,7 @@ namespace FruitDefense.Editor
                 "public static void DrawSectionRibbon(",
                 "public static void DrawIllustrationFrame(",
                 "public static void DrawMetricDivider(",
+                "public static void DrawMetricSurface(",
                 "public static void DrawResultBanner(",
                 "public static void DrawEmphasisText(",
                 "public static RuntimeUiEmphasisTextLayout ResolveEmphasisTextLayout(",
@@ -183,24 +184,24 @@ namespace FruitDefense.Editor
             for (var index = 0; index < requiredApis.Length; index++)
                 Assert(gui.Contains(requiredApis[index]),
                     "shared renderer is missing explicit hierarchy API: " + requiredApis[index]);
-            var focusCueStart = gui.IndexOf(
-                "private static void DrawActionInteractionCue(",
-                StringComparison.Ordinal);
-            var focusCueEnd = gui.IndexOf(
-                "private static void RequireStandardActionContent(",
-                StringComparison.Ordinal);
-            var whitePrimitive = gui.IndexOf(
-                "Texture2D.whiteTexture", StringComparison.Ordinal);
+            var standardAction = Slice(gui,
+                "public static void DrawActionVisual(",
+                "public static void DrawCompactControlVisual(");
+            var compactAction = Slice(gui,
+                "public static void DrawCompactControlVisual(",
+                "public static RuntimeUiActionContentLayout ResolveActionContentLayout(");
             Assert(!gui.Contains("Resources.Load")
                 && !gui.Contains("AssetDatabase")
-                && gui.Split(new[] { "Texture2D.whiteTexture" },
-                    StringSplitOptions.None).Length == 2
-                && focusCueStart >= 0 && focusCueEnd > focusCueStart
-                && whitePrimitive > focusCueStart && whitePrimitive < focusCueEnd
+                && standardAction.Contains("RuntimeUiMotion.InteractionState(")
+                && compactAction.Contains("RuntimeUiMotion.InteractionState(")
+                && !standardAction.Contains("RuntimeUiArtSlot.MarkerSelected")
+                && !compactAction.Contains("RuntimeUiArtSlot.MarkerSelected")
+                && !gui.Contains("DrawActionInteractionCue")
+                && !gui.Contains("Texture2D.whiteTexture")
                 && !gui.Contains("GUI.skin")
                 && !gui.Contains(
                     "DrawSlotArt(context, rect, RuntimeUiArtSlot.SurfaceMetric"),
-                "painted hierarchy renderer has one scoped focus primitive and no path, resource or default-skin fallback");
+                "painted hierarchy renderer uses marker-free contained interaction motion and no path, primitive, resource or default-skin fallback");
 
             var lobby = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/Shell/LobbyPresenter.cs"));
@@ -227,7 +228,13 @@ namespace FruitDefense.Editor
                 && settlement.Contains("compactInline: true"),
                 "Settlement hierarchy consumes its explicit result semantics");
             var battle = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
-            Assert(battle.Contains("RuntimeUiGui.DrawMetricDivider")
+            Assert(battle.Contains("RuntimeUiGui.DrawRaisedPanel")
+                && battle.Contains("drawSurface: true")
+                && !battle.Contains("drawSurface: false")
+                && battle.Contains("RuntimeUiGui.DrawSafeArea")
+                && battle.Contains("layout.PageShell")
+                && battle.Contains("RuntimeUiGui.DrawScreenCorners")
+                && !battle.Contains("RuntimeUiGui.DrawMetricDivider")
                 && battle.Contains("RuntimeUiGui.DrawSectionRibbon")
                 && battle.Contains("RuntimeUiGui.DrawResultBanner")
                 && battle.Contains("RuntimeUiGui.DrawOrchardVista"),
@@ -240,154 +247,124 @@ namespace FruitDefense.Editor
 
         private static void ValidateNineSliceDevicePixelCoverage()
         {
-            var snap = typeof(RuntimeUiGui).GetMethod("SnapNineSliceBoundaries",
+            var resolveTargetBorder = typeof(RuntimeUiGui).GetMethod(
+                "ResolveNineSliceTargetBorderPixels",
                 BindingFlags.NonPublic | BindingFlags.Static);
-            Assert(snap != null,
-                "nine-slice renderer owns one complete device-pixel partition snapper");
+            var resolveSourceAxis = typeof(RuntimeUiGui).GetMethod(
+                "ResolveNineSliceSourceAxis",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert(resolveTargetBorder != null && resolveSourceAxis != null,
+                "nine-slice renderer owns device-border and texel-center resolvers");
 
-            // Exact pre-fix Settlement case: x0=22.517 and x1=36.137 made IMGUI round
-            // the first patch's origin and width separately, leaving device column 35 bare.
-            ValidateNineSliceDevicePixelCoverage(snap, Matrix4x4.identity,
-                new Rect(22.517f, 134.995f, 314.966f, 221.327f),
-                36.137f, 323.863f, 148.615f, 342.702f,
-                "360x800 inset shell x35 regression", 35);
+            var border = new RuntimeUiPixelInsets(32, 32, 32, 32);
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 720f / 874f, 79, 79, 13,
+                "1280x720 persisted PC window");
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 1f, 96, 96, 16, "402x874 logical 1x");
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 1280f / 874f, 141, 141, 23,
+                "720x1280 portrait fractional PC window");
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 2f, 192, 192, 32, "804x1748 PC window");
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 3f, 288, 288, 48, "1206x2622 configured PC window");
+            AssertNineSliceTargetBorders(resolveTargetBorder, border,
+                1.25f, 1f, 120, 120, 20, "scaled shell context");
 
-            ValidateViewportNineSlice(snap, 360, 800, 0, 0, "360x800 full");
-            ValidateViewportNineSlice(snap, 360, 800, 32, 24, "360x800 inset");
-            ValidateViewportNineSlice(snap, 375, 812, 0, 0, "375x812 full");
-            ValidateViewportNineSlice(snap, 375, 812, 40, 21, "375x812 inset");
-            ValidateViewportNineSlice(snap, 402, 874, 0, 0, "402x874 full");
-            ValidateViewportNineSlice(snap, 402, 874, 44, 34, "402x874 inset");
-            ValidateViewportNineSlice(snap, 430, 932, 0, 0, "430x932 full");
-            ValidateViewportNineSlice(snap, 430, 932, 50, 36, "430x932 inset");
-            Debug.Log("RUNTIME_UI_NINE_SLICE_PARTITION_OK matrices=9 x35=covered");
-        }
+            var fitted = ResolveNineSliceTargetBorders(resolveTargetBorder, border,
+                1f, 1f, 1f, 20, 19);
+            Assert(IsIntegerBorder(fitted)
+                && Mathf.Abs(fitted.x + fitted.z - 20f) <= .0001f
+                && Mathf.Abs(fitted.y + fitted.w - 19f) <= .0001f,
+                "nine-slice protected borders fit tiny targets without overlap or gaps");
 
-        private static void ValidateViewportNineSlice(MethodInfo snap,
-            float width, float height, float safeTop, float safeBottom, string caseName)
-        {
-            const float designWidth = 402f;
-            const float designHeight = 874f;
-            var safeHeight = height - safeTop - safeBottom;
-            var scale = Mathf.Min(width / designWidth, safeHeight / designHeight);
-            var offsetX = (width - designWidth * scale) * .5f;
-            var offsetY = safeTop + (safeHeight - designHeight * scale) * .5f;
-            var matrix = Matrix4x4.TRS(new Vector3(offsetX, offsetY, 0f),
-                Quaternion.identity, new Vector3(scale, scale, 1f));
-            var destination = new Rect(18.25f, 121.5f, 365.5f, 260.25f);
-            ValidateNineSliceDevicePixelCoverage(snap, matrix, destination,
-                destination.xMin + 16f, destination.xMax - 16f,
-                destination.yMin + 16f, destination.yMax - 16f, caseName, null);
-        }
-
-        private static void ValidateNineSliceDevicePixelCoverage(MethodInfo snap,
-            Matrix4x4 matrix, Rect destination, float x1, float x2,
-            float y1, float y2, string caseName, int? requiredDeviceColumn)
-        {
-            var arguments = new object[]
+            var sourceArguments = new object[]
             {
-                matrix,
-                destination.xMin,
-                x1,
-                x2,
-                destination.xMax,
-                destination.yMin,
-                y1,
-                y2,
-                destination.yMax,
+                0f, 128f, 32, 32, 128f, null,
             };
-            snap.Invoke(null, arguments);
+            var sourceLeadingAndCenter =
+                (Vector4)resolveSourceAxis.Invoke(null, sourceArguments);
+            var sourceTrailing = (Vector4)sourceArguments[5];
+            var oneTexel = 1f / 128f;
+            Assert(sourceLeadingAndCenter.x < sourceLeadingAndCenter.y
+                && sourceLeadingAndCenter.y < sourceLeadingAndCenter.z
+                && sourceLeadingAndCenter.z < sourceLeadingAndCenter.w
+                && sourceLeadingAndCenter.w < sourceTrailing.x
+                && sourceTrailing.x < sourceTrailing.y
+                && Mathf.Abs(sourceLeadingAndCenter.z
+                    - sourceLeadingAndCenter.y - oneTexel) <= .0001f
+                && Mathf.Abs(sourceTrailing.x
+                    - sourceLeadingAndCenter.w - oneTexel) <= .0001f,
+                "nine-slice sampling terminates each region at texel centers without cross-slice bleed");
 
-            var x0 = (float)arguments[1];
-            var snappedX1 = (float)arguments[2];
-            var snappedX2 = (float)arguments[3];
-            var x3 = (float)arguments[4];
-            var y0 = (float)arguments[5];
-            var snappedY1 = (float)arguments[6];
-            var snappedY2 = (float)arguments[7];
-            var y3 = (float)arguments[8];
-            Assert(x0 <= snappedX1 && snappedX1 <= snappedX2 && snappedX2 <= x3
-                && y0 <= snappedY1 && snappedY1 <= snappedY2 && snappedY2 <= y3,
-                caseName + " keeps all nine destination patches monotonic");
+            var source = RuntimeUiSourceAuthority.ReadRuntimeGui();
+            var drawNineSlice = Slice(source,
+                "private static void DrawNineSlice(",
+                "private static Vector4 ResolveNineSliceTargetBorderPixels(");
+            Assert(drawNineSlice.Contains("GUIUtility.AlignRectToDevice")
+                && drawNineSlice.Contains("GUIUtility.GUIToScreenPoint")
+                && drawNineSlice.Contains("Graphics.DrawTexture")
+                && drawNineSlice.Contains("RequireNineSliceMaterial")
+                && drawNineSlice.Contains("GUI.matrix = Matrix4x4.identity")
+                && !source.Contains("DrawNineSlicePatch")
+                && !source.Contains("ResolveNineSliceSeamGuard")
+                && !source.Contains("SnapNineSliceBoundaries"),
+                "nine-slice rendering uses one engine-aligned GPU draw and no independent patch path");
 
-            Assert(IsDevicePixelBoundary(matrix.m00 * x0 + matrix.m03)
-                && IsDevicePixelBoundary(matrix.m00 * snappedX1 + matrix.m03)
-                && IsDevicePixelBoundary(matrix.m00 * snappedX2 + matrix.m03)
-                && IsDevicePixelBoundary(matrix.m00 * x3 + matrix.m03)
-                && IsDevicePixelBoundary(matrix.m11 * y0 + matrix.m13)
-                && IsDevicePixelBoundary(matrix.m11 * snappedY1 + matrix.m13)
-                && IsDevicePixelBoundary(matrix.m11 * snappedY2 + matrix.m13)
-                && IsDevicePixelBoundary(matrix.m11 * y3 + matrix.m13),
-                caseName + " snaps outer and internal edges into one device-pixel partition");
-
-            var deviceX = new[]
-            {
-                matrix.m00 * x0 + matrix.m03,
-                matrix.m00 * snappedX1 + matrix.m03,
-                matrix.m00 * snappedX2 + matrix.m03,
-                matrix.m00 * x3 + matrix.m03,
-            };
-            var deviceY = new[]
-            {
-                matrix.m11 * y0 + matrix.m13,
-                matrix.m11 * snappedY1 + matrix.m13,
-                matrix.m11 * snappedY2 + matrix.m13,
-                matrix.m11 * y3 + matrix.m13,
-            };
-            AssertAxisCoveredExactlyOnce(deviceX, caseName + " horizontal");
-            AssertAxisCoveredExactlyOnce(deviceY, caseName + " vertical");
-
-            Assert(Mathf.Abs(deviceX[0]
-                    - (matrix.m00 * destination.xMin + matrix.m03)) <= .5001f
-                && Mathf.Abs(deviceX[3]
-                    - (matrix.m00 * destination.xMax + matrix.m03)) <= .5001f
-                && Mathf.Abs(deviceY[0]
-                    - (matrix.m11 * destination.yMin + matrix.m13)) <= .5001f
-                && Mathf.Abs(deviceY[3]
-                    - (matrix.m11 * destination.yMax + matrix.m13)) <= .5001f,
-                caseName + " preserves the requested outer draw rect to device-pixel precision");
-
-            if (requiredDeviceColumn.HasValue)
-            {
-                Assert(Mathf.Abs(PatchCoverageCount(deviceX, requiredDeviceColumn.Value)
-                        - RuntimeUiQualityProfile.NineSlicePartitionCoverageCount)
-                        <= RuntimeUiQualityProfile.NineSliceSeamToleranceDevicePixels,
-                    caseName + " covers device column " + requiredDeviceColumn.Value
-                    + " exactly once");
-            }
+            var shaderPath = "Assets/UI/RuntimeUiNineSlice.shader";
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+            var shaderSource = File.ReadAllText(Path.Combine(
+                Application.dataPath, "UI/RuntimeUiNineSlice.shader"));
+            Assert(shader != null
+                && shader.name == "Hidden/FruitDefense/RuntimeUiNineSlice"
+                && shaderSource.Contains("RemapNineSliceAxis")
+                && shaderSource.Split(new[] { "tex2D(" },
+                    StringSplitOptions.None).Length == 2,
+                "runtime nine-slice shader is imported and samples one continuous quad once");
+            var graphicsSettings = File.ReadAllText(Path.GetFullPath(Path.Combine(
+                Application.dataPath, "../ProjectSettings/GraphicsSettings.asset")));
+            Assert(graphicsSettings.Contains("79a8debad077477fbbe3d774e1e90eff"),
+                "runtime nine-slice shader is always included in PC and WebGL players");
+            Debug.Log("RUNTIME_UI_NINE_SLICE_PARTITION_OK draws=1 pcScales=6");
         }
 
-        private static bool IsDevicePixelBoundary(float value)
+        private static void AssertNineSliceTargetBorders(MethodInfo resolver,
+            RuntimeUiPixelInsets border, float logicalScale, float deviceScale,
+            int targetWidthPixels, int targetHeightPixels, int expectedBorderPixels,
+            string caseName)
         {
-            return Mathf.Abs(value - Mathf.Round(value)) <= .0001f;
+            var result = ResolveNineSliceTargetBorders(resolver, border,
+                logicalScale, deviceScale, deviceScale,
+                targetWidthPixels, targetHeightPixels);
+            Assert(IsIntegerBorder(result)
+                && Mathf.Abs(result.x - expectedBorderPixels) <= .0001f
+                && Mathf.Abs(result.y - expectedBorderPixels) <= .0001f
+                && Mathf.Abs(result.z - expectedBorderPixels) <= .0001f
+                && Mathf.Abs(result.w - expectedBorderPixels) <= .0001f
+                && result.x + result.z <= targetWidthPixels
+                && result.y + result.w <= targetHeightPixels,
+                caseName + " resolves integral, contained device-pixel borders");
         }
 
-        private static void AssertAxisCoveredExactlyOnce(float[] boundaries, string caseName)
+        private static Vector4 ResolveNineSliceTargetBorders(MethodInfo resolver,
+            RuntimeUiPixelInsets border, float logicalScale,
+            float deviceScaleX, float deviceScaleY,
+            int targetWidthPixels, int targetHeightPixels)
         {
-            var first = Mathf.RoundToInt(boundaries[0]);
-            var last = Mathf.RoundToInt(boundaries[boundaries.Length - 1]);
-            for (var devicePixel = first; devicePixel < last; devicePixel++)
+            return (Vector4)resolver.Invoke(null, new object[]
             {
-                Assert(Mathf.Abs(PatchCoverageCount(boundaries, devicePixel)
-                        - RuntimeUiQualityProfile.NineSlicePartitionCoverageCount)
-                        <= RuntimeUiQualityProfile.NineSliceSeamToleranceDevicePixels,
-                    caseName + " covers device pixel " + devicePixel + " exactly once");
-            }
+                border, 2f, logicalScale, deviceScaleX, deviceScaleY,
+                targetWidthPixels, targetHeightPixels,
+            });
         }
 
-        private static int PatchCoverageCount(float[] boundaries, int devicePixel)
+        private static bool IsIntegerBorder(Vector4 border)
         {
-            var count = 0;
-            for (var index = 0; index < boundaries.Length - 1; index++)
-            {
-                if (devicePixel >= Mathf.RoundToInt(boundaries[index])
-                    && devicePixel < Mathf.RoundToInt(boundaries[index + 1]))
-                {
-                    count++;
-                }
-            }
-
-            return count;
+            return Mathf.Abs(border.x - Mathf.Round(border.x)) <= .0001f
+                && Mathf.Abs(border.y - Mathf.Round(border.y)) <= .0001f
+                && Mathf.Abs(border.z - Mathf.Round(border.z)) <= .0001f
+                && Mathf.Abs(border.w - Mathf.Round(border.w)) <= .0001f;
         }
 
         private static void ValidateNineSliceSourceUvContract()
@@ -484,10 +461,15 @@ namespace FruitDefense.Editor
                          "panelGeometry = $panelGeometry",
                          "textContainment = $textContainment",
                          "occupiedBalance = $occupiedBalance",
-                         "structuralFrameCount = 1",
-                         "legacyEnclosingFrameDetected = $false",
+                         "structuralFrameCount = 3",
+                         "pageShellDetected = $true",
+                         "legacyFlatFrameDetected = $false",
                          "refreshLowerMarginLogical = $refreshLowerMarginLogical",
                          "gameplayStage = $stage",
+                         "metricCapsules = 3",
+                         "yellowHeaderControls = 2",
+                         "recipeCards = 4",
+                         "lineFreeNurserySlots = 5",
                          "contextModes = [ordered]",
                      })
             {
@@ -643,9 +625,9 @@ namespace FruitDefense.Editor
                 RuntimeUiInteractionState.Loading);
             Assert(primary == RuntimeUiInteractionState.Normal
                 && danger == RuntimeUiInteractionState.Normal
-                && secondary == RuntimeUiInteractionState.Loading
+                && secondary == RuntimeUiInteractionState.Normal
                 && quiet == RuntimeUiInteractionState.Loading,
-                "only inverse-text Primary/Danger actions keep their semantic surface and content opaque while Loading");
+                "contrast-critical Primary/Secondary/Danger actions keep their semantic surface and content opaque while Loading");
 
             var resolveDraw = typeof(RuntimeUiGui).GetMethod("ResolveActionDrawState",
                 BindingFlags.NonPublic | BindingFlags.Static);
@@ -656,9 +638,12 @@ namespace FruitDefense.Editor
                     == RuntimeUiInteractionState.Normal
                 && ResolveActionDrawState(resolveDraw, RuntimeUiActionKind.Danger,
                     RuntimeUiInteractionState.Loading, true)
+                    == RuntimeUiInteractionState.Normal
+                && ResolveActionDrawState(resolveDraw, RuntimeUiActionKind.Secondary,
+                    RuntimeUiInteractionState.Loading, true)
                     == RuntimeUiInteractionState.Normal,
                 "an emphasized Loading pulse cannot fade contrast-critical action content");
-            Assert(ResolveActionDrawState(resolveDraw, RuntimeUiActionKind.Secondary,
+            Assert(ResolveActionDrawState(resolveDraw, RuntimeUiActionKind.Quiet,
                     RuntimeUiInteractionState.Loading, true)
                     == RuntimeUiInteractionState.Loading,
                 "an emphasized Loading pulse preserves non-critical action Loading semantics");
@@ -671,9 +656,9 @@ namespace FruitDefense.Editor
                     == RuntimeUiInteractionState.Disabled,
                 "Disabled remains higher priority than emphasized Pressed feedback");
 
-            var fadedSurface = Composite(theme.ActionStyles.Primary.Container,
+            var fadedSurface = Composite(theme.ActionStyles.Danger.Container,
                 theme.Colors.BaseSurface, theme.Feedback.LoadingOpacity);
-            var fadedText = Composite(theme.ActionStyles.Primary.Content,
+            var fadedText = Composite(theme.ActionStyles.Danger.Content,
                 fadedSurface, theme.Feedback.LoadingOpacity);
             var fadedContrast = Contrast(fadedText, fadedSurface);
             Assert(fadedContrast < RuntimeUiQualityProfile.LargeOrBoldTextContrast,
@@ -689,7 +674,7 @@ namespace FruitDefense.Editor
             var resolvedContrast = Contrast(resolvedText, resolvedSurface);
             Assert(resolvedContrast + .001f
                     >= RuntimeUiQualityProfile.LargeOrBoldTextContrast,
-                "composited Loading Primary inverse-text contrast meets the 3.0:1 gate");
+                "composited Loading Primary soil-brown contrast meets the 3.0:1 gate");
             Debug.Log("RUNTIME_UI_LOADING_PRIMARY_CONTRAST_OK ratio="
                 + resolvedContrast.ToString("0.0000",
                     System.Globalization.CultureInfo.InvariantCulture));
@@ -1140,8 +1125,10 @@ namespace FruitDefense.Editor
                 .ThenBy(set => set.Revision, StringComparer.Ordinal)
                 .ThenBy(AssetDatabase.GetAssetPath, StringComparer.Ordinal)
                 .ToArray();
-            Assert(discovered.Length > 0 && discovered.SequenceEqual(expected),
-                "production registry discovery is stable by set identity and revision");
+            Assert(discovered.Length == 1 && discovered.SequenceEqual(expected)
+                && discovered[0].SetId == "sunny-orchard-painted"
+                && discovered[0].Revision == "9",
+                "production registry contains only sunny-orchard-painted@9 in stable order");
             Assert(discovered.Select(set => set.SetId + "\n" + set.Revision)
                     .Distinct(StringComparer.Ordinal).Count() == discovered.Length,
                 "production registry identities are unique");
@@ -1505,6 +1492,16 @@ namespace FruitDefense.Editor
         private static string Normalize(string value)
         {
             return string.IsNullOrEmpty(value) ? string.Empty : value.Replace('\\', '/');
+        }
+
+        private static string Slice(string source, string startToken, string endToken)
+        {
+            var start = source.IndexOf(startToken, StringComparison.Ordinal);
+            Assert(start >= 0, "cannot locate source boundary " + startToken);
+            var end = source.IndexOf(endToken, start + startToken.Length,
+                StringComparison.Ordinal);
+            Assert(end > start, "cannot locate source boundary " + endToken);
+            return source.Substring(start, end - start);
         }
 
         private static void DeleteGeneratedFixture()

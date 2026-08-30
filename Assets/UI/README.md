@@ -12,9 +12,9 @@
 | `Art/Sets/` | `RuntimeUiArtSet` definition assets. |
 | `Theme/` | The one authoritative release `RuntimeUiTheme` asset. |
 
-The approved release direction and active art-set ID is `sunny-orchard-painted`, derived from A「阳光果园」 and the approved painted component proof. Its copied reference board is [here](Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png). The copy and the painted review gallery are review inputs, not texture atlases or production exports.
+The approved release direction and sole production art-set ID is `sunny-orchard-painted`, using a clear-sky edge, warm paper surfaces, soil-brown structure, leaf-green actions, sunlight-yellow emphasis, and restrained fruit ornament. The copied reference board [here](Art/Sources/ReferenceBoards/Approved/sunny-orchard-style-board.png) and the painted review gallery are review inputs, not texture atlases or production exports.
 
-The production hierarchy also retains the complete non-active `sunny-orchard` set to exercise isolated preview and atomic replacement. The rejected `citrus-mint` treatment has been removed from `Art/Sources`, `Art/Runtime`, and `Art/Sets`; historical review evidence outside `Assets` is not an activatable art set and must never be referenced by the release theme or a release scene.
+The production hierarchy contains exactly one complete treatment. Superseded `sunny-orchard` and rejected `citrus-mint` source, runtime, exporter, and ArtSet paths are removed; historical review evidence outside `Assets` is not activatable and must never be referenced by the release theme or a release scene.
 
 ## Source to runtime rule
 

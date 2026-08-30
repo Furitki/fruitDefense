@@ -49,7 +49,8 @@ namespace FruitDefense.Editor
         {
             const float start = 10f;
             var press = RuntimeUiFeedbackPulse.Begin(start, tokens.UnscaledPressSeconds);
-            var heldPress = RuntimeUiMotion.HeldPress(tokens);
+            var heldPress = RuntimeUiMotion.InteractionState(
+                RuntimeUiInteractionState.Pressed, tokens);
             Assert(Mathf.Approximately(heldPress.Scale, tokens.PressScale)
                 && Mathf.Approximately(heldPress.Alpha, 1f),
                 "held press resolves directly to the theme press scale");

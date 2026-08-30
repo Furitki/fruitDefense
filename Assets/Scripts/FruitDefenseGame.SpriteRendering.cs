@@ -58,50 +58,17 @@ namespace FruitDefense
             DrawTempSprite(rect, sprite, new Color(1f, 1f, 1f, opacity));
         }
 
-        private void DrawVfxSprite(Rect rect, CombatSprite sprite)
-        {
-            DrawAtlasSprite(_combatVfxAtlas, rect, (int)sprite, Color.white);
-        }
-
-        private void DrawVfxSprite(Rect rect, CombatSprite sprite, Color tint)
-        {
-            DrawAtlasSprite(_combatVfxAtlas, rect, (int)sprite, tint);
-        }
-
         private static void DrawAtlasSprite(Texture2D atlas, Rect rect, int index, Color tint)
         {
-            if (atlas == null) return;
-            const float cell = .25f;
-            const float inset = .004f;
-            var column = index % 4;
-            var rowFromTop = index / 4;
-            var uv = new Rect(
-                column * cell + inset,
-                1f - (rowFromTop + 1) * cell + inset,
-                cell - inset * 2f,
-                cell - inset * 2f);
-            var previous = GUI.color;
-            GUI.color = tint;
-            GUI.DrawTextureWithTexCoords(rect, atlas, uv, true);
-            GUI.color = previous;
+            BattleCombatGuiRenderer.DrawAtlasSprite(atlas, rect, index, tint);
         }
 
         private void DrawAnimatedPlant(Rect rect, Plant plant)
         {
             rect = ApplyPlantVisualHeight(rect, PlantVisualHeightOffset(plant));
-            var idlePhase = _game.State.Elapsed * 2.2f + plant.Id * .73f;
-            var idlePulse = Mathf.Sin(idlePhase);
-            rect.y -= idlePulse * .65f;
-            rect = ScaleAroundCenter(rect, 1f + idlePulse * .012f, 1f - idlePulse * .008f);
-            var angle = Mathf.Sin(idlePhase * .67f) * 1.25f;
             var reaction = _presentation.ReactionFor(plant.Id);
-            rect.position += reaction.Offset;
-            rect = ScaleAroundCenter(rect, reaction.Scale.x, reaction.Scale.y);
-            var previousMatrix = GUI.matrix;
-            if (Mathf.Abs(angle) > .01f) GUIUtility.RotateAroundPivot(angle, rect.center);
-            DrawTempSprite(rect, PlantSprite(plant),
-                Color.Lerp(Color.white, new Color(1f, .92f, .58f), reaction.Flash));
-            GUI.matrix = previousMatrix;
+            BattleCombatGuiRenderer.DrawPlant(_tempArtAtlas, rect,
+                (int)PlantSprite(plant), _game.State.Elapsed, plant.Id, reaction);
         }
 
         private float PlantVisualHeightOffset(Plant plant)
@@ -122,20 +89,6 @@ namespace FruitDefense
             return rect;
         }
 
-        private void DrawRotatedVfx(Rect rect, CombatSprite sprite, float angle, Color tint)
-        {
-            var previousMatrix = GUI.matrix;
-            GUIUtility.RotateAroundPivot(angle, rect.center);
-            DrawVfxSprite(rect, sprite, tint);
-            GUI.matrix = previousMatrix;
-        }
-
-        private Rect CenteredRect(Vector2 center, float size)
-        {
-            size = Projection.LegacyVisualSize(size);
-            return new Rect(center.x - size * .5f, center.y - size * .5f, size, size);
-        }
-
         private static Rect ScaleAroundCenter(Rect rect, float scaleX, float scaleY)
         {
             var center = rect.center;
@@ -145,9 +98,19 @@ namespace FruitDefense
             return rect;
         }
 
-        private static TempSprite PlantSprite(string definitionId)
+        private TempSprite PlantSprite(string definitionId)
         {
-            switch (BattlePresentationVisualCatalog.Plant(definitionId))
+            return ResolvePlantSprite(_game == null ? null : _game.Content, definitionId);
+        }
+
+        private static TempSprite ResolvePlantSprite(CompiledBattleContentCatalog content,
+            string definitionId)
+        {
+            PlantDefinitionDto definition;
+            var presentationId = content != null
+                && content.Plants.TryGetValue(definitionId ?? string.Empty, out definition)
+                    ? definition.presentationId : string.Empty;
+            switch (BattlePresentationVisualCatalog.Plant(presentationId))
             {
                 case PlantVisualArchetype.Watermelon: return TempSprite.Watermelon;
                 case PlantVisualArchetype.Banana: return TempSprite.Banana;
@@ -157,9 +120,19 @@ namespace FruitDefense
             }
         }
 
-        private static TempSprite EquipmentSprite(string definitionId)
+        private TempSprite EquipmentSprite(string definitionId)
         {
-            switch (BattlePresentationVisualCatalog.Equipment(definitionId))
+            return ResolveEquipmentSprite(_game == null ? null : _game.Content, definitionId);
+        }
+
+        private static TempSprite ResolveEquipmentSprite(CompiledBattleContentCatalog content,
+            string definitionId)
+        {
+            EquipmentDefinitionDto definition;
+            var presentationId = content != null
+                && content.Equipment.TryGetValue(definitionId ?? string.Empty, out definition)
+                    ? definition.presentationId : string.Empty;
+            switch (BattlePresentationVisualCatalog.Equipment(presentationId))
             {
                 case EquipmentVisualArchetype.Ice: return TempSprite.Ice;
                 case EquipmentVisualArchetype.Chili: return TempSprite.Chili;
@@ -167,19 +140,39 @@ namespace FruitDefense
             }
         }
 
-        private static TempSprite PlantSprite(Plant plant)
+        private TempSprite PlantSprite(Plant plant)
         {
-            if (plant == null) return PlantSprite(string.Empty);
-            if (string.IsNullOrEmpty(plant.EquipmentId)
-                || BattlePresentationVisualCatalog.Equipment(plant.EquipmentId)
-                    == EquipmentVisualArchetype.Generic)
-                return PlantSprite(plant.DefinitionId);
-            return EquipmentSprite(plant.EquipmentId);
+            return ResolvePlantSprite(_game == null ? null : _game.Content, plant);
         }
 
-        private static TempSprite ZombieSprite(string definitionId)
+        private static TempSprite ResolvePlantSprite(CompiledBattleContentCatalog content,
+            Plant plant)
         {
-            switch (BattlePresentationVisualCatalog.Enemy(definitionId))
+            if (plant == null) return ResolvePlantSprite(content, string.Empty);
+            EquipmentDefinitionDto equipment;
+            if (string.IsNullOrEmpty(plant.EquipmentId)
+                || content == null
+                || !content.Equipment.TryGetValue(plant.EquipmentId, out equipment)
+                || BattlePresentationVisualCatalog.Equipment(
+                    equipment.presentationId)
+                    == EquipmentVisualArchetype.Generic)
+                return ResolvePlantSprite(content, plant.DefinitionId);
+            return ResolveEquipmentSprite(content, plant.EquipmentId);
+        }
+
+        private TempSprite ZombieSprite(string definitionId)
+        {
+            return ResolveEnemySprite(_game == null ? null : _game.Content, definitionId);
+        }
+
+        private static TempSprite ResolveEnemySprite(CompiledBattleContentCatalog content,
+            string definitionId)
+        {
+            EnemyDefinitionDto definition;
+            var presentationId = content != null
+                && content.Enemies.TryGetValue(definitionId ?? string.Empty, out definition)
+                    ? definition.presentationId : string.Empty;
+            switch (BattlePresentationVisualCatalog.Enemy(presentationId))
             {
                 case EnemyVisualArchetype.Runner: return TempSprite.Runner;
                 case EnemyVisualArchetype.Armored: return TempSprite.Armored;

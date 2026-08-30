@@ -13,13 +13,15 @@ namespace FruitDefense.Presentation
         private static readonly ProfilerMarker RenderMarker =
             new ProfilerMarker("FruitDefense.CombatFloatingText.Render");
 
-        public const int PoolCapacity = 12;
+        public const int PoolCapacity = CombatFloatingTextStyleCatalog.TotalCapacity;
         public const int SharedMaterialCount = 0;
         public const int AtlasSize = 512;
         public const int MaximumGlyphsPerLabel = 16;
         public const int DrawCommandCapacity = PoolCapacity * MaximumGlyphsPerLabel;
         public const int AcceptanceWarmupSampleCount = 120;
         public const int AcceptanceActiveSampleCount = 600;
+        public const float MaximumAnchorHorizontalError = 20f;
+        private const int AcceptanceProfileActiveRecordCount = 12;
         public const string AcceptanceAllocationMetric =
             "GC.GetAllocatedBytesForCurrentThread epoch-normalized into an "
             + "acceptance-session cumulative managed-allocation counter";
@@ -37,6 +39,8 @@ namespace FruitDefense.Presentation
         {
             public long EventSequence;
             public bool Assigned;
+            public int ActiveIndex;
+            public int LastSeenSync;
             public Vector2 FinalScreenCenter;
             public Vector2 AnchorScreen;
             public Rect FinalScreenBounds;
@@ -70,18 +74,23 @@ namespace FruitDefense.Presentation
         }
 
         private readonly Slot[] _slots = new Slot[PoolCapacity];
+        private readonly int[] _activeSlotIndices = new int[PoolCapacity];
+        private readonly int[] _freeSlotIndices = new int[PoolCapacity];
+        private readonly Dictionary<long, int> _slotIndexByEventSequence =
+            new Dictionary<long, int>(PoolCapacity);
         private readonly GlyphDrawCommand[] _drawCommands =
             new GlyphDrawCommand[DrawCommandCapacity];
         private readonly LabelDrawRange[] _labelDrawRanges =
             new LabelDrawRange[PoolCapacity];
         private readonly CombatFloatingTextGlyph[] _glyphScratch =
             new CombatFloatingTextGlyph[MaximumGlyphsPerLabel];
-        private readonly Rect[] _acceptedLabelBounds = new Rect[PoolCapacity];
         private CombatFloatingTextAtlasMetadata _metadata;
         private Texture2D _atlas;
         private int _drawCommandCount;
         private int _labelDrawRangeCount;
-        private int _acceptedLabelBoundsCount;
+        private int _activeSlotCount;
+        private int _freeSlotCount;
+        private int _slotSyncVersion;
         private bool _initialized;
         private bool _placementValid = true;
         private string _placementFailure = string.Empty;
@@ -215,10 +224,11 @@ namespace FruitDefense.Presentation
                     ClearPreparedGeometry();
                     if (!_initialized || records == null || styles == null
                         || projection == null) return;
-                    ReleaseAbsentSlots(records);
+                    BeginSlotSync();
                     for (var index = 0; index < records.Count; index++)
                     {
                         var feedback = records[index];
+                        if (feedback != null) MarkSlotSeen(feedback.EventSequence);
                         if (feedback == null
                             || feedback.Role == CombatFloatingTextRole.None
                             || string.IsNullOrEmpty(feedback.Text)) continue;
@@ -232,6 +242,7 @@ namespace FruitDefense.Presentation
                                 viewport, battlefieldSurface, battlefieldOffset)) break;
                         ActiveTextCount++;
                     }
+                    ReleaseUnseenSlots();
                 }
             }
             finally
@@ -283,15 +294,18 @@ namespace FruitDefense.Presentation
             out Vector2 finalScreenCenter, out Vector2 anchorScreen,
             out float anchorScreenError, out Rect finalScreenBounds)
         {
-            for (var index = 0; index < _slots.Length; index++)
+            int slotIndex;
+            if (_slotIndexByEventSequence.TryGetValue(eventSequence, out slotIndex))
             {
-                var slot = _slots[index];
-                if (!slot.Assigned || slot.EventSequence != eventSequence) continue;
-                finalScreenCenter = slot.FinalScreenCenter;
-                anchorScreen = slot.AnchorScreen;
-                anchorScreenError = slot.AnchorScreenError;
-                finalScreenBounds = slot.FinalScreenBounds;
-                return true;
+                var slot = _slots[slotIndex];
+                if (slot.Assigned && slot.EventSequence == eventSequence)
+                {
+                    finalScreenCenter = slot.FinalScreenCenter;
+                    anchorScreen = slot.AnchorScreen;
+                    anchorScreenError = slot.AnchorScreenError;
+                    finalScreenBounds = slot.FinalScreenBounds;
+                    return true;
+                }
             }
             finalScreenCenter = Vector2.zero;
             anchorScreen = Vector2.zero;
@@ -303,7 +317,8 @@ namespace FruitDefense.Presentation
         public void Clear()
         {
             ClearPreparedGeometry();
-            for (var index = 0; index < _slots.Length; index++) Release(_slots[index]);
+            while (_activeSlotCount > 0)
+                ReleaseSlot(_activeSlotIndices[_activeSlotCount - 1]);
         }
 
         public void Dispose()
@@ -328,7 +343,15 @@ namespace FruitDefense.Presentation
         {
             _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
             _atlas = atlas ?? throw new ArgumentNullException(nameof(atlas));
-            for (var index = 0; index < _slots.Length; index++) _slots[index] = new Slot();
+            _slotIndexByEventSequence.Clear();
+            _activeSlotCount = 0;
+            _freeSlotCount = PoolCapacity;
+            _slotSyncVersion = 0;
+            for (var index = 0; index < _slots.Length; index++)
+            {
+                _slots[index] = new Slot { ActiveIndex = -1 };
+                _freeSlotIndices[index] = PoolCapacity - index - 1;
+            }
             _initialized = true;
         }
 
@@ -344,7 +367,7 @@ namespace FruitDefense.Presentation
             }
             var token = styles.Resolve(feedback.Role);
             var motion = CombatFloatingTextStyleCatalog.Sample(
-                token, feedback.LifetimeProgress, feedback.DetachedProgress);
+                token, feedback.LifetimeProgress);
             var mergePulse = Mathf.Min(.08f, Mathf.Max(0, feedback.Count - 1) * .012f);
             var motionScale = Mathf.Max(.01f, motion.Scale + mergePulse);
             var elementScale = token.FontSize * viewport.Scale
@@ -362,16 +385,13 @@ namespace FruitDefense.Presentation
             var width = Mathf.Max(1f, maxX - minX);
             var height = Mathf.Max(1f, maxY - minY);
             var anchorReference = projection.MapToScreen(feedback.Point) + battlefieldOffset;
-            var towardInterior = anchorReference.y - token.RiseDistance - 28f
-                < battlefieldSurface.yMin;
-            var travelY = towardInterior ? -motion.OffsetY : motion.OffsetY;
             var anchorScreen = ProjectReferencePoint(viewport, anchorReference);
             var surfaceScreen = viewport.ProjectDesignRect(battlefieldSurface);
             Vector2 finalCenter;
             Rect finalBounds;
             float horizontalError;
-            if (!TrySelectCollisionCandidate(feedback, anchorReference,
-                    anchorScreen, towardInterior, travelY, width, height,
+            if (!TryPlaceAtAuthoredLane(feedback, anchorReference,
+                    anchorScreen, motion.OffsetY, width, height,
                     viewport, surfaceScreen, out finalCenter, out finalBounds,
                     out horizontalError))
             {
@@ -382,7 +402,6 @@ namespace FruitDefense.Presentation
             slot.AnchorScreen = anchorScreen;
             slot.FinalScreenBounds = finalBounds;
             slot.AnchorScreenError = horizontalError;
-            _acceptedLabelBounds[_acceptedLabelBoundsCount++] = finalBounds;
             var fill = token.FillColor;
             fill.a *= motion.Opacity;
             if (_labelDrawRangeCount >= _labelDrawRanges.Length)
@@ -413,9 +432,9 @@ namespace FruitDefense.Presentation
             return true;
         }
 
-        private bool TrySelectCollisionCandidate(PresentationFeedback feedback,
-            Vector2 anchorReference, Vector2 anchorScreen, bool towardInterior,
-            float travelY, float width, float height,
+        private static bool TryPlaceAtAuthoredLane(PresentationFeedback feedback,
+            Vector2 anchorReference, Vector2 anchorScreen, float travelY,
+            float width, float height,
             BattlefieldViewportLayout viewport, Rect surfaceScreen,
             out Vector2 selectedCenter, out Rect selectedBounds,
             out float selectedHorizontalError)
@@ -424,62 +443,26 @@ namespace FruitDefense.Presentation
             selectedBounds = Rect.zero;
             selectedHorizontalError = float.PositiveInfinity;
             var semanticOffset = CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                feedback.Role, towardInterior);
-            var bestOverlap = float.PositiveInfinity;
-            var found = false;
-            for (var candidateIndex = 0;
-                 candidateIndex < CombatFloatingTextStyleCatalog.CollisionCandidateCount;
-                 candidateIndex++)
-            {
-                var laneOffset =
-                    CombatFloatingTextStyleCatalog.CollisionCandidateLaneOffset(
-                        feedback.VisualLane, candidateIndex, towardInterior)
-                    + semanticOffset;
-                var contactReference = anchorReference + laneOffset
-                    + Vector2.up * travelY;
-                var contactScreen = ProjectReferencePoint(viewport, contactReference);
-                var desiredCenter = new Vector2(contactScreen.x,
-                    towardInterior
-                        ? contactScreen.y + ContactGap * viewport.Scale + height * .5f
-                        : contactScreen.y - ContactGap * viewport.Scale - height * .5f);
-                var finalCenter = ClampCenter(
-                    desiredCenter, width, height, surfaceScreen);
-                var finalBounds = new Rect(finalCenter.x - width * .5f,
-                    finalCenter.y - height * .5f, width, height);
-                var horizontalError = Mathf.Abs(finalCenter.x - anchorScreen.x);
-                if (!Finite(finalCenter) || !Finite(anchorScreen)
-                    || !Finite(finalBounds)
-                    || !Contains(surfaceScreen, finalBounds, GeometryEpsilon)
-                    || horizontalError
-                        > ContactGap * viewport.Scale + GeometryEpsilon)
-                    continue;
-                var overlap = TotalOverlapArea(finalBounds);
-                if (found && overlap >= bestOverlap - GeometryEpsilon) continue;
-                found = true;
-                bestOverlap = overlap;
-                selectedCenter = finalCenter;
-                selectedBounds = finalBounds;
-                selectedHorizontalError = horizontalError;
-                if (overlap <= GeometryEpsilon) break;
-            }
-            return found;
-        }
-
-        private float TotalOverlapArea(Rect candidate)
-        {
-            var total = 0f;
-            for (var index = 0; index < _acceptedLabelBoundsCount; index++)
-            {
-                var accepted = _acceptedLabelBounds[index];
-                var width = Mathf.Max(0f,
-                    Mathf.Min(candidate.xMax, accepted.xMax)
-                    - Mathf.Max(candidate.xMin, accepted.xMin));
-                var height = Mathf.Max(0f,
-                    Mathf.Min(candidate.yMax, accepted.yMax)
-                    - Mathf.Max(candidate.yMin, accepted.yMin));
-                total += width * height;
-            }
-            return total;
+                feedback.Role);
+            var laneOffset = CombatFloatingTextStyleCatalog.VisualLaneOffset(
+                feedback.VisualLane) + semanticOffset;
+            var contactReference = anchorReference + laneOffset
+                + Vector2.up * travelY;
+            var contactScreen = ProjectReferencePoint(viewport, contactReference);
+            var desiredCenter = new Vector2(contactScreen.x,
+                contactScreen.y - ContactGap * viewport.Scale - height * .5f);
+            var finalCenter = ClampCenter(desiredCenter, width, height, surfaceScreen);
+            var finalBounds = new Rect(finalCenter.x - width * .5f,
+                finalCenter.y - height * .5f, width, height);
+            var horizontalError = Mathf.Abs(finalCenter.x - anchorScreen.x);
+            if (!Finite(finalCenter) || !Finite(anchorScreen)
+                || !Finite(finalBounds)
+                || !Contains(surfaceScreen, finalBounds, GeometryEpsilon))
+                return false;
+            selectedCenter = finalCenter;
+            selectedBounds = finalBounds;
+            selectedHorizontalError = horizontalError;
+            return true;
         }
 
         private bool TryMeasure(string text, float elementScale,
@@ -588,44 +571,75 @@ namespace FruitDefense.Presentation
 
         private Slot ResolveSlot(long eventSequence)
         {
-            for (var index = 0; index < _slots.Length; index++)
-                if (_slots[index].Assigned && _slots[index].EventSequence == eventSequence)
-                    return _slots[index];
-            for (var index = 0; index < _slots.Length; index++)
+            int slotIndex;
+            if (_slotIndexByEventSequence.TryGetValue(eventSequence, out slotIndex))
             {
-                if (_slots[index].Assigned) continue;
-                _slots[index].Assigned = true;
-                _slots[index].EventSequence = eventSequence;
-                return _slots[index];
+                var existing = _slots[slotIndex];
+                existing.LastSeenSync = _slotSyncVersion;
+                return existing;
             }
-            return null;
+            if (_freeSlotCount <= 0) return null;
+            slotIndex = _freeSlotIndices[--_freeSlotCount];
+            var slot = _slots[slotIndex];
+            slot.Assigned = true;
+            slot.EventSequence = eventSequence;
+            slot.ActiveIndex = _activeSlotCount;
+            slot.LastSeenSync = _slotSyncVersion;
+            _activeSlotIndices[_activeSlotCount++] = slotIndex;
+            _slotIndexByEventSequence.Add(eventSequence, slotIndex);
+            return slot;
         }
 
-        private void ReleaseAbsentSlots(IReadOnlyList<PresentationFeedback> records)
+        private void BeginSlotSync()
         {
-            for (var slotIndex = 0; slotIndex < _slots.Length; slotIndex++)
+            if (_slotSyncVersion == int.MaxValue)
             {
-                var slot = _slots[slotIndex];
-                if (!slot.Assigned) continue;
-                var found = false;
-                for (var recordIndex = 0; recordIndex < records.Count; recordIndex++)
+                for (var index = 0; index < _activeSlotCount; index++)
+                    _slots[_activeSlotIndices[index]].LastSeenSync = 0;
+                _slotSyncVersion = 1;
+            }
+            else _slotSyncVersion++;
+        }
+
+        private void MarkSlotSeen(long eventSequence)
+        {
+            int slotIndex;
+            if (_slotIndexByEventSequence.TryGetValue(eventSequence, out slotIndex))
+                _slots[slotIndex].LastSeenSync = _slotSyncVersion;
+        }
+
+        private void ReleaseUnseenSlots()
+        {
+            for (var index = 0; index < _activeSlotCount;)
+            {
+                var slot = _slots[_activeSlotIndices[index]];
+                if (slot.LastSeenSync == _slotSyncVersion)
                 {
-                    var feedback = records[recordIndex];
-                    if (feedback != null && feedback.EventSequence == slot.EventSequence)
-                    {
-                        found = true;
-                        break;
-                    }
+                    index++;
+                    continue;
                 }
-                if (!found) Release(slot);
+                ReleaseSlot(_activeSlotIndices[index]);
             }
         }
 
-        private static void Release(Slot slot)
+        private void ReleaseSlot(int slotIndex)
         {
-            if (slot == null) return;
+            var slot = _slots[slotIndex];
+            if (slot == null || !slot.Assigned) return;
+            _slotIndexByEventSequence.Remove(slot.EventSequence);
+            var activeIndex = slot.ActiveIndex;
+            var lastActiveIndex = --_activeSlotCount;
+            if (activeIndex != lastActiveIndex)
+            {
+                var movedSlotIndex = _activeSlotIndices[lastActiveIndex];
+                _activeSlotIndices[activeIndex] = movedSlotIndex;
+                _slots[movedSlotIndex].ActiveIndex = activeIndex;
+            }
+            _freeSlotIndices[_freeSlotCount++] = slotIndex;
             slot.Assigned = false;
             slot.EventSequence = 0;
+            slot.ActiveIndex = -1;
+            slot.LastSeenSync = 0;
             slot.FinalScreenCenter = Vector2.zero;
             slot.AnchorScreen = Vector2.zero;
             slot.FinalScreenBounds = Rect.zero;
@@ -637,7 +651,6 @@ namespace FruitDefense.Presentation
             ActiveTextCount = 0;
             _drawCommandCount = 0;
             _labelDrawRangeCount = 0;
-            _acceptedLabelBoundsCount = 0;
             _placementValid = true;
             _placementFailure = string.Empty;
         }
@@ -657,7 +670,7 @@ namespace FruitDefense.Presentation
                 FailAcceptanceSyncProfile("final-imgui-submission-missing-before-next-sync");
                 return default;
             }
-            if (records == null || records.Count != PoolCapacity)
+            if (records == null || records.Count != AcceptanceProfileActiveRecordCount)
             {
                 FailAcceptanceSyncProfile("active-count-before-sync-not-12");
                 return default;
@@ -668,7 +681,7 @@ namespace FruitDefense.Presentation
         private void EndAcceptanceCommandSample(AcceptanceScopeSample sample)
         {
             if (!sample.Enabled || !_acceptanceProfileActive) return;
-            if (ActiveTextCount != PoolCapacity)
+            if (ActiveTextCount != AcceptanceProfileActiveRecordCount)
             {
                 FailAcceptanceSyncProfile("active-count-after-sync-not-12");
                 return;

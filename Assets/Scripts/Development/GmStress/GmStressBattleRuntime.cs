@@ -167,8 +167,7 @@ namespace FruitDefense.Development.GmStress
 
         public static BattlefieldMapDefinition CreateMap()
         {
-            return new BattlefieldMapDefinition(CreateMapSource(),
-                BattlefieldMapDefinition.LegacyReferenceDistanceScale);
+            return new BattlefieldMapDefinition(CreateMapSource());
         }
 
         public static bool ValidateTerrainPalette(BattlefieldMapDefinition map,
@@ -205,7 +204,7 @@ namespace FruitDefense.Development.GmStress
 
         public static CompiledBattleContentCatalog CreateContent()
         {
-            if (BattleContentCompiler.TryCompile(BundledBattleContentFactory.Create(),
+            if (BundledGameContentLoader.TryLoad(out var manifest,
                     out var content, out var validation))
                 return content;
             var issues = validation == null

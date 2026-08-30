@@ -18,6 +18,7 @@ namespace FruitDefense.Editor
             ValidateRestrainedThemeDurations(theme.Feedback);
             ValidateExplicitUnscaledPulse(theme.Feedback);
             ValidateInteractionStatePriority();
+            ValidateContainedInteractionMotion(theme.Feedback);
             ValidateHitGeometry();
             ValidateRuntimeConsumptionSource();
             Debug.Log("RUNTIME_UI_FEEDBACK_TIMING_OK");
@@ -119,6 +120,26 @@ namespace FruitDefense.Editor
             return (RuntimeUiInteractionState)method.Invoke(null, arguments);
         }
 
+        private static void ValidateContainedInteractionMotion(
+            RuntimeUiFeedbackTokens feedback)
+        {
+            var normal = RuntimeUiMotion.InteractionState(
+                RuntimeUiInteractionState.Normal, feedback);
+            var focused = RuntimeUiMotion.InteractionState(
+                RuntimeUiInteractionState.HoveredOrFocused, feedback);
+            var pressed = RuntimeUiMotion.InteractionState(
+                RuntimeUiInteractionState.Pressed, feedback);
+            var owner = new Rect(20f, 30f, 100f, 60f);
+            Assert(normal.IsResting
+                && Mathf.Approximately(focused.Scale, feedback.PopInsetScale)
+                && Mathf.Approximately(pressed.Scale, feedback.PressScale)
+                && focused.Transform(owner).width < owner.width
+                && pressed.Transform(owner).width < focused.Transform(owner).width
+                && Approximately(focused.Transform(owner).center, owner.center)
+                && Approximately(pressed.Transform(owner).center, owner.center),
+                "focus and mouse press use restrained contained theme motion");
+        }
+
         private static void ValidateHitGeometry()
         {
             var safeArea = new Rect(0f, 0f, 402f, 874f);
@@ -138,9 +159,9 @@ namespace FruitDefense.Editor
                 "Settlement timing does not create a second hit rectangle");
 
             var battle = new BattleUiLayout(GameConfig.DefaultBattlefield);
-            Assert(Approximately(battle.WaveAction, new Rect(210f, 548f, 184f, 44f))
-                && Approximately(battle.RefreshAction, new Rect(8f, 784f, 386f, 52f))
-                && Approximately(battle.PauseAction, new Rect(274f, 12f, 52f, 52f)),
+            Assert(Approximately(battle.WaveAction, new Rect(204f, 518f, 174f, 52f))
+                && Approximately(battle.RefreshAction, new Rect(24f, 774f, 354f, 64f))
+                && Approximately(battle.PauseAction, new Rect(264f, 50f, 48f, 48f)),
                 "Battle feedback keeps the authoritative action geometry");
         }
 
@@ -163,9 +184,10 @@ namespace FruitDefense.Editor
                 && action.Contains("state != RuntimeUiInteractionState.Disabled")
                 && action.Contains("state != RuntimeUiInteractionState.Loading")
                 && action.Contains("GUI.Button(rect, GUIContent.none")
-                && action.Contains("RuntimeUiMotion.HeldPress(context.Theme.Feedback)")
+                && action.Contains("RuntimeUiMotion.InteractionState(")
+                && !action.Contains("DrawActionInteractionCue")
                 && action.Contains("visualMotion.Transform(rect)"),
-                "action emphasis preserves semantic state, held press scale, disabled/loading priority, and hit rect");
+                "action emphasis preserves semantic state, marker-free interaction scale, disabled/loading priority, and hit rect");
 
             var appFlow = ReadSource("Scripts/App/AppFlowCoordinator.cs");
             AssertConsumes(appFlow, "AppFlow", "UnscaledFocusSeconds",
@@ -244,6 +266,11 @@ namespace FruitDefense.Editor
         {
             return Vector2.Distance(left.position, right.position) <= .001f
                 && Vector2.Distance(left.size, right.size) <= .001f;
+        }
+
+        private static bool Approximately(Vector2 left, Vector2 right)
+        {
+            return Vector2.Distance(left, right) <= .001f;
         }
 
         private static void AssertThrows(Action action, string message)

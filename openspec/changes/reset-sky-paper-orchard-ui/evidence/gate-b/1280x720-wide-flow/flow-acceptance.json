@@ -1,0 +1,1055 @@
+{
+  "accepted": true,
+  "capturedAtUtc": "2026-08-26T12:53:13.2216146+00:00",
+  "url": "http://127.0.0.1:65149/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-08-26T12:52:51.2561367+00:00"
+  },
+  "levelId": "orchard-01",
+  "settlementOutcome": "victory",
+  "expectedCompositeIdentity": {
+    "levelId": "orchard-01",
+    "mapId": "orchard-01",
+    "waveSetId": "waves.orchard-01.teaching",
+    "ruleSetId": "rules.orchard-01.baseline",
+    "themeId": "theme.orchard-01.day"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 0.8237986270022883,
+    "designOffset": {
+      "x": 474.41647597254007,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 487.59725400457666,
+      "y": 14.82837528604119,
+      "width": 304.8054919908467,
+      "height": 690
+    }
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:65149/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 1280,
+    "height": 720,
+    "cssWidth": 1280,
+    "cssHeight": 720,
+    "innerWidth": 1280,
+    "innerHeight": 720,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1787748776658.6,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 0,
+    "body": ""
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "3",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "2",
+    "display": "ui.sunny-orchard@3 / sunny-orchard-painted@2",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "checks": {
+    "lobbyToBattle": "pass",
+    "battleToSettlement": "pass",
+    "settlementReturn": "pass",
+    "settlementRetry": "pass",
+    "selectedLevelLaunch": "pass",
+    "compositeIdentityPerRoute": "pass",
+    "settlementSessionPreserved": "pass",
+    "returnSelectionPreserved": "pass",
+    "retryFreshSessionAndSeed": "pass",
+    "settlementMotionCheckpoint": "not-requested",
+    "settlementOutcomeHiddenBeforeReveal": "pass",
+    "settlementOutcomeFillOutlineAppearTogether": "not-requested",
+    "settlementOutcomeStableComplete": "pass",
+    "settlementOutcomeOpticalContainment": "pass",
+    "settlementOutcomeTrueOutline": "pass",
+    "settlementOutcomeExactOutlineThickness": "pass",
+    "settlementOutcomeCompleteFinalInk": "pass",
+    "settlementOutcomeFinalInkHeight": "pass",
+    "settlementOutcomeVerticalOccupancy": "pass",
+    "settlementOutcomeFourSidePadding": "pass",
+    "settlementOutcomeTopBottomBalance": "pass",
+    "settlementReadOnlyMetricsBorderless": "pass",
+    "requestedViewportAndCanvas": "pass",
+    "safeAreaQueryApplied": "pass",
+    "noBlackOrTransparentFrames": "pass",
+    "noLargeNearBlackRegions": "pass",
+    "perAssetContentVersions": "pass",
+    "strongContentEtags": "pass",
+    "warmCacheReuse": "pass",
+    "crossReleaseCacheReuse": "not-requested"
+  },
+  "delivery": {
+    "assetVersions": {
+      "loader": "bbfea3324700",
+      "data": "bee994b34594",
+      "framework": "778fb14f0cef",
+      "wasm": "832f735906e7"
+    },
+    "htmlCacheControl": "no-cache",
+    "assets": {
+      "loader": {
+        "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.loader.js?v=bbfea3324700",
+        "version": "bbfea3324700",
+        "contentType": "text/javascript; charset=utf-8",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 117893,
+        "etag": "\"bbfea3324700b28ebf398cb53c0d159e352336212fd6e08fb979c27aaca1dc59\"",
+        "contentSha256": "bbfea3324700b28ebf398cb53c0d159e352336212fd6e08fb979c27aaca1dc59"
+      },
+      "data": {
+        "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.data.unityweb?v=bee994b34594",
+        "version": "bee994b34594",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 6637043,
+        "etag": "\"bee994b34594e57933cb1dc35f24fa370d2c951ecccd279594213055a645b312\"",
+        "contentSha256": "bee994b34594e57933cb1dc35f24fa370d2c951ecccd279594213055a645b312"
+      },
+      "framework": {
+        "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.framework.js.unityweb?v=778fb14f0cef",
+        "version": "778fb14f0cef",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 71632,
+        "etag": "\"778fb14f0cefe2199f7c763d2067be54e2766de30df7dcb0b77c3d00e45b3b9e\"",
+        "contentSha256": "778fb14f0cefe2199f7c763d2067be54e2766de30df7dcb0b77c3d00e45b3b9e"
+      },
+      "wasm": {
+        "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.wasm.unityweb?v=832f735906e7",
+        "version": "832f735906e7",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 5942242,
+        "etag": "\"832f735906e72bf082b00b13f4a68ef243dd79fd4feb8c2c7156171b440254b6\"",
+        "contentSha256": "832f735906e72bf082b00b13f4a68ef243dd79fd4feb8c2c7156171b440254b6"
+      }
+    },
+    "cacheLimits": {
+      "perAssetTransferBytes": 16384,
+      "totalTransferBytes": 65536
+    },
+    "cacheRuns": {
+      "cold": {
+        "label": "cold",
+        "startedAtUtc": "2026-08-26T12:52:51.5741527+00:00",
+        "completedAtUtc": "2026-08-26T12:52:56.6252950+00:00",
+        "startupDurationMilliseconds": 5051.142,
+        "totalPayloadTransferSize": 12770010,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.loader.js?v=bbfea3324700",
+            "startTimeMilliseconds": 206.7,
+            "durationMilliseconds": 3.0,
+            "transferSize": 118193,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "data": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.data.unityweb?v=bee994b34594",
+            "startTimeMilliseconds": 654.2,
+            "durationMilliseconds": 29.2,
+            "transferSize": 6637343,
+            "encodedBodySize": 6637043,
+            "decodedBodySize": 6637043,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.framework.js.unityweb?v=778fb14f0cef",
+            "startTimeMilliseconds": 558.2,
+            "durationMilliseconds": 6.9,
+            "transferSize": 71932,
+            "encodedBodySize": 71632,
+            "decodedBodySize": 71632,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.wasm.unityweb?v=832f735906e7",
+            "startTimeMilliseconds": 558.4,
+            "durationMilliseconds": 37.2,
+            "transferSize": 5942542,
+            "encodedBodySize": 5942242,
+            "decodedBodySize": 5942242,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          }
+        }
+      },
+      "warm": {
+        "label": "warm",
+        "startedAtUtc": "2026-08-26T12:52:56.6403030+00:00",
+        "completedAtUtc": "2026-08-26T12:53:00.5199659+00:00",
+        "startupDurationMilliseconds": 3879.663,
+        "totalPayloadTransferSize": 300,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.loader.js?v=bbfea3324700",
+            "startTimeMilliseconds": 96.5,
+            "durationMilliseconds": 1.1,
+            "transferSize": 0,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          },
+          "data": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.data.unityweb?v=bee994b34594",
+            "startTimeMilliseconds": 119.9,
+            "durationMilliseconds": 1.6,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "responseStatus": 304,
+            "deliveryType": "cache",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.framework.js.unityweb?v=778fb14f0cef",
+            "startTimeMilliseconds": 114.7,
+            "durationMilliseconds": 5.0,
+            "transferSize": 0,
+            "encodedBodySize": 71632,
+            "decodedBodySize": 71632,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:65149/Build/WebGL-Acceptance.wasm.unityweb?v=832f735906e7",
+            "startTimeMilliseconds": 114.8,
+            "durationMilliseconds": 31.6,
+            "transferSize": 0,
+            "encodedBodySize": 5942242,
+            "decodedBodySize": 5942242,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          }
+        }
+      }
+    },
+    "releaseTransition": {
+      "state": "not-requested"
+    }
+  },
+  "routeIdentities": {
+    "lobby": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "battle": {
+      "route": 1,
+      "routeName": "battle",
+      "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+      "seed": 1030629886,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "settlement": {
+      "route": 2,
+      "routeName": "settlement",
+      "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+      "seed": 1030629886,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day",
+      "settlementOutcomeRevealState": "appearing"
+    },
+    "returnedLobby": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "secondBattle": {
+      "route": 1,
+      "routeName": "battle",
+      "sessionId": "157384987ac14e7e9dd3b53583812323",
+      "seed": 611918240,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "secondSettlement": {
+      "route": 2,
+      "routeName": "settlement",
+      "sessionId": "157384987ac14e7e9dd3b53583812323",
+      "seed": 611918240,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day",
+      "settlementOutcomeRevealState": "appearing"
+    },
+    "retryBattle": {
+      "route": 1,
+      "routeName": "battle",
+      "sessionId": "2f55bdd6fe4a41539df7234e260aa8e3",
+      "seed": 1085695670,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    }
+  },
+  "screenshots": {
+    "lobby": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\01-lobby.png",
+    "battle": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\02-battle.png",
+    "settlementHidden": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\03a-settlement-hidden-victory.png",
+    "settlement": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\03-settlement-victory.png",
+    "returnedLobby": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\04-returned-lobby.png",
+    "retryBattle": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\1280x720-wide-flow\\05-retry-battle.png"
+  },
+  "imageMetrics": {
+    "lobby": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 1528,
+      "headerLightPixels": 10007,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001388888888888889,
+      "maxNearBlackHorizontalRunFraction": 0.009375,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8103457375952475,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "battle": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 794,
+      "headerLightPixels": 16628,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7845828227804365,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "settlementHidden": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 1350,
+      "headerLightPixels": 13347,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8071772583741478,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "settlement": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 1350,
+      "headerLightPixels": 13347,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8067492564542127,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "returnedLobby": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 1528,
+      "headerLightPixels": 10007,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001388888888888889,
+      "maxNearBlackHorizontalRunFraction": 0.009375,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.811362368913331,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "retryBattle": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 794,
+      "headerLightPixels": 16628,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7850012825162762,
+      "formerActionColorPixels": 0,
+      "formerActionColorSpanPixels": 0,
+      "sampledRegions": {
+        "header": {
+          "xMin": 485,
+          "yMin": 32,
+          "xMax": 692,
+          "yMax": 119
+        },
+        "formerAction": {
+          "xMin": 481,
+          "yMin": 693,
+          "xMax": 799,
+          "yMax": 714
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    }
+  },
+  "opticalMeasurements": {
+    "settlement": {
+      "thresholds": {
+        "minimumOutcomePaddingCapturePixels": 4,
+        "expectedOutlineThicknessCapturePixels": 2,
+        "minimumOutcomeInkHeightCapturePixels": 23,
+        "maximumOutcomeInkHeightCapturePixels": 27,
+        "minimumOutcomeVerticalOccupancy": 0.64,
+        "maximumOutcomeVerticalOccupancy": 0.72,
+        "occupancyCaptureQuantizationPixels": 1,
+        "maximumTopBottomPaddingImbalanceCapturePixels": 2,
+        "paddingImbalanceCaptureQuantizationPixels": 1,
+        "maximumObservedTopBottomPaddingImbalanceCapturePixels": 3,
+        "maximumMetricBorderRunFraction": 0.45
+      },
+      "banner": {
+        "mask": "result-banner",
+        "sampleRegion": {
+          "xMin": 501,
+          "yMin": 120,
+          "xMax": 779,
+          "yMax": 171
+        },
+        "pixels": 7099,
+        "bounds": {
+          "xMin": 504,
+          "yMin": 123,
+          "xMax": 776,
+          "yMax": 164,
+          "width": 272,
+          "height": 41,
+          "centerX": 640.0,
+          "centerY": 143.5
+        },
+        "centroid": {
+          "x": 639.4309761938301,
+          "y": 141.8099028032117
+        }
+      },
+      "expectedBannerOpticalRect": {
+        "xMin": 504.0732265446224,
+        "yMin": 123.56979405034325,
+        "xMax": 775.9267734553775,
+        "yMax": 163.1121281464531
+      },
+      "outcome": {
+        "sampleRegion": {
+          "xMin": 589,
+          "yMin": 120,
+          "xMax": 691,
+          "yMax": 169
+        },
+        "fill": {
+          "corePixels": 319,
+          "pixels": 551,
+          "bounds": {
+            "xMin": 617,
+            "yMin": 132,
+            "xMax": 661,
+            "yMax": 153,
+            "width": 44,
+            "height": 21
+          }
+        },
+        "outline": {
+          "candidatePixels": 420,
+          "pixels": 420,
+          "bounds": {
+            "xMin": 616,
+            "yMin": 130,
+            "xMax": 663,
+            "yMax": 155,
+            "width": 47,
+            "height": 25
+          },
+          "expansionFromFill": {
+            "left": 1,
+            "top": 2,
+            "right": 2,
+            "bottom": 2
+          },
+          "expectedThicknessCapturePixels": 2,
+          "maximumConnectedThicknessCapturePixels": 2,
+          "maximumObservedThicknessCapturePixels": 2,
+          "antiAliasFringe": {
+            "accepted": false,
+            "pixels": 0,
+            "ring": 0,
+            "fractionOfDeclaredOuterRing": 0.0,
+            "cardinalSides": []
+          },
+          "touchesSampleBoundary": false,
+          "rings": [
+            {
+              "distanceFromFillCapturePixels": 1,
+              "pixels": 262,
+              "linkedToInnerRingPixels": 262,
+              "linkedSidePixels": {
+                "left": 190,
+                "top": 168,
+                "right": 161,
+                "bottom": 178
+              },
+              "directCardinalSidePixels": {
+                "left": 85,
+                "top": 57,
+                "right": 52,
+                "bottom": 66
+              },
+              "directCardinalSideFractionsOfRing": {
+                "left": 0.3244274809160305,
+                "top": 0.21755725190839695,
+                "right": 0.1984732824427481,
+                "bottom": 0.25190839694656486
+              },
+              "minimumDirectCardinalSidePixels": 21,
+              "minimumDirectCardinalRingFraction": 0.08,
+              "minimumPreviousRingRetentionFraction": null,
+              "minimumPreviousRingSidePixels": null,
+              "previousRingRetentionFractions": null
+            },
+            {
+              "distanceFromFillCapturePixels": 2,
+              "pixels": 158,
+              "linkedToInnerRingPixels": 124,
+              "linkedSidePixels": {
+                "left": 93,
+                "top": 87,
+                "right": 92,
+                "bottom": 70
+              },
+              "directCardinalSidePixels": {
+                "left": 18,
+                "top": 41,
+                "right": 19,
+                "bottom": 29
+              },
+              "directCardinalSideFractionsOfRing": {
+                "left": 0.11392405063291139,
+                "top": 0.25949367088607594,
+                "right": 0.12025316455696203,
+                "bottom": 0.18354430379746836
+              },
+              "minimumDirectCardinalSidePixels": 13,
+              "minimumDirectCardinalRingFraction": 0.08,
+              "minimumPreviousRingRetentionFraction": 0.2,
+              "minimumPreviousRingSidePixels": {
+                "left": 17,
+                "top": 12,
+                "right": 11,
+                "bottom": 14
+              },
+              "previousRingRetentionFractions": {
+                "left": 0.21176470588235294,
+                "top": 0.7192982456140351,
+                "right": 0.36538461538461536,
+                "bottom": 0.4393939393939394
+              }
+            }
+          ]
+        },
+        "finalInk": {
+          "pixels": 1178,
+          "evidenceKind": "stable-versus-hidden-channel-delta",
+          "referenceFrame": "settlement-hidden-before-reveal",
+          "minimumChannelDeltaExclusive": 8,
+          "touchesSampleBoundary": false,
+          "connectedOutlinePixelsCovered": 420,
+          "outlineCandidatePixelsCovered": 420,
+          "bounds": {
+            "xMin": 615,
+            "yMin": 129,
+            "xMax": 664,
+            "yMax": 155,
+            "width": 49,
+            "height": 26
+          }
+        }
+      },
+      "finalInkVerticalOccupancy": 0.6341463414634146,
+      "finalInkVerticalOccupancyQuantizedBounds": {
+        "minimum": 0.5952380952380952,
+        "maximum": 0.675
+      },
+      "outcomePaddingCapturePixels": {
+        "left": 111,
+        "top": 6,
+        "right": 112,
+        "bottom": 9
+      },
+      "topBottomPaddingImbalanceCapturePixels": 3,
+      "metricRows": [
+        {
+          "region": {
+            "xMin": 500,
+            "yMin": 370,
+            "xMax": 780,
+            "yMax": 411
+          },
+          "edgeBandPixels": 6,
+          "maximumHorizontalBrownRunPixels": 0,
+          "maximumVerticalBrownRunPixels": 0,
+          "maximumHorizontalRunFraction": 0.0,
+          "maximumVerticalRunFraction": 0.0
+        },
+        {
+          "region": {
+            "xMin": 500,
+            "yMin": 416,
+            "xMax": 780,
+            "yMax": 457
+          },
+          "edgeBandPixels": 6,
+          "maximumHorizontalBrownRunPixels": 0,
+          "maximumVerticalBrownRunPixels": 0,
+          "maximumHorizontalRunFraction": 0.0,
+          "maximumVerticalRunFraction": 0.0
+        },
+        {
+          "region": {
+            "xMin": 500,
+            "yMin": 462,
+            "xMax": 780,
+            "yMax": 503
+          },
+          "edgeBandPixels": 6,
+          "maximumHorizontalBrownRunPixels": 0,
+          "maximumVerticalBrownRunPixels": 0,
+          "maximumHorizontalRunFraction": 0.0,
+          "maximumVerticalRunFraction": 0.0
+        }
+      ]
+    },
+    "settlementReveal": {
+      "state": "hidden-and-stable-captured",
+      "telemetry": {
+        "hidden": {
+          "state": "settled-hidden",
+          "identityState": "settled-hidden",
+          "appRoute": 2,
+          "identityRoute": 2,
+          "identityRouteName": "settlement",
+          "identitySessionId": "69cd931a17b5461a881fc9f1b068048a",
+          "history": [
+            {
+              "state": "hidden",
+              "stateCode": 0,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 1
+            },
+            {
+              "state": "settled-hidden",
+              "stateCode": 1,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 2
+            }
+          ]
+        },
+        "stable": {
+          "state": "stable",
+          "identityState": "stable",
+          "appRoute": 2,
+          "identityRoute": 2,
+          "identityRouteName": "settlement",
+          "identitySessionId": "69cd931a17b5461a881fc9f1b068048a",
+          "history": [
+            {
+              "state": "hidden",
+              "stateCode": 0,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 1
+            },
+            {
+              "state": "settled-hidden",
+              "stateCode": 1,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 2
+            },
+            {
+              "state": "appearing",
+              "stateCode": 2,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 3
+            },
+            {
+              "state": "stable",
+              "stateCode": 3,
+              "route": 2,
+              "sessionId": "69cd931a17b5461a881fc9f1b068048a",
+              "sequence": 4
+            }
+          ]
+        }
+      },
+      "ink": {
+        "hidden": {
+          "region": {
+            "xMin": 589,
+            "yMin": 120,
+            "xMax": 691,
+            "yMax": 169
+          },
+          "fillPixels": 0,
+          "outlinePixels": 0
+        },
+        "stable": {
+          "region": {
+            "xMin": 589,
+            "yMin": 120,
+            "xMax": 691,
+            "yMax": 169
+          },
+          "fillPixels": 319,
+          "outlinePixels": 420
+        }
+      }
+    }
+  },
+  "interactionPolishEvidence": {
+    "state": "not-requested"
+  },
+  "pixelThresholds": {
+    "framePixels": {
+      "sampleStepPixels": 4,
+      "nearBlackLuma": 0.08,
+      "maxBlackFraction": 0.01,
+      "maxNearBlackFraction": 0.05,
+      "maxInvalidFraction": 0.05
+    },
+    "hudDarkPixels": 54,
+    "hudLightPixels": 3393
+  },
+  "controls": {
+    "lobbyLevelOrchard01": {
+      "x": 640.0,
+      "y": 169.7025171624714
+    },
+    "lobbyLevelOrchard02": {
+      "x": 640.0,
+      "y": 322.92906178489704
+    },
+    "lobbyLevelOrchard03": {
+      "x": 640.0,
+      "y": 476.15560640732264
+    },
+    "lobbyStart": {
+      "x": 640.0,
+      "y": 614.5537757437071
+    },
+    "settlementRetry": {
+      "x": 640.0,
+      "y": 555.2402745995423
+    },
+    "settlementReturn": {
+      "x": 640.0,
+      "y": 621.1441647597254
+    },
+    "headerPause": {
+      "x": 721.5560640732266,
+      "y": 54.370709382151034
+    },
+    "headerSpeed": {
+      "x": 770.9839816933638,
+      "y": 54.370709382151034
+    },
+    "waveAction": {
+      "x": 720.7322654462243,
+      "y": 446.4988558352403
+    },
+    "pauseContinue": {
+      "x": 577.3913043478261,
+      "y": 405.3089244851259
+    },
+    "pauseRestart": {
+      "x": 702.608695652174,
+      "y": 405.3089244851259
+    },
+    "terminalRestart": {
+      "x": 640.0,
+      "y": 441.55606407322654
+    },
+    "weaponGatling": {
+      "x": 524.6681922196797,
+      "y": 522.2883295194508
+    },
+    "nurserySlot0": {
+      "x": 516.4302059496567,
+      "y": 602.1967963386728
+    },
+    "acceptanceCell0": {
+      "x": 500.7780320366133,
+      "y": 191.94508009153319
+    },
+    "acceptanceCell1": {
+      "x": 540.3203661327232,
+      "y": 191.94508009153319
+    },
+    "detailClose": {
+      "x": 777.5743707093822,
+      "y": 497.57437070938215
+    }
+  },
+  "referenceControls": {
+    "lobbyLevelOrchard01": {
+      "x": 201,
+      "y": 206
+    },
+    "lobbyLevelOrchard02": {
+      "x": 201,
+      "y": 392
+    },
+    "lobbyLevelOrchard03": {
+      "x": 201,
+      "y": 578
+    },
+    "lobbyStart": {
+      "x": 201,
+      "y": 746
+    },
+    "settlementRetry": {
+      "x": 201,
+      "y": 674
+    },
+    "settlementReturn": {
+      "x": 201,
+      "y": 754
+    },
+    "headerPause": {
+      "x": 300,
+      "y": 66
+    },
+    "headerSpeed": {
+      "x": 360,
+      "y": 66
+    },
+    "waveAction": {
+      "x": 299,
+      "y": 542
+    },
+    "pauseContinue": {
+      "x": 125,
+      "y": 492
+    },
+    "pauseRestart": {
+      "x": 277,
+      "y": 492
+    },
+    "terminalRestart": {
+      "x": 201,
+      "y": 536
+    },
+    "weaponGatling": {
+      "x": 61,
+      "y": 634
+    },
+    "nurserySlot0": {
+      "x": 51,
+      "y": 731
+    },
+    "acceptanceCell0": {
+      "x": 32,
+      "y": 233
+    },
+    "acceptanceCell1": {
+      "x": 80,
+      "y": 233
+    },
+    "detailClose": {
+      "x": 368,
+      "y": 604
+    }
+  }
+}

@@ -1,0 +1,2552 @@
+{
+  "accepted": true,
+  "capturedAtUtc": "2026-08-26T15:50:55.2316986+00:00",
+  "url": "http://127.0.0.1:52235/?acceptance=1&route=battle&levelId=orchard-01&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-08-26T15:50:15.6191574+00:00"
+  },
+  "levelId": "orchard-01",
+  "expectedCompositeIdentity": {
+    "levelId": "orchard-01",
+    "mapId": "orchard-01",
+    "waveSetId": "waves.orchard-01.teaching",
+    "ruleSetId": "rules.orchard-01.baseline",
+    "themeId": "theme.orchard-01.day"
+  },
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 402,
+      "height": 874
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 1.0,
+    "designOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 16.0,
+      "y": 18.0,
+      "width": 370.0,
+      "height": 838
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "4",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "3",
+    "display": "ui.sunny-orchard@4 / sunny-orchard-painted@3",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:52235/?acceptance=1&route=battle&levelId=orchard-01&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 402,
+    "height": 874,
+    "cssWidth": 402,
+    "cssHeight": 874,
+    "innerWidth": 402,
+    "innerHeight": 874,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1787759421005.5,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 1,
+    "body": ""
+  },
+  "checks": {
+    "http": "pass",
+    "wasm": "pass",
+    "perAssetContentVersions": "pass",
+    "strongContentEtags": "pass",
+    "brotliFallbackDelivery": "pass",
+    "immutableBuildCache": "pass",
+    "revalidatableHtml": "pass",
+    "warmCacheReuse": "pass",
+    "crossReleaseCacheReuse": "not-requested",
+    "unityLoaded": "pass",
+    "directRouteLevelIdentity": "pass",
+    "compositeIdentity": "pass",
+    "requestedViewportAndCanvas": "pass",
+    "safeAreaQueryApplied": "pass",
+    "chineseHudInk": "pass",
+    "screenshotDimensions": "pass",
+    "requiredStates": "pass",
+    "contextualWaveLabels": "pass",
+    "waveActionContentContrast": "pass",
+    "refreshActionContentContrast": "pass",
+    "compactControlLifecycle": "pass",
+    "compactControlInstantClose": "pass",
+    "panelGeometry": "pass",
+    "textContainment": "pass",
+    "occupiedBalance": "pass",
+    "actionFocusCue": "pass",
+    "waveActionPressedBeforeRelease": "pass",
+    "pausedModalFinalRasterOpticalAlignment": "pass",
+    "pauseActionsPressedBeforeReleaseAndContained": "pass",
+    "oldBottomActionRowAbsent": "pass",
+    "noLargeNearBlackRegions": "pass",
+    "pauseContinuePreservesRun": "pass",
+    "pauseRestartProducesCleanReadyState": "pass",
+    "selectedToolState": "pass",
+    "selectedToolAvailableToClickedHashChanged": "pass",
+    "legalInteractionCue": "pass",
+    "illegalInteractionCue": "pass",
+    "inspectionClickInformationAndRange": "pass",
+    "destinationClickNoRelocation": "pass",
+    "dragRelocation": "pass",
+    "battleTerminalResultCard": "pass",
+    "terminalPreviewRestartReturnsReadyWithoutRouteSubmission": "pass"
+  },
+  "delivery": {
+    "assetVersions": {
+      "loader": "251047a339fd",
+      "data": "64668872e68e",
+      "framework": "0b5cf9bd437a",
+      "wasm": "2e5dea1ff499"
+    },
+    "htmlCacheControl": "no-cache",
+    "assets": {
+      "loader": {
+        "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.loader.js?v=251047a339fd",
+        "version": "251047a339fd",
+        "contentType": "text/javascript; charset=utf-8",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 117893,
+        "etag": "\"251047a339fdc98da7447f3b56b72432674d0ff767a2b8317d9ae0f4e5ca1290\"",
+        "contentSha256": "251047a339fdc98da7447f3b56b72432674d0ff767a2b8317d9ae0f4e5ca1290"
+      },
+      "data": {
+        "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.data.unityweb?v=64668872e68e",
+        "version": "64668872e68e",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 6307653,
+        "etag": "\"64668872e68ef5d18872ea3d687f72f0921310f3f33bf6cfa31125cf6e126de0\"",
+        "contentSha256": "64668872e68ef5d18872ea3d687f72f0921310f3f33bf6cfa31125cf6e126de0"
+      },
+      "framework": {
+        "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.framework.js.unityweb?v=0b5cf9bd437a",
+        "version": "0b5cf9bd437a",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 71664,
+        "etag": "\"0b5cf9bd437aaf6f2392017360a141710e6f9b0739a049a0b6c0e4766612e4a4\"",
+        "contentSha256": "0b5cf9bd437aaf6f2392017360a141710e6f9b0739a049a0b6c0e4766612e4a4"
+      },
+      "wasm": {
+        "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.wasm.unityweb?v=2e5dea1ff499",
+        "version": "2e5dea1ff499",
+        "contentType": "application/octet-stream",
+        "contentEncoding": "",
+        "cacheControl": "public, max-age=31536000, immutable",
+        "contentLength": 5944809,
+        "etag": "\"2e5dea1ff49918b4c79d90482f5f4b72a65a4d9082e5e4cb02c4f43483fdef5a\"",
+        "contentSha256": "2e5dea1ff49918b4c79d90482f5f4b72a65a4d9082e5e4cb02c4f43483fdef5a"
+      }
+    },
+    "cacheLimits": {
+      "perAssetTransferBytes": 16384,
+      "totalTransferBytes": 65536
+    },
+    "cacheRuns": {
+      "cold": {
+        "label": "cold",
+        "startedAtUtc": "2026-08-26T15:50:16.0502109+00:00",
+        "completedAtUtc": "2026-08-26T15:50:20.9878275+00:00",
+        "startupDurationMilliseconds": 4937.617,
+        "totalPayloadTransferSize": 12443219,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.loader.js?v=251047a339fd",
+            "startTimeMilliseconds": 211.8,
+            "durationMilliseconds": 4.2,
+            "transferSize": 118193,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "data": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.data.unityweb?v=64668872e68e",
+            "startTimeMilliseconds": 660.3,
+            "durationMilliseconds": 48.6,
+            "transferSize": 6307953,
+            "encodedBodySize": 6307653,
+            "decodedBodySize": 6307653,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.framework.js.unityweb?v=0b5cf9bd437a",
+            "startTimeMilliseconds": 582.9,
+            "durationMilliseconds": 5.7,
+            "transferSize": 71964,
+            "encodedBodySize": 71664,
+            "decodedBodySize": 71664,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.wasm.unityweb?v=2e5dea1ff499",
+            "startTimeMilliseconds": 583.1,
+            "durationMilliseconds": 39.9,
+            "transferSize": 5945109,
+            "encodedBodySize": 5944809,
+            "decodedBodySize": 5944809,
+            "responseStatus": 200,
+            "deliveryType": "",
+            "nextHopProtocol": "http/1.1"
+          }
+        }
+      },
+      "warm": {
+        "label": "warm",
+        "startedAtUtc": "2026-08-26T15:50:20.9985415+00:00",
+        "completedAtUtc": "2026-08-26T15:50:24.4396749+00:00",
+        "startupDurationMilliseconds": 3441.133,
+        "totalPayloadTransferSize": 300,
+        "assets": {
+          "loader": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.loader.js?v=251047a339fd",
+            "startTimeMilliseconds": 66.5,
+            "durationMilliseconds": 1.3,
+            "transferSize": 0,
+            "encodedBodySize": 117893,
+            "decodedBodySize": 117893,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          },
+          "data": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.data.unityweb?v=64668872e68e",
+            "startTimeMilliseconds": 102.3,
+            "durationMilliseconds": 2.2,
+            "transferSize": 300,
+            "encodedBodySize": 0,
+            "decodedBodySize": 0,
+            "responseStatus": 304,
+            "deliveryType": "cache",
+            "nextHopProtocol": "http/1.1"
+          },
+          "framework": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.framework.js.unityweb?v=0b5cf9bd437a",
+            "startTimeMilliseconds": 77.5,
+            "durationMilliseconds": 3.5,
+            "transferSize": 0,
+            "encodedBodySize": 71664,
+            "decodedBodySize": 71664,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          },
+          "wasm": {
+            "url": "http://127.0.0.1:52235/Build/WebGL-Acceptance.wasm.unityweb?v=2e5dea1ff499",
+            "startTimeMilliseconds": 77.7,
+            "durationMilliseconds": 19.4,
+            "transferSize": 0,
+            "encodedBodySize": 5944809,
+            "decodedBodySize": 5944809,
+            "responseStatus": 200,
+            "deliveryType": "cache",
+            "nextHopProtocol": ""
+          }
+        }
+      }
+    },
+    "releaseTransition": {
+      "state": "not-requested"
+    }
+  },
+  "routeIdentities": {
+    "battle": {
+      "route": 1,
+      "routeName": "battle",
+      "sessionId": "acceptance-510e7badc04a414ab62eb7bd242b9170",
+      "seed": 20260714,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    }
+  },
+  "screenshots": {
+    "ready": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01-ready.png",
+    "speedHover": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01c-speed-hover-1x.png",
+    "speedPressed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01d-speed-pressed-1x.png",
+    "speedActivating": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01e-speed-activating-2x.png",
+    "speedActive": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01f-speed-active-2x.png",
+    "speedDeactivating": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01g-speed-deactivating-1x.png",
+    "speedInactive": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01h-speed-inactive-1x.png",
+    "waveActionHover": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\01a-wave-action-hover.png",
+    "waveActionPressed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\02a-wave-action-pressed.png",
+    "activeWave": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\02-active-wave.png",
+    "betweenWave": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\03-between-wave.png",
+    "immediateNextWave": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\04-immediate-next-wave.png",
+    "pauseActivating": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\04a-pause-activating.png",
+    "paused": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\05-paused.png",
+    "pauseContinueHover": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\05a-pause-continue-hover.png",
+    "pauseContinuePressed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\05b-pause-continue-pressed.png",
+    "pauseDeactivating": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\05c-pause-deactivating.png",
+    "continued": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\06-continued.png",
+    "pauseRestartHover": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\06a-pause-restart-hover.png",
+    "pauseRestartPressed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\06b-pause-restart-pressed.png",
+    "restarted": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\07-restarted.png",
+    "toolAvailable": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\08-tool-available.png",
+    "selectedTool": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\09-selected-tool.png",
+    "adjacentPots": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\10-adjacent-pots.png",
+    "legalDragCue": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\11-legal-drag-cue.png",
+    "illegalDragCue": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\12-illegal-drag-cue.png",
+    "denseBoard": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\13-dense-board.png",
+    "plantDetail": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\14-plant-detail.png",
+    "detailCloseHover": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\14a-detail-close-hover.png",
+    "detailClosePressed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\14b-detail-close-pressed.png",
+    "detailClosed": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\14c-detail-closed.png",
+    "destinationClickNoMove": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\15-destination-click-no-move.png",
+    "dragRelocation": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\16-after-drag-move.png",
+    "terminal": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\17-battle-terminal-victory.png",
+    "terminalPreviewRestarted": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\rework-v2-gate-a\\402x874-final-candidate-5\\18-terminal-preview-restarted.png"
+  },
+  "imageMetrics": {
+    "ready": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7249552753245007,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1475,
+      "headerLightPixels": 32282,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.724635541620268,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1259,
+      "headerLightPixels": 32409,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7250872495920322,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedActivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1532,
+      "headerLightPixels": 31080,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7241522882377177,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedActive": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1532,
+      "headerLightPixels": 31080,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7241522882377177,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedDeactivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1475,
+      "headerLightPixels": 32282,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.724635541620268,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "speedInactive": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7249552753245007,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "waveActionHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7260105832179001,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "waveActionPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7263767712081721,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "activeWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1245,
+      "headerLightPixels": 32417,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7329406916066694,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "betweenWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1245,
+      "headerLightPixels": 32409,
+      "blackFraction": 4.52100004521E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 4.52100004521E-05,
+      "averageLuma": 0.7302446045056017,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "immediateNextWave": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1248,
+      "headerLightPixels": 32404,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.73491803356004,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseActivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.46543411564365395,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "paused": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.46543411564365395,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseContinueHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.46601261585951054,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseContinuePressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.46636763960362393,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseDeactivating": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1277,
+      "headerLightPixels": 31419,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7345700695968427,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "continued": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1248,
+      "headerLightPixels": 32404,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7351866894667262,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseRestartHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.46626373379644687,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "pauseRestartPressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.4667494493333505,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "restarted": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32402,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0002712600027126,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7250296835034313,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "toolAvailable": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7297307903328868,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "selectedTool": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0001356300013563,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7276789648151244,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "adjacentPots": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 4.52100004521E-05,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7290058607053562,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "legalDragCue": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7280938715628495,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "illegalDragCue": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7277531098895837,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "denseBoard": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0004973100049731,
+      "nearBlackFraction": 0.0018988200189882002,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0004973100049731,
+      "averageLuma": 0.7172394568417693,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "plantDetail": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7213254172572413,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "detailCloseHover": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7210609553847847,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "detailClosePressed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7212588120761748,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "detailClosed": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7267500058595996,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "destinationClickNoMove": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7275747075400825,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "dragRelocation": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 9.04200009042E-05,
+      "nearBlackFraction": 0.0001808400018084,
+      "maxNearBlackHorizontalRunFraction": 0.01990049751243781,
+      "invalidFraction": 9.04200009042E-05,
+      "averageLuma": 0.7273991690224907,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "terminal": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 37170,
+      "headerLightPixels": 0,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.501669134033508,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "terminalPreviewRestarted": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 1251,
+      "headerLightPixels": 32394,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0002712600027126,
+      "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.7252640274309757,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    }
+  },
+  "panelGeometry": {
+    "passed": true,
+    "edgeToleranceCapturePixels": 1,
+    "alignedOwnerTrack": true,
+    "leftEdgeDeltaCapturePixels": 0,
+    "rightEdgeDeltaCapturePixels": 0,
+    "stageInsetLogical": {
+      "left": 8.0,
+      "right": 8.0
+    },
+    "stageSideSoilBandRangeCapturePixels": {
+      "minimum": 5,
+      "maximum": 8
+    },
+    "stageTopSoilBandRangeCapturePixels": {
+      "minimum": 2,
+      "maximum": 3
+    },
+    "standardFrameBandMaximumCapturePixels": 2,
+    "structuralFrameCount": 3,
+    "pageShellDetected": true,
+    "legacyFlatFrameDetected": false,
+    "stageHeightFraction": 0.38672768878718533,
+    "refreshLowerMarginLogical": 36.0,
+    "pageShellLowerMarginLogical": 14.0,
+    "header": {
+      "name": "Header",
+      "owner": {
+        "xMin": 14,
+        "yMin": 36,
+        "xMax": 388,
+        "yMax": 150
+      },
+      "visibleEdges": {
+        "left": 17,
+        "right": 384,
+        "top": 39
+      },
+      "outlineBands": {
+        "left": 2,
+        "right": 2,
+        "top": 4
+      },
+      "thresholds": {
+        "minimumColumnPixels": 13,
+        "minimumRowPixels": 34,
+        "sideThicknessSampleY": 92
+      }
+    },
+    "pageShell": {
+      "name": "PageShell",
+      "owner": {
+        "xMin": 14,
+        "yMin": 154,
+        "xMax": 388,
+        "yMax": 852
+      },
+      "visibleEdges": {
+        "left": 17,
+        "right": 384,
+        "top": 157
+      },
+      "outlineBands": {
+        "left": 2,
+        "right": 2,
+        "top": 2
+      },
+      "thresholds": {
+        "minimumColumnPixels": 76,
+        "minimumRowPixels": 34,
+        "sideThicknessSampleY": 502
+      }
+    },
+    "gameplayStage": {
+      "name": "GameplayStage",
+      "owner": {
+        "xMin": 22,
+        "yMin": 168,
+        "xMax": 380,
+        "yMax": 506
+      },
+      "visibleEdges": {
+        "left": 24,
+        "right": 377,
+        "top": 174
+      },
+      "outlineBands": {
+        "left": 6,
+        "right": 7,
+        "top": 2
+      },
+      "thresholds": {
+        "minimumColumnPixels": 37,
+        "minimumRowPixels": 33,
+        "sideThicknessSampleY": 471
+      }
+    },
+    "phaseWaveRow": {
+      "xMin": 24,
+      "yMin": 518,
+      "xMax": 378,
+      "yMax": 570
+    },
+    "contextTray": {
+      "name": "ContextTray",
+      "owner": {
+        "xMin": 24,
+        "yMin": 578,
+        "xMax": 378,
+        "yMax": 666
+      },
+      "visibleEdges": {
+        "left": 27,
+        "right": 374,
+        "top": 581
+      },
+      "outlineBands": {
+        "left": 2,
+        "right": 2,
+        "top": 2
+      },
+      "thresholds": {
+        "minimumColumnPixels": 10,
+        "minimumRowPixels": 33,
+        "sideThicknessSampleY": 622
+      }
+    },
+    "nurseryTray": {
+      "name": "NurseryTray",
+      "owner": {
+        "xMin": 24,
+        "yMin": 674,
+        "xMax": 378,
+        "yMax": 766
+      },
+      "visibleEdges": {
+        "left": 27,
+        "right": 374,
+        "top": 677
+      },
+      "outlineBands": {
+        "left": 2,
+        "right": 2,
+        "top": 2
+      },
+      "thresholds": {
+        "minimumColumnPixels": 11,
+        "minimumRowPixels": 33,
+        "sideThicknessSampleY": 720
+      }
+    }
+  },
+  "textContainment": {
+    "passed": true,
+    "policy": "final-raster primary-text ink must remain inside declared owner guard",
+    "owners": [
+      {
+        "name": "header-title",
+        "owner": {
+          "xMin": 40,
+          "yMin": 52,
+          "xMax": 250,
+          "yMax": 90
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 601,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "header-metric-row",
+        "owner": {
+          "xMin": 28,
+          "yMin": 101,
+          "xMax": 374,
+          "yMax": 141
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 1104,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "phase-status",
+        "owner": {
+          "xMin": 24,
+          "yMin": 518,
+          "xMax": 192,
+          "yMax": 570
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 473,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "tool-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 582,
+          "xMax": 152,
+          "yMax": 606
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 128,
+        "outsideGuardInkPixels": 2,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "nursery-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 678,
+          "xMax": 152,
+          "yMax": 702
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 141,
+        "outsideGuardInkPixels": 2,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "refresh-action",
+        "owner": {
+          "xMin": 56,
+          "yMin": 792,
+          "xMax": 346,
+          "yMax": 820
+        },
+        "palette": "inverse-light",
+        "insideInkPixels": 1129,
+        "outsideGuardInkPixels": 1,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "detail-title",
+        "owner": {
+          "xMin": 32,
+          "yMin": 582,
+          "xMax": 322,
+          "yMax": 606
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 372,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      },
+      {
+        "name": "detail-body",
+        "owner": {
+          "xMin": 32,
+          "yMin": 614,
+          "xMax": 322,
+          "yMax": 636
+        },
+        "palette": "brown-ink",
+        "insideInkPixels": 486,
+        "outsideGuardInkPixels": 0,
+        "outsideAllowancePixels": 8,
+        "guardPixels": 2,
+        "passed": true
+      }
+    ]
+  },
+  "occupiedBalance": {
+    "passed": true,
+    "requiredVerticalSpanFraction": 0.9,
+    "occupiedVerticalSpanFraction": 0.9176201372997712,
+    "stateCoverage": [
+      "ready",
+      "plant-detail"
+    ],
+    "contextModes": {
+      "ready": "tools",
+      "plantDetail": "selected-detail"
+    },
+    "regions": [
+      {
+        "name": "header",
+        "region": {
+          "xMin": 14,
+          "yMin": 36,
+          "xMax": 388,
+          "yMax": 150
+        },
+        "visualSamples": 2739,
+        "totalSamples": 10659,
+        "visualFraction": 0.25696594427244585,
+        "passed": true
+      },
+      {
+        "name": "board",
+        "region": {
+          "xMin": 22,
+          "yMin": 168,
+          "xMax": 380,
+          "yMax": 506
+        },
+        "visualSamples": 27476,
+        "totalSamples": 30251,
+        "visualFraction": 0.908267495289412,
+        "passed": true
+      },
+      {
+        "name": "phase-wave-row",
+        "region": {
+          "xMin": 24,
+          "yMin": 518,
+          "xMax": 378,
+          "yMax": 570
+        },
+        "visualSamples": 3419,
+        "totalSamples": 4602,
+        "visualFraction": 0.7429378531073446,
+        "passed": true
+      },
+      {
+        "name": "context-tray-tools",
+        "region": {
+          "xMin": 24,
+          "yMin": 578,
+          "xMax": 378,
+          "yMax": 666
+        },
+        "visualSamples": 1138,
+        "totalSamples": 7788,
+        "visualFraction": 0.14612223934257831,
+        "passed": true
+      },
+      {
+        "name": "nursery-tray",
+        "region": {
+          "xMin": 24,
+          "yMin": 674,
+          "xMax": 378,
+          "yMax": 766
+        },
+        "visualSamples": 737,
+        "totalSamples": 8142,
+        "visualFraction": 0.09051830017194792,
+        "passed": true
+      },
+      {
+        "name": "refresh-action",
+        "region": {
+          "xMin": 24,
+          "yMin": 774,
+          "xMax": 378,
+          "yMax": 838
+        },
+        "visualSamples": 4470,
+        "totalSamples": 5664,
+        "visualFraction": 0.7891949152542372,
+        "passed": true
+      },
+      {
+        "name": "contextual-detail",
+        "region": {
+          "xMin": 24,
+          "yMin": 578,
+          "xMax": 378,
+          "yMax": 666
+        },
+        "visualSamples": 7326,
+        "totalSamples": 7788,
+        "visualFraction": 0.940677966101695,
+        "passed": true
+      }
+    ],
+    "chromeAnatomy": {
+      "metricCapsules": 3,
+      "yellowHeaderControls": 2,
+      "recipeCards": 4,
+      "dashedNurserySlots": 5,
+      "evidence": [
+        {
+          "name": "metric-capsule-0",
+          "region": {
+            "xMin": 28,
+            "yMin": 101,
+            "xMax": 140,
+            "yMax": 141
+          },
+          "visualSamples": 248,
+          "totalSamples": 1120,
+          "visualFraction": 0.22142857142857142,
+          "passed": true
+        },
+        {
+          "name": "metric-capsule-1",
+          "region": {
+            "xMin": 145,
+            "yMin": 101,
+            "xMax": 257,
+            "yMax": 141
+          },
+          "visualSamples": 244,
+          "totalSamples": 1120,
+          "visualFraction": 0.21785714285714286,
+          "passed": true
+        },
+        {
+          "name": "metric-capsule-2",
+          "region": {
+            "xMin": 262,
+            "yMin": 101,
+            "xMax": 374,
+            "yMax": 141
+          },
+          "visualSamples": 218,
+          "totalSamples": 1120,
+          "visualFraction": 0.19464285714285715,
+          "passed": true
+        },
+        {
+          "name": "yellow-header-control-0",
+          "region": {
+            "xMin": 264,
+            "yMin": 50,
+            "xMax": 312,
+            "yMax": 98
+          },
+          "visualSamples": 417,
+          "totalSamples": 576,
+          "visualFraction": 0.7239583333333334,
+          "passed": true
+        },
+        {
+          "name": "yellow-header-control-1",
+          "region": {
+            "xMin": 318,
+            "yMin": 50,
+            "xMax": 374,
+            "yMax": 98
+          },
+          "visualSamples": 501,
+          "totalSamples": 672,
+          "visualFraction": 0.7455357142857143,
+          "passed": true
+        },
+        {
+          "name": "recipe-card-0",
+          "region": {
+            "xMin": 32,
+            "yMin": 610,
+            "xMax": 111,
+            "yMax": 658
+          },
+          "visualSamples": 245,
+          "totalSamples": 960,
+          "visualFraction": 0.2552083333333333,
+          "passed": true
+        },
+        {
+          "name": "recipe-card-1",
+          "region": {
+            "xMin": 118,
+            "yMin": 610,
+            "xMax": 197,
+            "yMax": 658
+          },
+          "visualSamples": 208,
+          "totalSamples": 960,
+          "visualFraction": 0.21666666666666667,
+          "passed": true
+        },
+        {
+          "name": "recipe-card-2",
+          "region": {
+            "xMin": 205,
+            "yMin": 610,
+            "xMax": 284,
+            "yMax": 658
+          },
+          "visualSamples": 206,
+          "totalSamples": 960,
+          "visualFraction": 0.21458333333333332,
+          "passed": true
+        },
+        {
+          "name": "recipe-card-3",
+          "region": {
+            "xMin": 291,
+            "yMin": 610,
+            "xMax": 370,
+            "yMax": 658
+          },
+          "visualSamples": 215,
+          "totalSamples": 960,
+          "visualFraction": 0.22395833333333334,
+          "passed": true
+        },
+        {
+          "name": "dashed-nursery-slot-0",
+          "region": {
+            "xMin": 32,
+            "yMin": 706,
+            "xMax": 90,
+            "yMax": 758
+          },
+          "visualSamples": 93,
+          "totalSamples": 754,
+          "visualFraction": 0.123342175066313,
+          "passed": true
+        },
+        {
+          "name": "dashed-nursery-slot-1",
+          "region": {
+            "xMin": 102,
+            "yMin": 706,
+            "xMax": 160,
+            "yMax": 758
+          },
+          "visualSamples": 93,
+          "totalSamples": 754,
+          "visualFraction": 0.123342175066313,
+          "passed": true
+        },
+        {
+          "name": "dashed-nursery-slot-2",
+          "region": {
+            "xMin": 172,
+            "yMin": 706,
+            "xMax": 230,
+            "yMax": 758
+          },
+          "visualSamples": 93,
+          "totalSamples": 754,
+          "visualFraction": 0.123342175066313,
+          "passed": true
+        },
+        {
+          "name": "dashed-nursery-slot-3",
+          "region": {
+            "xMin": 242,
+            "yMin": 706,
+            "xMax": 300,
+            "yMax": 758
+          },
+          "visualSamples": 93,
+          "totalSamples": 754,
+          "visualFraction": 0.123342175066313,
+          "passed": true
+        },
+        {
+          "name": "dashed-nursery-slot-4",
+          "region": {
+            "xMin": 312,
+            "yMin": 706,
+            "xMax": 370,
+            "yMax": 758
+          },
+          "visualSamples": 93,
+          "totalSamples": 754,
+          "visualFraction": 0.123342175066313,
+          "passed": true
+        }
+      ]
+    }
+  },
+  "opticalMeasurements": {
+    "pausedModal": {
+      "thresholds": {
+        "titleCenterLogical": 2.0,
+        "hintCenterLogical": 2.0,
+        "pairedActionCapturePixels": 2
+      },
+      "title": {
+        "mask": "title-ink",
+        "sampleRegion": {
+          "xMin": 90,
+          "yMin": 332,
+          "xMax": 310,
+          "yMax": 372
+        },
+        "pixels": 656,
+        "bounds": {
+          "xMin": 158,
+          "yMin": 338,
+          "xMax": 245,
+          "yMax": 364,
+          "width": 87,
+          "height": 26,
+          "centerX": 201.5,
+          "centerY": 351.0
+        },
+        "centroid": {
+          "x": 202.41615853658536,
+          "y": 351.5899390243902
+        }
+      },
+      "titleOwner": {
+        "xMin": 52,
+        "yMin": 326,
+        "xMax": 350,
+        "yMax": 378
+      },
+      "titleCenterDeltaLogical": 0.41006097560978105,
+      "hintIcon": {
+        "mask": "hint-icon",
+        "sampleRegion": {
+          "xMin": 102,
+          "yMin": 398,
+          "xMax": 128,
+          "yMax": 434
+        },
+        "pixels": 110,
+        "bounds": {
+          "xMin": 110,
+          "yMin": 409,
+          "xMax": 125,
+          "yMax": 422,
+          "width": 15,
+          "height": 13,
+          "centerX": 117.5,
+          "centerY": 415.5
+        },
+        "centroid": {
+          "x": 117.1,
+          "y": 416.7090909090909
+        }
+      },
+      "hintCopy": {
+        "mask": "hint-copy",
+        "sampleRegion": {
+          "xMin": 130,
+          "yMin": 398,
+          "xMax": 306,
+          "yMax": 434
+        },
+        "pixels": 1283,
+        "bounds": {
+          "xMin": 134,
+          "yMin": 408,
+          "xMax": 292,
+          "yMax": 426,
+          "width": 158,
+          "height": 18,
+          "centerX": 213.0,
+          "centerY": 417.0
+        },
+        "centroid": {
+          "x": 212.3791893998441,
+          "y": 417.2708495713172
+        }
+      },
+      "hintOwner": {
+        "xMin": 60,
+        "yMin": 390,
+        "xMax": 342,
+        "yMax": 442
+      },
+      "hintUnion": {
+        "xMin": 110,
+        "yMin": 408,
+        "xMax": 292,
+        "yMax": 426
+      },
+      "hintIconCopyCenterDeltaLogical": 0.5617586622263389,
+      "hintGroupCenterDeltaLogical": {
+        "x": 0.0,
+        "y": 1.0
+      },
+      "primarySurface": {
+        "mask": "primary-surface",
+        "sampleRegion": {
+          "xMin": 54,
+          "yMin": 466,
+          "xMax": 196,
+          "yMax": 518
+        },
+        "pixels": 4575,
+        "bounds": {
+          "xMin": 59,
+          "yMin": 471,
+          "xMax": 191,
+          "yMax": 511,
+          "width": 132,
+          "height": 40,
+          "centerX": 125.0,
+          "centerY": 491.0
+        },
+        "centroid": {
+          "x": 125.97475409836066,
+          "y": 490.8792349726776
+        }
+      },
+      "dangerSurface": {
+        "mask": "danger-surface",
+        "sampleRegion": {
+          "xMin": 206,
+          "yMin": 466,
+          "xMax": 348,
+          "yMax": 518
+        },
+        "pixels": 4426,
+        "bounds": {
+          "xMin": 211,
+          "yMin": 471,
+          "xMax": 343,
+          "yMax": 511,
+          "width": 132,
+          "height": 40,
+          "centerX": 277.0,
+          "centerY": 491.0
+        },
+        "centroid": {
+          "x": 278.2668323542702,
+          "y": 490.75960234975145
+        }
+      },
+      "primaryLocalInsets": {
+        "left": 5,
+        "top": 5,
+        "right": 5,
+        "bottom": 7
+      },
+      "dangerLocalInsets": {
+        "left": 5,
+        "top": 5,
+        "right": 5,
+        "bottom": 7
+      },
+      "pairedMaximumEdgeDeltaCapturePixels": 0.0
+    },
+    "waveActionContentContrast": {
+      "background": {
+        "r": 61,
+        "g": 123,
+        "b": 12,
+        "pixels": 3755
+      },
+      "foreground": {
+        "r": 254,
+        "g": 249,
+        "b": 237,
+        "pixels": 464
+      },
+      "ratio": 4.951141349982592,
+      "minimum": 4.5,
+      "polarity": "LightOnDark",
+      "passed": true,
+      "sampleRect": {
+        "xMin": 224,
+        "yMin": 527,
+        "xMax": 365,
+        "yMax": 561
+      }
+    },
+    "refreshActionContentContrast": {
+      "background": {
+        "r": 63,
+        "g": 128,
+        "b": 9,
+        "pixels": 9842
+      },
+      "foreground": {
+        "r": 254,
+        "g": 248,
+        "b": 237,
+        "pixels": 961
+      },
+      "ratio": 4.616353883729667,
+      "minimum": 4.5,
+      "polarity": "LightOnDark",
+      "passed": true,
+      "sampleRect": {
+        "xMin": 52,
+        "yMin": 785,
+        "xMax": 350,
+        "yMax": 827
+      }
+    }
+  },
+  "interactionPolishEvidence": {
+    "waveActionRect": {
+      "xMin": 204,
+      "yMin": 518,
+      "xMax": 378,
+      "yMax": 570
+    },
+    "waveActionFocusDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 204,
+        "yMin": 518,
+        "xMax": 378,
+        "yMax": 570
+      },
+      "regionPixels": 9048,
+      "changedPixels": 712,
+      "changedFraction": 0.07869142351900972,
+      "edgeBandPixels": 3,
+      "edgePixels": 1320,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 208,
+        "yMin": 522,
+        "xMax": 374,
+        "yMax": 566
+      }
+    },
+    "waveActionPressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 204,
+        "yMin": 518,
+        "xMax": 378,
+        "yMax": 570
+      },
+      "regionPixels": 9048,
+      "changedPixels": 3328,
+      "changedFraction": 0.367816091954023,
+      "edgeBandPixels": 3,
+      "edgePixels": 1320,
+      "changedEdgePixels": 376,
+      "changedBounds": {
+        "xMin": 206,
+        "yMin": 520,
+        "xMax": 376,
+        "yMax": 568
+      }
+    },
+    "waveActionPressInset": {
+      "region": {
+        "xMin": 204,
+        "yMin": 518,
+        "xMax": 378,
+        "yMax": 570
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 276,
+      "retreatedPixels": 66,
+      "retreatedFraction": 0.2391304347826087
+    },
+    "pauseContinueRect": {
+      "xMin": 54,
+      "yMin": 466,
+      "xMax": 196,
+      "yMax": 518
+    },
+    "pauseActionBandRect": {
+      "xMin": 36,
+      "yMin": 454,
+      "xMax": 366,
+      "yMax": 524
+    },
+    "pauseContinuePressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 36,
+        "yMin": 454,
+        "xMax": 366,
+        "yMax": 524
+      },
+      "regionPixels": 23100,
+      "changedPixels": 3059,
+      "changedFraction": 0.13242424242424242,
+      "edgeBandPixels": 3,
+      "edgePixels": 2364,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 56,
+        "yMin": 468,
+        "xMax": 194,
+        "yMax": 516
+      }
+    },
+    "pauseContinuePressInset": {
+      "region": {
+        "xMin": 54,
+        "yMin": 466,
+        "xMax": 196,
+        "yMax": 518
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 276,
+      "retreatedPixels": 64,
+      "retreatedFraction": 0.2318840579710145
+    },
+    "pauseRestartRect": {
+      "xMin": 206,
+      "yMin": 466,
+      "xMax": 348,
+      "yMax": 518
+    },
+    "pauseRestartPressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 36,
+        "yMin": 454,
+        "xMax": 366,
+        "yMax": 524
+      },
+      "regionPixels": 23100,
+      "changedPixels": 3064,
+      "changedFraction": 0.13264069264069264,
+      "edgeBandPixels": 3,
+      "edgePixels": 2364,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 208,
+        "yMin": 468,
+        "xMax": 346,
+        "yMax": 516
+      }
+    },
+    "pauseRestartPressInset": {
+      "region": {
+        "xMin": 206,
+        "yMin": 466,
+        "xMax": 348,
+        "yMax": 518
+      },
+      "edgeBandPixels": 3,
+      "distanceMargin": 8,
+      "samples": 276,
+      "retreatedPixels": 64,
+      "retreatedFraction": 0.2318840579710145
+    },
+    "releaseAction": "StartWave-pass"
+  },
+  "compactControlEvidence": {
+    "state": "captured",
+    "speedRect": {
+      "xMin": 318,
+      "yMin": 50,
+      "xMax": 374,
+      "yMax": 98
+    },
+    "speedFocusDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 318,
+        "yMin": 50,
+        "xMax": 374,
+        "yMax": 98
+      },
+      "regionPixels": 2688,
+      "changedPixels": 224,
+      "changedFraction": 0.08333333333333333,
+      "edgeBandPixels": 3,
+      "edgePixels": 588,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 94
+      }
+    },
+    "speedActivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 318,
+        "yMin": 50,
+        "xMax": 374,
+        "yMax": 98
+      },
+      "regionPixels": 2688,
+      "changedPixels": 2050,
+      "changedFraction": 0.7626488095238095,
+      "edgeBandPixels": 3,
+      "edgePixels": 588,
+      "changedEdgePixels": 44,
+      "changedBounds": {
+        "xMin": 320,
+        "yMin": 53,
+        "xMax": 372,
+        "yMax": 96
+      }
+    },
+    "speedActiveDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 318,
+        "yMin": 50,
+        "xMax": 374,
+        "yMax": 98
+      },
+      "regionPixels": 2688,
+      "changedPixels": 2050,
+      "changedFraction": 0.7626488095238095,
+      "edgeBandPixels": 3,
+      "edgePixels": 588,
+      "changedEdgePixels": 44,
+      "changedBounds": {
+        "xMin": 320,
+        "yMin": 53,
+        "xMax": 372,
+        "yMax": 96
+      }
+    },
+    "speedDeactivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 318,
+        "yMin": 50,
+        "xMax": 374,
+        "yMax": 98
+      },
+      "regionPixels": 2688,
+      "changedPixels": 224,
+      "changedFraction": 0.08333333333333333,
+      "edgeBandPixels": 3,
+      "edgePixels": 588,
+      "changedEdgePixels": 0,
+      "changedBounds": {
+        "xMin": 322,
+        "yMin": 54,
+        "xMax": 370,
+        "yMax": 94
+      }
+    },
+    "deactivatingSurfaceContract": "captured-complete-endpoint-or-active-variant",
+    "pauseRect": {
+      "xMin": 264,
+      "yMin": 50,
+      "xMax": 312,
+      "yMax": 98
+    },
+    "pauseActivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 264,
+        "yMin": 50,
+        "xMax": 312,
+        "yMax": 98
+      },
+      "regionPixels": 2304,
+      "changedPixels": 2304,
+      "changedFraction": 1.0,
+      "edgeBandPixels": 3,
+      "edgePixels": 540,
+      "changedEdgePixels": 540,
+      "changedBounds": {
+        "xMin": 264,
+        "yMin": 50,
+        "xMax": 312,
+        "yMax": 98
+      }
+    },
+    "pauseDeactivatingDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 264,
+        "yMin": 50,
+        "xMax": 312,
+        "yMax": 98
+      },
+      "regionPixels": 2304,
+      "changedPixels": 1682,
+      "changedFraction": 0.7300347222222222,
+      "edgeBandPixels": 3,
+      "edgePixels": 540,
+      "changedEdgePixels": 36,
+      "changedBounds": {
+        "xMin": 266,
+        "yMin": 53,
+        "xMax": 310,
+        "yMax": 96
+      }
+    },
+    "detailCloseRect": {
+      "xMin": 330,
+      "yMin": 582,
+      "xMax": 374,
+      "yMax": 626
+    },
+    "detailClosePressDifference": {
+      "channelThreshold": 8,
+      "region": {
+        "xMin": 330,
+        "yMin": 582,
+        "xMax": 374,
+        "yMax": 626
+      },
+      "regionPixels": 1936,
+      "changedPixels": 779,
+      "changedFraction": 0.40237603305785125,
+      "edgeBandPixels": 3,
+      "edgePixels": 492,
+      "changedEdgePixels": 110,
+      "changedBounds": {
+        "xMin": 332,
+        "yMin": 584,
+        "xMax": 372,
+        "yMax": 624
+      }
+    },
+    "detailCloseRemainsInstantCommand": true
+  },
+  "controls": {
+    "lobbyLevelOrchard01": {
+      "x": 201.0,
+      "y": 206.0
+    },
+    "lobbyLevelOrchard02": {
+      "x": 201.0,
+      "y": 392.0
+    },
+    "lobbyLevelOrchard03": {
+      "x": 201.0,
+      "y": 578.0
+    },
+    "lobbyStart": {
+      "x": 201.0,
+      "y": 746.0
+    },
+    "settlementRetry": {
+      "x": 201.0,
+      "y": 674.0
+    },
+    "settlementReturn": {
+      "x": 201.0,
+      "y": 754.0
+    },
+    "headerPause": {
+      "x": 288.0,
+      "y": 74.0
+    },
+    "headerSpeed": {
+      "x": 346.0,
+      "y": 74.0
+    },
+    "waveAction": {
+      "x": 291.0,
+      "y": 544.0
+    },
+    "pauseContinue": {
+      "x": 125.0,
+      "y": 492.0
+    },
+    "pauseRestart": {
+      "x": 277.0,
+      "y": 492.0
+    },
+    "terminalRestart": {
+      "x": 201.0,
+      "y": 536.0
+    },
+    "weaponGatling": {
+      "x": 71.0,
+      "y": 634.0
+    },
+    "nurserySlot0": {
+      "x": 61.0,
+      "y": 732.0
+    },
+    "acceptanceCell0": {
+      "x": 46.0,
+      "y": 249.0
+    },
+    "acceptanceCell1": {
+      "x": 90.0,
+      "y": 249.0
+    },
+    "detailClose": {
+      "x": 352.0,
+      "y": 604.0
+    }
+  },
+  "referenceControls": {
+    "lobbyLevelOrchard01": {
+      "x": 201,
+      "y": 206
+    },
+    "lobbyLevelOrchard02": {
+      "x": 201,
+      "y": 392
+    },
+    "lobbyLevelOrchard03": {
+      "x": 201,
+      "y": 578
+    },
+    "lobbyStart": {
+      "x": 201,
+      "y": 746
+    },
+    "settlementRetry": {
+      "x": 201,
+      "y": 674
+    },
+    "settlementReturn": {
+      "x": 201,
+      "y": 754
+    },
+    "headerPause": {
+      "x": 288,
+      "y": 74
+    },
+    "headerSpeed": {
+      "x": 346,
+      "y": 74
+    },
+    "waveAction": {
+      "x": 291,
+      "y": 544
+    },
+    "pauseContinue": {
+      "x": 125,
+      "y": 492
+    },
+    "pauseRestart": {
+      "x": 277,
+      "y": 492
+    },
+    "terminalRestart": {
+      "x": 201,
+      "y": 536
+    },
+    "weaponGatling": {
+      "x": 71,
+      "y": 634
+    },
+    "nurserySlot0": {
+      "x": 61,
+      "y": 732
+    },
+    "acceptanceCell0": {
+      "x": 46,
+      "y": 249
+    },
+    "acceptanceCell1": {
+      "x": 90,
+      "y": 249
+    },
+    "detailClose": {
+      "x": 352,
+      "y": 604
+    }
+  },
+  "pixelThresholds": {
+    "hudDarkPixels": 80,
+    "hudLightPixels": 5000,
+    "framePixels": {
+      "sampleStepPixels": 4,
+      "nearBlackLuma": 0.08,
+      "maxBlackFraction": 0.01,
+      "maxNearBlackFraction": 0.05,
+      "maxInvalidFraction": 0.05
+    }
+  },
+  "sessionSequence": {
+    "labels": {
+      "ready": "开始波次",
+      "betweenWave": "立即开始下一波",
+      "pauseContinue": "继续游戏",
+      "pauseRestart": "重新开始"
+    },
+    "steps": [
+      "capture clean ready state and exact ready label",
+      "click battlefield wave action and capture active wave without a start action",
+      "capture deterministic between-wave countdown and exact immediate-start label",
+      "click immediate next wave and capture active wave two",
+      "pause active run and capture both modal actions",
+      "continue and capture the same active run",
+      "pause again, restart, and capture clean ready state"
+    ]
+  },
+  "interactionSequence": {
+    "source": {
+      "cell": [
+        0,
+        1
+      ],
+      "x": 46.0,
+      "y": 249.0
+    },
+    "destination": {
+      "cell": [
+        1,
+        1
+      ],
+      "x": 90.0,
+      "y": 249.0
+    },
+    "steps": [
+      "click source plant to inspect",
+      "click empty destination without relocation",
+      "drag source plant to destination to relocate"
+    ]
+  },
+  "terminalCapture": {
+    "outcome": "victory",
+    "state": "terminal-victory",
+    "routeBeforeScreenshot": 1,
+    "routeAfterScreenshot": 1,
+    "sha256": "6F462F788F5A98269624C57C41E8288D7259DB74D6E88471A0F37665F9F399C1",
+    "previewOnly": true,
+    "productionSubmissionEvidence": "Flow mode / task 5.3",
+    "restart": {
+      "route": 1,
+      "sessionId": "acceptance-510e7badc04a414ab62eb7bd242b9170",
+      "seed": 20260714,
+      "sameSession": true,
+      "resultCardDismissed": true
+    }
+  },
+  "selectedToolCapture": {
+    "state": "selected-tool",
+    "availableSha256": "E41B20A61058FAFFEF45E3CBBC41677E51D36A5EA5D1D12C8B89D69F68FB8912",
+    "selectedSha256": "51317F346293353F03BA5352927B953614DB80A397469DCC76E48B6BAEE66B82",
+    "realClick": {
+      "x": 71.0,
+      "y": 634.0
+    },
+    "changed": true
+  }
+}

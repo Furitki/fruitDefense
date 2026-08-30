@@ -115,6 +115,26 @@ namespace FruitDefense.Editor
                 manifestBySlot.Add(row.slot, row);
             }
 
+            foreach (var group in manifest.bindings.Where(row => row != null
+                         && string.Equals(row.authoring_contract,
+                             "imagegen-direct-master", StringComparison.Ordinal)
+                         && !string.IsNullOrWhiteSpace(row.generated_asset))
+                         .GroupBy(row => row.generated_asset,
+                             StringComparer.OrdinalIgnoreCase))
+            {
+                var edgeContracts = group.Select(row =>
+                        (row.material_anatomy ?? string.Empty) + "\n"
+                        + (row.render_contract ?? string.Empty) + "\n"
+                        + (row.deterministic_transform ?? string.Empty))
+                    .Distinct(StringComparer.Ordinal).ToArray();
+                if (edgeContracts.Length <= 1) continue;
+                report.Error("material.imagegen.master-contract-sharing", manifestPath,
+                    "Direct ImageGen master '" + group.Key
+                    + "' is shared by incompatible edge/anatomy contracts: "
+                    + string.Join(", ", group.Select(row => row.semantic_id)),
+                    "Give each incompatible semantic contract its own reviewed master; reuse is permitted only when edge, outline, shadow, alpha, anatomy, and transform are identical.");
+            }
+
             var ownedRuntimePaths = new HashSet<string>(StringComparer.Ordinal);
             var ownedSourcePaths = new HashSet<string>(StringComparer.Ordinal);
             var referencePpu = -1f;
@@ -384,48 +404,17 @@ namespace FruitDefense.Editor
             var sharedOwner = string.IsNullOrWhiteSpace(row.shared_from_set)
                 ? string.Empty
                 : row.shared_from_set.Trim();
-            var expectedRuntimeDirectory = string.IsNullOrEmpty(sharedOwner)
-                ? RuntimeUiArtSetRegistry.RuntimeDirectory(artSet)
-                : RuntimeUiArtSetRegistry.RuntimeArtRoot + "/" + sharedOwner;
-            var expectedSourceDirectory = string.IsNullOrEmpty(sharedOwner)
-                ? RuntimeUiArtSetRegistry.SourceDirectory(artSet)
-                : RuntimeUiArtSetRegistry.SourceArtRoot + "/" + sharedOwner;
-            var slotIndex = (int)binding.Slot;
-            var sharedSlot = slotIndex >= (int)RuntimeUiArtSlot.OrnamentScreenCorner
-                && slotIndex <= (int)RuntimeUiArtSlot.IllustrationShellOrchardDepth;
-            if (string.Equals(artSet.SetId, PaintedSetId, StringComparison.Ordinal)
-                && !string.IsNullOrEmpty(sharedOwner))
-            {
-                report.Error("manifest.shared-owner.painted", manifestPath,
-                    "The painted owner set must keep all "
-                    + RuntimeUiArtSlots.RequiredCount + " bindings local.",
-                    "Remove shared_from_set from the painted manifest.");
-            }
-            else if (string.Equals(artSet.SetId, SharedConsumerSetId,
-                         StringComparison.Ordinal)
-                     && ((!sharedSlot && !string.IsNullOrEmpty(sharedOwner))
-                         || (sharedSlot && !string.Equals(sharedOwner, PaintedSetId,
-                             StringComparison.Ordinal))))
-            {
-                report.Error("manifest.shared-owner.policy", manifestPath,
-                    "sunny-orchard may share only slots 40-52 directly from "
-                    + PaintedSetId + ".",
-                    "Keep slots 0-39 and 53-54 local and declare painted as the direct owner for 40-52.");
-            }
-            else if (!string.Equals(artSet.SetId, SharedConsumerSetId,
-                         StringComparison.Ordinal)
-                     && !string.IsNullOrEmpty(sharedOwner))
+            var expectedRuntimeDirectory = RuntimeUiArtSetRegistry.RuntimeDirectory(artSet);
+            var expectedSourceDirectory = RuntimeUiArtSetRegistry.SourceDirectory(artSet);
+            if (!string.IsNullOrEmpty(sharedOwner))
             {
                 report.Error("manifest.shared-owner.unapproved", manifestPath,
-                    "This production set is not an approved mixed-set consumer.",
-                    "Own the binding locally; do not introduce a sharing chain.");
+                    "Production ArtSets may not inherit or share bindings from another set.",
+                    "Remove shared_from_set and own the binding locally.");
             }
-            if (string.IsNullOrEmpty(sharedOwner))
-            {
-                runtimePaths.Add(runtime);
-                sourcePaths.Add(source);
-            }
-            ValidateImagegenProvenance(report, artSet, binding, row, manifestPath);
+            runtimePaths.Add(runtime);
+            sourcePaths.Add(source);
+            ValidateReferenceMaterialManifest(report, binding, row, manifestPath);
             ValidateSemanticActionContainerManifest(report, binding.Slot, row,
                 manifestPath);
             if (row.semantic_id != semantic || row.geometry != GeometryName(binding.Geometry)
@@ -438,10 +427,6 @@ namespace FruitDefense.Editor
                     + " identity, geometry, directory, or logical scale.",
                     "Regenerate this binding row from the production asset.");
             }
-
-            if (!string.IsNullOrEmpty(sharedOwner))
-                ValidateSharedManifestOwner(report, artSet, binding, row, sharedOwner,
-                    manifestPath);
 
             var uniformSlice = UniformInset(binding.SliceBorder);
             var uniformSafe = UniformInset(binding.SafeInset);
@@ -463,93 +448,6 @@ namespace FruitDefense.Editor
                 report.Error("binding.asset-path", AssetDatabase.GetAssetPath(artSet),
                     semantic + " Texture/Sprite do not both point to the manifest runtime PNG.",
                     "Bind both references to the standalone Sprite Single asset at " + runtime + ".");
-            }
-        }
-
-        private static void ValidateSharedManifestOwner(
-            RuntimeUiVisualValidationReport report, RuntimeUiArtSet artSet,
-            RuntimeUiArtBinding binding, ArtManifestBinding row, string sharedOwner,
-            string manifestPath)
-        {
-            if (string.Equals(sharedOwner, artSet.SetId, StringComparison.Ordinal))
-            {
-                report.Error("manifest.shared-owner.self", manifestPath,
-                    "A shared binding cannot name its own set as owner.",
-                    "Remove shared_from_set or name the production set that owns the files.");
-                return;
-            }
-
-            var owners = RuntimeUiArtSetRegistry.DiscoverProductionSets()
-                .Where(candidate => string.Equals(candidate.SetId, sharedOwner,
-                    StringComparison.Ordinal))
-                .ToArray();
-            if (owners.Length != 1)
-            {
-                report.Error("manifest.shared-owner.identity", manifestPath,
-                    "Shared binding owner " + sharedOwner
-                    + " must resolve to exactly one production ArtSet.",
-                    "Restore the uniquely identified owning production set.");
-                return;
-            }
-
-            var owner = owners[0];
-            var ownerBinding = owner.Bindings.FirstOrDefault(candidate =>
-                candidate != null && candidate.Slot == binding.Slot);
-            var runtime = RuntimeUiArtSetRegistry.Normalize(row.runtime);
-            var ownerRuntime = ownerBinding == null
-                ? string.Empty
-                : RuntimeUiArtSetRegistry.Normalize(
-                    AssetDatabase.GetAssetPath(ownerBinding.Texture));
-            if (ownerBinding == null || ownerRuntime != runtime)
-            {
-                report.Error("manifest.shared-owner.binding", manifestPath,
-                    RuntimeUiArtSlots.SemanticId(binding.Slot)
-                    + " does not resolve to the same runtime asset in owner "
-                    + sharedOwner + ".",
-                    "Bind both sets to the owner's exact semantic runtime asset.");
-                return;
-            }
-
-            var ownerManifestPath = RuntimeUiArtSetRegistry.ManifestPath(owner);
-            ArtManifest ownerManifest;
-            try
-            {
-                ownerManifest = JsonUtility.FromJson<ArtManifest>(
-                    File.ReadAllText(ToAbsolute(ownerManifestPath)));
-            }
-            catch (Exception exception)
-            {
-                report.Error("manifest.shared-owner.parse", ownerManifestPath,
-                    exception.Message, "Restore the owning set manifest.");
-                return;
-            }
-            var ownerRow = ownerManifest?.bindings?.FirstOrDefault(candidate =>
-                candidate != null && candidate.slot == row.slot);
-            if (ownerRow == null
-                || !string.IsNullOrWhiteSpace(ownerRow.shared_from_set)
-                || ownerRow.semantic_id != row.semantic_id
-                || ownerRow.geometry != row.geometry
-                || ownerRow.size != row.size
-                || ownerRow.width != row.width
-                || ownerRow.height != row.height
-                || ownerRow.slice_border != row.slice_border
-                || ownerRow.safe_inset != row.safe_inset
-                || !SameManifestInsets(ownerRow.optical_inset, row.optical_inset)
-                || !Nearly(ownerRow.pixels_per_logical_unit,
-                    row.pixels_per_logical_unit)
-                || RuntimeUiArtSetRegistry.Normalize(ownerRow.source)
-                    != RuntimeUiArtSetRegistry.Normalize(row.source)
-                || RuntimeUiArtSetRegistry.Normalize(ownerRow.runtime) != runtime
-                || !string.Equals(ownerRow.sourceSha256, row.sourceSha256,
-                    StringComparison.OrdinalIgnoreCase)
-                || !string.Equals(ownerRow.runtimeSha256, row.runtimeSha256,
-                    StringComparison.OrdinalIgnoreCase)
-                || !string.Equals(ownerRow.guid, row.guid,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                report.Error("manifest.shared-owner.contract", manifestPath,
-                    "Shared binding does not exactly mirror the owning manifest row.",
-                    "Copy the owner's semantic paths, hashes and GUID without chaining owners.");
             }
         }
 
@@ -689,14 +587,6 @@ namespace FruitDefense.Editor
                 && inset.Bottom == manifest.bottom;
         }
 
-        private static bool SameManifestInsets(ArtManifestInsets left,
-            ArtManifestInsets right)
-        {
-            return left != null && right != null && left.left == right.left
-                && left.top == right.top && left.right == right.right
-                && left.bottom == right.bottom;
-        }
-
         private static bool SameInsets(RuntimeUiPixelInsets left,
             RuntimeUiPixelInsets right)
         {
@@ -762,27 +652,22 @@ namespace FruitDefense.Editor
             public string target_rgb;
             public string content_reference_rgb;
             public float content_region_min_contrast;
-        }
-
-        [Serializable]
-        private sealed class ImagegenPromptRecord
-        {
-            public string schema;
-            public string setId;
-            public string provider;
-            public ImagegenPromptAsset[] assets;
-        }
-
-        [Serializable]
-        private sealed class ImagegenPromptAsset
-        {
-            public string semanticId;
-            public string generatedOutput;
-            public string selectedOutput;
-            public string prompt;
-            public string[] references;
-            public string alphaContract;
-            public string sourceSha256;
+            public string authoring_contract;
+            public string material_recipe;
+            public string material_anatomy;
+            public string outer_cream_rgb;
+            public string face_rgb;
+            public string soil_outline_rgb;
+            public string upper_highlight_rgb;
+            public string bottom_shadow_rgb;
+            public string content_layout_contract;
+            public string content_tone;
+            public string generated_asset;
+            public string generated_asset_sha256;
+            public string generated_sheet;
+            public string generated_sheet_sha256;
+            public int[] generated_crop;
+            public string deterministic_transform;
         }
 
         [Serializable]

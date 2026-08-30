@@ -428,8 +428,9 @@ namespace FruitDefense.Editor
                     id = plantId,
                     displayName = "Data-only frost pea",
                     description = "Smoke-only composition",
+                    presentationId = BattleContentIds.Presentation.PlantPea,
+                    upgradeProfileId = BattleContentIds.UpgradeProfiles.Baseline,
                     damage = 12f,
-                    attackIntervalSeconds = 1f,
                     rangeLegacyUnits = 44f,
                     abilityIds = new[] { abilityId },
                     tags = new[] { "plant.damage", "plant.projectile", "plant.ranged" },
@@ -499,6 +500,7 @@ namespace FruitDefense.Editor
                 {
                     id = customEnemyId,
                     displayName = "Data-only sprout",
+                    presentationId = BattleContentIds.Presentation.EnemyNormal,
                     health = 50f,
                     speedLegacyUnits = 4f,
                     killReward = 2,
@@ -512,6 +514,7 @@ namespace FruitDefense.Editor
                 {
                     id = customEquipmentId,
                     displayName = "Data-only focus",
+                    presentationId = BattleContentIds.Presentation.EquipmentGatling,
                     compatiblePlantIds = new[] { BattleContentIds.Plants.Pea },
                 },
             }).ToArray();

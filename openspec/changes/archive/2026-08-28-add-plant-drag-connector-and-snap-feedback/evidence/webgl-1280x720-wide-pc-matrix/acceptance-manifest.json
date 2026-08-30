@@ -1,0 +1,202 @@
+{
+  "accepted": true,
+  "capturedAtUtc": "2026-08-28T02:22:06.0989861+00:00",
+  "mode": "drag-feedback",
+  "url": "http://127.0.0.1:58915/?acceptance=1&route=battle&levelId=orchard-01&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-08-28T02:21:45.7242208+00:00"
+  },
+  "levelId": "orchard-01",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 0.8237986270022883,
+    "designOffset": {
+      "x": 474.41647597254007,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 487.59725400457666,
+      "y": 14.82837528604119,
+      "width": 304.8054919908467,
+      "height": 690
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "7",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "6",
+    "display": "ui.sunny-orchard@7 / sunny-orchard-painted@6",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:58915/?acceptance=1&route=battle&levelId=orchard-01&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 1280,
+    "height": 720,
+    "cssWidth": 1280,
+    "cssHeight": 720,
+    "innerWidth": 1280,
+    "innerHeight": 720,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1787883711790.5,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 1,
+    "body": ""
+  },
+  "checks": {
+    "http": "pass",
+    "wasm": "pass",
+    "unityLoaded": "pass",
+    "directRouteLevelIdentity": "pass",
+    "screenshotDimensions": "pass",
+    "freeDragConnector": "captured",
+    "legalDragSnapFrame": "captured",
+    "illegalDragRejectionFrame": "captured"
+  },
+  "screenshots": {
+    "ready": "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-plant-drag-connector-and-snap-feedback\\evidence\\webgl-1280x720-wide-pc-matrix\\01-ready.png",
+    "freeDragConnector": "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-plant-drag-connector-and-snap-feedback\\evidence\\webgl-1280x720-wide-pc-matrix\\10a-free-drag-connector.png",
+    "legalDragCue": "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-plant-drag-connector-and-snap-feedback\\evidence\\webgl-1280x720-wide-pc-matrix\\11-legal-drag-cue.png",
+    "illegalDragCue": "E:\\project\\unity\\furitDefense\\openspec\\changes\\add-plant-drag-connector-and-snap-feedback\\evidence\\webgl-1280x720-wide-pc-matrix\\12-illegal-drag-cue.png"
+  },
+  "imageMetrics": {
+    "ready": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 761,
+      "headerLightPixels": 23498,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.00010416666666666667,
+      "maxNearBlackHorizontalRunFraction": 0.003125,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8047042841230443,
+      "sampledRegions": {
+        "header": {
+          "xMin": 490,
+          "yMin": 34,
+          "xMax": 783,
+          "yMax": 122
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "freeDragConnector": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 761,
+      "headerLightPixels": 23498,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8050781654002774,
+      "sampledRegions": {
+        "header": {
+          "xMin": 490,
+          "yMin": 34,
+          "xMax": 783,
+          "yMax": 122
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "legalDragCue": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 761,
+      "headerLightPixels": 23498,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8050935953158554,
+      "sampledRegions": {
+        "header": {
+          "xMin": 490,
+          "yMin": 34,
+          "xMax": 783,
+          "yMax": 122
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    },
+    "illegalDragCue": {
+      "width": 1280,
+      "height": 720,
+      "headerDarkPixels": 761,
+      "headerLightPixels": 23498,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 3.472222222222222E-05,
+      "maxNearBlackHorizontalRunFraction": 0.003125,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8050363985021298,
+      "sampledRegions": {
+        "header": {
+          "xMin": 490,
+          "yMin": 34,
+          "xMax": 783,
+          "yMax": 122
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 1280,
+          "yMax": 720
+        }
+      }
+    }
+  }
+}

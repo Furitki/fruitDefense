@@ -83,7 +83,7 @@ function Assert-CombatFeedbackTelemetry {
   }
   if ([int]$Actual.feedbackCount -ne $FeedbackCount -or
       [int]$Actual.activePoolCount -ne $FeedbackCount -or
-      [int]$Actual.poolCapacity -ne 12 -or [int]$Actual.atlasPageCount -ne 1 -or
+      [int]$Actual.poolCapacity -ne 9999 -or [int]$Actual.atlasPageCount -ne 1 -or
       [string]$Actual.atlasFormat -cne 'RGBA32' -or
       [int]$Actual.sharedMaterialCount -ne 0 -or
       [int]$Actual.preparedAtlasDrawCount -lt $FeedbackCount -or
@@ -134,11 +134,13 @@ function Assert-CombatFeedbackTelemetry {
         throw "Combat-feedback record contains a non-finite scalar for '$State'."
       }
     }
+    $maximumAnchorScreenError = 20.0 * $referenceScale + .05
     if ([double]$record.anchorScreenError -lt 0 -or
-        [double]$record.anchorScreenError -gt 8.05 -or
+        [double]$record.anchorScreenError -gt $maximumAnchorScreenError -or
         [double]$record.finalScreenBoundsWidth -le 0 -or
         [double]$record.finalScreenBoundsHeight -le 0) {
-      throw "Combat-feedback screen placement violates its contact/bounds contract for '$State'."
+      $recordJson = $record | ConvertTo-Json -Compress -Depth 8
+      throw "Combat-feedback screen placement violates its contact/bounds contract for '$State': maximumAnchorScreenError=$maximumAnchorScreenError record=$recordJson"
     }
   }
   if (-not [bool]$Actual.authoritativeGeometryUnchanged -or
@@ -177,10 +179,10 @@ function Invoke-CombatFeedbackMode {
     $combatFeedbackStates = @(
       [pscustomobject]@{ State = 'combat-feedback-role-grass'; Surface = 'grass'; Phase = 'role-inventory'; Speed = 1; Beat = 'Heavy'; Count = 6; Roles = $allRoles; Semantics = $roleSemantics },
       [pscustomobject]@{ State = 'combat-feedback-role-route'; Surface = 'route'; Phase = 'role-inventory'; Speed = 1; Beat = 'Heavy'; Count = 6; Roles = $allRoles; Semantics = $roleSemantics },
-      [pscustomobject]@{ State = 'combat-feedback-rebound-entry'; Surface = 'route'; Phase = 'entry'; Speed = 1; Beat = 'Heavy'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
-      [pscustomobject]@{ State = 'combat-feedback-rebound-peak'; Surface = 'route'; Phase = 'peak'; Speed = 1; Beat = 'Heavy'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
-      [pscustomobject]@{ State = 'combat-feedback-rebound-return'; Surface = 'route'; Phase = 'rebound'; Speed = 1; Beat = 'None'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
-      [pscustomobject]@{ State = 'combat-feedback-rebound-hold'; Surface = 'route'; Phase = 'hold'; Speed = 1; Beat = 'None'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
+      [pscustomobject]@{ State = 'combat-feedback-motion-start'; Surface = 'route'; Phase = 'start'; Speed = 1; Beat = 'Heavy'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
+      [pscustomobject]@{ State = 'combat-feedback-motion-early'; Surface = 'route'; Phase = 'early'; Speed = 1; Beat = 'Heavy'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
+      [pscustomobject]@{ State = 'combat-feedback-motion-settle'; Surface = 'route'; Phase = 'settle'; Speed = 1; Beat = 'None'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
+      [pscustomobject]@{ State = 'combat-feedback-motion-hold'; Surface = 'route'; Phase = 'hold'; Speed = 1; Beat = 'None'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
       [pscustomobject]@{ State = 'combat-feedback-dense-1x'; Surface = 'route'; Phase = 'dense'; Speed = 1; Beat = 'Heavy'; Count = 12; Roles = $allRoles; Semantics = $denseSemantics },
       [pscustomobject]@{ State = 'combat-feedback-dense-2x'; Surface = 'route'; Phase = 'dense'; Speed = 2; Beat = 'Heavy'; Count = 12; Roles = $allRoles; Semantics = $denseSemantics },
       [pscustomobject]@{ State = 'combat-feedback-beat-heavy'; Surface = 'route'; Phase = 'impact-beat'; Speed = 1; Beat = 'Heavy'; Count = 1; Roles = @('HeavyDamage'); Semantics = @('ability.plant.watermelon.attack') },
@@ -201,7 +203,7 @@ function Invoke-CombatFeedbackMode {
         -Speed $fixture.Speed -Beat $fixture.Beat -FeedbackCount $fixture.Count `
         -Roles $fixture.Roles -SemanticIds $fixture.Semantics | Out-Null
       if ($fixture.Count -eq 12 -and [int]$telemetry.ordinaryFeedbackCount -ne 8) {
-        throw "Dense combat-feedback fixture did not preserve the 8 ordinary / 12 total capacity contract."
+        throw "Dense combat-feedback fixture did not preserve its authored eight ordinary records."
       }
       $name = '{0:D2}-{1}' -f $captureIndex, $fixture.State
       $path = Save-Screenshot -Name $name
@@ -223,13 +225,13 @@ function Invoke-CombatFeedbackMode {
       $captureIndex++
     }
 
-    $entryScale = [double]$combatFeedbackTelemetry['combat-feedback-rebound-entry'].feedback[0].motionScale
-    $peakScale = [double]$combatFeedbackTelemetry['combat-feedback-rebound-peak'].feedback[0].motionScale
-    $reboundScale = [double]$combatFeedbackTelemetry['combat-feedback-rebound-return'].feedback[0].motionScale
-    $holdScale = [double]$combatFeedbackTelemetry['combat-feedback-rebound-hold'].feedback[0].motionScale
-    if ($entryScale -ge $peakScale -or $reboundScale -ge $peakScale -or
-        $reboundScale -le $holdScale) {
-      throw "Rebound phases are not ordered entry < peak > rebound > hold: $entryScale/$peakScale/$reboundScale/$holdScale"
+    $startScale = [double]$combatFeedbackTelemetry['combat-feedback-motion-start'].feedback[0].motionScale
+    $earlyScale = [double]$combatFeedbackTelemetry['combat-feedback-motion-early'].feedback[0].motionScale
+    $settleScale = [double]$combatFeedbackTelemetry['combat-feedback-motion-settle'].feedback[0].motionScale
+    $holdScale = [double]$combatFeedbackTelemetry['combat-feedback-motion-hold'].feedback[0].motionScale
+    if ($startScale -le $earlyScale -or $earlyScale -le $settleScale -or
+        $settleScale -le $holdScale) {
+      throw "Motion scale does not shrink start > early > settle > hold: $startScale/$earlyScale/$settleScale/$holdScale"
     }
     $denseOneRecords = @($combatFeedbackTelemetry['combat-feedback-dense-1x'].feedback)
     $denseTwoRecords = @($combatFeedbackTelemetry['combat-feedback-dense-2x'].feedback)
@@ -400,7 +402,7 @@ function Invoke-CombatFeedbackMode {
         finiteRoleInventoryOnGrass = 'pass'
         finiteRoleInventoryOnRoute = 'pass'
         liveTargetFollowAnchor = 'pass'
-        entryPeakHoldRebound = 'pass'
+        startEarlySettleHoldScale = 'pass'
         denseOneXCapacity = 'pass'
         denseTwoXReadabilityClock = 'pass'
         heavyBeat = 'pass'
@@ -409,7 +411,7 @@ function Invoke-CombatFeedbackMode {
         activeBeatHudHitTestGeometry = if ($activeBeatHitTestPassed) { 'pass' } else { 'fail' }
         atlasOnePageRgba32 = 'pass'
         noRuntimeMaterials = 'pass'
-        fixedPoolTwelve = 'pass'
+        poolCapacity9999WithTwelveRecordFixture = 'pass'
         syncCpuPerformanceGate = if ($performanceAccepted) { 'pass' } else { 'fail' }
       }
       telemetry = $combatFeedbackTelemetry

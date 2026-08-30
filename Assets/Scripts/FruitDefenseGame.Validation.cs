@@ -171,7 +171,7 @@ namespace FruitDefense
                 return false;
             }
 
-            var layout = new BattleUiLayout(simulation.Map);
+            var layout = new BattleUiLayout(simulation.Map, simulation.NurserySlotCount);
             var compactHint = layout.MergeHint(new Rect(180f, 180f, 48f, 48f), 118f);
             if (compactHint.width < BattleUiLayout.MergeHintMinimumWidth
                 || compactHint.width > BattleUiLayout.MergeHintMaximumWidth
@@ -210,10 +210,20 @@ namespace FruitDefense
                 return false;
             }
 
+            GameContentManifestDto manifest;
+            CompiledBattleContentCatalog content;
+            ContentValidationResult validation;
+            if (!BundledGameContentLoader.TryLoad(out manifest, out content, out validation))
+            {
+                reason = "bundled game content could not be loaded: " + string.Join(" | ",
+                    validation.Issues.Select(value => value.ToString()).ToArray());
+                return false;
+            }
+
             foreach (var definitionId in BattlePresentationVisualCatalog.BundledPlantDefinitionIds)
             {
                 var plant = new Plant { DefinitionId = definitionId };
-                if (PlantSprite(plant) == PlantSprite(definitionId)) continue;
+                if (ResolvePlantSprite(content, plant) == ResolvePlantSprite(content, definitionId)) continue;
                 reason = "unequipped plant does not resolve its base resource: "
                     + definitionId;
                 return false;
@@ -227,8 +237,8 @@ namespace FruitDefense
                     DefinitionId = BattleContentIds.Plants.Pea,
                     EquipmentId = equipmentId,
                 };
-                var resolved = PlantSprite(plant);
-                if (resolved != EquipmentSprite(equipmentId)
+                var resolved = ResolvePlantSprite(content, plant);
+                if (resolved != ResolveEquipmentSprite(content, equipmentId)
                     || !evolutionSprites.Add(resolved))
                 {
                     reason = "equipment evolution resource mapping is missing or duplicated: "
@@ -242,9 +252,9 @@ namespace FruitDefense
                 DefinitionId = BattleContentIds.Plants.Watermelon,
                 EquipmentId = "equipment.custom",
             };
-            if (PlantSprite(customPlant) != TempSprite.Watermelon
-                || PlantSprite("plant.custom") != TempSprite.Pea
-                || ZombieSprite("enemy.custom") != TempSprite.Zombie
+            if (ResolvePlantSprite(content, customPlant) != TempSprite.Watermelon
+                || ResolvePlantSprite(content, "plant.custom") != TempSprite.Pea
+                || ResolveEnemySprite(content, "enemy.custom") != TempSprite.Zombie
                 || BattlePresentationVisualCatalog.Projectile("projectile.custom")
                     != ProjectileVisualArchetype.Generic)
             {
@@ -286,9 +296,19 @@ namespace FruitDefense
         {
             var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
             var design = layout.Design;
+            if (!ContainsRect(design, layout.Header)
+                || !ContainsRect(design, layout.PageShell)
+                || layout.Header.Overlaps(layout.PageShell)
+                || !Mathf.Approximately(layout.Header.xMin, layout.PageShell.xMin)
+                || !Mathf.Approximately(layout.Header.xMax, layout.PageShell.xMax)
+                || !Mathf.Approximately(layout.PageShell.yMin - layout.Header.yMax, 4f))
+            {
+                reason = "raised Header and PageShell peer-frame authority failed";
+                return false;
+            }
             var pageRegions = new[]
             {
-                layout.Header, layout.BattleStage, layout.ContextTray,
+                layout.Header, layout.BattleStage, layout.PhaseWaveRow, layout.ContextTray,
                 layout.NurseryTray, layout.RefreshAction,
             };
             foreach (var region in pageRegions)
@@ -310,6 +330,13 @@ namespace FruitDefense
             }
 
             if (layout.BattleStage != layout.Board
+                || !ContainsRect(layout.PageShell, layout.BattleStage)
+                || !ContainsRect(layout.PageShell, layout.PhaseWaveRow)
+                || !ContainsRect(layout.PageShell, layout.ContextTray)
+                || !ContainsRect(layout.PageShell, layout.NurseryTray)
+                || !ContainsRect(layout.PageShell, layout.RefreshAction)
+                || !Mathf.Approximately(layout.BattleStage.xMin - layout.PageShell.xMin, 8f)
+                || !Mathf.Approximately(layout.PageShell.xMax - layout.BattleStage.xMax, 8f)
                 || !ContainsRect(layout.ContextTray, layout.DetailTitle)
                 || !ContainsRect(layout.ContextTray, layout.DetailBody)
                 || !ContainsRect(layout.ContextTray, layout.DetailCloseAction))
@@ -318,20 +345,24 @@ namespace FruitDefense
                 return false;
             }
 
-            if (layout.Board.width < BattleUiLayout.DesignWidth || layout.Board.height <= 398f)
+            var stageHeightFraction = layout.BattleStage.height
+                / BattleUiLayout.DesignHeight;
+            if (stageHeightFraction < .38f || stageHeightFraction > .43f)
             {
-                reason = "battlefield did not reach the enlarged full-width target";
+                reason = "battlefield is outside the 38-to-43-percent height band";
                 return false;
             }
 
             var projection = layout.Battlefield;
-            var legacyProjection = new BattlefieldProjection(GameConfig.DefaultBattlefield,
-                new Rect(4f, 76f, 394f, 398f));
             if (!projection.ValidatePlantingGeometry(out reason)) return false;
-            if (!projection.ValidateControlInset(out reason)) return false;
-            if (projection.TileSize <= legacyProjection.TileSize)
+            if (projection.MapViewportRect != projection.BoardRect)
             {
-                reason = "enlarged battlefield did not increase projected tile size";
+                reason = "battlefield map viewport is not the complete gameplay stage";
+                return false;
+            }
+            if (!Mathf.Approximately(projection.TileSize, 44.25f))
+            {
+                reason = "battlefield grid no longer preserves the audited 44.25-point tile";
                 return false;
             }
             if (GameConfig.DefaultBattlefield.PlantableCells.Count != 35)
@@ -353,16 +384,31 @@ namespace FruitDefense
             }
             var nurseryCell = layout.NurserySlot(0);
             var nurseryIcon = BattleUiLayout.FramelessSlotIcon(nurseryCell);
-            var potToolCell = layout.PotTool;
-            var potToolIcon = layout.PotToolIcon;
             if (!ContainsRect(nurseryCell, nurseryIcon)
                 || nurseryIcon.width / nurseryCell.width < .9f
-                || nurseryIcon.height / nurseryCell.height < .9f
-                || !ContainsRect(potToolCell, potToolIcon)
-                || potToolIcon.height / potToolCell.height < .9f)
+                || nurseryIcon.height / nurseryCell.height < .9f)
             {
                 reason = "frameless tray icon does not nearly fill its logical cell";
                 return false;
+            }
+            for (var toolIndex = 0; toolIndex < BattleUiLayout.ToolCount; toolIndex++)
+            {
+                var tool = layout.Tool(toolIndex);
+                var sourceIcon = BattleUiLayout.ToolRecipeSourceIcon(tool);
+                var operatorGlyph = BattleUiLayout.ToolRecipeOperator(tool);
+                var targetIcon = BattleUiLayout.ToolRecipeTargetIcon(tool);
+                var inventoryBadge = BattleUiLayout.ToolInventoryBadge(tool);
+                if (!ContainsRect(tool, sourceIcon)
+                    || !ContainsRect(tool, operatorGlyph)
+                    || !ContainsRect(tool, targetIcon)
+                    || !ContainsRect(tool, inventoryBadge)
+                    || sourceIcon.Overlaps(operatorGlyph)
+                    || sourceIcon.Overlaps(targetIcon)
+                    || operatorGlyph.Overlaps(targetIcon))
+                {
+                    reason = "recipe-card source/operator/target anatomy failed: " + toolIndex;
+                    return false;
+                }
             }
             var offsetSample = new Rect(100f, 100f, 40f, 40f);
             var zeroOffset = ApplyPlantVisualHeight(offsetSample, 0f);
@@ -409,8 +455,17 @@ namespace FruitDefense
         public static bool ValidateSessionControlContract(out string reason)
         {
             var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
-            var projection = layout.Battlefield;
-            if (!projection.ValidateControlInset(out reason)) return false;
+            if (!ContainsRect(layout.PhaseWaveRow, layout.PhaseStatus)
+                || !ContainsRect(layout.PhaseWaveRow,
+                    layout.PhaseStatusWithWaveAction)
+                || !ContainsRect(layout.PhaseWaveRow, layout.WaveAction)
+                || layout.PhaseStatusWithWaveAction.Overlaps(layout.WaveAction)
+                || Mathf.Min(layout.WaveAction.width, layout.WaveAction.height) < 44f
+                || layout.PhaseWaveRow.Overlaps(layout.BattleStage))
+            {
+                reason = "independent phase/Wave row geometry failed";
+                return false;
+            }
 
             var readyUi = BattleUiPresentationState.Create(GamePhase.Ready, false);
             var playingUi = BattleUiPresentationState.Create(GamePhase.Playing, false);
@@ -426,7 +481,17 @@ namespace FruitDefense
                 || defeatUi.ShowsWaveAction
                 || pausedUi.ShowsWaveAction)
             {
-                reason = "phase-specific battlefield wave action contract failed";
+                reason = "phase-specific independent-row Wave action contract failed";
+                return false;
+            }
+            if (!pausedUi.BlocksBackgroundInput
+                || !victoryUi.BlocksBackgroundInput
+                || !defeatUi.BlocksBackgroundInput
+                || readyUi.BlocksBackgroundInput
+                || playingUi.BlocksBackgroundInput
+                || betweenUi.BlocksBackgroundInput)
+            {
+                reason = "blocking modal background-input contract failed";
                 return false;
             }
 

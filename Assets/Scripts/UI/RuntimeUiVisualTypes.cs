@@ -442,36 +442,36 @@ namespace FruitDefense.UI
     [Serializable]
     public struct RuntimeUiTypographyStyle
     {
+        [SerializeField] private Font font;
         [SerializeField, Min(1)] private int fontSize;
         [SerializeField, Min(1)] private int lineHeight;
-        [SerializeField] private FontStyle fontStyle;
         [SerializeField] private float opticalOffsetY;
 
-        public RuntimeUiTypographyStyle(int fontSize, int lineHeight, FontStyle fontStyle,
+        public RuntimeUiTypographyStyle(Font font, int fontSize, int lineHeight,
             float opticalOffsetY)
         {
+            this.font = font;
             this.fontSize = fontSize;
             this.lineHeight = lineHeight;
-            this.fontStyle = fontStyle;
             this.opticalOffsetY = opticalOffsetY;
         }
 
+        public Font Font => font;
         public int FontSize => fontSize;
         public int LineHeight => lineHeight;
-        public FontStyle FontStyle => fontStyle;
         public float OpticalOffsetY => opticalOffsetY;
 
         internal void AppendValidation(RuntimeUiValidationResult result, string field)
         {
+            if (font == null)
+                result.Add("theme.typography.font-null", field + ".font",
+                    "Every typography role must reference its packaged static font.");
             if (fontSize <= 0)
                 result.Add("theme.typography.font-size", field + ".fontSize",
                     "Font size must be positive.");
             if (lineHeight < fontSize)
                 result.Add("theme.typography.line-height", field + ".lineHeight",
                     "Line height must be at least the font size.");
-            if (!Enum.IsDefined(typeof(FontStyle), fontStyle))
-                result.Add("theme.typography.font-style", field + ".fontStyle",
-                    "Font style is outside Unity's supported values.");
             if (!RuntimeUiNumbers.IsFinite(opticalOffsetY)
                 || Mathf.Abs(opticalOffsetY) > 4f)
             {
@@ -519,13 +519,13 @@ namespace FruitDefense.UI
         {
             return new RuntimeUiTypographyTokens
             {
-                display = new RuntimeUiTypographyStyle(40, 46, FontStyle.Bold, 0f),
-                screenTitle = new RuntimeUiTypographyStyle(32, 38, FontStyle.Bold, 0f),
-                sectionTitle = new RuntimeUiTypographyStyle(28, 34, FontStyle.Bold, -1f),
-                body = new RuntimeUiTypographyStyle(20, 28, FontStyle.Normal, 0f),
-                controlLabel = new RuntimeUiTypographyStyle(20, 24, FontStyle.Bold, 0f),
-                metric = new RuntimeUiTypographyStyle(24, 28, FontStyle.Bold, 0f),
-                supplemental = new RuntimeUiTypographyStyle(16, 22, FontStyle.Normal, 0f),
+                display = new RuntimeUiTypographyStyle(null, 28, 34, -2f),
+                screenTitle = new RuntimeUiTypographyStyle(null, 32, 38, 0f),
+                sectionTitle = new RuntimeUiTypographyStyle(null, 28, 34, 0f),
+                body = new RuntimeUiTypographyStyle(null, 20, 28, 0f),
+                controlLabel = new RuntimeUiTypographyStyle(null, 20, 24, 0f),
+                metric = new RuntimeUiTypographyStyle(null, 24, 28, 0f),
+                supplemental = new RuntimeUiTypographyStyle(null, 16, 22, 0f),
             };
         }
 
@@ -574,18 +574,18 @@ namespace FruitDefense.UI
         {
             return new RuntimeUiSemanticColors
             {
-                edgeBackground = new Color32(245, 221, 174, 255),
-                baseSurface = new Color32(255, 246, 224, 255),
-                raisedSurface = new Color32(255, 231, 163, 255),
-                selectionAccent = new Color32(255, 210, 77, 255),
-                success = new Color32(109, 190, 75, 255),
-                warning = new Color32(255, 185, 66, 255),
-                danger = new Color32(211, 78, 69, 255),
-                disabled = new Color32(143, 191, 116, 255),
-                scrim = new Color32(61, 42, 32, 255),
-                primaryText = new Color32(139, 94, 60, 255),
-                secondaryText = new Color32(111, 90, 69, 255),
-                inverseText = new Color32(255, 246, 224, 255),
+                edgeBackground = new Color32(115, 201, 244, 255),
+                baseSurface = new Color32(255, 249, 238, 255),
+                raisedSurface = new Color32(255, 241, 210, 255),
+                selectionAccent = new Color32(255, 197, 66, 255),
+                success = new Color32(84, 169, 40, 255),
+                warning = new Color32(230, 154, 25, 255),
+                danger = new Color32(200, 77, 63, 255),
+                disabled = new Color32(167, 185, 155, 255),
+                scrim = new Color32(59, 36, 22, 255),
+                primaryText = new Color32(86, 52, 31, 255),
+                secondaryText = new Color32(111, 88, 70, 255),
+                inverseText = new Color32(255, 249, 238, 255),
             };
         }
 
@@ -678,17 +678,17 @@ namespace FruitDefense.UI
             return new RuntimeUiActionStyleTokens
             {
                 primary = new RuntimeUiActionColorPair(
-                    new Color32(67, 108, 21, 255), new Color32(255, 246, 224, 255)),
+                    new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255)),
                 secondary = new RuntimeUiActionColorPair(
-                    new Color32(245, 221, 174, 255), new Color32(85, 55, 32, 255)),
+                    new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255)),
                 quiet = new RuntimeUiActionColorPair(
-                    new Color32(255, 246, 224, 255), new Color32(111, 90, 69, 255)),
+                    new Color32(255, 249, 238, 255), new Color32(111, 88, 70, 255)),
                 danger = new RuntimeUiActionColorPair(
-                    new Color32(159, 48, 43, 255), new Color32(255, 246, 224, 255)),
+                    new Color32(168, 56, 49, 255), new Color32(255, 249, 238, 255)),
                 modeActive = new RuntimeUiActionColorPair(
-                    new Color32(255, 185, 66, 255), new Color32(61, 42, 32, 255)),
+                    new Color32(255, 197, 66, 255), new Color32(59, 36, 22, 255)),
                 disabled = new RuntimeUiActionColorPair(
-                    new Color32(224, 214, 195, 255), new Color32(92, 84, 75, 255)),
+                    new Color32(223, 227, 216, 255), new Color32(79, 87, 74, 255)),
             };
         }
 
@@ -709,7 +709,7 @@ namespace FruitDefense.UI
             RuntimeUiInteractionState interactionState,
             RuntimeUiActionVisualRole visualRole,
             RuntimeUiArtSlot containerSlot, RuntimeUiActionColorPair colors,
-            Color outlineColor, bool modeActive)
+            bool modeActive)
         {
             Spec = spec;
             InteractionState = interactionState;
@@ -717,7 +717,6 @@ namespace FruitDefense.UI
             ContainerSlot = containerSlot;
             ContainerColor = colors.Container;
             ContentColor = colors.Content;
-            OutlineColor = outlineColor;
             ModeActive = modeActive;
         }
 
@@ -727,7 +726,6 @@ namespace FruitDefense.UI
         public RuntimeUiArtSlot ContainerSlot { get; }
         public Color ContainerColor { get; }
         public Color ContentColor { get; }
-        public Color OutlineColor { get; }
         public bool ModeActive { get; }
         public bool Disabled => VisualRole == RuntimeUiActionVisualRole.Disabled;
     }

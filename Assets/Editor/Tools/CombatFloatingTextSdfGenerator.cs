@@ -14,7 +14,7 @@ namespace FruitDefense.Editor
     public static class CombatFloatingTextSdfGenerator
     {
         public const string SourceFontPath =
-            "Assets/Resources/Fonts/NotoSansSC-UI.ttf";
+            "Assets/Resources/Fonts/NotoSansSC-Reading-400.ttf";
         public const string OutputDirectory =
             "Assets/Resources/CombatFeedback";
         public const string AtlasAssetPath =
@@ -28,7 +28,7 @@ namespace FruitDefense.Editor
         public const GlyphRenderMode RenderMode = GlyphRenderMode.SDF32;
         public const float FaceThreshold = .43f;
         public const float FaceTransition = .04f;
-        public const float OutlineThreshold = .10f;
+        public const float OutlineThreshold = .04f;
         public const float OutlineTransition = .05f;
         public const int MinimumBakedFacePixels = 10000;
         public const float MinimumOutlineToFaceRatio = 2f;
@@ -108,7 +108,7 @@ namespace FruitDefense.Editor
             {
                 generated = TMP_FontAsset.CreateFontAsset(
                     sourceFont, SamplingPointSize, AtlasPadding, RenderMode,
-                    AtlasSize, AtlasSize, AtlasPopulationMode.Dynamic, false);
+                    CompositeRegionX, AtlasSize, AtlasPopulationMode.Dynamic, false);
                 if (generated == null)
                     throw new InvalidOperationException(
                         "TMP failed to create the temporary combat distance field.");
@@ -322,7 +322,8 @@ namespace FruitDefense.Editor
         private static Texture2D BakeAtlas(Texture2D source)
         {
             var sourcePixels = source.GetPixels32();
-            if (sourcePixels.Length != AtlasSize * AtlasSize)
+            if (source.width != CompositeRegionX || source.height != AtlasSize
+                || sourcePixels.Length != CompositeRegionX * AtlasSize)
                 throw new InvalidOperationException(
                     "Temporary distance-field atlas size is invalid.");
             var output = new Texture2D(AtlasSize, AtlasSize,
@@ -333,11 +334,14 @@ namespace FruitDefense.Editor
                 wrapMode = TextureWrapMode.Clamp,
                 anisoLevel = 0,
             };
-            var outputPixels = new Color32[sourcePixels.Length];
+            var outputPixels = new Color32[AtlasSize * AtlasSize];
             var outlineColor = CombatFloatingTextStyleCatalog.SharedOutlineColor;
-            for (var index = 0; index < sourcePixels.Length; index++)
+            for (var y = 0; y < source.height; y++)
+            for (var x = 0; x < source.width; x++)
             {
-                var distance = sourcePixels[index].a / 255f;
+                var sourceIndex = y * source.width + x;
+                var outputIndex = y * AtlasSize + x;
+                var distance = sourcePixels[sourceIndex].a / 255f;
                 var outlineCoverage = SmoothStep(
                     OutlineThreshold - OutlineTransition,
                     OutlineThreshold + OutlineTransition, distance);
@@ -346,12 +350,12 @@ namespace FruitDefense.Editor
                     FaceThreshold + FaceTransition, distance);
                 if (outlineCoverage <= 0f)
                 {
-                    outputPixels[index] = new Color32(0, 0, 0, 0);
+                    outputPixels[outputIndex] = new Color32(0, 0, 0, 0);
                     continue;
                 }
                 var rgb = Color.Lerp(outlineColor, Color.white, faceCoverage);
                 rgb.a = outlineCoverage;
-                outputPixels[index] = (Color32)rgb;
+                outputPixels[outputIndex] = (Color32)rgb;
             }
             output.SetPixels32(outputPixels);
             output.Apply(false, false);
@@ -374,7 +378,7 @@ namespace FruitDefense.Editor
                 var rect = glyph.glyphRect;
                 var x = Mathf.Max(0, rect.x - BakedGlyphPadding);
                 var y = Mathf.Max(0, rect.y - BakedGlyphPadding);
-                var xMax = Mathf.Min(AtlasSize,
+                var xMax = Mathf.Min(CompositeRegionX,
                     rect.x + rect.width + BakedGlyphPadding);
                 var yMax = Mathf.Min(AtlasSize,
                     rect.y + rect.height + BakedGlyphPadding);

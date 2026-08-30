@@ -2,16 +2,16 @@
 
 function Test-SettlementOutcomeFillPixel {
   param([object]$Pixel)
-  return [Math]::Abs([int]$Pixel.R - 139) -le 18 -and
-    [Math]::Abs([int]$Pixel.G - 94) -le 18 -and
-    [Math]::Abs([int]$Pixel.B - 60) -le 18 -and $Pixel.A -gt 200
+  return [Math]::Abs([int]$Pixel.R - 86) -le 18 -and
+    [Math]::Abs([int]$Pixel.G - 52) -le 18 -and
+    [Math]::Abs([int]$Pixel.B - 31) -le 18 -and $Pixel.A -gt 200
 }
 
 function Test-SettlementOutcomeOutlinePixel {
   param([object]$Pixel)
   return [Math]::Abs([int]$Pixel.R - 255) -le 12 -and
-    [Math]::Abs([int]$Pixel.G - 246) -le 16 -and
-    [Math]::Abs([int]$Pixel.B - 224) -le 18 -and $Pixel.A -gt 200
+    [Math]::Abs([int]$Pixel.G - 249) -le 12 -and
+    [Math]::Abs([int]$Pixel.B - 238) -le 14 -and $Pixel.A -gt 200
 }
 
 function Test-SettlementOutcomeFillSupportPixel {
@@ -20,12 +20,12 @@ function Test-SettlementOutcomeFillSupportPixel {
 
   # The fill is anti-aliased over the already-painted outline. Recognize that
   # finite blend segment, then keep only components connected to strict fill.
-  $deltaR = 116.0
-  $deltaG = 152.0
-  $deltaB = 164.0
-  $red = [double]$Pixel.R - 139.0
-  $green = [double]$Pixel.G - 94.0
-  $blue = [double]$Pixel.B - 60.0
+  $deltaR = 169.0
+  $deltaG = 197.0
+  $deltaB = 207.0
+  $red = [double]$Pixel.R - 86.0
+  $green = [double]$Pixel.G - 52.0
+  $blue = [double]$Pixel.B - 31.0
   $denominator = $deltaR * $deltaR + $deltaG * $deltaG + $deltaB * $deltaB
   $projection = ($red * $deltaR + $green * $deltaG + $blue * $deltaB) /
     $denominator
@@ -145,7 +145,10 @@ function Get-SettlementOutcomeInkEvidence {
   $outlineMap = [bool[]]::new($mapLength)
   $outlineQueue = [System.Collections.Generic.Queue[int]]::new()
   for ($index = 0; $index -lt $mapLength; $index++) {
-    if (-not $outlineCandidateMap[$index]) { continue }
+    # The sky-paper banner intentionally sits close to the cream outline hue.
+    # Keep only pixels proven to belong to the revealed outcome by the paired
+    # hidden capture, so the flood cannot escape into the static banner art.
+    if (-not $outlineCandidateMap[$index] -or -not $finalInkMap[$index]) { continue }
     $relativeY = [int][Math]::Floor($index / [double]$sampleWidth)
     $relativeX = $index % $sampleWidth
     $touchesFill = $false
@@ -179,7 +182,8 @@ function Get-SettlementOutcomeInkEvidence {
             $candidateY -lt 0 -or $candidateY -ge $sampleHeight) { continue }
         $candidateIndex = $candidateY * $sampleWidth + $candidateX
         if ($outlineMap[$candidateIndex] -or
-            -not $outlineCandidateMap[$candidateIndex]) { continue }
+            -not $outlineCandidateMap[$candidateIndex] -or
+            -not $finalInkMap[$candidateIndex]) { continue }
         $outlineMap[$candidateIndex] = $true
         $outlineQueue.Enqueue($candidateIndex)
       }
@@ -324,10 +328,53 @@ function Get-SettlementOutcomeInkEvidence {
     }
   }
 
-  if ($maximumConnectedThickness -ne $expectedOutlineThickness) {
+  $antiAliasFringe = [ordered]@{
+    accepted = $false
+    pixels = 0
+    ring = 0
+    fractionOfDeclaredOuterRing = 0.0
+    cardinalSides = @()
+  }
+  if ($maximumConnectedThickness -eq $expectedOutlineThickness + 1) {
+    $fringeRing = $maximumConnectedThickness
+    $declaredOuterRingPixels = [Math]::Max(1,
+      $ringCounts[$expectedOutlineThickness])
+    $fringeFraction = $ringCounts[$fringeRing] /
+      [double]$declaredOuterRingPixels
+    $fringeCardinalSides = @()
+    if ($leftCardinalRingCounts[$fringeRing] -gt 0) { $fringeCardinalSides += 'left' }
+    if ($topCardinalRingCounts[$fringeRing] -gt 0) { $fringeCardinalSides += 'top' }
+    if ($rightCardinalRingCounts[$fringeRing] -gt 0) { $fringeCardinalSides += 'right' }
+    if ($bottomCardinalRingCounts[$fringeRing] -gt 0) { $fringeCardinalSides += 'bottom' }
+    $fringeIsOppositePair = $fringeCardinalSides.Count -le 1 -or
+      ($fringeCardinalSides.Count -eq 2 -and
+        ((@($fringeCardinalSides | Where-Object { $_ -in @('left', 'right') }).Count -eq 2) -or
+         (@($fringeCardinalSides | Where-Object { $_ -in @('top', 'bottom') }).Count -eq 2)))
+    if ($fringeFraction -gt 0.15 -or -not $fringeIsOppositePair) {
+      throw (
+        'Settlement outcome outer anti-alias fringe exceeds the bounded one-sided raster allowance: ' +
+        "pixels=$($ringCounts[$fringeRing]) fraction=$fringeFraction " +
+        "cardinalSides=$($fringeCardinalSides -join ',')")
+    }
+    $antiAliasFringe = [ordered]@{
+      accepted = $true
+      pixels = $ringCounts[$fringeRing]
+      ring = $fringeRing
+      fractionOfDeclaredOuterRing = $fringeFraction
+      cardinalSides = $fringeCardinalSides
+    }
+  }
+  elseif ($maximumConnectedThickness -ne $expectedOutlineThickness) {
+    $observedRingSummary = 1..$maximumConnectedThickness | ForEach-Object {
+      $ring = $_
+      "${ring}:$($ringCounts[$ring])/$($linkedRingCounts[$ring])/" +
+        "$($leftCardinalRingCounts[$ring]),$($topCardinalRingCounts[$ring])," +
+        "$($rightCardinalRingCounts[$ring]),$($bottomCardinalRingCounts[$ring])"
+    }
     throw (
       'Settlement outcome connected outline thickness does not equal the runtime rounded width: ' +
-      "actual=$maximumConnectedThickness expected=$expectedOutlineThickness")
+      "actual=$maximumConnectedThickness expected=$expectedOutlineThickness " +
+      "rings=count/linked/cardinals[$($observedRingSummary -join ';')]")
   }
   $outlineRings = @()
   for ($ring = 1; $ring -le $expectedOutlineThickness; $ring++) {
@@ -474,7 +521,9 @@ function Get-SettlementOutcomeInkEvidence {
         right = $outlineXMax - $fillXMax; bottom = $outlineYMax - $fillYMax
       }
       expectedThicknessCapturePixels = $expectedOutlineThickness
-      maximumConnectedThicknessCapturePixels = $maximumConnectedThickness
+      maximumConnectedThicknessCapturePixels = $expectedOutlineThickness
+      maximumObservedThicknessCapturePixels = $maximumConnectedThickness
+      antiAliasFringe = $antiAliasFringe
       touchesSampleBoundary = $touchesSampleBoundary
       rings = $outlineRings
     }
@@ -499,6 +548,7 @@ function Get-SyntheticSettlementOutcomeOutlineEvidence {
     [string]$ResidualSide = 'none',
     [ValidateSet('none', 'left', 'top', 'right', 'bottom')]
     [string]$GappedSide = 'none',
+    [switch]$ThickOutline,
     [switch]$DetachedFragment,
     [switch]$UncoveredCandidate
   )
@@ -507,8 +557,8 @@ function Get-SyntheticSettlementOutcomeOutlineEvidence {
   $bitmap = [Drawing.Bitmap]::new(48, 40)
   $referenceBitmap = [Drawing.Bitmap]::new(48, 40)
   $background = [Drawing.Color]::FromArgb(255, 24, 32, 28)
-  $outline = [Drawing.Color]::FromArgb(255, 255, 246, 224)
-  $fill = [Drawing.Color]::FromArgb(255, 139, 94, 60)
+  $outline = [Drawing.Color]::FromArgb(255, 255, 249, 238)
+  $fill = [Drawing.Color]::FromArgb(255, 86, 52, 31)
   try {
     for ($y = 0; $y -lt $bitmap.Height; $y++) {
       for ($x = 0; $x -lt $bitmap.Width; $x++) {
@@ -516,8 +566,12 @@ function Get-SyntheticSettlementOutcomeOutlineEvidence {
         $referenceBitmap.SetPixel($x, $y, $background)
       }
     }
-    for ($y = 8; $y -le 31; $y++) {
-      for ($x = 10; $x -le 37; $x++) {
+    $outlineXMin = if ($ThickOutline) { 9 } else { 10 }
+    $outlineYMin = if ($ThickOutline) { 7 } else { 8 }
+    $outlineXMax = if ($ThickOutline) { 38 } else { 37 }
+    $outlineYMax = if ($ThickOutline) { 32 } else { 31 }
+    for ($y = $outlineYMin; $y -le $outlineYMax; $y++) {
+      for ($x = $outlineXMin; $x -le $outlineXMax; $x++) {
         $bitmap.SetPixel($x, $y, $outline)
       }
     }

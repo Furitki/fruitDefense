@@ -71,23 +71,31 @@ namespace FruitDefense
                 ? RuntimeUiMotion.Evaluate(_selectionPulse, Time.unscaledTime,
                     _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
                 : RuntimeUiMotionSample.Rest;
-            var potVisualRect = potMotion.Transform(potRect);
-            RuntimeUiGui.DrawSlot(drawContext, potVisualRect, RuntimeUiSlotKind.Tool, state,
-                selectionEmphasized);
+            var potVisualRect = RuntimeUiGui.DrawSlot(drawContext, potRect,
+                RuntimeUiSlotKind.Tool, state, selectionEmphasized,
+                motion: potMotion);
             RuntimeUiGui.DrawIcon(drawContext,
-                TransformChild(layout.PotToolIcon, potRect, potVisualRect),
+                TransformChild(BattleUiLayout.ToolRecipeSourceIcon(potRect),
+                    potRect, potVisualRect),
                 RuntimeUiArtSlot.IconToolPot, state);
             RuntimeUiGui.DrawSingleLineText(drawContext,
-                TransformChild(layout.PotToolNameLabel, potRect, potVisualRect),
-                "花盆",
+                TransformChild(BattleUiLayout.ToolRecipeOperator(potRect),
+                    potRect, potVisualRect),
+                "×",
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
                 TextAnchor.MiddleCenter, state);
-            RuntimeUiGui.DrawSingleLineText(drawContext,
-                TransformChild(layout.PotToolCountLabel, potRect, potVisualRect),
-                "×" + _game.State.Inventory.Pots,
-                RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
-                TextAnchor.MiddleCenter, state);
-            RuntimeUiGui.DrawStateIndicator(drawContext, potVisualRect, state);
+            RuntimeUiGui.DrawIndicator(drawContext,
+                TransformChild(BattleUiLayout.ToolRecipeTargetIcon(potRect),
+                    potRect, potVisualRect), RuntimeUiIndicatorKind.DragLegal);
+            if (_game.State.Inventory.Pots > 0)
+            {
+                RuntimeUiGui.DrawSingleLineText(drawContext,
+                    TransformChild(BattleUiLayout.ToolInventoryBadge(potRect),
+                        potRect, potVisualRect),
+                    _game.State.Inventory.Pots.ToString(),
+                    RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
+                    TextAnchor.MiddleCenter, state);
+            }
             if (DrawSharedHitTarget(drawContext, potRect, state) && available)
                 TogglePotTool();
         }
@@ -112,17 +120,26 @@ namespace FruitDefense
                 ? RuntimeUiMotion.Evaluate(_selectionPulse, Time.unscaledTime,
                     _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
                 : RuntimeUiMotionSample.Rest;
-            var visualRect = motion.Transform(rect);
-            RuntimeUiGui.DrawSlot(drawContext, visualRect, RuntimeUiSlotKind.Tool, state,
-                selectionEmphasized);
+            var visualRect = RuntimeUiGui.DrawSlot(drawContext, rect,
+                RuntimeUiSlotKind.Tool, state, selectionEmphasized,
+                motion: motion);
             DrawStatefulTempSprite(
-                drawContext, layout.ToolIcon(visualRect),
+                drawContext, BattleUiLayout.ToolRecipeSourceIcon(visualRect),
                 EquipmentSprite(equipmentId), state);
             RuntimeUiGui.DrawSingleLineText(drawContext,
-                layout.ToolCountLabel(visualRect), "×" + count,
+                BattleUiLayout.ToolRecipeOperator(visualRect), "×",
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
                 TextAnchor.MiddleCenter, state);
-            RuntimeUiGui.DrawStateIndicator(drawContext, visualRect, state);
+            RuntimeUiGui.DrawIcon(drawContext,
+                BattleUiLayout.ToolRecipeTargetIcon(visualRect),
+                RuntimeUiArtSlot.IconToolPot, state);
+            if (count > 0)
+            {
+                RuntimeUiGui.DrawSingleLineText(drawContext,
+                    BattleUiLayout.ToolInventoryBadge(visualRect), count.ToString(),
+                    RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Primary,
+                    TextAnchor.MiddleCenter, state);
+            }
             if (!DrawSharedHitTarget(drawContext, rect, state) || count <= 0) return;
             ToggleEquipmentSelection(equipmentId);
         }
@@ -131,7 +148,7 @@ namespace FruitDefense
             RuntimeUiDrawContext drawContext, DropTarget currentDropTarget,
             BattleUiDropCue currentDropCue)
         {
-            for (var slot = 0; slot < 5; slot++)
+            for (var slot = 0; slot < layout.NurserySlotCount; slot++)
             {
                 var rect = layout.NurserySlot(slot);
                 var plant = _game.PlantAtNursery(slot);
@@ -157,18 +174,24 @@ namespace FruitDefense
                             Time.unscaledTime, _runtimeUiTheme.Feedback,
                             RuntimeUiMotionPattern.Pop)
                         : RuntimeUiMotionSample.Rest;
-                    var visualRect = rewardMotion.Transform(rect);
-                    RuntimeUiGui.DrawSlot(
-                        drawContext, visualRect, RuntimeUiSlotKind.Nursery, state);
+                    var emptySelectionMotion = NurserySelectionMotion(slot);
+                    var visualRect = RuntimeUiGui.DrawSlot(drawContext, rect,
+                        RuntimeUiSlotKind.Nursery, state, motion:
+                        RuntimeUiMotionSample.Combine(
+                            rewardMotion, emptySelectionMotion));
                     if (showingPotReward)
                     {
                         RuntimeUiGui.DrawIcon(drawContext,
                             BattleUiLayout.FramelessSlotIcon(visualRect),
                             RuntimeUiArtSlot.IconToolPot, state);
-                        RuntimeUiGui.DrawSingleLineText(drawContext,
-                            BattleUiLayout.NurserySlotLabel(visualRect),
-                            RuntimeUiCopyCatalog.Get(
-                                RuntimeUiCopyId.BattleNurseryPotStored).Text,
+                        var storedOwner = BattleUiLayout.NurserySlotLabel(visualRect);
+                        var storedCopy = RuntimeUiCopyCatalog.Get(
+                            RuntimeUiCopyId.BattleNurseryPotStored).Text;
+                        var storedLayout = RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                            drawContext, storedOwner, RuntimeUiTypographyRole.Supplemental,
+                            TextAnchor.MiddleCenter, state);
+                        RuntimeUiGui.DrawControlledTwoLineText(drawContext, storedOwner,
+                            RuntimeUiGui.ResolveStatusTextLines(storedLayout, storedCopy),
                             RuntimeUiTypographyRole.Supplemental,
                             RuntimeUiTextTone.State, TextAnchor.MiddleCenter, state);
                     }
@@ -178,11 +201,13 @@ namespace FruitDefense
                                 RuntimeUiCopyId.BattleNurseryEmpty).Text,
                             RuntimeUiTypographyRole.Supplemental,
                             RuntimeUiTextTone.Secondary, TextAnchor.MiddleCenter, state);
-                    RuntimeUiGui.DrawStateIndicator(drawContext, visualRect, state);
                     DrawDropCue(drawContext, rect, cue);
                     if (DrawSharedHitTarget(drawContext, rect, state))
+                    {
+                        BeginNurserySelectionPulse(slot);
                         SetGuidanceStatus(DestinationDragGuidance(
                             _game, _game.PlantById(_inspectedPlantId), true));
+                    }
                     continue;
                 }
                 var selected = plant.Id == _inspectedPlantId;
@@ -198,20 +223,38 @@ namespace FruitDefense
                     ? RuntimeUiMotion.Evaluate(_returnPulse, Time.unscaledTime,
                         _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop)
                     : RuntimeUiMotionSample.Rest;
-                var occupiedVisualRect = returnMotion.Transform(rect);
-                RuntimeUiGui.DrawSlot(
-                    drawContext, occupiedVisualRect, RuntimeUiSlotKind.Nursery, occupiedState);
+                var occupiedSelectionMotion = NurserySelectionMotion(slot);
+                var occupiedVisualRect = RuntimeUiGui.DrawSlot(drawContext, rect,
+                    RuntimeUiSlotKind.Nursery, occupiedState, motion:
+                    RuntimeUiMotionSample.Combine(
+                        returnMotion, occupiedSelectionMotion));
                 DrawTempSprite(BattleUiLayout.FramelessSlotIcon(occupiedVisualRect), PlantSprite(plant));
-                RuntimeUiGui.DrawSingleLineText(drawContext,
-                    BattleUiLayout.NurserySlotLabel(occupiedVisualRect),
-                    new string('★', plant.Star), RuntimeUiTypographyRole.Supplemental,
-                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, occupiedState);
-                RuntimeUiGui.DrawStateIndicator(drawContext, occupiedVisualRect, occupiedState);
+                var starOwner = BattleUiLayout.NurserySlotLabel(occupiedVisualRect);
+                var starCopy = new string('★', plant.Star);
+                if (plant.Star >= 4)
+                {
+                    var starLayout = RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                        drawContext, starOwner, RuntimeUiTypographyRole.Supplemental,
+                        TextAnchor.MiddleCenter, occupiedState);
+                    RuntimeUiGui.DrawControlledTwoLineText(drawContext, starOwner,
+                        RuntimeUiGui.ResolveStatusTextLines(starLayout, starCopy),
+                        RuntimeUiTypographyRole.Supplemental,
+                        RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, occupiedState);
+                }
+                else
+                {
+                    RuntimeUiGui.DrawSingleLineText(drawContext, starOwner, starCopy,
+                        RuntimeUiTypographyRole.Supplemental,
+                        RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, occupiedState);
+                }
                 DrawDropCue(drawContext, rect, cue);
                 if (DrawSharedHitTarget(drawContext, rect, occupiedState))
+                {
+                    BeginNurserySelectionPulse(slot);
                     HandlePlantClick(plant);
+                }
             }
-            var cost = GameConfig.RefreshCost(_game.State.RefreshCount);
+            var cost = _game.RefreshCost(_game.State.RefreshCount);
             var refreshPress = TrackBattleAction(
                 RefreshActionFeedbackTarget, layout.RefreshAction);
             var refreshState = BattleUiPresentationState.ResolveActionState(
@@ -227,6 +270,28 @@ namespace FruitDefense
                 BeginBattleActionPress(RefreshActionFeedbackTarget);
                 RefreshNurseryFromUi();
             }
+        }
+
+        private RuntimeUiMotionSample NurserySelectionMotion(int slot)
+        {
+            if (_selectionPulseTarget != NurserySelectionFeedbackTarget(slot))
+                return RuntimeUiMotionSample.Rest;
+            return RuntimeUiMotion.Evaluate(_selectionPulse, Time.unscaledTime,
+                _runtimeUiTheme.Feedback, RuntimeUiMotionPattern.Pop);
+        }
+
+        private void BeginNurserySelectionPulse(int slot)
+        {
+            _selectionPulseTarget = NurserySelectionFeedbackTarget(slot);
+            _selectionPulse = RuntimeUiFeedbackPulse.Begin(Time.unscaledTime,
+                _runtimeUiTheme.Feedback.UnscaledSelectionSeconds);
+        }
+
+        private int NurserySelectionFeedbackTarget(int slot)
+        {
+            if (slot < 0 || slot >= _game.NurserySlotCount)
+                throw new ArgumentOutOfRangeException(nameof(slot));
+            return 100 + slot;
         }
 
         private void RefreshNurseryFromUi()
@@ -255,8 +320,9 @@ namespace FruitDefense
             var displayName = stats == null
                 ? "未知水果"
                 : stats.displayName;
+            var maximumTier = _game.Content.PlantMaximumTier(plant.DefinitionId);
             RuntimeUiGui.DrawSingleLineText(drawContext, layout.DetailTitle,
-                displayName + " · " + plant.Star + " 星",
+                displayName + " · " + plant.Star + "/" + maximumTier + " 星",
                 RuntimeUiTypographyRole.ControlLabel, RuntimeUiTextTone.Primary,
                 TextAnchor.MiddleLeft, detailState);
             var effectiveRange = EffectiveAttackRange(_game, plant);
@@ -264,10 +330,13 @@ namespace FruitDefense
                 ? Mathf.RoundToInt(_game.Map.ToLegacyDistance(effectiveRange)).ToString()
                 : "无攻击范围";
             var damage = EffectivePlantDamage(_game, plant, stats);
+            var attackInterval = _game.EffectivePlantAttackIntervalSeconds(plant);
             RuntimeUiGui.DrawSingleLineText(drawContext, layout.DetailBody,
                 "伤害 " + Mathf.RoundToInt(damage)
                 + " · 范围 " + rangeText
-                + " · 装备 " + EquipmentDisplayName(plant.EquipmentId),
+                + (attackInterval > .0001f
+                    ? " · 间隔 " + attackInterval.ToString("0.##") + "s"
+                    : string.Empty),
                 RuntimeUiTypographyRole.Supplemental, RuntimeUiTextTone.Secondary,
                 TextAnchor.MiddleLeft, detailState);
             var closePress = TrackBattleAction(
@@ -294,35 +363,82 @@ namespace FruitDefense
         {
             if (_drag == null || !_drag.Active) return;
             var rect = DragGeometry.PreviewRect(_drag.Current);
-            if (currentTarget.Type != DropTargetType.None)
+            if (_drag.Type != DragPayloadType.Plant
+                && currentTarget.Type != DropTargetType.None)
                 rect.center = Vector2.Lerp(rect.center, currentTarget.Rect.center, .42f);
             rect = layout.ClampDragPreview(rect);
 
-            if (_drag.Type == DragPayloadType.Plant)
-            {
-                var plant = _game.PlantById(_drag.PlantId);
-                if (plant != null) DrawTempSprite(rect, PlantSprite(plant));
-            }
-            else if (_drag.Type == DragPayloadType.Equipment)
-                DrawTempSprite(rect, EquipmentSprite(_drag.EquipmentId));
-            else
-                DrawTempSprite(rect, TempSprite.EmptyPot);
-            DrawDropCue(drawContext, rect, currentDropCue);
-
-            var mergeStatus = _drag.Type == DragPayloadType.Plant
+            var plantDropStatus = _drag.Type == DragPayloadType.Plant
                 ? PlantDragTargetStatus(_drag, currentTarget)
                 : default(PlantDropStatus);
-            if (!ShouldShowMergeHint(_drag.Type, mergeStatus)) return;
+            if (_drag.Type == DragPayloadType.Plant)
+            {
+                var snapsToTarget = plantDropStatus.Legal
+                    && BattleUiPresentationState.SnapsPlantDragFeedback(
+                        currentDropCue);
+                var connectorDestination = snapsToTarget
+                    ? currentTarget.Rect
+                    : rect;
+                var connectorState = currentTarget.Type == DropTargetType.None
+                    ? RuntimeUiInteractionState.Selected
+                    : BattleUiPresentationState.DropInteractionState(
+                        currentDropCue);
+                RuntimeUiGui.DrawDragConnector(drawContext,
+                    DragGeometry.ResolveConnector(
+                        _drag.SourceRect, connectorDestination),
+                    connectorState);
+            }
+
+            var clipsToBattleStage = currentTarget.Type == DropTargetType.Pot
+                || currentTarget.Type == DropTargetType.Plant
+                || currentTarget.Type == DropTargetType.Expansion;
+            var stageMaskRect = clipsToBattleStage
+                ? RuntimeUiGui.GameplayStageMaskRect(
+                    drawContext, layout.BattleStage)
+                : default;
+            if (clipsToBattleStage)
+                BeginAbsoluteDesignClip(layout, stageMaskRect);
+            try
+            {
+                if (_drag.Type == DragPayloadType.Plant
+                    && currentTarget.Type != DropTargetType.None)
+                {
+                    RuntimeUiGui.DrawDragTargetFrame(drawContext,
+                        currentTarget.Rect,
+                        BattleUiPresentationState.DropInteractionState(
+                            currentDropCue), stageMaskRect);
+                    DrawDropCue(drawContext,
+                        currentTarget.Rect, currentDropCue);
+                }
+
+                if (_drag.Type == DragPayloadType.Plant)
+                {
+                    var plant = _game.PlantById(_drag.PlantId);
+                    if (plant != null) DrawTempSprite(rect, PlantSprite(plant));
+                }
+                else if (_drag.Type == DragPayloadType.Equipment)
+                    DrawTempSprite(rect, EquipmentSprite(_drag.EquipmentId));
+                else
+                    DrawTempSprite(rect, TempSprite.EmptyPot);
+                DrawDropCue(drawContext, rect, currentDropCue);
+            }
+            finally
+            {
+                if (clipsToBattleStage) EndAbsoluteDesignClip();
+            }
+
+            if (!ShouldShowMergeHint(_drag.Type, plantDropStatus)) return;
 
             var labelWidth = drawContext.Styles.Text(
                 RuntimeUiTypographyRole.Supplemental,
-                TextAnchor.MiddleCenter).CalcSize(new GUIContent(mergeStatus.Reason)).x;
+                TextAnchor.MiddleCenter).CalcSize(
+                    new GUIContent(plantDropStatus.Reason)).x;
             var hintRect = layout.MergeHint(rect, labelWidth);
             RuntimeUiGui.DrawStandardPanel(
                 drawContext, hintRect, RuntimeUiInteractionState.Warning);
             RuntimeUiGui.DrawSingleLineText(drawContext,
                 BattleUiLayout.CueLabel(hintRect),
-                mergeStatus.Reason, RuntimeUiTypographyRole.Supplemental,
+                plantDropStatus.Reason, RuntimeUiTypographyRole.Supplemental,
                 RuntimeUiTextTone.State, TextAnchor.MiddleCenter,
                 RuntimeUiInteractionState.Warning);
             RuntimeUiGui.DrawStateIndicator(

@@ -13,49 +13,52 @@ namespace FruitDefense.Presentation
         public const float DesignWidth = 402f;
         public const float DesignHeight = 874f;
         public const int ToolCount = 4;
-        public const int NurserySlotCount = 5;
+        public const int DefaultNurserySlotCount = 5;
         public const float MergeHintMinimumWidth = 92f;
         public const float MergeHintMaximumWidth = 160f;
         public const float MergeHintHeight = 24f;
-        public const float HeaderMetricIconSize = 18f;
+        public const float HeaderMetricIconSize = 24f;
         public const float SpacingUnit = 4f;
         public const float ContentInset = SpacingUnit * 2f;
-        public const float SectionGap = SpacingUnit * 2f;
 
-        private const float ToolGap = SpacingUnit;
-        private const float NurseryGap = SpacingUnit;
+        private const float ToolGap = SpacingUnit * 2f;
+        private const float NurseryGap = SpacingUnit * 3f;
 
-        public BattleUiLayout(BattlefieldMapDefinition map)
+        public BattleUiLayout(BattlefieldMapDefinition map,
+            int nurserySlotCount = DefaultNurserySlotCount)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
+            if (nurserySlotCount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(nurserySlotCount));
+            NurserySlotCount = nurserySlotCount;
 
             Design = new Rect(0f, 0f, DesignWidth, DesignHeight);
-            Header = FullWidthTrack(8f, 96f);
-            BattleStage = FullWidthTrack(108f, 486f);
+            Header = new Rect(14f, 36f, 374f, 114f);
+            PageShell = new Rect(14f, 154f, 374f, 698f);
+            BattleStage = new Rect(22f, 168f, 358f, 338f);
             Board = BattleStage;
-            ContextTray = InsetTrack(602f, 78f);
-            NurseryTray = InsetTrack(688f, 88f);
-            RefreshAction = InsetTrack(784f, 52f);
+            PhaseWaveRow = new Rect(24f, 518f, 354f, 52f);
+            ContextTray = new Rect(24f, 578f, 354f, 88f);
+            NurseryTray = new Rect(24f, 674f, 354f, 92f);
+            RefreshAction = new Rect(24f, 774f, 354f, 64f);
             Modal = new Rect(36f, 300f, 330f, 244f);
             TerminalModal = new Rect(28f, 270f, 346f, 320f);
 
-            HeaderTitle = new Rect(16f, 26f, 246f, 24f);
-            SunMetric = new Rect(16f, 68f, 118f, 32f);
-            LivesMetric = new Rect(142f, 68f, 118f, 32f);
-            WaveMetric = new Rect(268f, 68f, 118f, 32f);
-            FirstMetricDivider = new Rect(134f, 68f, 8f, 32f);
-            SecondMetricDivider = new Rect(260f, 68f, 8f, 32f);
-            PauseAction = new Rect(274f, 12f, 52f, 52f);
-            SpeedAction = new Rect(334f, 12f, 52f, 52f);
+            HeaderTitle = new Rect(40f, 52f, 210f, 38f);
+            PauseAction = new Rect(264f, 50f, 48f, 48f);
+            SpeedAction = new Rect(318f, 50f, 56f, 48f);
+            SunMetric = new Rect(28f, 101f, 112f, 40f);
+            LivesMetric = new Rect(145f, 101f, 112f, 40f);
+            WaveMetric = new Rect(262f, 101f, 112f, 40f);
 
-            ContextTrayTitle = new Rect(ContextTray.x + ContentInset,
-                ContextTray.y + SpacingUnit, 180f, 22f);
-            NurseryTrayTitle = new Rect(NurseryTray.x + ContentInset,
-                NurseryTray.y + SpacingUnit, 180f, 22f);
-            DetailTitle = new Rect(ContextTray.x + ContentInset,
-                ContextTray.y + SpacingUnit, ContextTray.width - 64f, 24f);
-            DetailBody = new Rect(ContextTray.x + ContentInset,
-                ContextTray.y + 36f, ContextTray.width - 64f, 22f);
+            PhaseStatus = PhaseWaveRow;
+            PhaseStatusWithWaveAction = new Rect(24f, 518f, 168f, 52f);
+            WaveAction = new Rect(204f, 518f, 174f, 52f);
+
+            ContextTrayTitle = new Rect(32f, 582f, 120f, 24f);
+            NurseryTrayTitle = new Rect(32f, 678f, 120f, 24f);
+            DetailTitle = new Rect(32f, 582f, 290f, 24f);
+            DetailBody = new Rect(32f, 614f, 290f, 22f);
             DetailCloseAction = new Rect(ContextTray.xMax - 48f,
                 ContextTray.y + 4f, 44f, 44f);
 
@@ -71,21 +74,17 @@ namespace FruitDefense.Presentation
                 Board.width - 12f, Board.height - 12f);
 
             Battlefield = new BattlefieldProjection(map, Board);
-            BoardStatus = Battlefield.ControlStripRect;
-            WaveAction = Battlefield.WaveActionRect;
-            BoardStatusWithWaveAction = new Rect(
-                BoardStatus.x + 8f,
-                BoardStatus.y,
-                BoardStatus.width - WaveAction.width - 12f,
-                BoardStatus.height);
         }
 
         public Rect Design { get; }
         public Rect Header { get; }
+        public Rect PageShell { get; }
         public Rect BattleStage { get; }
         public Rect Board { get; }
+        public Rect PhaseWaveRow { get; }
         public Rect ContextTray { get; }
         public Rect NurseryTray { get; }
+        public int NurserySlotCount { get; }
         public Rect RefreshAction { get; }
         public Rect Modal { get; }
         public Rect TerminalModal { get; }
@@ -94,10 +93,11 @@ namespace FruitDefense.Presentation
         public Rect SunMetric { get; }
         public Rect LivesMetric { get; }
         public Rect WaveMetric { get; }
-        public Rect FirstMetricDivider { get; }
-        public Rect SecondMetricDivider { get; }
         public Rect PauseAction { get; }
         public Rect SpeedAction { get; }
+        public Rect PhaseStatus { get; }
+        public Rect PhaseStatusWithWaveAction { get; }
+        public Rect WaveAction { get; }
 
         public Rect ContextTrayTitle { get; }
         public Rect NurseryTrayTitle { get; }
@@ -115,9 +115,6 @@ namespace FruitDefense.Presentation
         public Rect TerrainFailurePanel { get; }
 
         public BattlefieldProjection Battlefield { get; }
-        public Rect BoardStatus { get; }
-        public Rect BoardStatusWithWaveAction { get; }
-        public Rect WaveAction { get; }
 
         public Rect EquipmentTool(string equipmentId)
         {
@@ -137,68 +134,40 @@ namespace FruitDefense.Presentation
                 / ToolCount;
             return new Rect(
                 ContextTray.x + ContentInset + index * (width + ToolGap),
-                ContextTrayTitle.yMax + SpacingUnit,
+                610f,
                 width,
-                44f);
+                48f);
         }
 
-        public Rect ToolIcon(Rect tool)
+        public static Rect ToolRecipeSourceIcon(Rect tool)
         {
-            return new Rect(tool.x + 6f, tool.y + 5f, 36f, 36f);
+            return new Rect(tool.x + 4f, tool.y + 7f, 34f, 34f);
         }
 
-        public Rect ToolCountLabel(Rect tool)
+        public static Rect ToolRecipeOperator(Rect tool)
         {
-            return new Rect(tool.x + 43f, tool.y, tool.width - 47f, tool.height);
+            return new Rect(tool.x + 40f, tool.y + 12f, 12f, 24f);
         }
 
-        public Rect PotToolIcon
+        public static Rect ToolRecipeTargetIcon(Rect tool)
         {
-            get
-            {
-                var rect = PotTool;
-                var size = rect.height - 2f;
-                return new Rect(rect.x + 1f, rect.y + 1f, size, size);
-            }
+            return new Rect(tool.xMax - 23f, tool.y + 13f, 20f, 20f);
         }
 
-        public Rect PotToolLabel
+        public static Rect ToolInventoryBadge(Rect tool)
         {
-            get
-            {
-                var rect = PotTool;
-                return new Rect(rect.x + 47f, rect.y,
-                    rect.width - 49f, rect.height);
-            }
-        }
-
-        public Rect PotToolNameLabel
-        {
-            get
-            {
-                var rect = PotToolLabel;
-                return new Rect(rect.x, rect.y, rect.width, 22f);
-            }
-        }
-
-        public Rect PotToolCountLabel
-        {
-            get
-            {
-                var rect = PotToolLabel;
-                return new Rect(rect.x, rect.y + 22f, rect.width, 22f);
-            }
+            return new Rect(tool.x + 2f, tool.y + 24f, 24f, 24f);
         }
 
         public Rect NurserySlot(int slot)
         {
             var width = (NurseryTray.width - ContentInset * 2f
-                - NurseryGap * 4f) / NurserySlotCount;
+                - NurseryGap * (NurserySlotCount - 1)) / NurserySlotCount;
             return new Rect(
                 NurseryTray.x + ContentInset + slot * (width + NurseryGap),
-                NurseryTrayTitle.yMax + SpacingUnit,
+                706f,
                 width,
-                54f);
+                52f);
         }
 
         public static Rect FramelessSlotIcon(Rect slot)
@@ -208,7 +177,7 @@ namespace FruitDefense.Presentation
 
         public static Rect NurserySlotLabel(Rect slot)
         {
-            return new Rect(slot.x + 2f, slot.yMax - 24f, slot.width - 4f, 22f);
+            return new Rect(slot.x + 2f, slot.y + 6f, slot.width - 4f, 44f);
         }
 
         public static Rect CueBadge(Rect target)
@@ -276,15 +245,5 @@ namespace FruitDefense.Presentation
                 rect.width + amount * 2f, rect.height + amount * 2f);
         }
 
-        private static Rect FullWidthTrack(float y, float height)
-        {
-            return new Rect(0f, y, DesignWidth, height);
-        }
-
-        private static Rect InsetTrack(float y, float height)
-        {
-            return new Rect(ContentInset, y,
-                DesignWidth - ContentInset * 2f, height);
-        }
     }
 }

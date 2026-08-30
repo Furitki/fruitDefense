@@ -35,7 +35,7 @@ namespace FruitDefense.Editor
                 && Mathf.Approximately(
                     CombatFloatingTextSdfGenerator.FaceTransition, .04f)
                 && Mathf.Approximately(
-                    CombatFloatingTextSdfGenerator.OutlineThreshold, .10f)
+                    CombatFloatingTextSdfGenerator.OutlineThreshold, .04f)
                 && Mathf.Approximately(
                     CombatFloatingTextSdfGenerator.OutlineTransition, .05f)
                 && CombatFloatingTextSdfGenerator.RenderMode == GlyphRenderMode.SDF32,

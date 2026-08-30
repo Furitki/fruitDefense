@@ -21,259 +21,259 @@ MonoBehaviour:
     AtlasRect:
       x: 1
       y: 1
-      width: 32
-      height: 19
-    Width: 15.295898
-    Height: 2.2402344
-    HorizontalBearingX: 2.815918
-    HorizontalBearingY: 18.624023
-    HorizontalAdvance: 20.73584
+      width: 33
+      height: 21
+    Width: 16.448242
+    Height: 4.4799805
+    HorizontalBearingX: 2.9438477
+    HorizontalBearingY: 20.160156
+    HorizontalAdvance: 22.208008
     Scale: 1
     Padding: 8
   - CodePoint: 43
     AtlasRect:
-      x: 34
+      x: 35
       y: 1
-      width: 45
-      height: 47
-    Width: 28.60791
-    Height: 30.783691
-    HorizontalBearingX: 2.368164
-    HorizontalBearingY: 38.65576
-    HorizontalAdvance: 33.34424
+      width: 47
+      height: 49
+    Width: 30.719727
+    Height: 32.384277
+    HorizontalBearingX: 2.432129
+    HorizontalBearingY: 39.808105
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 48
     AtlasRect:
-      x: 80
+      x: 83
       y: 1
-      width: 43
+      width: 46
       height: 65
-    Width: 26.3042
-    Height: 48.12793
-    HorizontalBearingX: 3.5200195
-    HorizontalBearingY: 47.2959
-    HorizontalAdvance: 33.34424
+    Width: 29.183594
+    Height: 48.57617
+    HorizontalBearingX: 3.2001953
+    HorizontalBearingY: 47.74414
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 49
     AtlasRect:
-      x: 1
-      y: 49
-      width: 39
+      x: 130
+      y: 1
+      width: 42
       height: 63
-    Width: 22.91211
-    Height: 46.463867
-    HorizontalBearingX: 6.080078
-    HorizontalBearingY: 46.463867
-    HorizontalAdvance: 33.34424
+    Width: 25.728027
+    Height: 46.91211
+    HorizontalBearingX: 5.631836
+    HorizontalBearingY: 46.91211
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 50
     AtlasRect:
-      x: 1
-      y: 113
-      width: 44
+      x: 130
+      y: 65
+      width: 46
       height: 64
-    Width: 27.328125
-    Height: 47.2959
-    HorizontalBearingX: 2.815918
-    HorizontalBearingY: 47.2959
-    HorizontalAdvance: 33.34424
+    Width: 29.759766
+    Height: 47.74414
+    HorizontalBearingX: 2.5600586
+    HorizontalBearingY: 47.74414
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 51
     AtlasRect:
       x: 1
-      y: 178
-      width: 44
+      y: 51
+      width: 47
       height: 65
-    Width: 27.583984
-    Height: 48.12793
-    HorizontalBearingX: 2.1118164
-    HorizontalBearingY: 47.2959
-    HorizontalAdvance: 33.34424
+    Width: 30.080078
+    Height: 48.57617
+    HorizontalBearingX: 1.855957
+    HorizontalBearingY: 47.74414
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 52
     AtlasRect:
-      x: 1
-      y: 244
-      width: 46
+      x: 49
+      y: 67
+      width: 49
       height: 63
-    Width: 29.952148
-    Height: 46.463867
-    HorizontalBearingX: 1.1518555
-    HorizontalBearingY: 46.463867
-    HorizontalAdvance: 33.34424
+    Width: 32.256348
+    Height: 46.91211
+    HorizontalBearingX: 1.2797852
+    HorizontalBearingY: 46.91211
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 53
     AtlasRect:
-      x: 46
-      y: 67
-      width: 45
+      x: 1
+      y: 117
+      width: 47
       height: 64
-    Width: 28.096191
-    Height: 47.2959
-    HorizontalBearingX: 1.855957
-    HorizontalBearingY: 46.463867
-    HorizontalAdvance: 33.34424
+    Width: 30.399902
+    Height: 47.74414
+    HorizontalBearingX: 1.7280273
+    HorizontalBearingY: 46.91211
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 54
     AtlasRect:
-      x: 46
-      y: 132
-      width: 43
+      x: 99
+      y: 130
+      width: 46
       height: 65
-    Width: 26.432129
-    Height: 48.12793
-    HorizontalBearingX: 3.9677734
-    HorizontalBearingY: 47.2959
-    HorizontalAdvance: 33.34424
+    Width: 29.184082
+    Height: 48.57617
+    HorizontalBearingX: 3.5839844
+    HorizontalBearingY: 47.74414
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 55
     AtlasRect:
-      x: 1
-      y: 308
-      width: 44
+      x: 49
+      y: 131
+      width: 46
       height: 63
-    Width: 27.26416
-    Height: 46.463867
-    HorizontalBearingX: 3.0717773
-    HorizontalBearingY: 46.463867
-    HorizontalAdvance: 33.34424
+    Width: 29.375977
+    Height: 46.91211
+    HorizontalBearingX: 3.1362305
+    HorizontalBearingY: 46.91211
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 56
     AtlasRect:
       x: 1
-      y: 372
-      width: 44
-      height: 64
-    Width: 27.583984
-    Height: 47.87207
-    HorizontalBearingX: 2.815918
-    HorizontalBearingY: 47.04004
-    HorizontalAdvance: 33.34424
+      y: 182
+      width: 46
+      height: 65
+    Width: 29.632324
+    Height: 48.448242
+    HorizontalBearingX: 2.9438477
+    HorizontalBearingY: 47.61621
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 57
     AtlasRect:
-      x: 1
-      y: 437
-      width: 43
+      x: 48
+      y: 195
+      width: 46
       height: 65
-    Width: 26.496094
-    Height: 48.12793
-    HorizontalBearingX: 3.0717773
-    HorizontalBearingY: 47.2959
-    HorizontalAdvance: 33.34424
+    Width: 29.248047
+    Height: 48.57617
+    HorizontalBearingX: 2.815918
+    HorizontalBearingY: 47.74414
+    HorizontalAdvance: 35.52002
     Scale: 1
     Padding: 8
   - CodePoint: 32
     AtlasRect:
-      x: 41
-      y: 49
+      x: 173
+      y: 1
       width: 17
       height: 17
     Width: 0
     Height: 0
     HorizontalBearingX: 0
     HorizontalBearingY: 0
-    HorizontalAdvance: 14.080078
+    HorizontalAdvance: 14.3359375
     Scale: 1
     Padding: 8
   - CodePoint: 38451
     AtlasRect:
-      x: 45
-      y: 437
-      width: 67
-      height: 71
-    Width: 50.496094
-    Height: 54.976074
-    HorizontalBearingX: 6.463867
-    HorizontalBearingY: 50.496094
+      x: 95
+      y: 196
+      width: 69
+      height: 73
+    Width: 52.543945
+    Height: 56.320312
+    HorizontalBearingX: 5.567871
+    HorizontalBearingY: 51.328125
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 20809
     AtlasRect:
-      x: 46
-      y: 308
-      width: 74
-      height: 74
-    Width: 57.983887
-    Height: 57.664062
-    HorizontalBearingX: 2.8798828
-    HorizontalBearingY: 53.184082
+      x: 1
+      y: 261
+      width: 76
+      height: 75
+    Width: 59.26416
+    Height: 58.879883
+    HorizontalBearingX: 2.1757812
+    HorizontalBearingY: 53.759766
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 20923
     AtlasRect:
-      x: 48
-      y: 198
-      width: 74
-      height: 74
-    Width: 57.08789
-    Height: 57.855957
-    HorizontalBearingX: 3.2001953
-    HorizontalBearingY: 53.631836
+      x: 78
+      y: 270
+      width: 75
+      height: 76
+    Width: 58.68799
+    Height: 59.071777
+    HorizontalBearingX: 2.4960938
+    HorizontalBearingY: 54.208008
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 32467
     AtlasRect:
-      x: 113
-      y: 383
-      width: 73
-      height: 74
-    Width: 56.7041
-    Height: 57.664062
-    HorizontalBearingX: 2.815918
-    HorizontalBearingY: 53.184082
+      x: 1
+      y: 337
+      width: 75
+      height: 75
+    Width: 58.43213
+    Height: 58.88037
+    HorizontalBearingX: 1.9199219
+    HorizontalBearingY: 53.82422
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 20987
     AtlasRect:
-      x: 121
-      y: 273
-      width: 70
-      height: 74
-    Width: 53.887695
-    Height: 57.664062
-    HorizontalBearingX: 5.184082
-    HorizontalBearingY: 53.120117
+      x: 1
+      y: 413
+      width: 72
+      height: 75
+    Width: 55.807617
+    Height: 58.815918
+    HorizontalBearingX: 4.1601562
+    HorizontalBearingY: 53.6958
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 36133
     AtlasRect:
-      x: 92
-      y: 67
-      width: 75
-      height: 74
-    Width: 58.112305
-    Height: 57.34375
-    HorizontalBearingX: 3.0717773
-    HorizontalBearingY: 52.73584
+      x: 74
+      y: 413
+      width: 76
+      height: 75
+    Width: 59.26367
+    Height: 58.240234
+    HorizontalBearingX: 2.4960938
+    HorizontalBearingY: 53.184082
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
   - CodePoint: 215
     AtlasRect:
-      x: 124
-      y: 1
-      width: 57
-      height: 57
-    Width: 40.320312
-    Height: 40.319824
-    HorizontalBearingX: 11.839844
-    HorizontalBearingY: 43.967773
+      x: 77
+      y: 347
+      width: 58
+      height: 58
+    Width: 41.21582
+    Height: 41.21582
+    HorizontalBearingX: 11.39209
+    HorizontalBearingY: 44.671875
     HorizontalAdvance: 64
     Scale: 1
     Padding: 8
@@ -286,1489 +286,1489 @@ MonoBehaviour:
   _compositeTokens:
   - Text: -0
     AtlasRect:
-      x: 415
-      y: 237
-      width: 24
+      x: 192
+      y: 290
+      width: 26
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 58.56006
+    MinX: -5.0561523
+    MaxX: 62.591797
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 54.08008
+    MaxY: 55.74414
+    HorizontalAdvance: 57.728027
   - Text: -1
     AtlasRect:
-      x: 478
-      y: 363
-      width: 24
+      x: 273
+      y: 391
+      width: 25
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 57.728027
+    MinX: -5.0561523
+    MaxX: 61.56787
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 54.08008
+    MaxY: 54.91211
+    HorizontalAdvance: 57.728027
   - Text: -2
     AtlasRect:
-      x: 374
-      y: 363
-      width: 25
+      x: 472
+      y: 366
+      width: 26
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 58.879883
+    MinX: -5.0561523
+    MaxX: 62.527832
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 54.08008
+    MaxY: 55.74414
+    HorizontalAdvance: 57.728027
   - Text: -3
     AtlasRect:
-      x: 440
-      y: 237
-      width: 24
+      x: 219
+      y: 290
+      width: 26
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 58.43164
+    MinX: -5.0561523
+    MaxX: 62.144043
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 54.08008
+    MaxY: 55.74414
+    HorizontalAdvance: 57.728027
   - Text: -4
     AtlasRect:
-      x: 400
-      y: 363
-      width: 25
+      x: 192
+      y: 391
+      width: 26
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 59.839844
+    MinX: -5.0561523
+    MaxX: 63.74414
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 54.08008
+    MaxY: 54.91211
+    HorizontalAdvance: 57.728027
   - Text: -5
     AtlasRect:
-      x: 192
-      y: 388
-      width: 24
+      x: 219
+      y: 391
+      width: 26
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 58.68799
+    MinX: -5.0561523
+    MaxX: 62.335938
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 54.08008
+    MaxY: 54.91211
+    HorizontalAdvance: 57.728027
   - Text: -6
     AtlasRect:
-      x: 389
-      y: 237
-      width: 25
+      x: 246
+      y: 290
+      width: 26
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 59.135742
+    MinX: -5.0561523
+    MaxX: 62.976074
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 54.08008
+    MaxY: 55.74414
+    HorizontalAdvance: 57.728027
   - Text: -7
     AtlasRect:
-      x: 426
-      y: 363
-      width: 25
+      x: 246
+      y: 391
+      width: 26
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 59.071777
+    MinX: -5.0561523
+    MaxX: 62.720215
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 54.08008
+    MaxY: 54.91211
+    HorizontalAdvance: 57.728027
   - Text: -8
     AtlasRect:
-      x: 452
-      y: 363
-      width: 25
-      height: 24
+      x: 273
+      y: 290
+      width: 26
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 59.135742
+    MinX: -5.0561523
+    MaxX: 62.78418
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 54.08008
+    MaxY: 55.61621
+    HorizontalAdvance: 57.728027
   - Text: -9
     AtlasRect:
-      x: 465
-      y: 237
-      width: 24
+      x: 300
+      y: 290
+      width: 26
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 58.30371
+    MinX: -5.0561523
+    MaxX: 62.271973
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 54.08008
+    MaxY: 55.74414
+    HorizontalAdvance: 57.728027
   - Text: -00
     AtlasRect:
-      x: 422
-      y: 0
-      width: 37
+      x: 315
+      y: 30
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -01
     AtlasRect:
-      x: 460
-      y: 0
-      width: 37
+      x: 355
+      y: 30
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -02
     AtlasRect:
-      x: 192
-      y: 29
-      width: 37
+      x: 395
+      y: 30
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -03
     AtlasRect:
-      x: 230
-      y: 29
-      width: 37
+      x: 435
+      y: 30
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -04
     AtlasRect:
-      x: 268
-      y: 29
-      width: 37
+      x: 424
+      y: 0
+      width: 40
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -05
     AtlasRect:
-      x: 306
-      y: 29
-      width: 37
+      x: 192
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -06
     AtlasRect:
-      x: 344
-      y: 29
-      width: 37
+      x: 232
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -07
     AtlasRect:
-      x: 382
-      y: 29
-      width: 37
+      x: 272
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -08
     AtlasRect:
-      x: 420
-      y: 29
-      width: 37
+      x: 312
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -09
     AtlasRect:
-      x: 458
-      y: 29
-      width: 37
+      x: 352
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -10
     AtlasRect:
-      x: 192
-      y: 55
-      width: 37
+      x: 392
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -11
     AtlasRect:
-      x: 192
-      y: 263
-      width: 37
+      x: 233
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -12
     AtlasRect:
-      x: 230
-      y: 263
-      width: 37
+      x: 273
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -13
     AtlasRect:
-      x: 230
-      y: 55
-      width: 37
+      x: 432
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -14
     AtlasRect:
-      x: 268
-      y: 263
-      width: 37
+      x: 327
+      y: 290
+      width: 40
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -15
     AtlasRect:
-      x: 306
-      y: 263
-      width: 37
+      x: 313
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -16
     AtlasRect:
-      x: 268
-      y: 55
-      width: 37
+      x: 472
+      y: 56
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -17
     AtlasRect:
-      x: 344
-      y: 263
-      width: 37
+      x: 353
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -18
     AtlasRect:
-      x: 382
-      y: 263
-      width: 37
-      height: 24
+      x: 192
+      y: 82
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -19
     AtlasRect:
-      x: 306
-      y: 55
-      width: 37
+      x: 232
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -20
     AtlasRect:
-      x: 344
-      y: 55
-      width: 37
+      x: 272
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -21
     AtlasRect:
-      x: 420
-      y: 263
-      width: 37
+      x: 393
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -22
     AtlasRect:
-      x: 458
-      y: 263
-      width: 37
+      x: 433
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -23
     AtlasRect:
-      x: 382
-      y: 55
-      width: 37
+      x: 312
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -24
     AtlasRect:
-      x: 192
-      y: 288
-      width: 37
+      x: 368
+      y: 290
+      width: 40
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -25
     AtlasRect:
-      x: 420
-      y: 55
-      width: 37
+      x: 352
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -26
     AtlasRect:
-      x: 458
-      y: 55
-      width: 37
+      x: 392
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -27
     AtlasRect:
-      x: 230
-      y: 288
-      width: 37
+      x: 473
+      y: 316
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -28
     AtlasRect:
-      x: 192
-      y: 81
-      width: 37
+      x: 432
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -29
     AtlasRect:
-      x: 230
-      y: 81
-      width: 37
+      x: 472
+      y: 82
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -30
     AtlasRect:
-      x: 268
-      y: 81
-      width: 37
+      x: 192
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -31
     AtlasRect:
-      x: 306
-      y: 81
-      width: 37
+      x: 232
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -32
     AtlasRect:
-      x: 344
-      y: 81
-      width: 37
+      x: 272
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -33
     AtlasRect:
-      x: 382
-      y: 81
-      width: 37
+      x: 312
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -34
     AtlasRect:
-      x: 420
-      y: 81
-      width: 37
+      x: 465
+      y: 0
+      width: 40
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -35
     AtlasRect:
-      x: 458
-      y: 81
-      width: 37
+      x: 352
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -36
     AtlasRect:
-      x: 192
-      y: 107
-      width: 37
+      x: 392
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -37
     AtlasRect:
-      x: 230
-      y: 107
-      width: 37
+      x: 432
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -38
     AtlasRect:
-      x: 268
-      y: 107
-      width: 37
+      x: 472
+      y: 108
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -39
     AtlasRect:
-      x: 306
-      y: 107
-      width: 37
+      x: 192
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -40
     AtlasRect:
-      x: 344
-      y: 107
-      width: 37
+      x: 232
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -41
     AtlasRect:
-      x: 268
-      y: 288
-      width: 37
+      x: 192
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -42
     AtlasRect:
-      x: 306
-      y: 288
-      width: 37
+      x: 232
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -43
     AtlasRect:
-      x: 382
-      y: 107
-      width: 37
+      x: 272
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -44
     AtlasRect:
-      x: 344
-      y: 288
-      width: 37
+      x: 409
+      y: 290
+      width: 40
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -45
     AtlasRect:
-      x: 382
-      y: 288
-      width: 37
+      x: 272
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -46
     AtlasRect:
-      x: 420
-      y: 107
-      width: 37
+      x: 312
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -47
     AtlasRect:
-      x: 420
-      y: 288
-      width: 37
+      x: 312
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -48
     AtlasRect:
-      x: 458
-      y: 288
-      width: 37
-      height: 24
+      x: 352
+      y: 134
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -49
     AtlasRect:
-      x: 458
-      y: 107
-      width: 37
+      x: 392
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -50
     AtlasRect:
-      x: 192
-      y: 133
-      width: 37
+      x: 432
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -51
     AtlasRect:
-      x: 192
-      y: 313
-      width: 37
+      x: 352
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -52
     AtlasRect:
-      x: 230
-      y: 133
-      width: 37
+      x: 472
+      y: 134
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -53
     AtlasRect:
-      x: 268
-      y: 133
-      width: 37
+      x: 192
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -54
     AtlasRect:
-      x: 230
-      y: 313
-      width: 37
+      x: 450
+      y: 290
+      width: 40
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -55
     AtlasRect:
-      x: 268
-      y: 313
-      width: 37
+      x: 392
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -56
     AtlasRect:
-      x: 306
-      y: 133
-      width: 37
+      x: 232
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -57
     AtlasRect:
-      x: 306
-      y: 313
-      width: 37
+      x: 432
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -58
     AtlasRect:
-      x: 344
-      y: 313
-      width: 37
-      height: 24
+      x: 272
+      y: 160
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -59
     AtlasRect:
-      x: 344
-      y: 133
-      width: 37
+      x: 312
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -60
     AtlasRect:
-      x: 382
-      y: 133
-      width: 37
+      x: 352
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -61
     AtlasRect:
-      x: 420
-      y: 133
-      width: 37
+      x: 392
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -62
     AtlasRect:
-      x: 458
-      y: 133
-      width: 37
+      x: 432
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -63
     AtlasRect:
-      x: 192
-      y: 159
-      width: 37
+      x: 472
+      y: 160
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -64
     AtlasRect:
-      x: 230
-      y: 159
-      width: 37
+      x: 192
+      y: 30
+      width: 40
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -65
     AtlasRect:
-      x: 268
-      y: 159
-      width: 37
+      x: 192
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -66
     AtlasRect:
-      x: 306
-      y: 159
-      width: 37
+      x: 232
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -67
     AtlasRect:
-      x: 344
-      y: 159
-      width: 37
+      x: 272
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -68
     AtlasRect:
-      x: 382
-      y: 159
-      width: 37
+      x: 312
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -69
     AtlasRect:
-      x: 420
-      y: 159
-      width: 37
+      x: 352
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -70
     AtlasRect:
-      x: 458
-      y: 159
-      width: 37
+      x: 392
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -71
     AtlasRect:
-      x: 382
-      y: 313
-      width: 37
+      x: 472
+      y: 341
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -72
     AtlasRect:
-      x: 420
-      y: 313
-      width: 37
+      x: 192
+      y: 366
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -73
     AtlasRect:
-      x: 192
-      y: 185
-      width: 37
+      x: 432
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -74
     AtlasRect:
-      x: 458
-      y: 313
-      width: 37
+      x: 192
+      y: 316
+      width: 40
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -75
     AtlasRect:
-      x: 192
-      y: 338
-      width: 37
+      x: 232
+      y: 366
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -76
     AtlasRect:
-      x: 230
-      y: 185
-      width: 37
+      x: 472
+      y: 186
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -77
     AtlasRect:
-      x: 230
-      y: 338
-      width: 37
+      x: 272
+      y: 366
+      width: 39
       height: 24
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 87.42432
+    MaxY: 54.91211
+    HorizontalAdvance: 93.24805
   - Text: -78
     AtlasRect:
-      x: 268
-      y: 338
-      width: 37
-      height: 24
+      x: 192
+      y: 212
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -79
     AtlasRect:
-      x: 268
-      y: 185
-      width: 37
+      x: 232
+      y: 212
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -80
     AtlasRect:
-      x: 306
-      y: 185
-      width: 37
+      x: 272
+      y: 212
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -81
     AtlasRect:
-      x: 306
-      y: 338
-      width: 37
-      height: 24
+      x: 312
+      y: 212
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -82
     AtlasRect:
-      x: 344
-      y: 185
-      width: 37
+      x: 352
+      y: 212
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -83
     AtlasRect:
-      x: 382
-      y: 185
-      width: 37
+      x: 392
+      y: 212
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -84
     AtlasRect:
-      x: 344
-      y: 338
-      width: 37
-      height: 24
+      x: 233
+      y: 30
+      width: 40
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -85
     AtlasRect:
-      x: 382
-      y: 338
-      width: 37
-      height: 24
+      x: 432
+      y: 212
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -86
     AtlasRect:
-      x: 420
-      y: 185
-      width: 37
+      x: 472
+      y: 212
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -87
     AtlasRect:
-      x: 420
-      y: 338
-      width: 37
-      height: 24
+      x: 192
+      y: 238
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -88
     AtlasRect:
-      x: 458
-      y: 338
-      width: 37
-      height: 24
+      x: 232
+      y: 238
+      width: 39
+      height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 87.42432
+    MaxY: 55.61621
+    HorizontalAdvance: 93.24805
   - Text: -89
     AtlasRect:
-      x: 458
-      y: 185
-      width: 37
+      x: 272
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -90
     AtlasRect:
-      x: 192
-      y: 211
-      width: 37
+      x: 312
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.9043
+    MinX: -5.0561523
+    MaxX: 98.11182
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -91
     AtlasRect:
-      x: 230
-      y: 211
-      width: 37
+      x: 352
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.072266
+    MinX: -5.0561523
+    MaxX: 97.08789
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -92
     AtlasRect:
-      x: 268
-      y: 211
-      width: 37
+      x: 392
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.22412
+    MinX: -5.0561523
+    MaxX: 98.04785
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -93
     AtlasRect:
-      x: 306
-      y: 211
-      width: 37
+      x: 432
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.77588
+    MinX: -5.0561523
+    MaxX: 97.66406
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -94
     AtlasRect:
-      x: 344
-      y: 211
-      width: 37
+      x: 274
+      y: 30
+      width: 40
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 93.18408
+    MinX: -5.0561523
+    MaxX: 99.26416
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -95
     AtlasRect:
-      x: 382
-      y: 211
-      width: 37
+      x: 472
+      y: 238
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.03223
+    MinX: -5.0561523
+    MaxX: 97.85596
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -96
     AtlasRect:
-      x: 420
-      y: 211
-      width: 37
+      x: 192
+      y: 264
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.49609
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -97
     AtlasRect:
-      x: 458
-      y: 211
-      width: 37
+      x: 232
+      y: 264
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.416016
+    MinX: -5.0561523
+    MaxX: 98.240234
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -98
     AtlasRect:
-      x: 192
-      y: 237
-      width: 37
+      x: 272
+      y: 264
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 92.47998
+    MinX: -5.0561523
+    MaxX: 98.3042
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: -99
     AtlasRect:
-      x: 230
-      y: 237
-      width: 37
+      x: 312
+      y: 264
+      width: 39
       height: 25
     BaseScale: 0.375
-    MinX: -5.184082
-    MaxX: 91.64795
+    MinX: -5.0561523
+    MaxX: 97.79199
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 87.42432
+    MaxY: 55.74414
+    HorizontalAdvance: 93.24805
   - Text: "\u51BB\u7ED3"
     AtlasRect:
-      x: 265
+      x: 266
       y: 0
       width: 52
-      height: 28
+      height: 29
     BaseScale: 0.375
-    MinX: -4.7998047
-    MaxX: 131.52002
-    MinY: -12.47998
-    MaxY: 61.631836
+    MinX: -5.5039062
+    MaxX: 132.35205
+    MinY: -13.056152
+    MaxY: 62.208008
     HorizontalAdvance: 128
   - Text: "\u51FB\u8D25"
     AtlasRect:
-      x: 370
+      x: 319
       y: 0
-      width: 51
-      height: 28
+      width: 52
+      height: 29
     BaseScale: 0.375
-    MinX: -2.815918
-    MaxX: 133.18408
-    MinY: -12.60791
-    MaxY: 61.120117
+    MinX: -3.8398438
+    MaxX: 133.75977
+    MinY: -13.120117
+    MaxY: 61.6958
     HorizontalAdvance: 128
   - Text: "\u51FB\u8D25\xD7"
     AtlasRect:
       x: 192
       y: 0
-      width: 72
-      height: 28
+      width: 73
+      height: 29
     BaseScale: 0.375
-    MinX: -2.815918
-    MaxX: 188.16016
-    MinY: -12.60791
-    MaxY: 61.120117
+    MinX: -3.8398438
+    MaxX: 188.60791
+    MinY: -13.120117
+    MaxY: 61.6958
     HorizontalAdvance: 192
   - Text: " \u9633\u5149"
     AtlasRect:
-      x: 318
+      x: 372
       y: 0
       width: 51
-      height: 28
+      height: 29
     BaseScale: 0.375
-    MinX: 12.543945
-    MaxX: 146.94385
-    MinY: -12.47998
-    MaxY: 61.184082
-    HorizontalAdvance: 142.08008
+    MinX: 11.903809
+    MaxX: 147.77588
+    MinY: -13.120117
+    MaxY: 61.759766
+    HorizontalAdvance: 142.33594
   - Text: +0
     AtlasRect:
-      x: 299
-      y: 237
-      width: 29
+      x: 352
+      y: 264
+      width: 31
       height: 25
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.16846
+    MinX: -5.567871
+    MaxX: 75.90381
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 66.68848
+    MaxY: 55.74414
+    HorizontalAdvance: 71.04004
   - Text: +1
     AtlasRect:
-      x: 254
-      y: 363
-      width: 29
+      x: 312
+      y: 366
+      width: 31
       height: 24
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 70.336426
+    MinX: -5.567871
+    MaxX: 74.87988
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 66.68848
+    MaxY: 54.91211
+    HorizontalAdvance: 71.04004
   - Text: +2
     AtlasRect:
-      x: 284
-      y: 363
-      width: 29
+      x: 344
+      y: 366
+      width: 31
       height: 24
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.48828
+    MinX: -5.567871
+    MaxX: 75.83984
     MinY: -8
-    MaxY: 55.2959
-    HorizontalAdvance: 66.68848
+    MaxY: 55.74414
+    HorizontalAdvance: 71.04004
   - Text: +3
     AtlasRect:
-      x: 329
-      y: 237
-      width: 29
+      x: 384
+      y: 264
+      width: 31
       height: 25
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.04004
+    MinX: -5.567871
+    MaxX: 75.456055
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 66.68848
+    MaxY: 55.74414
+    HorizontalAdvance: 71.04004
   - Text: +4
     AtlasRect:
-      x: 192
-      y: 363
-      width: 30
+      x: 376
+      y: 366
+      width: 31
       height: 24
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 72.44824
+    MinX: -5.567871
+    MaxX: 77.05615
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 66.68848
+    MaxY: 54.91211
+    HorizontalAdvance: 71.04004
   - Text: +5
     AtlasRect:
-      x: 314
-      y: 363
-      width: 29
+      x: 408
+      y: 366
+      width: 31
       height: 24
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.29639
+    MinX: -5.567871
+    MaxX: 75.64795
     MinY: -8.832031
-    MaxY: 54.463867
-    HorizontalAdvance: 66.68848
+    MaxY: 54.91211
+    HorizontalAdvance: 71.04004
   - Text: +6
     AtlasRect:
-      x: 268
-      y: 237
-      width: 30
+      x: 416
+      y: 264
+      width: 31
       height: 25
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.74414
+    MinX: -5.567871
+    MaxX: 76.288086
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 66.68848
+    MaxY: 55.74414
+    HorizontalAdvance: 71.04004
   - Text: +7
     AtlasRect:
-      x: 344
-      y: 363
-      width: 29
+      x: 440
+      y: 366
+      width: 31
       height: 24
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.680176
+    MinX: -5.567871
+    MaxX: 76.03223
     MinY: -8
-    MaxY: 54.463867
-    HorizontalAdvance: 66.68848
+    MaxY: 54.91211
+    HorizontalAdvance: 71.04004
   - Text: +8
     AtlasRect:
-      x: 223
-      y: 363
-      width: 30
-      height: 24
-    BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 71.74414
-    MinY: -8.832031
-    MaxY: 55.04004
-    HorizontalAdvance: 66.68848
-  - Text: +9
-    AtlasRect:
-      x: 359
-      y: 237
-      width: 29
+      x: 448
+      y: 264
+      width: 31
       height: 25
     BaseScale: 0.375
-    MinX: -5.631836
-    MaxX: 70.91211
+    MinX: -5.567871
+    MaxX: 76.09619
     MinY: -8.832031
-    MaxY: 55.2959
-    HorizontalAdvance: 66.68848
+    MaxY: 55.61621
+    HorizontalAdvance: 71.04004
+  - Text: +9
+    AtlasRect:
+      x: 480
+      y: 264
+      width: 31
+      height: 25
+    BaseScale: 0.375
+    MinX: -5.567871
+    MaxX: 75.583984
+    MinY: -8.832031
+    MaxY: 55.74414
+    HorizontalAdvance: 71.04004

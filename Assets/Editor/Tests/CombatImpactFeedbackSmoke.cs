@@ -36,27 +36,30 @@ namespace FruitDefense.Editor
                     normal.FillColor,
                     CombatFloatingTextStyleCatalog.SharedOutlineColor) >= 3f,
                 "role typography and fill/outline contrast satisfy the reference floor");
-            var normalPeak = CombatFloatingTextStyleCatalog.Sample(normal, .12f, 0f);
-            var heavyPeak = CombatFloatingTextStyleCatalog.Sample(heavy, .12f, 0f);
-            var normalEnd = CombatFloatingTextStyleCatalog.Sample(normal, 1f, 1f);
-            Assert(heavyPeak.Scale > normalPeak.Scale && normalPeak.Opacity > .99f
+            var normalStart = CombatFloatingTextStyleCatalog.Sample(normal, 0f);
+            var normalQuarter = CombatFloatingTextStyleCatalog.Sample(normal, .25f);
+            var normalHalf = CombatFloatingTextStyleCatalog.Sample(normal, .5f);
+            var heavyStart = CombatFloatingTextStyleCatalog.Sample(heavy, 0f);
+            var normalEnd = CombatFloatingTextStyleCatalog.Sample(normal, 1f);
+            Assert(heavyStart.Scale > normalStart.Scale
+                && normalStart.Opacity > .99f
+                && normalQuarter.OffsetY < -normal.RiseDistance * .43f
+                && normalQuarter.Opacity > normalHalf.Opacity
+                && normalHalf.Opacity > .49f
                 && normalEnd.OffsetY < -normal.RiseDistance * .99f
                 && normalEnd.Opacity <= .001f,
-                "analytic motion has a stronger heavy rebound and bounded rise/fade");
+                "analytic motion rises immediately and fades gradually across its lifetime");
             Assert(CombatFloatingTextStyleCatalog.AtlasFrameTimeGateMilliseconds == .5f
                 && CombatFloatingTextStyleCatalog.AtlasAllocationGateBytesPerSecond == 1024
                 && CombatFloatingTextStyleCatalog.RuntimeGlyphInventory.Contains("击败×")
                 && CombatFloatingTextStyleCatalog.RuntimeGlyphInventory.Contains("0123456789"),
                 "the reviewed finite glyph inventory retains the WebGL performance gates");
             Assert(CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                    CombatFloatingTextRole.NormalDamage, true) == Vector2.zero
+                    CombatFloatingTextRole.NormalDamage) == Vector2.zero
                 && CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                    CombatFloatingTextRole.Defeat, true).y
-                    >= CombatFloatingTextStyleCatalog.TerminalLaneDistance
-                && CombatFloatingTextStyleCatalog.SemanticLaneOffset(
-                    CombatFloatingTextRole.Defeat, false).y
+                    CombatFloatingTextRole.Defeat).y
                     <= -CombatFloatingTextStyleCatalog.TerminalLaneDistance,
-                "terminal copy owns a dedicated inward semantic lane");
+                "terminal copy owns a dedicated upward semantic lane");
             var gameSource = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             Assert(!gameSource.Contains("RequestCharactersInTexture")
                 && !gameSource.Contains("_floatingTextFillStyles")

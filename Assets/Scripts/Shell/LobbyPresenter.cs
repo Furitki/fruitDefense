@@ -296,7 +296,8 @@ namespace FruitDefense.Shell
                 : string.Equals(_pressTarget, levelId, StringComparison.Ordinal)
                     ? pressMotion : RuntimeUiMotionSample.Rest;
             var heldMotion = press.Pressed
-                ? RuntimeUiMotion.HeldPress(_runtimeUiTheme.Feedback)
+                ? RuntimeUiMotion.InteractionState(
+                    RuntimeUiInteractionState.Pressed, _runtimeUiTheme.Feedback)
                 : RuntimeUiMotionSample.Rest;
             var motion = RuntimeUiMotionSample.Combine(revealMotion,
                 RuntimeUiMotionSample.Combine(feedbackMotion, heldMotion));

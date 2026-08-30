@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;group=surfaces;slot=surface-card-selectable;imagegen-master=1
+  userData: ui-art-source=sunny-orchard-painted;slot=surface.card-selectable;source-scale=2;authored=imagegen-direct-master;transform=alpha-crop;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/card-lime.png;asset-sha256=C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87
   assetBundleName:
   assetBundleVariant:

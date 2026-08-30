@@ -12,9 +12,6 @@ function Get-ImageMetrics {
     $invalidSamples = 0
     $sampleCount = 0
     [double]$lumaSum = 0
-    $formerActionColorPixels = 0
-    $formerActionColorXMin = [int]::MaxValue
-    $formerActionColorXMax = [int]::MinValue
     $sampleStep = 4
     $maxNearBlackRunSamples = 0
     # These design-space regions are projected through the same safe-content transform as input controls.
@@ -48,19 +45,6 @@ function Get-ImageMetrics {
     }
     $maxNearBlackRunFraction = [Math]::Min(
       1.0, $maxNearBlackRunSamples * $sampleStep / [double]$bitmap.Width)
-    # The removed persistent action row occupied reference rect x=8..394, y=760..810.
-    for ($y = $formerActionRegion.yMin; $y -lt [Math]::Min($formerActionRegion.yMax, $bitmap.Height); $y++) {
-      for ($x = $formerActionRegion.xMin; $x -lt [Math]::Min($formerActionRegion.xMax, $bitmap.Width); $x++) {
-        $pixel = $bitmap.GetPixel($x, $y)
-        $looksLikeOldOrange = $pixel.R -gt 190 -and $pixel.G -gt 90 -and $pixel.G -lt 190 -and $pixel.B -lt 90
-        $looksLikeOldRed = $pixel.R -gt 180 -and $pixel.G -lt 115 -and $pixel.B -lt 110
-        if ($looksLikeOldOrange -or $looksLikeOldRed) {
-          $formerActionColorPixels++
-          $formerActionColorXMin = [Math]::Min($formerActionColorXMin, $x)
-          $formerActionColorXMax = [Math]::Max($formerActionColorXMax, $x)
-        }
-      }
-    }
     return [ordered]@{
       width = $bitmap.Width
       height = $bitmap.Height
@@ -71,13 +55,8 @@ function Get-ImageMetrics {
       maxNearBlackHorizontalRunFraction = $maxNearBlackRunFraction
       invalidFraction = if ($sampleCount -gt 0) { $invalidSamples / [double]$sampleCount } else { 1.0 }
       averageLuma = if ($sampleCount -gt 0) { $lumaSum / [double]$sampleCount } else { 0.0 }
-      formerActionColorPixels = $formerActionColorPixels
-      formerActionColorSpanPixels = if ($formerActionColorPixels -gt 0) {
-        $formerActionColorXMax - $formerActionColorXMin + 1
-      } else { 0 }
       sampledRegions = [ordered]@{
         header = $headerSampleRegion
-        formerAction = $formerActionRegion
         frameContent = [ordered]@{
           xMin = 0
           yMin = $frameSampleYMin
@@ -99,9 +78,62 @@ function Test-StableFrameMetrics {
 
 function Test-PanelOutlinePixel {
   param([object]$Pixel)
-  return $Pixel.A -gt 200 -and $Pixel.R -ge 70 -and
-    $Pixel.R -lt 195 -and $Pixel.G -lt 160 -and $Pixel.B -lt 125 -and
+  if ($Pixel.A -le 200) { return $false }
+  $darkOrSoilOutline = $Pixel.R -ge 70 -and $Pixel.R -lt 195 -and
+    $Pixel.G -lt 160 -and $Pixel.B -lt 125 -and
     $Pixel.R -gt ($Pixel.G + 8)
+  # Warm-paper cards use a light amber one-pixel rail instead of the soil
+  # frame's dark terracotta rail. Keep this range below the cream fill so the
+  # structural detector still measures the actual edge, not panel interiors.
+  $warmPaperOutline = if ($referenceScale -lt .95) {
+    $Pixel.R -ge 180 -and $Pixel.R -lt 250 -and
+      $Pixel.G -ge 145 -and $Pixel.G -lt 235 -and
+      $Pixel.B -ge 95 -and $Pixel.B -lt 215 -and
+      $Pixel.R -gt ($Pixel.G + 8) -and $Pixel.G -gt ($Pixel.B + 15)
+  }
+  else {
+    $Pixel.R -ge 180 -and $Pixel.R -lt 245 -and
+      $Pixel.G -ge 145 -and $Pixel.G -lt 225 -and
+      $Pixel.B -ge 95 -and $Pixel.B -lt 205 -and
+      $Pixel.R -gt ($Pixel.G + 10) -and $Pixel.G -gt ($Pixel.B + 15)
+  }
+  return $darkOrSoilOutline -or $warmPaperOutline
+}
+
+function Get-PanelRailThickness {
+  param(
+    [object]$Bitmap,
+    [int]$StartX,
+    [int]$StartY,
+    [int]$StepX,
+    [int]$StepY,
+    [ValidateRange(4, 32)][int]$MaximumDepth = 16)
+  $samples = @()
+  for ($index = 0; $index -le $MaximumDepth; $index++) {
+    $x = $StartX + $StepX * $index
+    $y = $StartY + $StepY * $index
+    if ($x -lt 0 -or $x -ge $Bitmap.Width -or
+        $y -lt 0 -or $y -ge $Bitmap.Height) { break }
+    $samples += $Bitmap.GetPixel($x, $y)
+  }
+  if ($samples.Count -lt 4) {
+    throw 'Panel rail sampling did not reach a stable interior.'
+  }
+  for ($index = 1; $index -le ($samples.Count - 3); $index++) {
+    $first = $samples[$index]
+    $second = $samples[$index + 1]
+    $third = $samples[$index + 2]
+    $firstDelta = [Math]::Abs([int]$first.R - [int]$second.R) +
+      [Math]::Abs([int]$first.G - [int]$second.G) +
+      [Math]::Abs([int]$first.B - [int]$second.B)
+    $secondDelta = [Math]::Abs([int]$second.R - [int]$third.R) +
+      [Math]::Abs([int]$second.G - [int]$third.G) +
+      [Math]::Abs([int]$second.B - [int]$third.B)
+    if ($firstDelta -le 18 -and $secondDelta -le 18) {
+      return $index
+    }
+  }
+  throw 'Panel rail did not transition to a stable interior within 16 capture pixels.'
 }
 
 function Get-PanelFrameEvidence {
@@ -165,19 +197,16 @@ function Get-PanelFrameEvidence {
     # would mistake Battle's dark board and nested panels for a 20+ px outline.
     $sideSampleY = [Math]::Min($yMax - 1, [Math]::Max($yMin,
       $yMin + [int][Math]::Round(($yMax - $yMin - 1) * $SideSampleFraction)))
-    $leftThickness = 0
-    for ($x = [int]$left[0].Key; $x -lt $xMax -and
-        (Test-PanelOutlinePixel -Pixel ($bitmap.GetPixel($x, $sideSampleY))); $x++) {
-      $leftThickness++
-    }
-    $rightThickness = 0
-    for ($x = [int]$right[0].Key; $x -ge $xMin -and
-        (Test-PanelOutlinePixel -Pixel ($bitmap.GetPixel($x, $sideSampleY))); $x--) {
-      $rightThickness++
-    }
-    $topThickness = 0
-    for ($y = [int]$top[0].Key; $rowCounts.ContainsKey($y) -and
-        $rowCounts[$y] -ge $minimumRowPixels; $y++) { $topThickness++ }
+    # Measure the composited rail to its first stable interior run. This keeps
+    # soil fill from being mistaken for hundreds of pixels of dark outline and
+    # works for both the heavy stage frame and light warm-paper card rails.
+    $leftThickness = Get-PanelRailThickness -Bitmap $bitmap `
+      -StartX ([int]$left[0].Key) -StartY $sideSampleY -StepX 1 -StepY 0
+    $rightThickness = Get-PanelRailThickness -Bitmap $bitmap `
+      -StartX ([int]$right[0].Key) -StartY $sideSampleY -StepX -1 -StepY 0
+    $topSampleX = $xMin + [int][Math]::Round(($xMax - $xMin - 1) * .5)
+    $topThickness = Get-PanelRailThickness -Bitmap $bitmap `
+      -StartX $topSampleX -StartY ([int]$top[0].Key) -StepX 0 -StepY 1
     return [ordered]@{
       name = $Name
       owner = $Region
@@ -198,85 +227,101 @@ function Get-PanelFrameEvidence {
 
 function Get-BattlePanelGeometryEvidence {
   param([string]$Path)
-  $header = Get-PanelFrameEvidence -Path $Path -Region $headerPanelRect `
-    -Name 'Header' -SideSampleFraction .5
-  $stage = Get-PanelFrameEvidence -Path $Path -Region $gameplayStageRect `
-    -Name 'GameplayStage' -SideSampleFraction .9
-  $context = Get-PanelFrameEvidence -Path $Path -Region $contextTrayRect `
-    -Name 'ContextTray' -SideSampleFraction .5
-  $nursery = Get-PanelFrameEvidence -Path $Path -Region $nurseryTrayRect `
-    -Name 'NurseryTray' -SideSampleFraction .5
+  $header = Get-PanelFrameEvidence -Path $Path -Region $headerPanelRect -Name 'Header' -SideSampleFraction .5
+  $pageShell = Get-PanelFrameEvidence -Path $Path -Region $pageShellRect -Name 'PageShell' -SideSampleFraction .5
+  $stage = Get-PanelFrameEvidence -Path $Path -Region $gameplayStageRect -Name 'GameplayStage' -SideSampleFraction .9
+  $context = Get-PanelFrameEvidence -Path $Path -Region $contextTrayRect -Name 'ContextTray' -SideSampleFraction .5
+  $nursery = Get-PanelFrameEvidence -Path $Path -Region $nurseryTrayRect -Name 'NurseryTray' -SideSampleFraction .5
   $edgeTolerance = 1
-  $leftDelta = [Math]::Abs($header.visibleEdges.left - $stage.visibleEdges.left)
-  $rightDelta = [Math]::Abs($header.visibleEdges.right - $stage.visibleEdges.right)
-  $stageBands = @($stage.outlineBands.left, $stage.outlineBands.right,
-    $stage.outlineBands.top)
+  $leftDelta = [Math]::Abs($header.visibleEdges.left - $pageShell.visibleEdges.left)
+  $rightDelta = [Math]::Abs($header.visibleEdges.right - $pageShell.visibleEdges.right)
+  $stageSideBands = @($stage.outlineBands.left, $stage.outlineBands.right)
   $standardBands = @(
-    $header.outlineBands.left, $header.outlineBands.right, $header.outlineBands.top,
+    $pageShell.outlineBands.left, $pageShell.outlineBands.right, $pageShell.outlineBands.top,
     $context.outlineBands.left, $context.outlineBands.right, $context.outlineBands.top,
     $nursery.outlineBands.left, $nursery.outlineBands.right, $nursery.outlineBands.top)
-  $minimumStageBand = $stageBands | Measure-Object -Minimum |
-    Select-Object -ExpandProperty Minimum
-  $maximumStageBand = $stageBands | Measure-Object -Maximum |
-    Select-Object -ExpandProperty Maximum
-  $maximumStandardBand = $standardBands | Measure-Object -Maximum |
-    Select-Object -ExpandProperty Maximum
-  if ($header.owner.xMin -ne $stage.owner.xMin -or
-      $header.owner.xMax -ne $stage.owner.xMax -or
+  $minimumStageSideBand = $stageSideBands | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+  $maximumStageSideBand = $stageSideBands | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+  $stageTopBand = $stage.outlineBands.top
+  $maximumStandardBand = $standardBands | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+  $minimumStageSideBandRequired = if ($referenceScale -lt .95) { 4 } else { 5 }
+  $maximumStandardBandAllowed = if ($referenceScale -lt .95) { 3 } else { 2 }
+  $stageHeightFraction = ($stage.owner.yMax - $stage.owner.yMin) / [double]($mappedDesignBounds.yMax - $mappedDesignBounds.yMin)
+  $stageLeftInsetLogical = ($stage.owner.xMin - $pageShell.owner.xMin) / $referenceScale
+  $stageRightInsetLogical = ($pageShell.owner.xMax - $stage.owner.xMax) / $referenceScale
+  if ($header.owner.xMin -ne $pageShell.owner.xMin -or
+      $header.owner.xMax -ne $pageShell.owner.xMax -or
       $leftDelta -gt $edgeTolerance -or $rightDelta -gt $edgeTolerance -or
-      $minimumStageBand -lt 3 -or $maximumStageBand -gt 5 -or
-      $maximumStandardBand -gt 2) {
+      $stageLeftInsetLogical -lt 6 -or $stageLeftInsetLogical -gt 10 -or
+      $stageRightInsetLogical -lt 6 -or $stageRightInsetLogical -gt 10 -or
+      $minimumStageSideBand -lt $minimumStageSideBandRequired -or
+      $maximumStageSideBand -gt 8 -or
+      $stageTopBand -lt 1 -or $stageTopBand -gt 3 -or
+      $maximumStandardBand -gt $maximumStandardBandAllowed -or
+      $stageHeightFraction -lt .38 -or $stageHeightFraction -gt .43 -or
+      $stage.owner.yMax -gt $phaseWaveRowRect.yMin -or
+      $phaseWaveRowRect.yMax -gt $context.owner.yMin) {
     throw ('Battle structural hierarchy mismatch: ' +
-      ([ordered]@{ header = $header; gameplayStage = $stage; contextTray = $context;
-        nurseryTray = $nursery; leftDelta = $leftDelta; rightDelta = $rightDelta;
-        minimumStageBand = $minimumStageBand; maximumStageBand = $maximumStageBand;
-        maximumStandardBand = $maximumStandardBand } |
+      ([ordered]@{ header = $header; pageShell = $pageShell; gameplayStage = $stage; phaseWaveRow = $phaseWaveRowRect;
+        contextTray = $context; nurseryTray = $nursery; leftDelta = $leftDelta; rightDelta = $rightDelta;
+        stageHeightFraction = $stageHeightFraction; stageLeftInsetLogical = $stageLeftInsetLogical; stageRightInsetLogical = $stageRightInsetLogical;
+        minimumStageSideBand = $minimumStageSideBand; maximumStageSideBand = $maximumStageSideBand;
+        stageTopBand = $stageTopBand;
+        maximumStandardBand = $maximumStandardBand;
+        minimumStageSideBandRequired = $minimumStageSideBandRequired;
+        maximumStandardBandAllowed = $maximumStandardBandAllowed } |
         ConvertTo-Json -Depth 8 -Compress))
   }
-  $refreshLowerMarginLogical = [Math]::Round(
-    (($mappedDesignBounds.yMax - $refreshActionRect.yMax) / $referenceScale), 3)
+  $refreshLowerMarginLogical = [Math]::Round((($mappedDesignBounds.yMax - $refreshActionRect.yMax) / $referenceScale), 3)
+  $pageShellLowerMarginLogical = [Math]::Round((($pageShellRect.yMax - $refreshActionRect.yMax) / $referenceScale), 3)
   if ($refreshLowerMarginLogical -lt 8 -or $refreshLowerMarginLogical -gt 40) {
     throw "Battle refresh lower margin is outside 8..40 logical points: $refreshLowerMarginLogical"
   }
+  if ($pageShellLowerMarginLogical -lt 12 -or $pageShellLowerMarginLogical -gt 16) {
+    throw "Battle PageShell closeout is outside 12..16 logical points: $pageShellLowerMarginLogical"
+  }
   return [ordered]@{
-    passed = $true
-    edgeToleranceCapturePixels = $edgeTolerance
-    alignedOwnerTrack = $true
-    leftEdgeDeltaCapturePixels = $leftDelta
-    rightEdgeDeltaCapturePixels = $rightDelta
-    heavyFrameBandRangeCapturePixels = [ordered]@{ minimum = 3; maximum = 5 }
-    standardFrameBandMaximumCapturePixels = 2
-    structuralFrameCount = 1
-    legacyEnclosingFrameDetected = $false
-    refreshLowerMarginLogical = $refreshLowerMarginLogical
-    header = $header
-    gameplayStage = $stage
-    contextTray = $context
-    nurseryTray = $nursery
+    passed = $true; edgeToleranceCapturePixels = $edgeTolerance; alignedOwnerTrack = $true
+    leftEdgeDeltaCapturePixels = $leftDelta; rightEdgeDeltaCapturePixels = $rightDelta
+    stageInsetLogical = [ordered]@{ left = $stageLeftInsetLogical; right = $stageRightInsetLogical }
+    stageSideSoilBandRangeCapturePixels = [ordered]@{
+      minimum = $minimumStageSideBandRequired; maximum = 8
+    }
+    stageTopSoilBandRangeCapturePixels = [ordered]@{ minimum = 1; maximum = 3 }
+    standardFrameBandMaximumCapturePixels = $maximumStandardBandAllowed
+    structuralFrameCount = 3
+    pageShellDetected = $true; legacyFlatFrameDetected = $false; stageHeightFraction = $stageHeightFraction
+    refreshLowerMarginLogical = $refreshLowerMarginLogical; pageShellLowerMarginLogical = $pageShellLowerMarginLogical
+    header = $header; pageShell = $pageShell; gameplayStage = $stage
+    phaseWaveRow = $phaseWaveRowRect; contextTray = $context; nurseryTray = $nursery
   }
 }
 
 function Test-UiTextInkPixel {
-  param([object]$Pixel, [ValidateSet('light-surface', 'dark-surface')][string]$Palette)
-  if ($Palette -eq 'dark-surface') {
-    return $Pixel.A -gt 200 -and $Pixel.R -ge 60 -and $Pixel.R -le 160 -and
-      $Pixel.G -ge 35 -and $Pixel.G -le 130 -and $Pixel.B -ge 15 -and
-      $Pixel.B -le 90 -and $Pixel.R -gt ($Pixel.G + 10) -and
-      $Pixel.G -gt ($Pixel.B + 5)
+  param([object]$Pixel, [ValidateSet('brown-ink', 'inverse-light')][string]$Palette)
+  if ($Palette -eq 'inverse-light') {
+    return $Pixel.A -gt 200 -and $Pixel.R -ge 225 -and
+      $Pixel.G -ge 220 -and $Pixel.B -ge 200 -and
+      ([Math]::Max($Pixel.R, [Math]::Max($Pixel.G, $Pixel.B)) -
+       [Math]::Min($Pixel.R, [Math]::Min($Pixel.G, $Pixel.B))) -le 45
   }
-  # Noto Sans antialiasing blends the brown text token into the cream surface.
-  # Keep this band above the darker panel outline so structural rails cannot
-  # masquerade as escaped glyph ink.
-  return $Pixel.A -gt 200 -and $Pixel.R -ge 145 -and $Pixel.R -le 225 -and
+  $coreBrown = $Pixel.A -gt 200 -and $Pixel.R -ge 60 -and $Pixel.R -le 160 -and
+    $Pixel.G -ge 35 -and $Pixel.G -le 130 -and $Pixel.B -ge 15 -and
+    $Pixel.B -le 90 -and $Pixel.R -gt ($Pixel.G + 10) -and
+    $Pixel.G -gt ($Pixel.B + 5)
+  # Brown display/readout antialiasing blends the text token into light surfaces.
+  # Keep the blended band above darker structural rails.
+  $blendedBrown = $Pixel.A -gt 200 -and $Pixel.R -ge 145 -and $Pixel.R -le 225 -and
     $Pixel.G -ge 115 -and $Pixel.G -le 190 -and $Pixel.B -ge 85 -and
     $Pixel.B -le 160 -and $Pixel.R -gt ($Pixel.G + 15) -and
     $Pixel.G -gt ($Pixel.B + 10)
+  return $coreBrown -or $blendedBrown
 }
 
 function Get-TextOwnerEvidence {
   param([string]$Path, [object]$Owner, [string]$Name,
     [int]$MinimumInsidePixels = 2,
-    [ValidateSet('light-surface', 'dark-surface')][string]$Palette = 'light-surface')
+    [ValidateSet('brown-ink', 'inverse-light')][string]$Palette = 'brown-ink')
   Add-Type -AssemblyName System.Drawing
   $bitmap = [Drawing.Bitmap]::FromFile($Path)
   try {
@@ -313,17 +358,18 @@ function Get-BattleTextContainmentEvidence {
   $owners = @(
     [ordered]@{ path = $ReadyPath; name = 'header-title'; rect = $headerTitleOwner; minimum = 8 },
     [ordered]@{ path = $ReadyPath; name = 'header-metric-row'; rect = $headerMetricRowOwner; minimum = 12 },
+    [ordered]@{ path = $ReadyPath; name = 'phase-status'; rect = $phaseStatusOwner; minimum = 4 },
     [ordered]@{ path = $ReadyPath; name = 'tool-title'; rect = $toolTitleOwner; minimum = 8 },
     [ordered]@{ path = $ReadyPath; name = 'nursery-title'; rect = $nurseryTitleOwner; minimum = 8 },
-    [ordered]@{ path = $ReadyPath; name = 'refresh-action'; rect = $refreshTextOwner; minimum = 12; palette = 'dark-surface' },
-    [ordered]@{ path = $DetailPath; name = 'detail-title'; rect = $detailTitleOwner; minimum = 8; palette = 'dark-surface' },
-    [ordered]@{ path = $DetailPath; name = 'detail-body'; rect = $detailBodyOwner; minimum = 2; palette = 'dark-surface' }
+    [ordered]@{ path = $ReadyPath; name = 'refresh-action'; rect = $refreshTextOwner; minimum = 12; palette = 'inverse-light' },
+    [ordered]@{ path = $DetailPath; name = 'detail-title'; rect = $detailTitleOwner; minimum = 8; palette = 'brown-ink' },
+    [ordered]@{ path = $DetailPath; name = 'detail-body'; rect = $detailBodyOwner; minimum = 2; palette = 'brown-ink' }
   )
   $measurements = @()
   foreach ($owner in $owners) {
     $measurements += Get-TextOwnerEvidence -Path $owner.path -Owner $owner.rect `
       -Name $owner.name -MinimumInsidePixels $owner.minimum `
-      -Palette $(if ($owner.palette) { $owner.palette } else { 'light-surface' })
+      -Palette $(if ($owner.palette) { $owner.palette } else { 'brown-ink' })
   }
   return [ordered]@{
     passed = $true
@@ -364,23 +410,43 @@ function Get-BattleOccupiedBalanceEvidence {
   $regions = @(
     (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $headerPanelRect -Name 'header'),
     (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $boardRegion -Name 'board'),
+    (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $phaseWaveRowRect -Name 'phase-wave-row'),
     (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $contextTrayRect -Name 'context-tray-tools'),
     (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $nurseryTrayRect -Name 'nursery-tray'),
     (Get-OccupiedRegionEvidence -Path $ReadyPath -Region $refreshActionRect -Name 'refresh-action'),
     (Get-OccupiedRegionEvidence -Path $DetailPath -Region $detailRegion -Name 'contextual-detail')
   )
+  $chromeAnatomy = @()
+  $anatomyCatalog = @(
+    [ordered]@{ rects = $headerMetricRects; prefix = 'metric-capsule' },
+    [ordered]@{ rects = $headerCompactControlRects; prefix = 'yellow-header-control' },
+    [ordered]@{ rects = $toolRecipeRects; prefix = 'recipe-card' },
+    [ordered]@{ rects = $nurserySlotRects; prefix = 'dashed-nursery-slot' })
+  foreach ($catalog in $anatomyCatalog) {
+    for ($index = 0; $index -lt $catalog.rects.Count; $index++) {
+      $chromeAnatomy += Get-OccupiedRegionEvidence -Path $ReadyPath -Region $catalog.rects[$index] -Name "$($catalog.prefix)-$index"
+    }
+  }
+  if ($headerMetricRects.Count -ne 3 -or
+      $headerCompactControlRects.Count -ne 2 -or
+      $toolRecipeRects.Count -ne 4 -or
+      $nurserySlotRects.Count -ne 5) {
+    throw 'Battle chrome anatomy catalog must remain 3 metrics / 2 controls / 4 recipes / 5 nursery slots.'
+  }
   $occupiedSpan = ($refreshActionRect.yMax - $headerPanelRect.yMin) /
     [double]($mappedDesignBounds.yMax - $mappedDesignBounds.yMin)
-  if ($occupiedSpan -lt .94) {
-    throw "Battle occupied vertical span is below 94%: $occupiedSpan"
+  if ($occupiedSpan -lt .90) {
+    throw "Battle occupied vertical span is below 90%: $occupiedSpan"
   }
   return [ordered]@{
     passed = $true
-    requiredVerticalSpanFraction = .94
+    requiredVerticalSpanFraction = .90
     occupiedVerticalSpanFraction = $occupiedSpan
     stateCoverage = @('ready', 'plant-detail')
     contextModes = [ordered]@{ ready = 'tools'; plantDetail = 'selected-detail' }
     regions = $regions
+    chromeAnatomy = [ordered]@{ metricCapsules = 3; yellowHeaderControls = 2;
+      recipeCards = 4; lineFreeNurserySlots = 5; evidence = $chromeAnatomy }
   }
 }
 
@@ -450,6 +516,205 @@ function Get-ImageDifferenceMetrics {
       edgePixels = $edgePixels
       changedEdgePixels = $changedEdgePixels
       changedBounds = $bounds
+    }
+  }
+  finally {
+    $reference.Dispose()
+    $candidate.Dispose()
+  }
+}
+
+function Get-BattleStageBackdropFitEvidence {
+  param(
+    [string]$Path,
+    [object]$StageRect
+  )
+  Add-Type -AssemblyName System.Drawing
+  $bitmap = [Drawing.Bitmap]::FromFile($Path)
+  try {
+    $stageXMin = [Math]::Max(0, [int]$StageRect.xMin)
+    $stageYMin = [Math]::Max(0, [int]$StageRect.yMin)
+    $stageXMax = [Math]::Min($bitmap.Width, [int]$StageRect.xMax)
+    $stageYMax = [Math]::Min($bitmap.Height, [int]$StageRect.yMax)
+    $railDepth = [Math]::Max(1, [int][Math]::Ceiling(8 * $referenceScale))
+    $gridGutterDepth = [Math]::Max($railDepth + 1,
+      [int][Math]::Ceiling(14 * $referenceScale))
+    $sampleXMin = $stageXMin + [int][Math]::Floor(($stageXMax - $stageXMin) * .25)
+    $sampleXMax = $stageXMin + [int][Math]::Ceiling(($stageXMax - $stageXMin) * .75)
+    $measureBand = {
+      param([int]$yMin, [int]$yMax)
+      $terrainPixels = 0
+      $totalPixels = 0
+      for ($y = $yMin; $y -lt $yMax; $y++) {
+        for ($x = $sampleXMin; $x -lt $sampleXMax; $x++) {
+          $pixel = $bitmap.GetPixel($x, $y)
+          $totalPixels++
+          $warmTerrain = $pixel.A -gt 200 -and
+            $pixel.R -ge 55 -and $pixel.R -le 185 -and
+            $pixel.G -ge 25 -and $pixel.G -le 145 -and
+            $pixel.B -ge 10 -and $pixel.B -le 110 -and
+            $pixel.R -gt ($pixel.G + 8) -and
+            $pixel.G -gt ($pixel.B + 3)
+          if ($warmTerrain) { $terrainPixels++ }
+        }
+      }
+      $minimumPixels = [Math]::Max(1, [int][Math]::Floor($totalPixels * .35))
+      return [ordered]@{
+        yMin = $yMin
+        yMax = $yMax
+        totalPixels = $totalPixels
+        terrainPixels = $terrainPixels
+        minimumTerrainPixels = $minimumPixels
+        passed = $terrainPixels -ge $minimumPixels
+      }
+    }
+    $top = & $measureBand ($stageYMin + $railDepth) `
+      ($stageYMin + $gridGutterDepth)
+    $bottom = & $measureBand ($stageYMax - $gridGutterDepth) `
+      ($stageYMax - $railDepth)
+    return [ordered]@{
+      passed = $top.passed -and $bottom.passed
+      policy = 'base terrain fills both vertical aspect-ratio gutters up to the 8pt stage-mask opening'
+      sampleXMin = $sampleXMin
+      sampleXMax = $sampleXMax
+      railDepthCapturePixels = $railDepth
+      gridGutterDepthCapturePixels = $gridGutterDepth
+      top = $top
+      bottom = $bottom
+    }
+  }
+  finally {
+    $bitmap.Dispose()
+  }
+}
+
+function Get-BattleStageContainmentEvidence {
+  param(
+    [string]$ReferencePath,
+    [string]$CandidatePath,
+    [object]$StageRect,
+    [object]$ConnectorSource,
+    [object]$ConnectorTarget,
+    [int]$ChannelThreshold = 10
+  )
+  Add-Type -AssemblyName System.Drawing
+  $reference = [Drawing.Bitmap]::FromFile($ReferencePath)
+  $candidate = [Drawing.Bitmap]::FromFile($CandidatePath)
+  try {
+    if ($reference.Width -ne $candidate.Width -or
+        $reference.Height -ne $candidate.Height) {
+      throw "Battle stage containment dimensions do not match: $ReferencePath / $CandidatePath"
+    }
+    $stageXMin = [Math]::Max(0, [int]$StageRect.xMin)
+    $stageYMin = [Math]::Max(0, [int]$StageRect.yMin)
+    $stageXMax = [Math]::Min($reference.Width, [int]$StageRect.xMax)
+    $stageYMax = [Math]::Min($reference.Height, [int]$StageRect.yMax)
+    $railDepth = [Math]::Max(1, [int][Math]::Ceiling(8 * $referenceScale))
+    $openingBandDepth = [Math]::Max(1, [int][Math]::Ceiling(2 * $referenceScale))
+    $guardDepth = [Math]::Max(4, [int][Math]::Ceiling(16 * $referenceScale))
+    $connectorRadius = [Math]::Max(3, [int][Math]::Ceiling(6 * $referenceScale))
+    $scanXMin = [Math]::Max(0, $stageXMin - $guardDepth)
+    $scanYMin = [Math]::Max(0, $stageYMin - $guardDepth)
+    $scanXMax = [Math]::Min($reference.Width, $stageXMax + $guardDepth)
+    $scanYMax = [Math]::Min($reference.Height, $stageYMax + $guardDepth)
+    [double]$segmentX = $ConnectorTarget.x - $ConnectorSource.x
+    [double]$segmentY = $ConnectorTarget.y - $ConnectorSource.y
+    [double]$segmentLengthSquared = $segmentX * $segmentX + $segmentY * $segmentY
+    [double]$connectorRadiusSquared = $connectorRadius * $connectorRadius
+    $railChangedPixels = 0
+    $approvedConnectorRailPixels = 0
+    $openingContactChangedPixels = 0
+    $stageInteriorChangedPixels = 0
+    $outsideStageChangedPixels = 0
+    $approvedConnectorPixels = 0
+    $unexpectedOutsidePixels = 0
+    for ($y = $scanYMin; $y -lt $scanYMax; $y++) {
+      for ($x = $scanXMin; $x -lt $scanXMax; $x++) {
+        $left = $reference.GetPixel($x, $y)
+        $right = $candidate.GetPixel($x, $y)
+        $delta = [Math]::Max([Math]::Abs([int]$left.R - [int]$right.R),
+          [Math]::Max([Math]::Abs([int]$left.G - [int]$right.G),
+            [Math]::Abs([int]$left.B - [int]$right.B)))
+        if ($delta -le $ChannelThreshold) { continue }
+        [double]$pointX = $x + .5
+        [double]$pointY = $y + .5
+        [double]$segmentT = if ($segmentLengthSquared -le .0001) { 0.0 } else {
+          (($pointX - $ConnectorSource.x) * $segmentX +
+            ($pointY - $ConnectorSource.y) * $segmentY) / $segmentLengthSquared
+        }
+        $segmentT = [Math]::Max(0.0, [Math]::Min(1.0, $segmentT))
+        [double]$nearestX = $ConnectorSource.x + $segmentT * $segmentX
+        [double]$nearestY = $ConnectorSource.y + $segmentT * $segmentY
+        [double]$distanceX = $pointX - $nearestX
+        [double]$distanceY = $pointY - $nearestY
+        $insideConnectorCorridor = $distanceX * $distanceX + $distanceY * $distanceY `
+          -le $connectorRadiusSquared
+        $insideStage = $x -ge $stageXMin -and $x -lt $stageXMax -and
+          $y -ge $stageYMin -and $y -lt $stageYMax
+        if ($insideStage) {
+          $edgeDepth = [Math]::Min($x - $stageXMin,
+            [Math]::Min(($stageXMax - 1) - $x,
+              [Math]::Min($y - $stageYMin, ($stageYMax - 1) - $y)))
+          $insideRail = $x -lt $stageXMin + $railDepth -or
+            $x -ge $stageXMax - $railDepth -or
+            $y -lt $stageYMin + $railDepth -or
+            $y -ge $stageYMax - $railDepth
+          if ($insideRail -and $insideConnectorCorridor) {
+            $approvedConnectorRailPixels++
+          }
+          elseif ($insideRail) { $railChangedPixels++ }
+          else {
+            $stageInteriorChangedPixels++
+            if (-not $insideConnectorCorridor -and
+                $edgeDepth -lt $railDepth + $openingBandDepth) {
+              $openingContactChangedPixels++
+            }
+          }
+          continue
+        }
+
+        $outsideStageChangedPixels++
+        if ($insideConnectorCorridor) {
+          $approvedConnectorPixels++
+        }
+        else {
+          $unexpectedOutsidePixels++
+        }
+      }
+    }
+    $noiseAllowance = [Math]::Max(1,
+      [int][Math]::Ceiling(4 * $referenceScale * $referenceScale))
+    $minimumInteriorChange = [Math]::Max(8,
+      [int][Math]::Floor(24 * $referenceScale * $referenceScale))
+    $minimumConnectorChange = [Math]::Max(2,
+      [int][Math]::Floor(8 * $referenceScale * $referenceScale))
+    $minimumOpeningContact = 1
+    $passed = $railChangedPixels -le $noiseAllowance -and
+      $unexpectedOutsidePixels -le $noiseAllowance -and
+      $stageInteriorChangedPixels -ge $minimumInteriorChange -and
+      $openingContactChangedPixels -ge $minimumOpeningContact -and
+      $approvedConnectorPixels -ge $minimumConnectorChange
+    return [ordered]@{
+      passed = $passed
+      policy = 'final pixels protect the 8pt visible stage rail, touch its opening band, and permit only the cross-region connector outside the stage'
+      channelThreshold = $ChannelThreshold
+      stage = [ordered]@{ xMin = $stageXMin; yMin = $stageYMin; xMax = $stageXMax; yMax = $stageYMax }
+      scan = [ordered]@{ xMin = $scanXMin; yMin = $scanYMin; xMax = $scanXMax; yMax = $scanYMax }
+      railDepthCapturePixels = $railDepth
+      openingBandDepthCapturePixels = $openingBandDepth
+      guardDepthCapturePixels = $guardDepth
+      connectorRadiusCapturePixels = $connectorRadius
+      railChangedPixels = $railChangedPixels
+      approvedConnectorRailPixels = $approvedConnectorRailPixels
+      openingContactChangedPixels = $openingContactChangedPixels
+      stageInteriorChangedPixels = $stageInteriorChangedPixels
+      outsideStageChangedPixels = $outsideStageChangedPixels
+      approvedConnectorPixels = $approvedConnectorPixels
+      unexpectedOutsidePixels = $unexpectedOutsidePixels
+      noiseAllowancePixels = $noiseAllowance
+      minimumInteriorChangePixels = $minimumInteriorChange
+      minimumConnectorChangePixels = $minimumConnectorChange
+      minimumOpeningContactPixels = $minimumOpeningContact
     }
   }
   finally {
@@ -550,9 +815,9 @@ function Get-ColorMaskEvidence {
       $pixel = $Bitmap.GetPixel($x, $y)
       $matches = switch ($Mask) {
         'title-ink' {
-          [Math]::Abs([int]$pixel.R - 139) -le 18 -and
-            [Math]::Abs([int]$pixel.G - 94) -le 18 -and
-            [Math]::Abs([int]$pixel.B - 60) -le 18
+          [Math]::Abs([int]$pixel.R - 86) -le 18 -and
+            [Math]::Abs([int]$pixel.G - 52) -le 18 -and
+            [Math]::Abs([int]$pixel.B - 31) -le 18
           break
         }
         'hint-icon' {
@@ -580,7 +845,7 @@ function Get-ColorMaskEvidence {
             $pixel.R -gt ($pixel.B + 35)
           $greenFoliage = $pixel.G -gt 70 -and
             $pixel.G -gt ($pixel.B + 25) -and
-            $pixel.G -gt ($pixel.R - 30)
+            $pixel.G -gt $pixel.R
           $pixel.A -gt 200 -and ($warmRibbon -or $greenFoliage)
           break
         }
@@ -614,220 +879,3 @@ function Get-ColorMaskEvidence {
   }
 }
 
-function Get-ImagePixelSample {
-  param([string]$Path, [int]$X, [int]$Y)
-  Add-Type -AssemblyName System.Drawing
-  $bitmap = [Drawing.Bitmap]::FromFile($Path)
-  try {
-    $pixel = $bitmap.GetPixel(
-      [Math]::Min([Math]::Max(0, $X), $bitmap.Width - 1),
-      [Math]::Min([Math]::Max(0, $Y), $bitmap.Height - 1))
-    return [ordered]@{ r = [int]$pixel.R; g = [int]$pixel.G; b = [int]$pixel.B; a = [int]$pixel.A }
-  }
-  finally { $bitmap.Dispose() }
-}
-
-function Get-ShellSurfaceSamples {
-  param([string]$Path)
-  $safeBaseY = [Math]::Floor($Height - $SafeBottom - 72 * $referenceScale)
-  $samples = [ordered]@{
-    safeBase = Get-ImagePixelSample -Path $Path -X ([Math]::Floor($Width / 2)) -Y $safeBaseY
-  }
-  if ($SafeTop -gt 0) {
-    $samples.edge = Get-ImagePixelSample -Path $Path `
-      -X ([Math]::Floor($Width / 2)) -Y ([Math]::Floor($SafeTop / 2))
-  }
-  elseif ($SafeBottom -gt 0) {
-    $samples.edge = Get-ImagePixelSample -Path $Path `
-      -X ([Math]::Floor($Width / 2)) -Y ($Height - [Math]::Ceiling($SafeBottom / 2))
-  }
-  return $samples
-}
-
-function Test-ShellSurfaceSamples {
-  param([object]$Samples)
-  foreach ($name in @('safeBase', 'edge')) {
-    if (-not $Samples.Contains($name)) { continue }
-    $sample = $Samples[$name]
-    if ([int]$sample.a -lt 250) { return $false }
-    $luma = Get-SrgbRelativeLuminance -R ([int]$sample.r) -G ([int]$sample.g) -B ([int]$sample.b)
-    if ($luma -lt 0.08) { return $false }
-  }
-  return $true
-}
-
-function Get-SrgbRelativeLuminance {
-  param([int]$R, [int]$G, [int]$B)
-  $linear = foreach ($channel in @($R, $G, $B)) {
-    $value = $channel / 255.0
-    if ($value -le 0.04045) { $value / 12.92 }
-    else { [Math]::Pow(($value + 0.055) / 1.055, 2.4) }
-  }
-  return 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2]
-}
-
-function Get-ActionContentContrast {
-  param(
-    [string]$Path,
-    [object]$Rect,
-    [double]$MinimumContrast = 4.5,
-    [double]$ContentLeft = 0.24,
-    [double]$ContentRight = 0.76,
-    [double]$ContentTop = 0.18,
-    [double]$ContentBottom = 0.72,
-    [ValidateSet('Auto', 'LightOnDark', 'DarkOnLight')]
-    [string]$Polarity = 'Auto'
-  )
-  Add-Type -AssemblyName System.Drawing
-  $bitmap = [Drawing.Bitmap]::FromFile($Path)
-  try {
-    # Inspect only the content-bearing interior. Callers select a label-only or
-    # icon-plus-label band while excluding borders and shallow surface highlights.
-    $width = $Rect.xMax - $Rect.xMin
-    $height = $Rect.yMax - $Rect.yMin
-    $xMin = [Math]::Max(0, [Math]::Floor($Rect.xMin + $width * $ContentLeft))
-    $xMax = [Math]::Min($bitmap.Width, [Math]::Ceiling($Rect.xMin + $width * $ContentRight))
-    $yMin = [Math]::Max(0, [Math]::Floor($Rect.yMin + $height * $ContentTop))
-    $yMax = [Math]::Min($bitmap.Height, [Math]::Ceiling($Rect.yMin + $height * $ContentBottom))
-    $clusters = @{}
-    for ($y = $yMin; $y -lt $yMax; $y++) {
-      for ($x = $xMin; $x -lt $xMax; $x++) {
-        $pixel = $bitmap.GetPixel($x, $y)
-        if ($pixel.A -lt 250) { continue }
-        $key = "$([Math]::Floor($pixel.R / 16.0)),$([Math]::Floor($pixel.G / 16.0)),$([Math]::Floor($pixel.B / 16.0))"
-        if (-not $clusters.ContainsKey($key)) {
-          $clusters[$key] = [ordered]@{ count = 0; r = 0L; g = 0L; b = 0L }
-        }
-        $cluster = $clusters[$key]
-        $cluster.count++
-        $cluster.r += $pixel.R
-        $cluster.g += $pixel.G
-        $cluster.b += $pixel.B
-      }
-    }
-    if ($clusters.Count -lt 2) { throw "Action contrast sample has insufficient colors: $Path" }
-
-    $colors = foreach ($entry in $clusters.GetEnumerator()) {
-      $r = [int][Math]::Round($entry.Value.r / [double]$entry.Value.count)
-      $g = [int][Math]::Round($entry.Value.g / [double]$entry.Value.count)
-      $b = [int][Math]::Round($entry.Value.b / [double]$entry.Value.count)
-      [pscustomobject]@{
-        r = $r; g = $g; b = $b; count = [int]$entry.Value.count
-        luminance = Get-SrgbRelativeLuminance -R $r -G $g -B $b
-      }
-    }
-    $background = $colors | Sort-Object count -Descending | Select-Object -First 1
-    $minimumSolidGlyphPixels = [Math]::Max(6,
-      [Math]::Floor(($xMax - $xMin) * ($yMax - $yMin) * 0.0008))
-    $foreground = $colors |
-      Where-Object {
-        if ($_.count -lt $minimumSolidGlyphPixels) { return $false }
-        if ($Polarity -eq 'LightOnDark') {
-          return $_.luminance -gt $background.luminance
-        }
-        if ($Polarity -eq 'DarkOnLight') {
-          return $_.luminance -lt $background.luminance
-        }
-        return [Math]::Abs($_.luminance - $background.luminance) -gt .02
-      } |
-      ForEach-Object {
-        $_ | Add-Member -NotePropertyName contrast -NotePropertyValue `
-          (([Math]::Max($background.luminance, $_.luminance) + 0.05) / `
-          ([Math]::Min($background.luminance, $_.luminance) + 0.05)) -PassThru
-      } |
-      Sort-Object `
-        @{ Expression = 'contrast'; Descending = $true },
-        @{ Expression = 'count'; Descending = $true } |
-      Select-Object -First 1
-    if ($null -eq $foreground) {
-      throw "Action contrast sample has no solid content color for polarity ${Polarity}: $Path"
-    }
-    $ratio = ([Math]::Max($background.luminance, $foreground.luminance) + 0.05) /
-      ([Math]::Min($background.luminance, $foreground.luminance) + 0.05)
-    return [ordered]@{
-      background = [ordered]@{
-        r = $background.r; g = $background.g; b = $background.b; pixels = $background.count
-      }
-      foreground = [ordered]@{
-        r = $foreground.r; g = $foreground.g; b = $foreground.b; pixels = $foreground.count
-      }
-      ratio = $ratio
-      minimum = $MinimumContrast
-      polarity = $Polarity
-      passed = $ratio -ge $MinimumContrast
-      sampleRect = [ordered]@{ xMin = $xMin; yMin = $yMin; xMax = $xMax; yMax = $yMax }
-    }
-  }
-  finally { $bitmap.Dispose() }
-}
-
-function Save-StableShellScreenshot {
-  param([string]$Name)
-  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
-  $attempts = 0
-  $consecutiveStableFrames = 0
-  $previousStableLuma = $null
-  do {
-    $attempts++
-    $path = Save-Screenshot -Name $Name
-    $metrics = Get-ImageMetrics -Path $path
-    $surfaceSamples = Get-ShellSurfaceSamples -Path $path
-    $actionContrast = Get-ActionContentContrast `
-      -Path $path -Rect $lobbyStartRect -Polarity LightOnDark
-    $metrics['surfaceSamples'] = $surfaceSamples
-    $metrics['actionContrast'] = $actionContrast
-    $passesFrameGuards = $metrics.width -eq $Width -and $metrics.height -eq $Height -and
-        (Test-StableFrameMetrics -Metrics $metrics) -and
-        (Test-ShellSurfaceSamples -Samples $surfaceSamples) -and
-        $actionContrast.passed
-    if ($passesFrameGuards) {
-      if ($null -ne $previousStableLuma -and
-          [Math]::Abs([double]$metrics.averageLuma - [double]$previousStableLuma) -le 0.006) {
-        $consecutiveStableFrames++
-      }
-      else {
-        $consecutiveStableFrames = 1
-      }
-      $previousStableLuma = [double]$metrics.averageLuma
-      if ($consecutiveStableFrames -ge 3) {
-        $metrics['consecutiveStableFrames'] = $consecutiveStableFrames
-        return [pscustomobject]@{ Path = $path; Metrics = $metrics; Attempts = $attempts }
-      }
-    }
-    else {
-      $consecutiveStableFrames = 0
-      $previousStableLuma = $null
-    }
-    Start-Sleep -Milliseconds 250
-  } while ((Get-Date) -lt $deadline)
-  throw (
-    "Sunny Orchard shell surface/contrast did not stabilize for '$Name': " +
-    "$($metrics | ConvertTo-Json -Depth 6 -Compress)")
-}
-
-function Save-StableScreenshot {
-  param([string]$Name, [bool]$RequireHud = $true)
-  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
-  $attempts = 0
-  do {
-    $attempts++
-    $path = Save-Screenshot -Name $Name
-    $metrics = Get-ImageMetrics -Path $path
-    $dimensionsOk = $metrics.width -eq $Width -and $metrics.height -eq $Height
-    $frameOk = Test-StableFrameMetrics -Metrics $metrics
-    $hudOk = -not $RequireHud -or (
-      $metrics.headerDarkPixels -ge $hudDarkPixelThreshold -and
-      $metrics.headerLightPixels -ge $hudLightPixelThreshold)
-    if ($dimensionsOk -and $frameOk -and $hudOk) {
-      return [pscustomobject]@{ Path = $path; Metrics = $metrics }
-    }
-    Write-Warning (
-      "Retrying unstable screenshot '$Name' attempt=$attempts " +
-      "dimensions=$($metrics.width)x$($metrics.height) " +
-      "invalid=$($metrics.invalidFraction) black=$($metrics.blackFraction) " +
-      "nearBlack=$($metrics.nearBlackFraction) " +
-      "maxNearBlackRun=$($metrics.maxNearBlackHorizontalRunFraction)")
-    Start-Sleep -Milliseconds 500
-  } while ((Get-Date) -lt $deadline)
-  throw "Stable screenshot timed out: $Name metrics=$($metrics | ConvertTo-Json -Compress)"
-}

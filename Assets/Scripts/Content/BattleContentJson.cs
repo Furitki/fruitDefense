@@ -45,7 +45,8 @@ namespace FruitDefense.Content
             Array.Sort(catalog.projectiles, CompareProjectile);
             Array.Sort(catalog.statuses, CompareStatus);
             Array.Sort(catalog.waves, CompareWave);
-            Array.Sort(catalog.starTiers, CompareStarTier);
+            Array.Sort(catalog.upgradeProfiles, CompareUpgradeProfile);
+            Array.Sort(catalog.nurseryProfiles, CompareNurseryProfile);
 
             foreach (var plant in catalog.plants)
             {
@@ -92,6 +93,24 @@ namespace FruitDefense.Content
             foreach (var wave in catalog.waves)
                 if (wave != null && wave.enemyIds == null) wave.enemyIds = Array.Empty<string>();
 
+            foreach (var profile in catalog.upgradeProfiles)
+            {
+                if (profile == null) continue;
+                profile.tiers = profile.tiers ?? Array.Empty<UpgradeTierDefinitionDto>();
+                Array.Sort(profile.tiers, (left, right) => NullSafeInt(
+                    left == null ? int.MaxValue : left.tier,
+                    right == null ? int.MaxValue : right.tier));
+            }
+
+            foreach (var profile in catalog.nurseryProfiles)
+            {
+                if (profile == null) continue;
+                profile.entries = profile.entries ?? Array.Empty<NurseryEntryDefinitionDto>();
+                Array.Sort(profile.entries, (left, right) => CompareIds(
+                    left == null ? null : left.plantId,
+                    right == null ? null : right.plantId));
+            }
+
             if (catalog.battleRules != null)
             {
                 var rewards = catalog.battleRules.milestoneRewards ?? Array.Empty<MilestoneRewardDefinitionDto>();
@@ -113,7 +132,10 @@ namespace FruitDefense.Content
             if (catalog.projectiles == null) catalog.projectiles = Array.Empty<ProjectileDefinitionDto>();
             if (catalog.statuses == null) catalog.statuses = Array.Empty<StatusDefinitionDto>();
             if (catalog.waves == null) catalog.waves = Array.Empty<WaveDefinitionDto>();
-            if (catalog.starTiers == null) catalog.starTiers = Array.Empty<StarTierDefinitionDto>();
+            if (catalog.upgradeProfiles == null)
+                catalog.upgradeProfiles = Array.Empty<UpgradeProfileDefinitionDto>();
+            if (catalog.nurseryProfiles == null)
+                catalog.nurseryProfiles = Array.Empty<NurseryProfileDefinitionDto>();
             if (catalog.battleRules == null) catalog.battleRules = new BattleRulesDto();
             if (catalog.battleRules.milestoneRewards == null)
                 catalog.battleRules.milestoneRewards = Array.Empty<MilestoneRewardDefinitionDto>();
@@ -154,6 +176,12 @@ namespace FruitDefense.Content
                     if (delivery != null && delivery.payload == null)
                         delivery.payload = Array.Empty<AbilityPayloadEffectDefinitionDto>();
             }
+            foreach (var profile in catalog.upgradeProfiles)
+                if (profile != null && profile.tiers == null)
+                    profile.tiers = Array.Empty<UpgradeTierDefinitionDto>();
+            foreach (var profile in catalog.nurseryProfiles)
+                if (profile != null && profile.entries == null)
+                    profile.entries = Array.Empty<NurseryEntryDefinitionDto>();
         }
 
         private static string[] SortedStrings(string[] source)
@@ -170,7 +198,12 @@ namespace FruitDefense.Content
         private static int CompareProjectile(ProjectileDefinitionDto left, ProjectileDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareStatus(StatusDefinitionDto left, StatusDefinitionDto right) { return CompareIds(left == null ? null : left.id, right == null ? null : right.id); }
         private static int CompareWave(WaveDefinitionDto left, WaveDefinitionDto right) { return NullSafeInt(left == null ? int.MaxValue : left.index, right == null ? int.MaxValue : right.index); }
-        private static int CompareStarTier(StarTierDefinitionDto left, StarTierDefinitionDto right) { return NullSafeInt(left == null ? int.MaxValue : left.star, right == null ? int.MaxValue : right.star); }
+        private static int CompareUpgradeProfile(UpgradeProfileDefinitionDto left,
+            UpgradeProfileDefinitionDto right) { return CompareIds(left == null ? null : left.id,
+            right == null ? null : right.id); }
+        private static int CompareNurseryProfile(NurseryProfileDefinitionDto left,
+            NurseryProfileDefinitionDto right) { return CompareIds(left == null ? null : left.id,
+            right == null ? null : right.id); }
         private static int CompareIds(string left, string right) { return StringComparer.Ordinal.Compare(left ?? string.Empty, right ?? string.Empty); }
         private static int NullSafeInt(int left, int right) { return left.CompareTo(right); }
         private static string NormalizeLineEndings(string value) { return value.Replace("\r\n", "\n").Replace('\r', '\n'); }

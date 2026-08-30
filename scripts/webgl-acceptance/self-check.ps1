@@ -31,6 +31,19 @@ function Invoke-AcceptanceSelfCheck {
       'Settlement outline self-check requires and must accept an exact 2px synthetic outline: ' +
       ($syntheticOutlineEvidence.outline | ConvertTo-Json -Depth 8 -Compress))
   }
+  $thickOutlineRejected = $false
+  try {
+    Get-SyntheticSettlementOutcomeOutlineEvidence -ThickOutline | Out-Null
+  }
+  catch {
+    if ($_.Exception.Message -notmatch 'anti-alias fringe|thickness') {
+      throw "Synthetic 3px outline failed for the wrong reason: $($_.Exception.Message)"
+    }
+    $thickOutlineRejected = $true
+  }
+  if (-not $thickOutlineRejected) {
+    throw 'Settlement outline guard accepted a synthetic 3px outline.'
+  }
   $rejectedThinOutlineSides = @()
   foreach ($thinSide in @('left', 'top', 'right', 'bottom')) {
     $rejected = $false
@@ -228,17 +241,16 @@ function Invoke-AcceptanceSelfCheck {
     mappedDesignBounds = $mappedDesignBounds
     referenceControls = $referenceControls
     mappedControls = $controls
-    sampledRegions = [ordered]@{ header = $headerSampleRegion; formerAction = $formerActionRegion }
+    sampledRegions = [ordered]@{ header = $headerSampleRegion }
     thresholds = [ordered]@{
       hudDarkPixels = $hudDarkPixelThreshold
       hudLightPixels = $hudLightPixelThreshold
-      formerActionColorPixels = $formerActionPixelThreshold
-      formerActionColorSpanPixels = $formerActionSpanThreshold
       framePixels = $framePixelThresholds
     }
     blackFrameGuard = 'pass'
     settlementOutlineGuard = [ordered]@{
       exactTwoPixelOutline = 'pass'
+      rejectedThreePixelOutline = $thickOutlineRejected
       rejectedOnePixelSides = $rejectedThinOutlineSides
       rejectedLocalResidualSides = $rejectedResidualOutlineSides
       rejectedLocallyGappedSides = $rejectedGappedOutlineSides

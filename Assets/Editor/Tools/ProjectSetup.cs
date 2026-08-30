@@ -28,8 +28,10 @@ namespace FruitDefense.Editor
             "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset";
         internal const string ReleaseRuntimeUiArtSetPath =
             "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset";
-        internal const string PackagedRuntimeUiFontPath =
-            "Assets/Resources/Fonts/NotoSansSC-UI.ttf";
+        internal const string ReadingRuntimeUiFontPath =
+            "Assets/Resources/Fonts/NotoSansSC-Reading-400.ttf";
+        internal const string DisplayRuntimeUiFontPath =
+            "Assets/Resources/Fonts/FruitDefense-OrchardDisplay-400.ttf";
         [MenuItem("Fruit Defense/Configure Project")]
         public static void Configure()
         {
@@ -120,20 +122,30 @@ namespace FruitDefense.Editor
             if (!validation.IsValid)
                 throw new System.InvalidOperationException(
                     "Release runtime UI theme is invalid: " + validation.Issues[0]);
-            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "2")
+            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "9")
                 throw new System.InvalidOperationException(
-                    "Release runtime UI theme identity must be ui.sunny-orchard@2.");
-            if (!ReferenceEquals(runtimeUiTheme.PackagedChineseFont,
-                    AssetDatabase.LoadAssetAtPath<Font>(PackagedRuntimeUiFontPath)))
-                throw new System.InvalidOperationException(
-                    "Release runtime UI theme must use the packaged NotoSansSC-UI font.");
+                    "Release runtime UI theme identity must be ui.sunny-orchard@9.");
+            foreach (RuntimeUiTypographyRole role in System.Enum.GetValues(
+                         typeof(RuntimeUiTypographyRole)))
+            {
+                var expectedPath = UsesDisplayRuntimeUiFont(role)
+                    ? DisplayRuntimeUiFontPath
+                    : ReadingRuntimeUiFontPath;
+                if (AssetDatabase.GetAssetPath(runtimeUiTheme.Typography.For(role).Font)
+                    != expectedPath)
+                {
+                    throw new System.InvalidOperationException(
+                        "Release runtime UI typography role " + role
+                        + " must use its packaged static font: " + expectedPath);
+                }
+            }
             if (runtimeUiTheme.ActiveArtSet == null
                 || runtimeUiTheme.ActiveArtSet.SetId != "sunny-orchard-painted"
-                || runtimeUiTheme.ActiveArtSet.Revision != "1"
+                || runtimeUiTheme.ActiveArtSet.Revision != "9"
                 || AssetDatabase.GetAssetPath(runtimeUiTheme.ActiveArtSet)
                     != ReleaseRuntimeUiArtSetPath)
                 throw new System.InvalidOperationException(
-                    "Release runtime UI theme must activate sunny-orchard-painted@1.");
+                    "Release runtime UI theme must activate sunny-orchard-painted@9.");
             return runtimeUiTheme;
         }
 
@@ -151,12 +163,14 @@ namespace FruitDefense.Editor
                 AssetDatabase.CreateAsset(runtimeUiTheme, ReleaseRuntimeUiThemePath);
             }
 
-            var packagedFont = AssetDatabase.LoadAssetAtPath<Font>(PackagedRuntimeUiFontPath);
+            var readingFont = AssetDatabase.LoadAssetAtPath<Font>(ReadingRuntimeUiFontPath);
+            var displayFont = AssetDatabase.LoadAssetAtPath<Font>(DisplayRuntimeUiFontPath);
             var artSet = AssetDatabase.LoadAssetAtPath<RuntimeUiArtSet>(
                 ReleaseRuntimeUiArtSetPath);
-            if (packagedFont == null)
+            if (readingFont == null || displayFont == null)
                 throw new System.InvalidOperationException(
-                    "Packaged runtime UI font is missing: " + PackagedRuntimeUiFontPath);
+                    "Packaged runtime UI role fonts are missing: "
+                    + ReadingRuntimeUiFontPath + ", " + DisplayRuntimeUiFontPath);
             if (artSet == null)
                 throw new System.InvalidOperationException(
                     "Release runtime UI art set is missing: "
@@ -164,15 +178,87 @@ namespace FruitDefense.Editor
 
             var serializedTheme = new SerializedObject(runtimeUiTheme);
             serializedTheme.FindProperty("themeId").stringValue = "ui.sunny-orchard";
-            serializedTheme.FindProperty("revision").stringValue = "2";
-            serializedTheme.FindProperty("packagedChineseFont").objectReferenceValue = packagedFont;
+            serializedTheme.FindProperty("revision").stringValue = "9";
             serializedTheme.FindProperty("activeArtSet").objectReferenceValue = artSet;
-            serializedTheme.FindProperty("colors").FindPropertyRelative("primaryAction")
-                .colorValue = new Color32(85, 154, 57, 255);
+            var typography = serializedTheme.FindProperty("typography");
+            SetTypographyFont(typography, "display", displayFont);
+            SetTypographyFont(typography, "screenTitle", displayFont);
+            SetTypographyFont(typography, "sectionTitle", displayFont);
+            SetTypographyFont(typography, "body", readingFont);
+            SetTypographyFont(typography, "controlLabel", displayFont);
+            SetTypographyFont(typography, "metric", readingFont);
+            SetTypographyFont(typography, "supplemental", readingFont);
+
+            var colors = serializedTheme.FindProperty("colors");
+            SetThemeColor(colors, "edgeBackground", new Color32(115, 201, 244, 255));
+            SetThemeColor(colors, "baseSurface", new Color32(255, 249, 238, 255));
+            SetThemeColor(colors, "raisedSurface", new Color32(255, 241, 210, 255));
+            SetThemeColor(colors, "selectionAccent", new Color32(255, 197, 66, 255));
+            SetThemeColor(colors, "success", new Color32(84, 169, 40, 255));
+            SetThemeColor(colors, "warning", new Color32(230, 154, 25, 255));
+            SetThemeColor(colors, "danger", new Color32(200, 77, 63, 255));
+            SetThemeColor(colors, "disabled", new Color32(167, 185, 155, 255));
+            SetThemeColor(colors, "scrim", new Color32(59, 36, 22, 255));
+            SetThemeColor(colors, "primaryText", new Color32(86, 52, 31, 255));
+            SetThemeColor(colors, "secondaryText", new Color32(111, 88, 70, 255));
+            SetThemeColor(colors, "inverseText", new Color32(255, 249, 238, 255));
+
+            var actionStyles = serializedTheme.FindProperty("actionStyles");
+            SetActionColors(actionStyles, "primary",
+                new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255));
+            SetActionColors(actionStyles, "secondary",
+                new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255));
+            SetActionColors(actionStyles, "quiet",
+                new Color32(255, 249, 238, 255), new Color32(86, 52, 31, 255));
+            SetActionColors(actionStyles, "danger",
+                new Color32(168, 56, 49, 255), new Color32(255, 249, 238, 255));
+            SetActionColors(actionStyles, "modeActive",
+                new Color32(255, 197, 66, 255), new Color32(59, 36, 22, 255));
+            SetActionColors(actionStyles, "disabled",
+                new Color32(223, 227, 216, 255), new Color32(86, 52, 31, 255));
             serializedTheme.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(runtimeUiTheme);
             AssetDatabase.SaveAssetIfDirty(runtimeUiTheme);
             return RequireReleaseRuntimeUiTheme();
+        }
+
+        internal static bool UsesDisplayRuntimeUiFont(RuntimeUiTypographyRole role)
+        {
+            switch (role)
+            {
+                case RuntimeUiTypographyRole.Display:
+                case RuntimeUiTypographyRole.ScreenTitle:
+                case RuntimeUiTypographyRole.SectionTitle:
+                case RuntimeUiTypographyRole.ControlLabel:
+                    return true;
+                case RuntimeUiTypographyRole.Body:
+                case RuntimeUiTypographyRole.Metric:
+                case RuntimeUiTypographyRole.Supplemental:
+                    return false;
+                default:
+                    throw new System.ArgumentOutOfRangeException(nameof(role), role, null);
+            }
+        }
+
+        private static void SetTypographyFont(SerializedProperty typography,
+            string role, Font font)
+        {
+            typography.FindPropertyRelative(role).FindPropertyRelative("font")
+                .objectReferenceValue = font;
+        }
+
+        private static void SetThemeColor(SerializedProperty colors,
+            string token, Color value)
+        {
+            colors.FindPropertyRelative(token).colorValue = value;
+        }
+
+        private static void SetActionColors(SerializedProperty actionStyles,
+            string role, Color container, Color content)
+        {
+            var pair = actionStyles.FindPropertyRelative(role);
+            pair.FindPropertyRelative("container").colorValue = container;
+            pair.FindPropertyRelative("content").colorValue = content;
         }
 
         private static void AssignRuntimeUiTheme(
@@ -324,12 +410,19 @@ namespace FruitDefense.Editor
                 "temporary art atlas imported");
             Assert(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Resources/TempArt/combat-vfx-atlas.png") != null,
                 "temporary combat effect atlas imported");
-            var uiFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/Resources/Fonts/NotoSansSC-UI.ttf");
-            Assert(uiFont != null, "bundled WebGL UI font imported");
-            Assert(RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph(uiFont,
-                    out var missingRuntimeUiGlyph),
-                "bundled WebGL UI font covers the authoritative release UI glyph probe; missing: "
-                + missingRuntimeUiGlyph);
+            foreach (var fontPath in new[]
+                     {
+                         ReadingRuntimeUiFontPath,
+                         DisplayRuntimeUiFontPath,
+                     })
+            {
+                var uiFont = AssetDatabase.LoadAssetAtPath<Font>(fontPath);
+                Assert(uiFont != null, "bundled WebGL UI role font imported: " + fontPath);
+                Assert(RuntimeUiChineseGlyphCoverage.TryFindMissingGlyph(uiFont,
+                        out var missingRuntimeUiGlyph),
+                    "bundled WebGL UI role font covers the authoritative release UI glyph probe; "
+                    + fontPath + " missing: " + missingRuntimeUiGlyph);
+            }
             Assert(FruitDefenseGame.ValidatePortraitLayout(out var portraitLayoutReason),
                 "portrait layout geometry: " + portraitLayoutReason);
             Assert(FruitDefenseGame.ValidateInspectionOnlyInteraction(out var inspectionReason),
@@ -884,14 +977,13 @@ namespace FruitDefense.Editor
         {
             var map = GameConfig.DefaultBattlefield;
             var projection = new BattleUiLayout(map).Battlefield;
-            var legacyProjection = new BattlefieldProjection(map, new Rect(4f, 76f, 394f, 398f));
             Assert(Mathf.Approximately(BattlefieldProjection.PotVisualRatio, .88f)
-                && projection.TileSize > 0f
-                && projection.TileSize > legacyProjection.TileSize
+                && Mathf.Approximately(projection.TileSize, 44.25f)
                 && Mathf.Abs(projection.GridRect.center.x - projection.ContentRect.center.x) <= .001f
                 && Mathf.Abs(projection.GridRect.center.y - projection.ContentRect.center.y) <= .001f
                 && Mathf.Abs(projection.GridRect.width - projection.TileSize * map.GridWidth) <= .001f
                 && Mathf.Abs(projection.GridRect.height - projection.TileSize * map.GridHeight) <= .001f
+                && RectApproximately(projection.MapViewportRect, projection.BoardRect)
                 && ContainsRect(projection.ContentRect, projection.GridRect),
                 "square orchard grid is centered and contained in battlefield content");
 
@@ -1036,8 +1128,10 @@ namespace FruitDefense.Editor
             var designRegions = new[]
             {
                 battleUiLayout.Header,
+                battleUiLayout.PageShell,
                 battleUiLayout.BattleStage,
                 battleUiLayout.Board,
+                battleUiLayout.PhaseWaveRow,
                 battleUiLayout.ContextTray,
                 battleUiLayout.NurseryTray,
                 battleUiLayout.RefreshAction,
@@ -1052,20 +1146,28 @@ namespace FruitDefense.Editor
 
             var map = GameConfig.DefaultBattlefield;
             var projection = battleUiLayout.Battlefield;
-            Assert(projection.ValidateControlInset(out var controlReason),
-                "battlefield control inset contract for " + viewport + " " + caseName + ": " + controlReason);
             var projectedBoard = layout.ProjectDesignRect(projection.BoardRect);
+            var projectedPageShell = layout.ProjectDesignRect(
+                battleUiLayout.PageShell);
             var projectedGrid = layout.ProjectDesignRect(projection.GridRect);
-            var projectedControlStrip = layout.ProjectDesignRect(projection.ControlStripRect);
-            var projectedWaveAction = layout.ProjectDesignRect(projection.WaveActionRect);
+            var projectedPhaseRow = layout.ProjectDesignRect(
+                battleUiLayout.PhaseWaveRow);
+            var projectedPhaseStatus = layout.ProjectDesignRect(
+                battleUiLayout.PhaseStatusWithWaveAction);
+            var projectedWaveAction = layout.ProjectDesignRect(
+                battleUiLayout.WaveAction);
             var projectedCore = layout.ProjectDesignRect(projection.CoreRect);
             Assert(ContainsRect(projectedBoard, projectedGrid)
-                && ContainsRect(projectedBoard, projectedControlStrip)
-                && ContainsRect(projectedControlStrip, projectedWaveAction)
+                && ContainsRect(projectedPageShell, projectedBoard)
+                && ContainsRect(projectedPageShell, projectedPhaseRow)
+                && ContainsRect(projectedPhaseRow, projectedPhaseStatus)
+                && ContainsRect(projectedPhaseRow, projectedWaveAction)
                 && ContainsRect(layout.SafeAreaInGuiSpace, projectedBoard)
-                && !RectInteriorOverlaps(projectedGrid, projectedControlStrip)
+                && ContainsRect(layout.SafeAreaInGuiSpace, projectedPhaseRow)
+                && !RectInteriorOverlaps(projectedGrid, projectedPhaseRow)
                 && !RectInteriorOverlaps(projectedGrid, projectedWaveAction),
-                "grid and battlefield controls are contained and disjoint for " + viewport + " " + caseName);
+                "grid and independent phase/Wave controls are contained and disjoint for "
+                    + viewport + " " + caseName);
 
             var projectedRouteTiles = new List<Rect>(map.RouteCells.Count);
             foreach (var routeCell in map.RouteCells)
@@ -1073,18 +1175,14 @@ namespace FruitDefense.Editor
                 var routeTile = layout.ProjectDesignRect(projection.RouteTileRect(routeCell));
                 Assert(Mathf.Abs(routeTile.width - routeTile.height) <= .001f
                     && ContainsRect(projectedGrid, routeTile)
-                    && !RectInteriorOverlaps(routeTile, projectedControlStrip)
-                    && !RectInteriorOverlaps(routeTile, projectedWaveAction)
                     && !RectInteriorOverlaps(routeTile, projectedCore),
-                    "route tile is square and clear of core and controls at " + routeCell
+                    "route tile is square and clear of core at " + routeCell
                         + " for " + viewport + " " + caseName);
                 projectedRouteTiles.Add(routeTile);
             }
 
-            Assert(ContainsRect(projectedGrid, projectedCore)
-                && !RectInteriorOverlaps(projectedCore, projectedControlStrip)
-                && !RectInteriorOverlaps(projectedCore, projectedWaveAction),
-                "core is grid-local and clear of controls for " + viewport + " " + caseName);
+            Assert(ContainsRect(projectedGrid, projectedCore),
+                "core is grid-local for " + viewport + " " + caseName);
 
             var projectedPotTargets = new List<Rect>(map.PlantableCells.Count);
             foreach (var plantableCell in map.PlantableCells)
@@ -1094,10 +1192,8 @@ namespace FruitDefense.Editor
                 Assert(Mathf.Abs(hit.width - hit.height) <= .001f
                     && ContainsRect(projectedGrid, hit) && ContainsRect(hit, visual)
                     && Mathf.Abs(visual.width / hit.width - .88f) <= .001f
-                    && !RectInteriorOverlaps(hit, projectedCore)
-                    && !RectInteriorOverlaps(hit, projectedControlStrip)
-                    && !RectInteriorOverlaps(hit, projectedWaveAction),
-                    "flowerpot target and visual are contained and clear of core and controls at "
+                    && !RectInteriorOverlaps(hit, projectedCore),
+                    "flowerpot target and visual are contained and clear of core at "
                         + plantableCell + " for " + viewport + " " + caseName);
                 foreach (var routeTile in projectedRouteTiles)
                     Assert(!RectInteriorOverlaps(hit, routeTile),
@@ -1167,26 +1263,34 @@ namespace FruitDefense.Editor
             var runner = content.Enemies[BattleContentIds.Enemies.Runner];
             var armored = content.Enemies[BattleContentIds.Enemies.Armored];
             var boss = content.Enemies[BattleContentIds.Enemies.Boss];
-            return "plants:pea=" + PlantNumericSignature(pea)
-                + ",watermelon=" + PlantNumericSignature(watermelon)
-                + ",banana=" + PlantNumericSignature(banana)
-                + ",durian=" + PlantNumericSignature(durian)
-                + ",sunflower=" + PlantNumericSignature(sunflower)
+            return "plants:pea=" + PlantNumericSignature(content, pea)
+                + ",watermelon=" + PlantNumericSignature(content, watermelon)
+                + ",banana=" + PlantNumericSignature(content, banana)
+                + ",durian=" + PlantNumericSignature(content, durian)
+                + ",sunflower=" + PlantNumericSignature(content, sunflower)
                 + ";enemies:normal=" + EnemyNumericSignature(normal)
                 + ",runner=" + EnemyNumericSignature(runner)
                 + ",armored=" + EnemyNumericSignature(armored)
                 + ",boss=" + EnemyNumericSignature(boss)
-                + ";stars:damage=" + StarNumericSignature(content, tier => tier.damageMultiplier)
-                + ",speed=" + StarNumericSignature(content, tier => tier.attackSpeedMultiplier)
-                + ",range=" + StarNumericSignature(content, tier => tier.rangeMultiplier)
+                + ";stars:damage=" + UpgradeNumericSignature(content, tier => tier.damageMultiplier)
+                + ",speed=" + UpgradeNumericSignature(content, tier => tier.attackSpeedMultiplier)
+                + ",range=" + UpgradeNumericSignature(content, tier => tier.rangeMultiplier)
                 + ";waves=" + content.BattleRules.maxWaves
                 + ",between=" + Number(content.BattleRules.betweenWaveSeconds)
                 + ",initial-pots=" + content.BattleRules.initialPotCount;
         }
 
-        private static string PlantNumericSignature(PlantDefinitionDto definition)
+        private static string PlantNumericSignature(CompiledBattleContentCatalog content,
+            PlantDefinitionDto definition)
         {
-            return Number(definition.damage) + "/" + Number(definition.attackIntervalSeconds) + "/"
+            var timedAbility = content.ResolvePlantAbilities(definition.id, string.Empty)
+                .First(value => value.Activation.Kind == AbilityActivationKind.Cooldown
+                    || value.Activation.Kind == AbilityActivationKind.Periodic);
+            var ticks = timedAbility.Activation.Kind == AbilityActivationKind.Periodic
+                ? timedAbility.Activation.PeriodTicks
+                : timedAbility.Activation.CooldownTicks;
+            return Number(definition.damage) + "/"
+                + Number(BattleAbilityTiming.TicksToSeconds(ticks)) + "/"
                 + Number(definition.rangeLegacyUnits);
         }
 
@@ -1196,13 +1300,12 @@ namespace FruitDefense.Editor
                 + "/" + definition.killReward + "/" + definition.threat;
         }
 
-        private static string StarNumericSignature(CompiledBattleContentCatalog content,
-            System.Func<StarTierDefinitionDto, float> valueAtStar)
+        private static string UpgradeNumericSignature(CompiledBattleContentCatalog content,
+            System.Func<UpgradeTierDefinitionDto, float> valueAtTier)
         {
-            return Number(valueAtStar(content.StarTiers["star.1"])) + "/"
-                + Number(valueAtStar(content.StarTiers["star.2"])) + "/"
-                + Number(valueAtStar(content.StarTiers["star.3"])) + "/"
-                + Number(valueAtStar(content.StarTiers["star.4"]));
+            var tiers = content.UpgradeProfiles[BattleContentIds.UpgradeProfiles.Baseline].tiers;
+            return string.Join("/", tiers.OrderBy(value => value.tier)
+                .Select(value => Number(valueAtTier(value))).ToArray());
         }
 
         private static string Number(float value)

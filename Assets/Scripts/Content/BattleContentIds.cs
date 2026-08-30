@@ -2,9 +2,9 @@ namespace FruitDefense.Content
 {
     public static class BattleContentSchema
     {
-        public const string CurrentSchemaVersion = "2";
+        public const string CurrentSchemaVersion = "3";
         public const string BundledCatalogId = "catalog.bundled.orchard";
-        public const string BundledContentVersion = "2.0.0";
+        public const string BundledContentVersion = "3.0.0";
         public const string MinimumCodeVersion = "0.1.0";
     }
 
@@ -78,6 +78,35 @@ namespace FruitDefense.Content
         public static class BattleRules
         {
             public const string Default = "rules.orchard.default";
+        }
+
+        public static class UpgradeProfiles
+        {
+            public const string Baseline = "upgrade.orchard.baseline";
+        }
+
+        public static class NurseryProfiles
+        {
+            public const string Baseline = "nursery.orchard.baseline";
+        }
+
+        public static class Presentation
+        {
+            public const string PlantPea = "visual.plant.pea";
+            public const string PlantWatermelon = "visual.plant.watermelon";
+            public const string PlantBanana = "visual.plant.banana";
+            public const string PlantDurian = "visual.plant.durian";
+            public const string PlantSunflower = "visual.plant.sunflower";
+            public const string EnemyNormal = "visual.enemy.normal";
+            public const string EnemyRunner = "visual.enemy.runner";
+            public const string EnemyArmored = "visual.enemy.armored";
+            public const string EnemyBoss = "visual.enemy.boss";
+            public const string EquipmentGatling = "visual.equipment.gatling";
+            public const string EquipmentIce = "visual.equipment.ice";
+            public const string EquipmentChili = "visual.equipment.chili";
+            public const string ProjectilePea = "visual.projectile.pea";
+            public const string ProjectileWatermelon = "visual.projectile.watermelon";
+            public const string ProjectileBanana = "visual.projectile.banana";
         }
     }
 }

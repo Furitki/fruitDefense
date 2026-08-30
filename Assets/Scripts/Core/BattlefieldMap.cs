@@ -147,20 +147,7 @@ namespace FruitDefense.Core
         {
         }
 
-        public BattlefieldMapDefinition(BattlefieldLayeredMapSource source,
-            float legacyDistanceScale)
-            : this(BattlefieldLayeredMapCompiler.CompileOrThrow(source),
-                legacyDistanceScale)
-        {
-        }
-
         public BattlefieldMapDefinition(CompiledBattlefieldMap layeredMap)
-            : this(layeredMap, null)
-        {
-        }
-
-        private BattlefieldMapDefinition(CompiledBattlefieldMap layeredMap,
-            float? legacyDistanceScale)
         {
             _layeredMap = layeredMap ?? throw new ArgumentNullException(nameof(layeredMap));
             MapId = layeredMap.MapId;
@@ -225,12 +212,11 @@ namespace FruitDefense.Core
             var routeNodes = orderedRouteCells.Select(CellToMap).ToArray();
             RouteNodes = Array.AsReadOnly(routeNodes);
             Route = string.IsNullOrEmpty(PrimaryRouteId) ? null : routeMetrics[PrimaryRouteId];
-            var derivedLegacyDistanceScale = routeMetrics[RouteIds[0]].TotalLength
-                / LegacyRouteLength;
-            LegacyToMapScale = legacyDistanceScale ?? derivedLegacyDistanceScale;
+            LegacyToMapScale = MapUnitsPerCell / LegacyReferenceMapUnitsPerCell
+                * LegacyReferenceDistanceScale;
             if (LegacyToMapScale <= 0f || float.IsNaN(LegacyToMapScale)
                 || float.IsInfinity(LegacyToMapScale))
-                throw new ArgumentOutOfRangeException(nameof(legacyDistanceScale));
+                throw new ArgumentOutOfRangeException(nameof(MapUnitsPerCell));
 
             SetInitialPotGroupsFromMarkers(layeredMap);
             Topology = new BattlefieldTopology(this);

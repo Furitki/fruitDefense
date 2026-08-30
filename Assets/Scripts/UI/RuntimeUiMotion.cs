@@ -101,11 +101,30 @@ namespace FruitDefense.UI
             return RuntimeUiFeedbackPulse.Begin(unscaledTime, duration);
         }
 
-        public static RuntimeUiMotionSample HeldPress(RuntimeUiFeedbackTokens tokens)
+        public static RuntimeUiMotionSample InteractionState(
+            RuntimeUiInteractionState state, RuntimeUiFeedbackTokens tokens)
         {
-            return tokens.ReducedMotion
-                ? RuntimeUiMotionSample.Rest
-                : new RuntimeUiMotionSample(tokens.PressScale, 1f, 0f);
+            switch (state)
+            {
+                case RuntimeUiInteractionState.HoveredOrFocused:
+                    return tokens.ReducedMotion
+                        ? RuntimeUiMotionSample.Rest
+                        : new RuntimeUiMotionSample(tokens.PopInsetScale, 1f, 0f);
+                case RuntimeUiInteractionState.Pressed:
+                    return tokens.ReducedMotion
+                        ? RuntimeUiMotionSample.Rest
+                        : new RuntimeUiMotionSample(tokens.PressScale, 1f, 0f);
+                case RuntimeUiInteractionState.Normal:
+                case RuntimeUiInteractionState.Disabled:
+                case RuntimeUiInteractionState.Selected:
+                case RuntimeUiInteractionState.Loading:
+                case RuntimeUiInteractionState.Success:
+                case RuntimeUiInteractionState.Warning:
+                case RuntimeUiInteractionState.Error:
+                    return RuntimeUiMotionSample.Rest;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
         }
 
         private static RuntimeUiMotionSample Press(RuntimeUiFeedbackPulse pulse,

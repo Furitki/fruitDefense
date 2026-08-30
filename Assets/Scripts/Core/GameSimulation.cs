@@ -55,7 +55,11 @@ namespace FruitDefense.Core
         public int MaxWaves { get { return _ruleSet.MaxWaves; } }
         public float BetweenWaveSeconds { get { return _ruleSet.BetweenWaveSeconds; } }
         public int NurserySlotCount { get { return _ruleSet.NurserySlotCount; } }
-        public float NurseryPotChance { get { return _ruleSet.NurseryPotChance; } }
+        public NurseryProfileDefinitionDto NurseryProfile
+        {
+            get { return _content.NurseryProfiles[_ruleSet.NurseryProfileId]; }
+        }
+        public float NurseryPotChance { get { return NurseryProfile.potChance; } }
         public IReadOnlyList<int> LastNurseryPotSlots { get { return _lastNurseryPotSlots; } }
         public double FrameAccumulatorSeconds { get { return _frameAccumulator; } }
         public float PresentationInterpolationFraction
@@ -72,6 +76,17 @@ namespace FruitDefense.Core
         public int PendingPresentationEventCount { get { return _presentationEvents.PendingCount; } }
         public long DroppedPresentationEventCount { get { return _presentationEvents.DroppedCount; } }
         public event Action<GameSimulation> FixedStepStarting;
+
+        public float EffectivePlantAttackIntervalSeconds(Plant plant)
+        {
+            if (plant == null) throw new ArgumentNullException(nameof(plant));
+            var ability = _content.ResolvePlantAbilities(plant.DefinitionId, plant.EquipmentId)
+                .FirstOrDefault(value => value.Activation.Kind == AbilityActivationKind.Cooldown);
+            if (ability == null) return 0f;
+            var seconds = BattleAbilityTiming.TicksToSeconds(ability.Activation.CooldownTicks)
+                / UpgradeTier(plant).attackSpeedMultiplier;
+            return GetEffectiveAttribute(plant, CombatAttributeKind.AttackInterval, seconds);
+        }
 
         public GameSimulation(int seed = 0, BattlefieldMapDefinition map = null)
             : this(CreateBundledContent(), seed, map, BattleSimulationMode.Standard)
@@ -194,9 +209,10 @@ namespace FruitDefense.Core
 
         private static CompiledBattleContentCatalog CreateBundledContent()
         {
+            GameContentManifestDto manifest;
             CompiledBattleContentCatalog compiled;
             ContentValidationResult validation;
-            if (BattleContentCompiler.TryCompile(BundledBattleContentFactory.Create(), out compiled, out validation)) return compiled;
+            if (BundledGameContentLoader.TryLoad(out manifest, out compiled, out validation)) return compiled;
             throw new InvalidOperationException("Bundled battle content is invalid: "
                 + string.Join("\n", validation.Issues.Select(issue => issue.ToString()).ToArray()));
         }
@@ -276,28 +292,31 @@ namespace FruitDefense.Core
             State.Plants.RemoveAll(plant => plant.NurseryIndex >= 0);
 
             var firstBatch = State.RefreshCount == 0;
-            var definitions = _content.Plants.Values
-                .OrderBy(value => value.id, StringComparer.Ordinal).ToArray();
-            var attackers = definitions.Where(value =>
-                    (value.tags ?? Array.Empty<string>()).Contains("plant.damage"))
-                .ToArray();
-            if (definitions.Length == 0 || attackers.Length == 0)
-                throw new InvalidOperationException(
-                    "Nursery generation requires at least one plant and one plant.damage definition.");
+            var nursery = NurseryProfile;
+            var entries = nursery.entries ?? Array.Empty<NurseryEntryDefinitionDto>();
+            if (entries.Length == 0)
+                throw new InvalidOperationException("Active nursery profile has no weighted entries.");
             var results = new List<string>();
-            var producerCount = 0;
+            var cappedCount = 0;
             for (var index = 0; index < _ruleSet.NurserySlotCount; index++)
             {
-                var forceAttacker = firstBatch && index < 2;
-                if (!forceAttacker && _random.NextUnitDouble() < _ruleSet.NurseryPotChance)
+                var forceGuaranteed = firstBatch
+                    && index < nursery.firstRefreshGuaranteedCount;
+                if (!forceGuaranteed && _random.NextUnitDouble() < nursery.potChance)
                 {
                     results.Add(string.Empty);
                     continue;
                 }
-                var pool = forceAttacker || producerCount >= 2 ? attackers : definitions;
-                var definition = pool[_random.NextInt(pool.Length)];
-                if ((definition.tags ?? Array.Empty<string>()).Contains("plant.producer")) producerCount++;
-                results.Add(definition.id);
+                var pool = entries.Where(entry => entry != null
+                        && (!forceGuaranteed || PlantHasTag(entry.plantId,
+                            nursery.firstRefreshGuaranteedTag))
+                        && (string.IsNullOrEmpty(nursery.cappedTag)
+                            || cappedCount < nursery.maxCappedTagCount
+                            || !PlantHasTag(entry.plantId, nursery.cappedTag)))
+                    .ToArray();
+                var selected = SelectWeightedNurseryEntry(pool);
+                if (PlantHasTag(selected.plantId, nursery.cappedTag)) cappedCount++;
+                results.Add(selected.plantId);
             }
             Shuffle(results);
 
@@ -323,6 +342,30 @@ namespace FruitDefense.Core
                 ? "刷新完成：水果 " + plantCount + " 株，花盆×" + _lastNurseryPotSlots.Count + " 已入库"
                 : "获得 " + plantCount + " 株水果";
             return true;
+        }
+
+        private NurseryEntryDefinitionDto SelectWeightedNurseryEntry(
+            IReadOnlyList<NurseryEntryDefinitionDto> entries)
+        {
+            if (entries == null || entries.Count == 0)
+                throw new InvalidOperationException(
+                    "Nursery constraints removed every weighted plant entry.");
+            var totalWeight = entries.Sum(value => value.weight);
+            var roll = _random.NextInt(totalWeight);
+            for (var index = 0; index < entries.Count; index++)
+            {
+                if (roll < entries[index].weight) return entries[index];
+                roll -= entries[index].weight;
+            }
+            throw new InvalidOperationException("Nursery weighted selection did not resolve an entry.");
+        }
+
+        private bool PlantHasTag(string plantId, string tag)
+        {
+            if (string.IsNullOrEmpty(tag)) return false;
+            PlantDefinitionDto definition;
+            return _content.Plants.TryGetValue(plantId ?? string.Empty, out definition)
+                && (definition.tags ?? Array.Empty<string>()).Contains(tag);
         }
 
         public int RefreshCost(int refreshCount)

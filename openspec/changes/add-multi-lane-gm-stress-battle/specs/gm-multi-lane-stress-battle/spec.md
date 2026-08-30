@@ -71,6 +71,25 @@ Every plant deployed in the GM battle SHALL use the same bundled definition, one
 - **WHEN** standard and GM maps use the same map-units-per-cell but have different total route lengths
 - **THEN** the same authored legacy combat distance resolves to the same number of map cells on both maps
 
+### Requirement: Shared plant combat presentation
+The GM presenter SHALL consume the same ordered battle-presentation events and SHALL render plant idle/attack reaction, authored projectile archetypes, authored combat-effect archetypes, enemy status overlays, battlefield impact beats, and floating text through the same allocation-free gameplay combat renderer and `combat-vfx-atlas` used by the normal battle. It MUST NOT replace those visuals with GM-local debug squares, generic outline impacts, or missing-asset fallbacks.
+
+#### Scenario: GM damage plant attacks
+- **WHEN** any bundled damage plant releases its normal ability and the GM presenter consumes the resulting events
+- **THEN** the plant reaction, projectile when authored, ability-specific impact effect, target reaction, and damage or defeat feedback resolve through the shared combat presentation path
+
+#### Scenario: GM producer plant activates
+- **WHEN** the bundled producer ability releases in the GM session
+- **THEN** the shared sun-burst presentation is visible at the plant while the resource result remains simulation-owned
+
+#### Scenario: Combat atlas is unavailable
+- **WHEN** the GM presenter cannot resolve a valid shared `combat-vfx-atlas`
+- **THEN** GM initialization fails explicitly before play begins and no debug projectile or effect substitute is drawn
+
+#### Scenario: High-density combat is rendered
+- **WHEN** many plants and enemies generate presentation events in one GM stress session
+- **THEN** projectile/effect drawing reuses the single loaded atlas and bounded presentation buffers without per-event texture creation or per-frame combat-render allocations
+
 ### Requirement: No-failure stress lifecycle
 The GM battle SHALL disable automatic waves, core damage, lives loss, victory, defeat, reward, settlement, result submission, snapshot export, and snapshot restore. An enemy reaching its route goal SHALL be removed and counted as escaped while the session remains playable.
 

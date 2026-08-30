@@ -17,53 +17,62 @@ namespace FruitDefense.Editor
             ValidateViewportBackgroundContract();
             ValidateProjectedViewportMatrix(layout);
             ValidateInteractionBoundaries(layout);
+            ValidateDragFeedbackGeometry(layout);
             ValidateFinitePresentationState();
-            ValidateBetweenWaveSingleLineText(layout);
+            ValidatePhaseWaveText(layout);
             ValidateTransientStatusText(layout);
             ValidateSharedChromeSource();
             ValidateSharedControlSource();
+            ValidateBattlefieldContainmentSource(layout);
             ValidateSharedDetailAndOverlaySource();
             ValidateLegacyBattleUiRemoval();
             Debug.Log("FRUIT_DEFENSE_BATTLE_UI_LAYOUT_OK");
+        }
+
+        public static void RunBattlefieldContainment()
+        {
+            ValidateBattlefieldContainmentSource(
+                new BattleUiLayout(GameConfig.DefaultBattlefield));
+            Debug.Log("FRUIT_DEFENSE_BATTLEFIELD_CONTAINMENT_OK");
         }
 
         private static void ValidateReferenceGeometry(BattleUiLayout layout)
         {
             Assert(Approximately(layout.Design, new Rect(0f, 0f, 402f, 874f)),
                 "design geometry changed");
-            Assert(Approximately(layout.Header, new Rect(0f, 8f, 402f, 96f))
-                && Approximately(layout.BattleStage, new Rect(0f, 108f, 402f, 486f))
+            Assert(Approximately(layout.Header, new Rect(14f, 36f, 374f, 114f))
+                && Approximately(layout.PageShell, new Rect(14f, 154f, 374f, 698f))
+                && Approximately(layout.BattleStage, new Rect(22f, 168f, 358f, 338f))
                 && Approximately(layout.Board, layout.BattleStage),
                 "top-level Battle chrome changed");
-            Assert(Approximately(layout.ContextTray, new Rect(8f, 602f, 386f, 78f))
-                && Approximately(layout.NurseryTray, new Rect(8f, 688f, 386f, 88f))
-                && Approximately(layout.RefreshAction, new Rect(8f, 784f, 386f, 52f))
-                && Mathf.Approximately(layout.Design.yMax - layout.RefreshAction.yMax, 38f),
-                "context/nursery/refresh closeout geometry changed");
-            Assert(Approximately(layout.PauseAction, new Rect(274f, 12f, 52f, 52f))
-                && Approximately(layout.SpeedAction, new Rect(334f, 12f, 52f, 52f))
-                && Approximately(layout.HeaderTitle, new Rect(16f, 26f, 246f, 24f))
-                && Approximately(layout.SunMetric, new Rect(16f, 68f, 118f, 32f))
-                && Approximately(layout.LivesMetric, new Rect(142f, 68f, 118f, 32f))
-                && Approximately(layout.WaveMetric, new Rect(268f, 68f, 118f, 32f))
-                && Approximately(layout.FirstMetricDivider, new Rect(134f, 68f, 8f, 32f))
-                && Approximately(layout.SecondMetricDivider, new Rect(260f, 68f, 8f, 32f)),
+            Assert(Approximately(layout.PhaseWaveRow, new Rect(24f, 518f, 354f, 52f))
+                && Approximately(layout.ContextTray, new Rect(24f, 578f, 354f, 88f))
+                && Approximately(layout.NurseryTray, new Rect(24f, 674f, 354f, 92f))
+                && Approximately(layout.RefreshAction, new Rect(24f, 774f, 354f, 64f))
+                && Mathf.Approximately(layout.PageShell.yMax - layout.RefreshAction.yMax, 14f),
+                "phase/context/nursery/refresh closeout geometry changed");
+            Assert(Approximately(layout.PauseAction, new Rect(264f, 50f, 48f, 48f))
+                && Approximately(layout.SpeedAction, new Rect(318f, 50f, 56f, 48f))
+                && Approximately(layout.HeaderTitle, new Rect(40f, 52f, 210f, 38f))
+                && Approximately(layout.SunMetric, new Rect(28f, 101f, 112f, 40f))
+                && Approximately(layout.LivesMetric, new Rect(145f, 101f, 112f, 40f))
+                && Approximately(layout.WaveMetric, new Rect(262f, 101f, 112f, 40f)),
                 "header action targets changed");
-            Assert(Approximately(layout.BoardStatus, new Rect(8f, 544f, 386f, 48f))
-                && Approximately(layout.BoardStatusWithWaveAction,
-                    new Rect(16f, 544f, 190f, 48f))
-                && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
-                "board status or wave target changed");
-            Assert(Approximately(layout.ContextTrayTitle, new Rect(16f, 606f, 180f, 22f))
-                && Approximately(layout.NurseryTrayTitle, new Rect(16f, 692f, 180f, 22f))
-                && Approximately(layout.Tool(0), new Rect(16f, 632f, 89.5f, 44f))
-                && Approximately(layout.Tool(3), new Rect(296.5f, 632f, 89.5f, 44f))
-                && Approximately(layout.NurserySlot(0), new Rect(16f, 718f, 70.8f, 54f))
-                && Approximately(layout.NurserySlot(4), new Rect(315.2f, 718f, 70.8f, 54f)),
+            Assert(Approximately(layout.PhaseStatus, new Rect(24f, 518f, 354f, 52f))
+                && Approximately(layout.PhaseStatusWithWaveAction,
+                    new Rect(24f, 518f, 168f, 52f))
+                && Approximately(layout.WaveAction, new Rect(204f, 518f, 174f, 52f)),
+                "independent phase status or Wave target changed");
+            Assert(Approximately(layout.ContextTrayTitle, new Rect(32f, 582f, 120f, 24f))
+                && Approximately(layout.NurseryTrayTitle, new Rect(32f, 678f, 120f, 24f))
+                && Approximately(layout.Tool(0), new Rect(32f, 610f, 78.5f, 48f))
+                && Approximately(layout.Tool(3), new Rect(291.5f, 610f, 78.5f, 48f))
+                && Approximately(layout.NurserySlot(0), new Rect(32f, 706f, 58f, 52f))
+                && Approximately(layout.NurserySlot(4), new Rect(312f, 706f, 58f, 52f)),
                 "tool or nursery cell geometry changed");
-            Assert(Approximately(layout.DetailTitle, new Rect(16f, 606f, 322f, 24f))
-                && Approximately(layout.DetailBody, new Rect(16f, 638f, 322f, 22f))
-                && Approximately(layout.DetailCloseAction, new Rect(346f, 606f, 44f, 44f))
+            Assert(Approximately(layout.DetailTitle, new Rect(32f, 582f, 290f, 24f))
+                && Approximately(layout.DetailBody, new Rect(32f, 614f, 290f, 22f))
+                && Approximately(layout.DetailCloseAction, new Rect(330f, 582f, 44f, 44f))
                 && layout.DetailBody.yMin - layout.DetailTitle.yMax >= 8f
                 && layout.DetailCloseAction.xMin - layout.DetailTitle.xMax >= 8f
                 && layout.DetailCloseAction.xMin - layout.DetailBody.xMax >= 8f,
@@ -84,9 +93,10 @@ namespace FruitDefense.Editor
             Assert(Approximately(layout.Battlefield.BoardRect, layout.Board),
                 "layout and battlefield projection do not share the authoritative board rectangle");
             Assert(Approximately(layout.Battlefield.MapViewportRect,
-                    new Rect(0f, 108f, 402f, 424f))
+                    layout.Board)
                 && Approximately(layout.Battlefield.GridRect,
-                    new Rect(8f, 151.125f, 386f, 337.75f)),
+                    new Rect(24f, 182.125f, 354f, 309.75f))
+                && Mathf.Approximately(layout.Battlefield.TileSize, 44.25f),
                 "Battlefield grid composition changed inside the map viewport");
             var left = layout.Battlefield.GridRect.xMin
                 - layout.Battlefield.MapViewportRect.xMin;
@@ -98,65 +108,65 @@ namespace FruitDefense.Editor
                 - layout.Battlefield.GridRect.yMax;
             Assert(Mathf.Abs(left - right) <= 1f
                 && Mathf.Abs(top - bottom) <= 1f
-                && Mathf.Approximately(left, 8f)
-                && Mathf.Approximately(top, 43.125f),
+                && Mathf.Approximately(left, 2f)
+                && Mathf.Approximately(top, 14.125f),
                 "Battlefield grid has symmetric visual gutters relative to MapViewportRect");
         }
 
         private static void ValidateNamedTracksAndRhythm(BattleUiLayout layout)
         {
             Assert(Mathf.Approximately(BattleUiLayout.SpacingUnit, 4f)
-                && Mathf.Approximately(BattleUiLayout.ContentInset, 8f)
-                && Mathf.Approximately(BattleUiLayout.SectionGap, 8f),
+                && Mathf.Approximately(BattleUiLayout.ContentInset, 8f),
                 "Battle named tracks derive from the four-point spacing unit");
-            Assert(Mathf.Approximately(layout.Header.xMin, layout.BattleStage.xMin)
-                && Mathf.Approximately(layout.Header.xMax, layout.BattleStage.xMax)
-                && Mathf.Approximately(layout.BattleStage.yMin - layout.Header.yMax,
+            Assert(Mathf.Approximately(layout.Header.xMin, layout.PageShell.xMin)
+                && Mathf.Approximately(layout.Header.xMax, layout.PageShell.xMax)
+                && Mathf.Approximately(layout.PageShell.yMin - layout.Header.yMax,
                     BattleUiLayout.SpacingUnit),
-                "Header and BattleStage share one full-width track with one four-point gap");
+                "raised Header and PageShell share peer edges with one four-point gap");
+            var stageHeightFraction = layout.BattleStage.height
+                / BattleUiLayout.DesignHeight;
+            Assert(stageHeightFraction >= .38f && stageHeightFraction <= .43f,
+                "BattleStage leaves the approved 38-to-43-percent height band");
 
-            var sections = new[]
+            var pageChildren = new[]
             {
-                layout.ContextTray, layout.NurseryTray, layout.RefreshAction,
+                layout.BattleStage, layout.PhaseWaveRow, layout.ContextTray,
+                layout.NurseryTray, layout.RefreshAction,
             };
-            for (var index = 0; index < sections.Length; index++)
+            for (var index = 0; index < pageChildren.Length; index++)
             {
-                Assert(Mathf.Approximately(sections[index].xMin,
-                        layout.BattleStage.xMin + BattleUiLayout.ContentInset)
-                    && Mathf.Approximately(sections[index].xMax,
-                        layout.BattleStage.xMax - BattleUiLayout.ContentInset),
-                    "Battle control section uses the shared inset track: " + index);
+                Assert(Contains(layout.PageShell, pageChildren[index]),
+                    "PageShell no longer contains Battle child track: " + index);
             }
-            Assert(Mathf.Approximately(layout.ContextTray.yMin - layout.Board.yMax,
-                       BattleUiLayout.SectionGap)
-                && Mathf.Approximately(layout.NurseryTray.yMin - layout.ContextTray.yMax,
-                    BattleUiLayout.SectionGap)
-                && Mathf.Approximately(layout.RefreshAction.yMin - layout.NurseryTray.yMax,
-                    BattleUiLayout.SectionGap),
-                "Battle sections preserve the named eight-point rhythm");
+            Assert(Mathf.Approximately(layout.BattleStage.xMin - layout.PageShell.xMin, 8f)
+                && Mathf.Approximately(layout.PageShell.xMax - layout.BattleStage.xMax, 8f)
+                && Mathf.Approximately(layout.PhaseWaveRow.yMin - layout.Board.yMax, 12f)
+                && Mathf.Approximately(layout.ContextTray.yMin - layout.PhaseWaveRow.yMax, 8f)
+                && Mathf.Approximately(layout.NurseryTray.yMin - layout.ContextTray.yMax, 8f)
+                && Mathf.Approximately(layout.RefreshAction.yMin - layout.NurseryTray.yMax, 8f),
+                "PageShell preserves its inset stage and four-point vertical rhythm");
 
-            Assert(layout.ContextTrayTitle.height == 22f
-                && layout.NurseryTrayTitle.height == 22f
-                && BattleUiLayout.NurserySlotLabel(layout.NurserySlot(0)).height == 22f
+            Assert(layout.ContextTrayTitle.height == 24f
+                && layout.NurseryTrayTitle.height == 24f
+                && BattleUiLayout.NurserySlotLabel(layout.NurserySlot(0)).height == 44f
                 && layout.DetailTitle.height == 24f
                 && layout.DetailBody.height == 22f
-                && layout.HeaderTitle.height == 24f
-                && layout.SunMetric.height == 32f
-                && layout.LivesMetric.height == 32f
-                && layout.WaveMetric.height == 32f,
+                && layout.HeaderTitle.height == 38f
+                && layout.SunMetric.height == 40f
+                && layout.LivesMetric.height == 40f
+                && layout.WaveMetric.height == 40f,
                 "Battle text owners expose complete semantic line-height boxes");
             Assert(Mathf.Approximately(layout.ContextTrayTitle.yMin - layout.ContextTray.yMin,
                        BattleUiLayout.SpacingUnit)
                 && Mathf.Approximately(layout.Tool(0).yMin - layout.ContextTrayTitle.yMax,
                     BattleUiLayout.SpacingUnit)
-                && Mathf.Approximately(layout.ContextTray.yMax - layout.Tool(0).yMax,
-                    BattleUiLayout.SpacingUnit)
+                && Mathf.Approximately(layout.ContextTray.yMax - layout.Tool(0).yMax, 8f)
                 && Mathf.Approximately(layout.NurseryTrayTitle.yMin - layout.NurseryTray.yMin,
                     BattleUiLayout.SpacingUnit)
                 && Mathf.Approximately(layout.NurserySlot(0).yMin
                     - layout.NurseryTrayTitle.yMax, BattleUiLayout.SpacingUnit)
                 && Mathf.Approximately(layout.NurseryTray.yMax
-                    - layout.NurserySlot(0).yMax, BattleUiLayout.SpacingUnit),
+                    - layout.NurserySlot(0).yMax, 8f),
                 "tool and nursery tracks preserve complete four-side insets");
         }
 
@@ -198,22 +208,28 @@ namespace FruitDefense.Editor
                 caseName + " projects the complete design inside the GUI safe area");
 
             var header = SnapDeviceRect(projection.ProjectDesignRect(layout.Header));
-            var surface = SnapDeviceRect(
+            var pageShell = SnapDeviceRect(
+                projection.ProjectDesignRect(layout.PageShell));
+            var stage = SnapDeviceRect(
                 projection.ProjectDesignRect(layout.BattleStage));
-            Assert(Mathf.Approximately(header.xMin, surface.xMin)
-                && Mathf.Approximately(header.xMax, surface.xMax),
+            Assert(Mathf.Approximately(header.xMin, pageShell.xMin)
+                && Mathf.Approximately(header.xMax, pageShell.xMax),
                 caseName + " preserves peer-frame device edges");
 
             var expectedGap = Mathf.Round(
                 BattleUiLayout.SpacingUnit * projection.Scale);
-            Assert(Mathf.Abs(surface.yMin - header.yMax - expectedGap) <= 1f,
+            Assert(Mathf.Abs(pageShell.yMin - header.yMax - expectedGap) <= 1f,
                 caseName + " preserves the four-point top-level gap after snapping");
 
             var projectedBoard = projection.ProjectDesignRect(layout.Board);
             Assert(Approximately(projectedBoard,
                     projection.ProjectDesignRect(layout.Battlefield.BoardRect))
-                && Contains(surface, SnapDeviceRect(projectedBoard))
-                && Contains(SnapDeviceRect(projectedBoard), SnapDeviceRect(
+                && Contains(stage, SnapDeviceRect(projectedBoard))
+                && Contains(pageShell, stage)
+                && Contains(pageShell, SnapDeviceRect(
+                    projection.ProjectDesignRect(layout.RefreshAction)))
+                && Contains(SnapDeviceRect(projection.ProjectDesignRect(
+                    layout.PhaseWaveRow)), SnapDeviceRect(
                     projection.ProjectDesignRect(layout.WaveAction))),
                 caseName + " preserves draw/hit identity and control containment");
 
@@ -231,7 +247,7 @@ namespace FruitDefense.Editor
             };
             var logicalLineHeights = new[]
             {
-                24f, 22f, 22f, 22f, 22f, 22f, 22f, 24f, 22f,
+                38f, 40f, 40f, 40f, 24f, 24f, 22f, 24f, 22f,
             };
             for (var index = 0; index < lineOwners.Length; index++)
             {
@@ -251,8 +267,11 @@ namespace FruitDefense.Editor
                 "pause and speed targets overlap");
             Assert(Contains(layout.Header, layout.PauseAction)
                 && Contains(layout.Header, layout.SpeedAction)
-                && Contains(layout.Header, layout.FirstMetricDivider)
-                && Contains(layout.Header, layout.SecondMetricDivider),
+                && Contains(layout.Header, layout.SunMetric)
+                && Contains(layout.Header, layout.LivesMetric)
+                && Contains(layout.Header, layout.WaveMetric)
+                && !layout.SunMetric.Overlaps(layout.LivesMetric)
+                && !layout.LivesMetric.Overlaps(layout.WaveMetric),
                 "header targets leave the header");
 
             Rect? previous = null;
@@ -261,13 +280,25 @@ namespace FruitDefense.Editor
                 var rect = layout.Tool(index);
                 Assert(Contains(layout.ContextTray, rect) && Mathf.Min(rect.width, rect.height) >= 44f,
                     "tool target is clipped or undersized: " + index);
+                var sourceIcon = BattleUiLayout.ToolRecipeSourceIcon(rect);
+                var operatorGlyph = BattleUiLayout.ToolRecipeOperator(rect);
+                var targetIcon = BattleUiLayout.ToolRecipeTargetIcon(rect);
+                var inventoryBadge = BattleUiLayout.ToolInventoryBadge(rect);
+                Assert(Contains(rect, sourceIcon)
+                    && Contains(rect, operatorGlyph)
+                    && Contains(rect, targetIcon)
+                    && Contains(rect, inventoryBadge)
+                    && !sourceIcon.Overlaps(operatorGlyph)
+                    && !sourceIcon.Overlaps(targetIcon)
+                    && !operatorGlyph.Overlaps(targetIcon),
+                    "recipe card anatomy clips or overlaps: " + index);
                 Assert(!previous.HasValue || !previous.Value.Overlaps(rect),
                     "tool targets overlap: " + index);
                 previous = rect;
             }
 
             previous = null;
-            for (var slot = 0; slot < BattleUiLayout.NurserySlotCount; slot++)
+            for (var slot = 0; slot < layout.NurserySlotCount; slot++)
             {
                 var rect = layout.NurserySlot(slot);
                 Assert(Contains(layout.NurseryTray, rect) && Mathf.Min(rect.width, rect.height) >= 44f,
@@ -278,6 +309,10 @@ namespace FruitDefense.Editor
             }
 
             Assert(Approximately(layout.BattleStage, layout.Board)
+                && Contains(layout.PhaseWaveRow, layout.PhaseStatus)
+                && Contains(layout.PhaseWaveRow, layout.PhaseStatusWithWaveAction)
+                && Contains(layout.PhaseWaveRow, layout.WaveAction)
+                && !layout.PhaseStatusWithWaveAction.Overlaps(layout.WaveAction)
                 && Contains(layout.ContextTray, layout.Tool(0))
                 && Contains(layout.ContextTray, layout.DetailTitle)
                 && Contains(layout.ContextTray, layout.DetailBody)
@@ -285,8 +320,9 @@ namespace FruitDefense.Editor
                 && !layout.ContextTray.Overlaps(layout.NurseryTray)
                 && !layout.NurseryTray.Overlaps(layout.RefreshAction),
                 "stage and mutually exclusive context anatomy lost authority");
-            Assert(layout.Battlefield.ValidateControlInset(out var controlReason),
-                "wave target crossed battlefield interaction geometry: " + controlReason);
+            Assert(!layout.BattleStage.Overlaps(layout.PhaseWaveRow)
+                && Mathf.Min(layout.WaveAction.width, layout.WaveAction.height) >= 44f,
+                "phase/Wave row crossed battlefield geometry or lost its touch target");
 
             var firstModal = layout.ModalAction(0, 2);
             var secondModal = layout.ModalAction(1, 2);
@@ -319,7 +355,7 @@ namespace FruitDefense.Editor
             Assert(Approximately(mergeHint, new Rect(125f, 232f, 158f, 24f)),
                 "merge hint geometry changed");
             Assert(Approximately(BattleUiLayout.CueBadge(layout.Tool(0)),
-                    new Rect(18f, 634f, 28f, 28f))
+                    new Rect(34f, 612f, 28f, 28f))
                 && Contains(layout.Tool(0), BattleUiLayout.CueBadge(layout.Tool(0)))
                 && Contains(mergeHint, BattleUiLayout.CueLabel(mergeHint)),
                 "drop/state cue escaped the authoritative target rectangle");
@@ -340,21 +376,26 @@ namespace FruitDefense.Editor
             Assert(ready.Mode == BattleUiChromeMode.Ready && ready.ShowsWaveAction
                 && ready.WaveActionLabel == "开始波次" && !ready.BlocksDrag
                 && ready.PauseActionIcon == RuntimeUiArtSlot.IconControlPause
-                && ready.StatusInteractionState == RuntimeUiInteractionState.Normal,
+                && ready.PhaseStatusInteractionState == RuntimeUiInteractionState.Warning
+                && !ready.BlocksBackgroundInput,
                 "ready presentation state changed");
             Assert(active.Mode == BattleUiChromeMode.ActiveWave && !active.ShowsWaveAction
-                && active.BoardStatusText(3, 7, 0f) == "第 3 波 · 7 个敌人",
+                && active.PhaseStatusText(3, 7, 0f) == "第 3 波 · 7 个敌人"
+                && active.PhaseStatusInteractionState == RuntimeUiInteractionState.Normal
+                && !active.BlocksBackgroundInput,
                 "active-wave presentation state changed");
             Assert(between.Mode == BattleUiChromeMode.BetweenWaves && between.ShowsWaveAction
                 && between.WaveActionLabel == "立即开始下一波"
-                && between.BoardStatusText(1, 0, 9.5f) == "下一波倒计时 10 秒"
-                && between.StatusInteractionState == RuntimeUiInteractionState.Warning,
+                && between.PhaseStatusText(1, 0, 9.5f) == "下一波倒计时 10 秒"
+                && between.PhaseStatusInteractionState == RuntimeUiInteractionState.Warning
+                && !between.BlocksBackgroundInput,
                 "between-wave presentation state changed");
             Assert(paused.Mode == BattleUiChromeMode.Paused && paused.BlocksDrag
                 && paused.ModalActionCount == 2
                 && paused.PauseActionIcon == RuntimeUiArtSlot.IconControlContinue
-                && paused.BoardMode == BattleUiBoardMode.ActiveWave
-                && paused.BoardStatusText(3, 7, 0f) == "第 3 波 · 7 个敌人"
+                && paused.PhaseMode == BattleUiPhaseMode.ActiveWave
+                && paused.PhaseStatusText(3, 7, 0f) == "第 3 波 · 7 个敌人"
+                && paused.BlocksBackgroundInput
                 && pausedModal.SurfaceState == RuntimeUiInteractionState.Warning
                 && !pausedModal.UsesResultCard
                 && pausedModal.PrimaryActionKind == RuntimeUiActionKind.Primary
@@ -364,7 +405,8 @@ namespace FruitDefense.Editor
                 "paused presentation state changed");
             Assert(victory.Mode == BattleUiChromeMode.Victory && victory.BlocksDrag
                 && victory.ModalActionCount == 1
-                && victory.StatusInteractionState == RuntimeUiInteractionState.Success
+                && victory.PhaseStatusInteractionState == RuntimeUiInteractionState.Success
+                && victory.BlocksBackgroundInput
                 && victoryModal.MessageLines.FirstLine == "成功抵御全部"
                 && victoryModal.MessageLines.SecondLine == "10 波僵尸"
                 && victoryModal.SurfaceState == RuntimeUiInteractionState.Success
@@ -374,7 +416,8 @@ namespace FruitDefense.Editor
                 && victoryModal.PrimaryActionIcon == RuntimeUiArtSlot.IconControlRetry,
                 "victory presentation or terminal precedence changed");
             Assert(defeat.Mode == BattleUiChromeMode.Defeat && defeat.BlocksDrag
-                && defeat.StatusInteractionState == RuntimeUiInteractionState.Error
+                && defeat.PhaseStatusInteractionState == RuntimeUiInteractionState.Error
+                && defeat.BlocksBackgroundInput
                 && defeatModal.MessageLines.FirstLine == "坚持到第 6 波"
                 && !defeatModal.MessageLines.HasSecondLine
                 && defeatModal.SurfaceState == RuntimeUiInteractionState.Error
@@ -416,6 +459,17 @@ namespace FruitDefense.Editor
                 && BattleUiPresentationState.DropIndicatorKind(
                     BattleUiDropCue.Swap) == RuntimeUiIndicatorKind.Swap,
                 "finite legal/illegal/merge/swap cues changed");
+            Assert(BattleUiPresentationState.SnapsPlantDragFeedback(
+                    BattleUiDropCue.Legal)
+                && BattleUiPresentationState.SnapsPlantDragFeedback(
+                    BattleUiDropCue.Merge)
+                && BattleUiPresentationState.SnapsPlantDragFeedback(
+                    BattleUiDropCue.Swap)
+                && !BattleUiPresentationState.SnapsPlantDragFeedback(
+                    BattleUiDropCue.Illegal)
+                && !BattleUiPresentationState.SnapsPlantDragFeedback(
+                    BattleUiDropCue.None),
+                "plant drag feedback snap semantics changed");
             Assert(BattleUiPresentationState.ResolveTransientStatusState(
                     RuntimeUiInteractionState.Normal, BattleUiDropCue.None)
                     == RuntimeUiInteractionState.Normal
@@ -434,73 +488,155 @@ namespace FruitDefense.Editor
                 "transient status uses the finite real success/error prefixes");
         }
 
-        private static void ValidateBetweenWaveSingleLineText(BattleUiLayout layout)
+        private static void ValidateDragFeedbackGeometry(BattleUiLayout layout)
+        {
+            var source = layout.NurserySlot(0);
+            var freePreview = layout.ClampDragPreview(
+                DragGeometry.PreviewRect(new Vector2(190f, 610f)));
+            var free = DragGeometry.ResolveConnector(source, freePreview);
+            Assert(free.Visible && free.DashCount > 0
+                && PointOnBoundary(source, free.Start)
+                && PointOnBoundary(freePreview, free.End),
+                "free plant drag connector does not join authoritative source and preview bounds");
+            for (var index = 0; index < free.DashCount; index++)
+            {
+                var dash = free.DashRect(index);
+                Assert(IsFinite(dash.x) && IsFinite(dash.y)
+                    && IsFinite(dash.width) && IsFinite(dash.height)
+                    && dash.width > 0f
+                    && Mathf.Approximately(
+                        dash.height, DragGeometry.ConnectorThickness)
+                    && dash.xMin >= free.Start.x
+                    && dash.xMax <= free.Start.x + free.Length + .01f,
+                    "plant drag connector produced invalid dash geometry at " + index);
+            }
+
+            var target = new Rect(248f, 238f, 46f, 46f);
+            var snapped = DragGeometry.ResolveConnector(source, target);
+            Assert(snapped.Visible
+                && PointOnBoundary(source, snapped.Start)
+                && PointOnBoundary(target, snapped.End),
+                "legal plant drag connector does not terminate on the authoritative target frame");
+
+            var pcViewport = BattlefieldProjection.CalculateViewportLayout(
+                1280f, 720f, new Rect(0f, 0f, 1280f, 720f),
+                BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
+            var projected = DragGeometry.ProjectConnector(
+                snapped, pcViewport.GuiMatrix);
+            var expectedStart3 = pcViewport.GuiMatrix.MultiplyPoint3x4(snapped.Start);
+            var expectedEnd3 = pcViewport.GuiMatrix.MultiplyPoint3x4(snapped.End);
+            Assert(projected.Visible
+                && Approximately(projected.Start,
+                    new Vector2(expectedStart3.x, expectedStart3.y))
+                && Approximately(projected.End,
+                    new Vector2(expectedEnd3.x, expectedEnd3.y))
+                && Mathf.Approximately(projected.Thickness,
+                    snapped.Thickness * pcViewport.Scale)
+                && Mathf.Abs(projected.AngleDegrees - snapped.AngleDegrees) < .01f,
+                "letterboxed PC connector projection reapplied offset or skewed its dashes");
+            for (var index = 0; index < projected.DashCount; index++)
+            {
+                var dash = projected.DashRect(index);
+                Assert(IsFinite(dash.x) && IsFinite(dash.y)
+                    && IsFinite(dash.width) && IsFinite(dash.height)
+                    && dash.width > 0f && dash.height > 0f,
+                    "letterboxed PC connector produced invalid projected dash geometry at "
+                    + index);
+            }
+            Assert(!DragGeometry.ResolveConnector(source, source).Visible
+                && !DragGeometry.ResolveConnector(default, target).Visible
+                && !DragGeometry.ProjectConnector(snapped, Matrix4x4.zero).Visible,
+                "overlapping or invalid drag feedback geometry remained visible");
+        }
+
+        private static void ValidatePhaseWaveText(BattleUiLayout layout)
         {
             var theme = ProjectSetup.RequireReleaseRuntimeUiTheme();
-            Assert(theme.PackagedChineseFont != null,
-                "release theme has no packaged Chinese font");
+            var actionFont = theme.Typography.For(
+                RuntimeUiTypographyRole.ControlLabel).Font;
+            var statusFont = theme.Typography.For(
+                RuntimeUiTypographyRole.Supplemental).Font;
+            Assert(actionFont != null && statusFont != null,
+                "release theme has no packaged role font for phase/Wave copy");
             var context = RuntimeUiDrawContext.Create(theme, 1f);
             var actionStyle = context.Styles.SingleLineText(
-                RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleCenter);
-            var statusLayout = RuntimeUiGui.ResolveStatusTextLayout(context,
-                layout.BoardStatusWithWaveAction, RuntimeUiInteractionState.Warning,
-                RuntimeUiTypographyRole.Supplemental,
-                RuntimeUiStatusTextMode.SingleLine);
-            var statusStyle = statusLayout.Style;
-            Assert(ReferenceEquals(actionStyle.font, theme.PackagedChineseFont)
-                && ReferenceEquals(statusStyle.font, theme.PackagedChineseFont)
-                && !actionStyle.wordWrap && !statusStyle.wordWrap
+                RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+            Assert(ReferenceEquals(actionStyle.font, actionFont)
+                && !actionStyle.wordWrap
                 && actionStyle.clipping == TextClipping.Clip
-                && statusStyle.clipping == TextClipping.Clip,
-                "between-wave single-line styles must use the release Noto font without wrapping");
+                && statusFont != null,
+                "phase/Wave styles must use their packaged role fonts without wrapping");
 
             var between = BattleUiPresentationState.Create(GamePhase.BetweenWaves, false);
             var actionText = between.WaveActionLabel;
-            var statusNineSeconds = between.BoardStatusText(1, 0, 8.5f);
-            var statusTenSeconds = between.BoardStatusText(1, 0, 9.5f);
+            var statusNineSeconds = between.PhaseStatusText(1, 0, 8.5f);
+            var statusTenSeconds = between.PhaseStatusText(1, 0, 9.5f);
             Assert(actionText == "立即开始下一波"
                 && statusNineSeconds == "下一波倒计时 9 秒"
                 && statusTenSeconds == "下一波倒计时 10 秒",
                 "between-wave product copy changed");
 
-            var actionContentHeight = layout.WaveAction.height
-                - theme.Metrics.SpacingSm * 2f;
-            var actionIconWidth = Mathf.Min(actionContentHeight,
-                theme.Metrics.TouchTargetMinimum);
-            var actionContentSize = new Vector2(
-                layout.WaveAction.width - theme.Metrics.SpacingSm * 2f
-                    - actionIconWidth - theme.Metrics.SpacingXs,
-                actionContentHeight);
-            var statusContentSize = statusLayout.FirstLineRect.size;
+            var actionLayout = RuntimeUiGui.ResolveActionContentLayout(
+                context, layout.WaveAction, actionText,
+                BattleUiPresentationState.ResolveActionSpec(
+                    BattleUiActionSemantic.StartWave),
+                RuntimeUiInteractionState.Normal,
+                RuntimeUiArtSlot.IconControlStartWave,
+                RuntimeUiTypographyRole.ControlLabel);
+            Assert(actionLayout.Fits
+                && Contains(layout.WaveAction, actionLayout.GroupRect),
+                "Wave action does not contain its packaged control-label font and icon");
+            AssertStatusCopyFits(context, layout.PhaseStatusWithWaveAction,
+                statusNineSeconds, RuntimeUiInteractionState.Warning,
+                "nine-second phase status");
+            AssertStatusCopyFits(context, layout.PhaseStatusWithWaveAction,
+                statusTenSeconds, RuntimeUiInteractionState.Warning,
+                "ten-second phase status");
 
-            var full = BattlefieldProjection.CalculateViewportLayout(
-                402f, 874f, new Rect(0f, 0f, 402f, 874f), 402f, 874f);
-            var inset = BattlefieldProjection.CalculateViewportLayout(
-                402f, 874f, new Rect(0f, 34f, 402f, 796f), 402f, 874f);
-            AssertSingleLineFits(actionStyle, actionText, actionContentSize,
-                full.Scale, "402 full wave action");
-            AssertSingleLineFits(statusStyle, statusNineSeconds, statusContentSize,
-                full.Scale, "402 full nine-second status");
-            AssertSingleLineFits(statusStyle, statusTenSeconds, statusContentSize,
-                full.Scale, "402 full ten-second status");
-            AssertSingleLineFits(actionStyle, actionText, actionContentSize,
-                inset.Scale, "402 inset wave action");
-            AssertSingleLineFits(statusStyle, statusNineSeconds, statusContentSize,
-                inset.Scale, "402 inset nine-second status");
-            AssertSingleLineFits(statusStyle, statusTenSeconds, statusContentSize,
-                inset.Scale, "402 inset ten-second status");
-
-            Assert(Approximately(layout.BoardStatusWithWaveAction,
-                    new Rect(16f, 544f, 190f, 48f))
-                && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
+            Assert(Approximately(layout.PhaseStatusWithWaveAction,
+                    new Rect(24f, 518f, 168f, 52f))
+                && Approximately(layout.WaveAction, new Rect(204f, 518f, 174f, 52f)),
                 "between-wave draw/hit rectangles changed while fixing text clipping");
+        }
+
+        private static void AssertStatusCopyFits(RuntimeUiDrawContext context,
+            Rect owner, string text, RuntimeUiInteractionState state,
+            string caseName)
+        {
+            var mode = RuntimeUiGui.ResolveStatusTextMode(context, owner, text,
+                state, RuntimeUiTypographyRole.Supplemental);
+            var layout = RuntimeUiGui.ResolveStatusTextLayout(context, owner,
+                state, RuntimeUiTypographyRole.Supplemental, mode);
+            var lines = RuntimeUiGui.ResolveStatusTextLines(layout, text);
+            Assert(ReferenceEquals(layout.Style.font, context.Theme.Typography.For(
+                       RuntimeUiTypographyRole.Supplemental).Font)
+                && !layout.Style.wordWrap
+                && layout.Style.clipping == TextClipping.Clip,
+                caseName + " does not use the packaged supplemental role");
+            if (mode == RuntimeUiStatusTextMode.SingleLine)
+            {
+                Assert(!lines.HasSecondLine && lines.FirstLine == text,
+                    caseName + " changed its complete one-line copy");
+                AssertControlledLineFits(layout.Style, lines.FirstLine,
+                    layout.FirstLineRect, 1f, caseName);
+                return;
+            }
+
+            Assert(mode == RuntimeUiStatusTextMode.CompactTwoLines
+                && lines.HasSecondLine
+                && lines.FirstLine + lines.SecondLine == text,
+                caseName + " is not a complete controlled two-line copy");
+            AssertControlledLineFits(layout.Style, lines.FirstLine,
+                layout.FirstLineRect, 1f, caseName + " first line");
+            AssertControlledLineFits(layout.Style, lines.SecondLine,
+                layout.SecondLineRect, 1f, caseName + " second line");
         }
 
         private static void ValidateTransientStatusText(BattleUiLayout layout)
         {
             var theme = ProjectSetup.RequireReleaseRuntimeUiTheme();
             var context = RuntimeUiDrawContext.Create(theme, 1f);
-            var statusRect = layout.BoardStatusWithWaveAction;
+            var statusRect = layout.PhaseStatusWithWaveAction;
             var plantDetail = "正在查看豌豆；拖动可移动或合成";
             var messages = new[]
             {
@@ -565,7 +701,8 @@ namespace FruitDefense.Editor
                     RuntimeUiInteractionState.Success,
                     RuntimeUiTypographyRole.Supplemental, mode);
                 var textLines = RuntimeUiGui.ResolveStatusTextLines(textLayout, message);
-                Assert(textLayout.Style.font == theme.PackagedChineseFont
+                Assert(textLayout.Style.font == theme.Typography.For(
+                           RuntimeUiTypographyRole.Supplemental).Font
                     && textLayout.Style.clipping == TextClipping.Clip,
                     "transient status must use the release Noto font and controlled clipping: "
                     + message);
@@ -657,9 +794,9 @@ namespace FruitDefense.Editor
                     && plantLines.HasSecondLine
                     && plantLines.FirstLine + plantLines.SecondLine == plantDetail,
                 "plant-detail product copy must remain complete and render on two lines");
-            Assert(Approximately(statusRect, new Rect(16f, 544f, 190f, 48f))
-                    && Approximately(layout.WaveAction, new Rect(210f, 548f, 184f, 44f)),
-                "transient status fix changed board status or wave-action draw/hit geometry");
+            Assert(Approximately(statusRect, new Rect(24f, 518f, 168f, 52f))
+                    && Approximately(layout.WaveAction, new Rect(204f, 518f, 174f, 52f)),
+                "transient status fix changed phase status or Wave draw/hit geometry");
         }
 
         private static void AssertSingleLineFits(GUIStyle style, string text,
@@ -670,8 +807,10 @@ namespace FruitDefense.Editor
             var calculatedHeight = style.CalcHeight(content, availableLogicalSize.x);
             var measuredPixels = measured * viewportScale;
             var availablePixels = availableLogicalSize * viewportScale;
-            Assert(measuredPixels.x <= availablePixels.x + .001f
-                && calculatedHeight * viewportScale <= availablePixels.y + .001f,
+            const float pixelRoundingTolerance = .25f;
+            Assert(measuredPixels.x <= availablePixels.x + pixelRoundingTolerance
+                && calculatedHeight * viewportScale <= availablePixels.y
+                    + pixelRoundingTolerance,
                 caseName + " must fit one line; measured " + measuredPixels
                 + " CalcHeight=" + calculatedHeight * viewportScale
                 + " available " + availablePixels);
@@ -691,11 +830,17 @@ namespace FruitDefense.Editor
             var header = MethodSlice(source,
                 "private void DrawHeader(", "private void DrawBoard(");
             var status = MethodSlice(source,
-                "private void DrawBoardStatus(", "private void DrawEmbeddedBattleControls(");
+                "private void DrawPhaseWaveRow(", "private void DrawEmbeddedBattleControls(");
+            var embeddedControls = MethodSlice(source,
+                "private void DrawEmbeddedBattleControls(", "private void DrawTools(");
+            var nursery = MethodSlice(source,
+                "private void DrawNursery(", "private void RefreshNurseryFromUi(");
 
-            Assert(header.Contains("RuntimeUiGui.DrawStandardPanel")
+            Assert(header.Contains("RuntimeUiGui.DrawRaisedPanel")
                 && header.Contains("RuntimeUiGui.DrawMetric")
-                && header.Contains("RuntimeUiGui.DrawMetricDivider")
+                && CountOccurrences(header, "drawSurface: true") == 3
+                && !header.Contains("drawSurface: false")
+                && !header.Contains("RuntimeUiGui.DrawMetricDivider")
                 && header.Contains("TrackBattleAction(")
                 && header.Contains("RuntimeUiGui.DrawCompactControlVisual")
                 && !header.Contains("RuntimeUiActionKind.Quiet")
@@ -705,14 +850,17 @@ namespace FruitDefense.Editor
                 && status.Contains("TrackBattleAction(")
                 && status.Contains("RuntimeUiGui.DrawActionVisual")
                 && status.Contains("PrepareTransientStatusText")
-                && status.Contains("RuntimeUiStatusTextMode.SingleLine")
+                && status.Contains("RuntimeUiGui.ResolveStatusTextMode")
                 && status.Contains("RuntimeUiArtSlot.IconControlStartWave")
                 && status.Contains("_game.StartWave(out var reason)")
                 && source.Contains("_actionPressTracker.Update")
                 && source.Contains("RuntimeUiGui.ResolveStatusTextMode")
                 && source.Contains("RuntimeUiGui.ResolveStatusTextLines")
-                && source.Contains("_runtimeUiDrawContext = RuntimeUiGui.RequireContext"),
-                "header/status slice is not bound to the cached shared visual system");
+                && source.Contains("_runtimeUiDrawContext = RuntimeUiGui.RequireContext")
+                && embeddedControls.Contains(
+                    "RuntimeUiGui.DrawStandardPanel(drawContext, layout.NurseryTray)")
+                && !nursery.Contains("drawSurface: false"),
+                "header/phase-Wave and framed nursery slices are bound to the cached shared visual system");
 
             var sharedSource = RuntimeUiSourceAuthority.ReadRuntimeGui();
             Assert(sharedSource.Contains("public GUIStyle SingleLineText(")
@@ -738,18 +886,25 @@ namespace FruitDefense.Editor
             {
                 Assert(!header.Contains(legacyTokens[index])
                     && !status.Contains(legacyTokens[index]),
-                    "header/status slice retained legacy rendering: " + legacyTokens[index]);
+                    "header/phase-Wave slice retained legacy rendering: " + legacyTokens[index]);
             }
         }
 
         private static void ValidateSharedControlSource()
         {
             var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
+            var runtimeGui = RuntimeUiSourceAuthority.ReadRuntimeGui();
             var controls = MethodSlice(source,
                 "private void DrawEmbeddedBattleControls(",
                 "private void RefreshNurseryFromUi(");
             var dragGhost = MethodSlice(source,
                 "private void DrawDragGhost(", "private void DrawOverlay(");
+            var dragConnector = MethodSlice(runtimeGui,
+                "public static void DrawDragConnector(",
+                "public static void DrawDragTargetFrame(");
+            var dragTargetFrame = MethodSlice(runtimeGui,
+                "public static void DrawDragTargetFrame(",
+                "public static void DrawStateIndicator(");
 
             Assert(controls.Contains("RuntimeUiGui.DrawStandardPanel")
                 && controls.Contains("RuntimeUiGui.DrawSlot")
@@ -759,12 +914,40 @@ namespace FruitDefense.Editor
                 && controls.Contains("DrawSelectedPlant(layout, drawContext)")
                 && !controls.Contains("RuntimeUiGui.DrawText")
                 && controls.Contains("RuntimeUiArtSlot.IconToolPot")
+                && controls.Contains("BattleUiLayout.ToolRecipeSourceIcon")
+                && controls.Contains("BattleUiLayout.ToolRecipeOperator")
+                && controls.Contains("BattleUiLayout.ToolRecipeTargetIcon")
+                && controls.Contains("BattleUiLayout.ToolInventoryBadge")
+                && !controls.Contains("ToolCountLabel")
+                && !controls.Contains("PotToolNameLabel")
+                && !controls.Contains("PotToolCountLabel")
                 && controls.Contains("RuntimeUiArtSlot.IconControlRefresh")
                 && controls.Contains("DrawSharedHitTarget")
                 && dragGhost.Contains("RuntimeUiGui.DrawStandardPanel")
                 && dragGhost.Contains("RuntimeUiGui.DrawSingleLineText")
                 && !dragGhost.Contains("RuntimeUiGui.DrawText")
                 && dragGhost.Contains("DrawDropCue")
+                && source.Contains("SourceRect = rect")
+                && dragGhost.Contains("RuntimeUiGui.DrawDragConnector")
+                && dragGhost.Contains("RuntimeUiGui.DrawDragTargetFrame")
+                && dragGhost.Contains("_drag.SourceRect")
+                && dragGhost.Contains("currentTarget.Rect")
+                && dragGhost.Contains(
+                    "if (_drag == null || !_drag.Active) return;")
+                && dragGhost.Contains(
+                    "_drag.Type != DragPayloadType.Plant")
+                && dragGhost.Contains("Vector2.Lerp(")
+                && runtimeGui.Contains(
+                    "public static void DrawDragConnector(")
+                && runtimeGui.Contains(
+                    "public static void DrawDragTargetFrame(")
+                && dragConnector.Contains("DragGeometry.ProjectConnector")
+                && dragConnector.Contains("GUI.matrix = Matrix4x4.identity")
+                && dragConnector.Contains("RuntimeUiArtSlot.SurfaceScrim")
+                && dragTargetFrame.Contains(
+                    "RuntimeUiArtSlot.SurfaceIllustrationFrame")
+                && !dragTargetFrame.Contains("new Rect(")
+                && !dragTargetFrame.Contains("RuntimeUiArtSlot.SurfaceScrim")
                 && source.Contains("BattleUiPresentationState.DropIndicatorKind")
                 && !source.Contains("DropHighlightColor")
                 && !source.Contains("IsCurrentDropTarget")
@@ -814,6 +997,10 @@ namespace FruitDefense.Editor
                 && overlay.Contains("_game.TogglePause()")
                 && overlay.Contains("RestartRun"),
                 "pause/result slice is not bound to the shared modal/result components");
+            Assert(source.Contains("BlocksBackgroundInput()")
+                && source.Contains("IsModalActionTarget(target)")
+                && source.Contains("if (BlocksBackgroundInput()) return false;"),
+                "blocking modal does not reject background action and hit-target input");
 
             var legacyTokens = new[]
             {
@@ -839,6 +1026,10 @@ namespace FruitDefense.Editor
             var worldRect = MethodSlice(source,
                 "private static void DrawWorldRect(",
                 "private static void DrawWorldOutline(");
+            var projectionSource = File.ReadAllText(
+                "Assets/Scripts/Core/BattlefieldProjection.cs");
+            var layoutSource = File.ReadAllText(
+                "Assets/Scripts/Presentation/BattleUiLayout.cs");
 
             const string ScreenBackgroundToken = "RuntimeUiGui.DrawScreenBackground";
             var firstScreenBackground = viewportChrome.IndexOf(
@@ -854,9 +1045,30 @@ namespace FruitDefense.Editor
                 && firstScreenBackground < viewportChrome.IndexOf(
                     "GUI.matrix = viewportLayout.GuiMatrix", System.StringComparison.Ordinal)
                 && !viewportChrome.Contains("DrawWorldRect")
-                && boardChrome.Contains("RuntimeUiGui.DrawGameplayStage")
+                && viewportChrome.Contains("DrawPhaseWaveRow(")
+                && viewportChrome.Contains("RuntimeUiGui.DrawSafeArea(")
+                && viewportChrome.Contains("layout.PageShell")
+                && viewportChrome.IndexOf("DrawHeader(", StringComparison.Ordinal)
+                    < viewportChrome.IndexOf("RuntimeUiGui.DrawSafeArea(", StringComparison.Ordinal)
+                && viewportChrome.IndexOf("RuntimeUiGui.DrawSafeArea(", StringComparison.Ordinal)
+                    < viewportChrome.IndexOf("DrawBoard(", StringComparison.Ordinal)
+                && viewportChrome.IndexOf("DrawOverlay(", StringComparison.Ordinal)
+                    < viewportChrome.IndexOf("RuntimeUiGui.DrawScreenCorners(", StringComparison.Ordinal)
+                && viewportChrome.Contains("RuntimeUiGui.DrawGameplayStage")
+                && !boardChrome.Contains("RuntimeUiGui.DrawGameplayStage")
                 && !boardChrome.Contains("DrawWorldRect"),
                 "screen background must draw exactly once in identity viewport space before Battle chrome");
+
+            var removedWaveGeometryTokens = new[]
+            {
+                "ControlStripRect", "WaveActionRect", "ValidateControlInset",
+                "BoardStatus", "BoardStatusWithWaveAction",
+            };
+            foreach (var token in removedWaveGeometryTokens)
+                Assert(!projectionSource.Contains(token)
+                    && !layoutSource.Contains(token)
+                    && !source.Contains(token),
+                    "Battle retained removed in-stage Wave geometry: " + token);
 
             var removedSimulationViewTokens = new[]
             {
@@ -882,7 +1094,8 @@ namespace FruitDefense.Editor
                     "Battle retained legacy UI compatibility: " + removedTokens[index]);
 
             Assert(source.Contains("BuildWorldRenderingStyles")
-                && source.Contains("runtimeUiTheme.PackagedChineseFont")
+                && source.Contains("runtimeUiTheme.Typography.For(")
+                && source.Contains("RuntimeUiTypographyRole.Body).Font")
                 && source.Contains("private void DrawWorldLabel(")
                 && source.Contains("private static void DrawWorldRect(")
                 && source.Contains("private static void DrawWorldOutline("),
@@ -910,6 +1123,162 @@ namespace FruitDefense.Editor
             return source.Substring(start, end - start);
         }
 
+        private static void ValidateBattlefieldContainmentSource(
+            BattleUiLayout layout)
+        {
+            var source = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
+            var runtimeGui = RuntimeUiSourceAuthority.ReadRuntimeGui();
+            var viewportChrome = MethodSlice(source,
+                "private void OnGUI(", "private void HandleDragInput(");
+            var board = MethodSlice(source,
+                "private void DrawBoard(", "private bool DrawBattlefieldTerrain(");
+            var dragGhost = MethodSlice(source,
+                "private void DrawDragGhost(", "private void DrawOverlay(");
+            var drawGhostIndex = viewportChrome.IndexOf(
+                "DrawDragGhost(", StringComparison.Ordinal);
+            var drawStageIndex = viewportChrome.IndexOf(
+                "RuntimeUiGui.DrawGameplayStage(", StringComparison.Ordinal);
+            var drawOverlayIndex = viewportChrome.IndexOf(
+                "DrawOverlay(", StringComparison.Ordinal);
+            var connectorIndex = dragGhost.IndexOf(
+                "RuntimeUiGui.DrawDragConnector", StringComparison.Ordinal);
+            var clipIndex = dragGhost.IndexOf(
+                "BeginAbsoluteDesignClip(layout,", StringComparison.Ordinal);
+            var targetFrameIndex = dragGhost.IndexOf(
+                "RuntimeUiGui.DrawDragTargetFrame", StringComparison.Ordinal);
+            var ghostIndex = dragGhost.IndexOf(
+                "DrawTempSprite(rect", StringComparison.Ordinal);
+
+            Assert(board.Contains("BeginBattleStageClip(layout)")
+                && board.Contains(
+                    "RuntimeUiGui.GameplayStageMaskRect(")
+                && board.Contains(
+                    "BeginAbsoluteDesignClip(layout, maskRect)")
+                && board.Contains("finally")
+                && board.Contains("EndAbsoluteDesignClip()")
+                && board.Contains("EndBattleStageClip()")
+                && board.Contains("DrawBattlefieldHitTargets(layout, drawContext)")
+                && !board.Contains("RuntimeUiGui.DrawGameplayStage")
+                && board.IndexOf("BeginBattleStageClip(layout)", StringComparison.Ordinal)
+                    < board.IndexOf("DrawBattlefieldTerrain(maskRect)", StringComparison.Ordinal)
+                && board.IndexOf("DrawBattlefieldFlash(layout)", StringComparison.Ordinal)
+                    < board.IndexOf("EndAbsoluteDesignClip()", StringComparison.Ordinal)
+                && board.IndexOf("EndAbsoluteDesignClip()", StringComparison.Ordinal)
+                    < board.IndexOf("DrawBattlefieldHitTargets(layout, drawContext)", StringComparison.Ordinal)
+                && board.IndexOf("DrawBattlefieldHitTargets(layout, drawContext)", StringComparison.Ordinal)
+                    < board.LastIndexOf("EndBattleStageClip()", StringComparison.Ordinal)
+                && source.Contains("GUI.BeginGroup(clipRect)")
+                && source.Contains(
+                    "absoluteDesign.position = -clipRect.position")
+                && CountOccurrences(source,
+                    "BeginBattleStageClip(layout)") == 1
+                && CountOccurrences(source,
+                    "BeginAbsoluteDesignClip(layout,") == 3
+                && runtimeGui.Contains(
+                    "private const float GameplayStageMaskInset = 8f;")
+                && runtimeGui.Contains(
+                    "public static Rect GameplayStageMaskRect(")
+                && !runtimeGui.Contains(
+                    "var safeInset = binding.SafeInset")
+                && runtimeGui.Contains("_ClipRectPixels")
+                && runtimeGui.Contains("SystemInfo.graphicsUVStartsAtTop")
+                && File.ReadAllText(
+                    "Assets/UI/RuntimeUiNineSlice.shader").Contains(
+                    "clip(input.vertex.x - _ClipRectPixels.x)"),
+                "battlefield visuals must use the component-owned 8pt opening clip while hit targets retain the guarded BattleStage clip");
+            Assert(drawGhostIndex >= 0 && drawStageIndex > drawGhostIndex
+                && drawOverlayIndex > drawStageIndex
+                && CountOccurrences(source,
+                    "RuntimeUiGui.DrawGameplayStage(") == 1,
+                "gameplay-stage frame must be the final stage occluder before blocking overlays");
+            var terrainRenderer = File.ReadAllText(
+                "Assets/Scripts/Tilemaps/BattlefieldDualGridTerrain.cs");
+            var drawTerrain = MethodSlice(source,
+                "private bool DrawBattlefieldTerrain(",
+                "private void RefreshTerrainPresentationStatus(");
+            Assert(drawTerrain.Contains(
+                    "BattlefieldTerrainGuiRenderer.DrawBackdrop(")
+                && drawTerrain.IndexOf(
+                    "BattlefieldTerrainGuiRenderer.DrawBackdrop(",
+                    StringComparison.Ordinal)
+                    < drawTerrain.IndexOf(
+                        "BattlefieldTerrainGuiRenderer.DrawValidated(",
+                        StringComparison.Ordinal)
+                && terrainRenderer.Contains(
+                    "public static void DrawBackdrop(")
+                && terrainRenderer.Contains(
+                    "map.GridHeight - (backdropRect.yMax - grid.yMin) / tileSize")
+                && terrainRenderer.Contains(
+                    "GUI.DrawTextureWithTexCoords(backdropRect, texture, uv, true)"),
+                "base terrain backdrop must fill the stage mask before the unchanged square grid");
+            var imageAnalysis = File.ReadAllText(
+                "scripts/webgl-acceptance/image-analysis.ps1");
+            var directAcceptance = File.ReadAllText(
+                "scripts/webgl-acceptance/run-direct.ps1");
+            Assert(imageAnalysis.Contains(
+                    "function Get-BattleStageBackdropFitEvidence")
+                && imageAnalysis.Contains(
+                    "base terrain fills both vertical aspect-ratio gutters")
+                && directAcceptance.Contains(
+                    "Get-BattleStageBackdropFitEvidence")
+                && directAcceptance.Contains(
+                    "battleStageVerticalBackdropFit = 'pass'"),
+                "WebGL acceptance must verify top and bottom base-terrain gutter coverage");
+            Assert(connectorIndex >= 0 && clipIndex > connectorIndex
+                && targetFrameIndex > clipIndex && ghostIndex > clipIndex
+                && dragGhost.Contains(
+                    "currentTarget.Type == DropTargetType.Pot")
+                && dragGhost.Contains(
+                    "currentTarget.Type == DropTargetType.Plant")
+                && dragGhost.Contains(
+                    "currentTarget.Type == DropTargetType.Expansion")
+                && dragGhost.Contains(
+                    "RuntimeUiGui.GameplayStageMaskRect(")
+                && dragGhost.Contains(
+                    "currentDropCue), stageMaskRect")
+                && dragGhost.Contains(
+                    "if (clipsToBattleStage) EndAbsoluteDesignClip()"),
+                "board-target frame/cue/ghost must be clipped while the connector remains cross-region");
+
+            var releaseTheme = UnityEditor.AssetDatabase.LoadAssetAtPath<RuntimeUiTheme>(
+                "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset");
+            Assert(releaseTheme != null && releaseTheme.ActiveArtSet != null,
+                "release gameplay-stage binding is unavailable");
+            var context = RuntimeUiDrawContext.Create(releaseTheme, 1f);
+            var maskRect = RuntimeUiGui.GameplayStageMaskRect(
+                context, layout.BattleStage);
+            Assert(Approximately(maskRect,
+                    new Rect(30f, 176f, 342f, 322f))
+                && Contains(layout.BattleStage, maskRect),
+                "gameplay-stage component must resolve the seam-free protected 8pt mask rect");
+            var pcViewport = BattlefieldProjection.CalculateViewportLayout(
+                1280f, 720f, new Rect(0f, 0f, 1280f, 720f),
+                BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
+            var pcStage = pcViewport.ProjectDesignRect(layout.BattleStage);
+            var pcBoard = pcViewport.ProjectDesignRect(layout.Board);
+            var pcContent = pcViewport.ProjectDesignRect(maskRect);
+            Assert(pcViewport.Scale > 0f && pcViewport.Scale < 1f
+                && IsFinite(pcStage.x) && IsFinite(pcStage.y)
+                && IsFinite(pcStage.width) && IsFinite(pcStage.height)
+                && pcStage.width > 0f && pcStage.height > 0f
+                && Approximately(pcStage, pcBoard)
+                && Contains(pcStage, pcContent)
+                && Contains(pcViewport.DesignViewportRect, pcStage),
+                "1280x720 fractional projection must keep clip, content, frame, and hit geometry identical");
+        }
+
+        private static int CountOccurrences(string source, string token)
+        {
+            var count = 0;
+            for (var index = 0;;)
+            {
+                index = source.IndexOf(token, index, StringComparison.Ordinal);
+                if (index < 0) return count;
+                count++;
+                index += token.Length;
+            }
+        }
+
         private static bool Approximately(Rect left, Rect right)
         {
             return Approximately(left.position, right.position)
@@ -920,6 +1289,24 @@ namespace FruitDefense.Editor
         {
             return Mathf.Abs(left.x - right.x) <= .001f
                 && Mathf.Abs(left.y - right.y) <= .001f;
+        }
+
+        private static bool PointOnBoundary(Rect rect, Vector2 point)
+        {
+            const float tolerance = .001f;
+            var contained = point.x >= rect.xMin - tolerance
+                && point.x <= rect.xMax + tolerance
+                && point.y >= rect.yMin - tolerance
+                && point.y <= rect.yMax + tolerance;
+            return contained && (Mathf.Abs(point.x - rect.xMin) <= tolerance
+                || Mathf.Abs(point.x - rect.xMax) <= tolerance
+                || Mathf.Abs(point.y - rect.yMin) <= tolerance
+                || Mathf.Abs(point.y - rect.yMax) <= tolerance);
+        }
+
+        private static bool IsFinite(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
         }
 
         private static Rect SnapDeviceRect(Rect rect)

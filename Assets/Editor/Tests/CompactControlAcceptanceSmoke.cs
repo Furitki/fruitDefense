@@ -77,9 +77,20 @@ namespace FruitDefense.Editor
             }
             var nursery = Slice(battle, "private void DrawNursery(",
                 "private void RefreshNurseryFromUi(");
+            var tools = Slice(battle, "private void DrawTools(",
+                "private void DrawNursery(");
+            var embeddedControls = Slice(battle,
+                "private void DrawEmbeddedBattleControls(", "private void DrawTools(");
             Assert(nursery.Contains("BattleUiActionSemantic.NurseryRefresh")
+                && nursery.Contains("BeginNurserySelectionPulse(slot)")
+                && nursery.Contains("NurserySelectionMotion(slot)")
+                && !nursery.Contains("drawSurface: false")
+                && embeddedControls.Contains(
+                    "RuntimeUiGui.DrawStandardPanel(drawContext, layout.NurseryTray)")
+                && !nursery.Contains("DrawStateIndicator(")
+                && !tools.Contains("DrawStateIndicator(")
                 && !nursery.Contains("RuntimeUiActionKind.Primary"),
-                "nursery refresh is explicitly Secondary rather than competing with start-wave Primary");
+                "Battle nursery retains the authored panel/slot frames, keeps marker-free selection pulses, and refresh remains explicitly Secondary");
         }
 
         private static void AssertActionSpec(BattleUiActionSemantic semantic,
@@ -152,9 +163,9 @@ namespace FruitDefense.Editor
                 && secondary.VisualRole == RuntimeUiActionVisualRole.Secondary
                 && primary.ContainerSlot == RuntimeUiArtSlot.ActionPrimary
                 && secondary.ContainerSlot == RuntimeUiArtSlot.ActionSecondary
-                && MaximumRgbDistance(primary.ContainerColor,
-                    secondary.ContainerColor) > .1f,
-                "ready-phase Primary and Secondary actions resolve distinct hierarchy pairings");
+                && Contrast(primary.ContentColor, primary.ContainerColor) >= 4.5f
+                && Contrast(secondary.ContentColor, secondary.ContainerColor) >= 4.5f,
+                "ready-phase Primary and Secondary actions keep distinct semantic slots with readable green hierarchy pairings");
 
             AssertThrows<ArgumentException>(() => theme.ResolveActionStyle(
                     BattleUiPresentationState.ResolveActionSpec(
@@ -177,12 +188,9 @@ namespace FruitDefense.Editor
                 label + " preserves every orthogonal semantic input");
             Assert(style.ContainerColor.a >= .999f
                 && style.ContentColor.a >= .999f
-                && style.OutlineColor.a >= .999f
                 && Contrast(style.ContentColor, style.ContainerColor) + .001f
-                    >= RuntimeUiQualityProfile.NormalTextContrast
-                && Contrast(style.OutlineColor, style.ContainerColor) + .001f
-                    >= RuntimeUiQualityProfile.NonTextContrast,
-                label + " resolves a complete opaque contrast-safe container/content/cue pairing");
+                    >= RuntimeUiQualityProfile.NormalTextContrast,
+                label + " resolves a complete opaque contrast-safe container/content pairing");
         }
 
         private static void ValidateContourMetricContract()
@@ -271,10 +279,6 @@ namespace FruitDefense.Editor
         private static void ValidateOrthogonalContainedGeometry()
         {
             var tokens = RuntimeUiFeedbackTokens.SunnyOrchardDefault();
-            var theme = RuntimeUiArtSetRegistry.LoadReleaseTheme();
-            Assert(theme != null,
-                "release theme is available for action focus-cue geometry");
-            var drawContext = RuntimeUiDrawContext.Create(theme, 1f);
             var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
             var controls = new[]
             {
@@ -361,23 +365,14 @@ namespace FruitDefense.Editor
                     && Contains(control.Rect, translated.VisualBounds),
                     control.Name + " clamps feedback translation into the hit rectangle");
 
-                foreach (var interaction in interactions)
-                {
-                    var cue = RuntimeUiGui.ResolveActionInteractionCueLayout(
-                        drawContext, control.Rect, interaction);
-                    var shouldShow = interaction
-                        == RuntimeUiInteractionState.HoveredOrFocused;
-                    Assert(cue.Visible == shouldShow && cue.IsContained(),
-                        control.Name + "/" + interaction
-                        + " resolves a contained focus cue only for hover/focus");
-                    if (!shouldShow) continue;
-                    Assert(cue.Top.width > 0f && cue.Top.height > 0f
-                        && cue.Right.width > 0f && cue.Right.height > 0f
-                        && cue.Bottom.width > 0f && cue.Bottom.height > 0f
-                        && cue.Left.width > 0f && cue.Left.height > 0f,
-                        control.Name
-                        + " focus cue has four material structural segments");
-                }
+                var hovered = RuntimeUiGui.ResolveCompactControlLayout(
+                    control.Rect, RuntimeUiInteractionState.HoveredOrFocused,
+                    control.UsesMultiplierText, tokens);
+                Assert(hovered.IsContained()
+                    && hovered.SurfaceRect.width < control.Rect.width
+                    && hovered.SurfaceRect.width > pressedActive.Value.SurfaceRect.width,
+                    control.Name
+                    + " uses a restrained contained focus scale without a marker");
             }
 
             AssertThrows<ArgumentOutOfRangeException>(() =>
@@ -446,11 +441,11 @@ namespace FruitDefense.Editor
         {
             var layout = new BattleUiLayout(GameConfig.DefaultBattlefield);
             Assert(Approximately(layout.PauseAction,
-                       new Rect(274f, 12f, 52f, 52f))
+                       new Rect(264f, 50f, 48f, 48f))
                 && Approximately(layout.SpeedAction,
-                       new Rect(334f, 12f, 52f, 52f))
+                       new Rect(318f, 50f, 56f, 48f))
                 && Approximately(layout.DetailCloseAction,
-                       new Rect(346f, 606f, 44f, 44f)),
+                       new Rect(330f, 582f, 44f, 44f)),
                 "pause, speed and instant-close hit rectangles match the current layout authority");
 
             var ready = BattleUiPresentationState.Create(GamePhase.Playing, false);
@@ -553,16 +548,10 @@ namespace FruitDefense.Editor
                 && Approximately(releaseTheme.Feedback.CompactControlDeactivateSeconds, .12f),
                 "release theme serializes the approved compact-control feedback tokens");
             var sets = RuntimeUiArtSetRegistry.DiscoverProductionSets().ToArray();
-            Assert(sets.Length == 2
-                && sets.Select(set => set.SetId).SequenceEqual(
-                    new[] { "sunny-orchard", "sunny-orchard-painted" }),
-                "acceptance covers exactly both production ArtSets");
-
-            var semanticHashes = new Dictionary<string, List<string>>
-            {
-                { "action.compact-control", new List<string>() },
-                { "action.compact-control-active", new List<string>() },
-            };
+            Assert(sets.Length == 1
+                && sets[0].SetId == "sunny-orchard-painted"
+                && sets[0].Revision == "9",
+                "acceptance covers the sole production ArtSet sunny-orchard-painted@9");
             var validationReports =
                 new List<KeyValuePair<string, RuntimeUiVisualValidationReport>>();
             var artSetResults =
@@ -601,19 +590,24 @@ namespace FruitDefense.Editor
                     var row = matches[0];
                     var binding = artSet.GetRequiredBinding(slot);
                     ValidateGeneratedBinding(artSet, binding, row, manifestJson);
-                    semanticHashes[semantic].Add(row.runtimeSha256);
                 }
 
                 var compact = manifest.bindings.Single(row =>
                     row.slot == (int)RuntimeUiArtSlot.ActionCompactControl);
                 var active = manifest.bindings.Single(row =>
                     row.slot == (int)RuntimeUiArtSlot.ActionCompactControlActive);
+                var nursery = manifest.bindings.Single(row =>
+                    row.slot == (int)RuntimeUiArtSlot.SlotNursery);
+                var metric = manifest.bindings.Single(row =>
+                    row.slot == (int)RuntimeUiArtSlot.SurfaceMetric);
+                var panel = manifest.bindings.Single(row =>
+                    row.slot == (int)RuntimeUiArtSlot.SurfacePanelRaised);
                 var quiet = artSet.GetRequiredBinding(RuntimeUiArtSlot.ActionQuiet);
                 var selected = artSet.GetRequiredBinding(RuntimeUiArtSlot.MarkerSelected);
                 Assert(!string.Equals(compact.runtimeSha256,
                         Sha256(ToAbsolute(AssetDatabase.GetAssetPath(quiet.Texture))),
                         StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(active.runtimeSha256, compact.runtimeSha256,
+                    && string.Equals(active.runtimeSha256, compact.runtimeSha256,
                         StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(active.runtimeSha256,
                         Sha256(ToAbsolute(AssetDatabase.GetAssetPath(quiet.Texture))),
@@ -622,8 +616,46 @@ namespace FruitDefense.Editor
                         Sha256(ToAbsolute(AssetDatabase.GetAssetPath(selected.Texture))),
                         StringComparison.OrdinalIgnoreCase),
                     artSet.SetId
-                    + " compact surfaces are distinct and not quiet/selected fallbacks");
-                ValidateAlphaAndGrayscaleStructure(artSet, compact, active);
+                    + " compact roles intentionally share one direct master and are not quiet/selected fallbacks");
+                var nurseryGeneratedAsset = RuntimeUiArtSetRegistry.Normalize(
+                    nursery.generated_asset);
+                Assert(nursery.authoring_contract == "imagegen-direct-master"
+                    && nursery.material_anatomy
+                        == "rounded-paper-face|soft-tonal-edge|upper-highlight|short-bottom-shadow|no-linear-rail"
+                    && nursery.render_contract == "line-free-rounded-paper-slot"
+                    && nursery.deterministic_transform
+                        == "content-crop|transparent-padding|alpha-safe-resize|connected-neutral-background-cleanup"
+                    && nursery.imagegen_output
+                        == "exec-e30c0381-7420-4cad-9d29-b51464b8339f.png"
+                    && nurseryGeneratedAsset
+                        == "openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/slot-nursery.png"
+                    && File.Exists(ToAbsolute(nurseryGeneratedAsset))
+                    && string.Equals(nursery.generated_asset_sha256,
+                        Sha256(ToAbsolute(nurseryGeneratedAsset)),
+                    StringComparison.OrdinalIgnoreCase),
+                    artSet.SetId
+                    + " nursery keeps one rounded paper surface while the rejected solid/dashed linear rails are absent from its reviewed direct master");
+                var metricGeneratedAsset = RuntimeUiArtSetRegistry.Normalize(
+                    metric.generated_asset);
+                Assert(metric.authoring_contract == "imagegen-direct-master"
+                    && metric.material_anatomy
+                        == "rounded-paper-face|soft-tonal-edge|upper-highlight|short-bottom-shadow|no-linear-rail"
+                    && metric.render_contract == "line-free-rounded-paper-metric"
+                    && metric.deterministic_transform
+                        == "content-crop|transparent-padding|alpha-safe-resize|connected-neutral-background-cleanup"
+                    && metric.imagegen_output
+                        == "exec-69f7835e-0e63-4461-9bb8-4260eb8f3961.png"
+                    && metricGeneratedAsset
+                        == "openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/metric-capsule.png"
+                    && !string.Equals(metric.generated_asset, panel.generated_asset,
+                        StringComparison.OrdinalIgnoreCase)
+                    && File.Exists(ToAbsolute(metricGeneratedAsset))
+                    && string.Equals(metric.generated_asset_sha256,
+                        Sha256(ToAbsolute(metricGeneratedAsset)),
+                    StringComparison.OrdinalIgnoreCase),
+                    artSet.SetId
+                    + " metric owns a dedicated line-free carrier instead of reusing the bordered panel master");
+                ValidateSharedAlphaAndGrayscaleStructure(artSet, compact, active);
                 ValidateFinalPixelActionContrast(releaseTheme, artSet);
                 ValidateGrayscaleContentStructure(releaseTheme, artSet);
             }
@@ -640,14 +672,6 @@ namespace FruitDefense.Editor
                     && report.WarningCount == 0,
                     pair.Key + " passes the complete runtime/manifest/import validator: "
                     + RuntimeUiVisualSystemValidator.FormatReport(report));
-            }
-
-            foreach (var pair in semanticHashes)
-            {
-                Assert(pair.Value.Count == 2
-                    && !string.Equals(pair.Value[0], pair.Value[1],
-                        StringComparison.OrdinalIgnoreCase),
-                    pair.Key + " was independently generated for both ArtSets");
             }
         }
 
@@ -824,7 +848,8 @@ namespace FruitDefense.Editor
                 Object.DestroyImmediate(continuation);
             }
 
-            var font = theme.PackagedChineseFont;
+            var font = theme.Typography.For(
+                RuntimeUiTypographyRole.ControlLabel).Font;
             Assert(font != null && font.HasCharacter('1') && font.HasCharacter('2')
                 && font.HasCharacter('×') && '1' != '2',
                 "1× and 2× retain different non-color text structures in the packaged release font");
@@ -841,23 +866,40 @@ namespace FruitDefense.Editor
             var source = RuntimeUiArtSetRegistry.Normalize(row.source);
             var runtime = RuntimeUiArtSetRegistry.Normalize(row.runtime);
             var promptRecord = RuntimeUiArtSetRegistry.Normalize(row.prompt_record);
+            var generatedAsset = RuntimeUiArtSetRegistry.Normalize(row.generated_asset);
+            const string expectedImagegenOutput =
+                "exec-dc14d5db-4629-4cb2-9b3c-357061c5bf4f.png";
             Assert(row.geometry == expectedGeometry
                 && source.StartsWith(sourceRoot, StringComparison.Ordinal)
                 && runtime.StartsWith(runtimeRoot, StringComparison.Ordinal)
-                && promptRecord.StartsWith(sourceRoot, StringComparison.Ordinal)
                 && string.IsNullOrWhiteSpace(row.shared_from_set),
                 artSet.SetId + "/" + semantic
                 + " is locally owned with the required geometry and no cross-set fallback");
+            Assert(row.authoring_contract == "imagegen-direct-master"
+                && string.IsNullOrWhiteSpace(row.material_recipe)
+                && row.material_anatomy
+                    == "outer-cream-rim|face|soil-outline|upper-highlight|short-bottom-shadow"
+                && string.IsNullOrWhiteSpace(row.generated_sheet)
+                && string.IsNullOrWhiteSpace(row.generated_sheet_sha256)
+                && row.generated_crop == null
+                && row.deterministic_transform
+                    == "content-crop|transparent-padding|alpha-safe-resize",
+                artSet.SetId + "/" + semantic
+                + " records the individual ImageGen master and material anatomy");
             Assert(row.imagegen_provider == "built-in-imagegen"
-                && !string.IsNullOrWhiteSpace(row.imagegen_output)
-                && row.imagegen_output.StartsWith("exec-", StringComparison.Ordinal)
-                && row.imagegen_output.EndsWith(".png", StringComparison.OrdinalIgnoreCase),
+                && row.imagegen_output == expectedImagegenOutput
+                && promptRecord
+                    == "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json"
+                && generatedAsset
+                    == "openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/action-yellow.png"
+                && File.Exists(ToAbsolute(generatedAsset))
+                && string.Equals(row.generated_asset_sha256,
+                    Sha256(ToAbsolute(generatedAsset)), StringComparison.OrdinalIgnoreCase),
                 artSet.SetId + "/" + semantic
-                + " records a selected built-in imagegen output");
-            Assert(File.Exists(ToAbsolute(source)) && File.Exists(ToAbsolute(runtime))
-                && File.Exists(ToAbsolute(promptRecord)),
+                + " traces the selected ImageGen output without a runtime dependency");
+            Assert(File.Exists(ToAbsolute(source)) && File.Exists(ToAbsolute(runtime)),
                 artSet.SetId + "/" + semantic
-                + " source, runtime and prompt-record files exist");
+                + " source and runtime files exist");
             Assert(string.Equals(row.sourceSha256, Sha256(ToAbsolute(source)),
                     StringComparison.OrdinalIgnoreCase)
                 && string.Equals(row.runtimeSha256, Sha256(ToAbsolute(runtime)),
@@ -874,18 +916,6 @@ namespace FruitDefense.Editor
                 artSet.SetId + "/" + semantic
                 + " appears exactly once in the manifest");
 
-            var promptJson = File.ReadAllText(ToAbsolute(promptRecord));
-            Assert(promptJson.Contains("fruit-defense.imagegen-prompt-record.v1")
-                && promptJson.Contains("\"semanticId\": \"" + semantic + "\"")
-                && promptJson.Contains(row.imagegen_output)
-                && promptJson.IndexOf(row.sourceSha256,
-                    StringComparison.OrdinalIgnoreCase) >= 0
-                && promptJson.Contains("\"prompt\"")
-                && promptJson.Contains("\"references\"")
-                && promptJson.Contains("\"alphaContract\""),
-                artSet.SetId + "/" + semantic
-                + " prompt record preserves prompt, references, alpha contract and selected hash");
-
             var importer = AssetImporter.GetAtPath(runtime) as TextureImporter;
             Assert(importer != null
                 && importer.textureType == TextureImporterType.Sprite
@@ -896,7 +926,7 @@ namespace FruitDefense.Editor
                 + " uses the standalone Sprite Single runtime import contract");
         }
 
-        private static void ValidateAlphaAndGrayscaleStructure(RuntimeUiArtSet artSet,
+        private static void ValidateSharedAlphaAndGrayscaleStructure(RuntimeUiArtSet artSet,
             CompactManifestBinding compact, CompactManifestBinding active)
         {
             var baseTexture = LoadPng(compact.runtime);
@@ -940,10 +970,9 @@ namespace FruitDefense.Editor
                     activeTexture, artSet.GetRequiredBinding(
                         RuntimeUiArtSlot.ActionCompactControlActive),
                     CompactControlSize, .025f);
-                Assert(grayscaleDifferences
-                        >= CompactControlSize * CompactControlSize * .01f,
+                Assert(grayscaleDifferences == 0,
                     artSet.SetId
-                    + " mutually-exclusive inactive/active surfaces remain structurally distinct at 52px in grayscale");
+                    + " mutually-exclusive compact roles preserve their intentionally shared direct master at 52px; lifecycle and glyph supply state structure");
             }
             finally
             {
@@ -987,15 +1016,19 @@ namespace FruitDefense.Editor
                 && profile.NormalizedBoundaryLength <= 1.25f,
                 label + " has readable mass and one economical outer edge; " + metrics);
             Assert(profile.StrongEdgeDensity(profile.CenterSquare(24), .14f) <= .04f
-                && profile.StrongEdgeDensity(profile.Bounds, .16f) <= .12f
-                && profile.MaxCentralAxisStrongEdges(.16f) <= 3,
-                label + " center stays calm and avoids nested borders or dense texture; "
+                && profile.StrongEdgeDensity(profile.Bounds, .16f) >= .08f
+                && profile.StrongEdgeDensity(profile.Bounds, .16f) <= .20f
+                && profile.MaxCentralAxisStrongEdges(.16f) >= 4
+                && profile.MaxCentralAxisStrongEdges(.16f) <= 10,
+                label + " keeps a calm content center inside a visible rim/outline/face stack; "
                 + metrics);
             Assert(profile.MinimumCentralHalfAxisContourRuns(.12f) == 1
-                && profile.MaxCentralHalfAxisContourRuns(.12f) == 1
-                && profile.MaxCentralHalfAxisStrongTransitionRuns(.10f) <= 1
-                && profile.MaxCentralHalfAxisColorPathExcess(.04f) <= 1.6f,
-                label + " has one outer contour per side with no inner highlight; "
+                && profile.MaxCentralHalfAxisContourRuns(.12f) <= 2
+                && profile.MaxCentralHalfAxisStrongTransitionRuns(.10f) >= 2
+                && profile.MaxCentralHalfAxisStrongTransitionRuns(.10f) <= 3
+                && profile.MaxCentralHalfAxisColorPathExcess(.04f) >= 1.4f
+                && profile.MaxCentralHalfAxisColorPathExcess(.04f) <= 3.5f,
+                label + " has one outer silhouette plus the required rim/outline/highlight transitions; "
                 + profile.DescribeComposite(.12f, .10f));
         }
 
@@ -1014,8 +1047,8 @@ namespace FruitDefense.Editor
                 artSet.SetId + " inactive and active surfaces share one coincident "
                 + "button silhouette; edgeDelta=" + edgeDelta
                 + ", visibleDelta=" + visibleDelta.ToString("F3"));
-            Assert(baseProfile.CenterColorRange(24) <= .08f
-                && activeProfile.CenterColorRange(24) <= .08f
+            Assert(baseProfile.CenterColorRange(24) <= .20f
+                && activeProfile.CenterColorRange(24) <= .20f
                 && centerDistance <= .22f,
                 artSet.SetId + " inactive and active centers stay calm and visually "
                 + "related so the glyph remains dominant; centerDistance="
@@ -1077,9 +1110,9 @@ namespace FruitDefense.Editor
             Assert(standardAction.Contains("ResolveActionStyle(spec, state, false)")
                 && standardAction.Contains("style.ContainerSlot")
                 && standardAction.Contains("style.ContentColor")
-                && standardAction.Contains(
-                    "DrawActionInteractionCue(context, visualRect, state,")
-                && standardAction.Contains("style.OutlineColor")
+                && standardAction.Contains("RuntimeUiMotion.InteractionState(")
+                && !standardAction.Contains("DrawActionInteractionCue")
+                && !standardAction.Contains("RuntimeUiArtSlot.MarkerSelected")
                 && CountOccurrences(standardAction,
                     "tintOverride: style.ContentColor") == 1
                 && standardAction.Contains(
@@ -1095,9 +1128,8 @@ namespace FruitDefense.Editor
                 "public static RuntimeUiActionContentLayout ResolveActionContentLayout(");
             Assert(compact.Contains("ResolveActionStyle(")
                 && compact.Contains("style.ContainerSlot")
-                && compact.Contains(
-                    "DrawActionInteractionCue(context, layout.SurfaceRect,")
-                && compact.Contains("style.OutlineColor")
+                && compact.Contains("RuntimeUiMotion.InteractionState(")
+                && !compact.Contains("DrawActionInteractionCue")
                 && compact.Contains("layout.SurfaceRect")
                 && compact.Contains("lifecycleSample.ActiveAmount")
                 && compact.Contains("tintOverride: style.ContentColor")
@@ -1119,6 +1151,21 @@ namespace FruitDefense.Editor
                 && !compact.Contains("Texture2D.whiteTexture")
                 && !compact.Contains("GUI.skin"),
                 "compact renderer resolves and draws exactly one complete surface with one shared content color");
+
+            var slotRenderer = Slice(gui,
+                "public static Rect DrawSlot(",
+                "public static void DrawIcon(");
+            Assert(slotRenderer.Contains("RuntimeUiMotion.InteractionState(")
+                && !slotRenderer.Contains("drawSurface")
+                && slotRenderer.Contains("ResolveSlotSurfaceVisualState(state)")
+                && slotRenderer.Contains("state != RuntimeUiInteractionState.Selected")
+                && CountOccurrences(slotRenderer, "DrawStateIndicator(") == 1
+                && slotRenderer.Contains("return visualRect")
+                && !slotRenderer.Contains("RuntimeUiArtSlot.MarkerSelected")
+                && !slotRenderer.Contains("Texture2D.whiteTexture")
+                && !slotRenderer.Contains("DrawOutline")
+                && !slotRenderer.Contains("GUI.Box"),
+                "slot renderer returns one contained marker-free visual rect and draws each semantic indicator at most once");
         }
 
         private static ThumbnailProfile AnalyzeThumbnail(Texture2D texture,
@@ -1924,6 +1971,16 @@ namespace FruitDefense.Editor
             public string imagegen_provider;
             public string imagegen_output;
             public string prompt_record;
+            public string render_contract;
+            public string authoring_contract;
+            public string material_recipe;
+            public string material_anatomy;
+            public string generated_asset;
+            public string generated_asset_sha256;
+            public string generated_sheet;
+            public string generated_sheet_sha256;
+            public int[] generated_crop;
+            public string deterministic_transform;
         }
     }
 }

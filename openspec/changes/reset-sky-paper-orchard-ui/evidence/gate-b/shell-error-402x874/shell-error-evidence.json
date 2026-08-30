@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "bootstrap-blocking-error-webgl-visual",
+  "accepted": true,
+  "capturedAtUtc": "2026-08-26T12:54:19.5914287+00:00",
+  "url": "http://127.0.0.1:65316/?acceptance=1&route=battle&levelId=__missing-ui-acceptance__&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-08-26T12:53:31.7380833+00:00"
+  },
+  "input": {
+    "acceptance": "1",
+    "route": "battle",
+    "levelId": "__missing-ui-acceptance__",
+    "classification": "formal-invalid-level-acceptance-input"
+  },
+  "expectedUserCopy": "启动失败：所选关卡不可用",
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 402,
+      "height": 874
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 1.0,
+    "designOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 16.0,
+      "y": 18.0,
+      "width": 370.0,
+      "height": 838
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "3",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "2",
+    "display": "ui.sunny-orchard@3 / sunny-orchard-painted@2",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:65316/?acceptance=1&route=battle&levelId=__missing-ui-acceptance__&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 402,
+    "height": 874,
+    "cssWidth": 402,
+    "cssHeight": 874,
+    "innerWidth": 402,
+    "innerHeight": 874,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1787748813467.5,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": false,
+    "appRoute": -1,
+    "body": ""
+  },
+  "checks": {
+    "releaseRuntimeUiIdentity": "pass",
+    "unityPlayerLoaded": "pass",
+    "noRouteReadyPublished": "pass",
+    "applicationFrameNotSplashOrBlack": "pass",
+    "requestedViewportAndCanvas": "pass",
+    "safeAreaQueryApplied": "pass",
+    "finiteUserCopyAndNonColorCue": "manual-screenshot-review-required"
+  },
+  "screenshot": "E:\\project\\unity\\furitDefense\\openspec\\changes\\reset-sky-paper-orchard-ui\\evidence\\gate-b\\shell-error-402x874\\00-bootstrap-blocking-error.png",
+  "imageMetrics": {
+    "width": 402,
+    "height": 874,
+    "headerDarkPixels": 26250,
+    "headerLightPixels": 0,
+    "blackFraction": 0.0,
+    "nearBlackFraction": 0.0,
+    "maxNearBlackHorizontalRunFraction": 0.0,
+    "invalidFraction": 0.0,
+    "averageLuma": 0.45664309988121715,
+    "formerActionColorPixels": 0,
+    "formerActionColorSpanPixels": 0,
+    "sampledRegions": {
+      "header": {
+        "xMin": 13,
+        "yMin": 39,
+        "xMax": 263,
+        "yMax": 144
+      },
+      "formerAction": {
+        "xMin": 8,
+        "yMin": 842,
+        "xMax": 394,
+        "yMax": 866
+      },
+      "frameContent": {
+        "xMin": 0,
+        "yMin": 0,
+        "xMax": 402,
+        "yMax": 874
+      }
+    }
+  },
+  "delivery": {
+    "metadata": {
+      "assetVersions": {
+        "loader": "bbfea3324700",
+        "data": "bee994b34594",
+        "framework": "778fb14f0cef",
+        "wasm": "832f735906e7"
+      },
+      "htmlCacheControl": "no-cache",
+      "assets": {
+        "loader": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.loader.js?v=bbfea3324700",
+          "version": "bbfea3324700",
+          "contentType": "text/javascript; charset=utf-8",
+          "contentEncoding": "",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentLength": 117893,
+          "etag": "\"bbfea3324700b28ebf398cb53c0d159e352336212fd6e08fb979c27aaca1dc59\"",
+          "contentSha256": "bbfea3324700b28ebf398cb53c0d159e352336212fd6e08fb979c27aaca1dc59"
+        },
+        "data": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.data.unityweb?v=bee994b34594",
+          "version": "bee994b34594",
+          "contentType": "application/octet-stream",
+          "contentEncoding": "",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentLength": 6637043,
+          "etag": "\"bee994b34594e57933cb1dc35f24fa370d2c951ecccd279594213055a645b312\"",
+          "contentSha256": "bee994b34594e57933cb1dc35f24fa370d2c951ecccd279594213055a645b312"
+        },
+        "framework": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.framework.js.unityweb?v=778fb14f0cef",
+          "version": "778fb14f0cef",
+          "contentType": "application/octet-stream",
+          "contentEncoding": "",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentLength": 71632,
+          "etag": "\"778fb14f0cefe2199f7c763d2067be54e2766de30df7dcb0b77c3d00e45b3b9e\"",
+          "contentSha256": "778fb14f0cefe2199f7c763d2067be54e2766de30df7dcb0b77c3d00e45b3b9e"
+        },
+        "wasm": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.wasm.unityweb?v=832f735906e7",
+          "version": "832f735906e7",
+          "contentType": "application/octet-stream",
+          "contentEncoding": "",
+          "cacheControl": "public, max-age=31536000, immutable",
+          "contentLength": 5942242,
+          "etag": "\"832f735906e72bf082b00b13f4a68ef243dd79fd4feb8c2c7156171b440254b6\"",
+          "contentSha256": "832f735906e72bf082b00b13f4a68ef243dd79fd4feb8c2c7156171b440254b6"
+        }
+      }
+    },
+    "coldRun": {
+      "label": "cold-error",
+      "startedAtUtc": "2026-08-26T12:53:33.4543636+00:00",
+      "completedAtUtc": "2026-08-26T12:54:19.5116954+00:00",
+      "startupDurationMilliseconds": 46057.332,
+      "totalPayloadTransferSize": 12770010,
+      "assets": {
+        "loader": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.loader.js?v=bbfea3324700",
+          "startTimeMilliseconds": 272.0,
+          "durationMilliseconds": 19.7,
+          "transferSize": 118193,
+          "encodedBodySize": 117893,
+          "decodedBodySize": 117893,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1"
+        },
+        "data": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.data.unityweb?v=bee994b34594",
+          "startTimeMilliseconds": 1229.2,
+          "durationMilliseconds": 65.1,
+          "transferSize": 6637343,
+          "encodedBodySize": 6637043,
+          "decodedBodySize": 6637043,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1"
+        },
+        "framework": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.framework.js.unityweb?v=778fb14f0cef",
+          "startTimeMilliseconds": 707.9,
+          "durationMilliseconds": 18.0,
+          "transferSize": 71932,
+          "encodedBodySize": 71632,
+          "decodedBodySize": 71632,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1"
+        },
+        "wasm": {
+          "url": "http://127.0.0.1:65316/Build/WebGL-Acceptance.wasm.unityweb?v=832f735906e7",
+          "startTimeMilliseconds": 708.2,
+          "durationMilliseconds": 77.3,
+          "transferSize": 5942542,
+          "encodedBodySize": 5942242,
+          "decodedBodySize": 5942242,
+          "responseStatus": 200,
+          "deliveryType": "",
+          "nextHopProtocol": "http/1.1"
+        }
+      }
+    }
+  }
+}

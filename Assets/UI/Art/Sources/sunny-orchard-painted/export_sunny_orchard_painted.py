@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
-"""Export approved painted masters without generating any artwork.
+"""Extract and export the finite Sunny Orchard Painted production set.
 
-The script downsamples reviewed RGBA masters, normalizes action-glyph RGB to a
-neutral white alpha-mask contract, validates the finite runtime contract, and
-writes the ownership manifest. It intentionally contains no shape, icon,
-ornament, or palette drawing code.
+Selected action and structural materials enter the pipeline as individual,
+hash-locked ImageGen masters. Remaining owned masters, retained reviewed icons,
+ornaments and illustrations pass through the same alpha-safe export and
+ownership pipeline.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import math
 import re
 import time
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from statistics import median
 
 from PIL import Image, ImageChops, ImageDraw
 
 
 SET_ID = "sunny-orchard-painted"
-REVISION = "1"
+REVISION = "9"
 SOURCE_SCALE = 2.0
 OPTICAL_ALPHA_THRESHOLD = 48
 MICRO_ALPHA_CLEANUP_THRESHOLD = 96
@@ -30,15 +29,72 @@ ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
 PROMPT_RECORD_PATH = (
     "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json")
 IMAGEGEN_OUTPUTS = {
+    "action.primary": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
+    "action.secondary": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
+    "action.quiet": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
+    "action.danger": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
+    "action.compact-control": "exec-dc14d5db-4629-4cb2-9b3c-357061c5bf4f.png",
+    "action.compact-control-active": "exec-dc14d5db-4629-4cb2-9b3c-357061c5bf4f.png",
+    "surface.safe-area": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
+    "surface.panel-standard": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
+    "surface.panel-raised": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
+    "surface.metric": "exec-69f7835e-0e63-4461-9bb8-4260eb8f3961.png",
+    "surface.card-selectable": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
+    "slot.tool": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
+    "slot.nursery": "exec-e30c0381-7420-4cad-9d29-b51464b8339f.png",
+    "surface.gameplay-stage": "exec-26bcbc75-0425-4308-91bb-6296e8465e12.png",
     "icon.control-pause": "exec-2e5b3dbb-dc58-41a6-94b8-0d7eba8ad9d6.png",
     "icon.control-continue": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
     "icon.control-start-wave": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
     "icon.control-start": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
     "icon.control-speed": "exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png",
     "icon.control-close": "exec-344e3cd7-8d96-42e7-8065-7eddad406700.png",
-    "action.compact-control": "exec-89dc048b-4c7d-44e5-88ba-19fe1e8f94ce.png",
-    "action.compact-control-active": "exec-444fa67c-1ea2-4dfd-a130-494ecaa44bae.png",
 }
+IMAGEGEN_DIRECT_ROOT = (
+    "openspec/changes/polish-sky-paper-ui-eight-point/evidence/"
+    "direct-replacement-v2/imagegen")
+IMAGEGEN_GEOMETRY_MASKS = {
+    "action-green.png": (
+        "action-geometry-mask.png",
+        "EC721B4B64BD33EE3782AACAA064EA7679126F0BB8D61454ED834838BCDD7964"),
+}
+IMAGEGEN_CONNECTED_BACKGROUND_ASSETS = frozenset({
+    "metric-capsule.png",
+    "slot-nursery.png",
+})
+LINE_FREE_CARRIER_IDS = frozenset({"surface.metric", "slot.nursery"})
+IMAGEGEN_DIRECT_ASSETS = (
+    ("action.primary", "action-primary", "action-green.png",
+     "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA"),
+    ("action.secondary", "action-secondary", "action-green.png",
+     "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA"),
+    ("action.quiet", "action-quiet", "action-quiet-retained.png",
+     "95212C90A09454C7A9824D5731CF9A162685DF603F3C7F97B798CF99E19C2DF6"),
+    ("action.danger", "action-danger", "action-danger-retained.png",
+     "BACC2C3610F0693ABF9CFE3755B4C77C24CA4DAB20AB900FF99B6939585AF2CA"),
+    ("action.compact-control", "action-compact-control", "action-yellow.png",
+     "BE9E3F520F570CDD44A11950515A023EB1E785309F5EC81F432394DB8395C094"),
+    ("action.compact-control-active", "action-compact-control-active",
+     "action-yellow.png",
+     "BE9E3F520F570CDD44A11950515A023EB1E785309F5EC81F432394DB8395C094"),
+    ("surface.safe-area", "surface-safe-area", "panel-paper.png",
+     "475B96F6E034081DC23B68D6D7EB27F5729C5E87421301E43B61703A5D733F0F"),
+    ("surface.panel-standard", "surface-panel-standard", "panel-paper.png",
+     "475B96F6E034081DC23B68D6D7EB27F5729C5E87421301E43B61703A5D733F0F"),
+    ("surface.panel-raised", "surface-panel-raised", "panel-paper.png",
+     "475B96F6E034081DC23B68D6D7EB27F5729C5E87421301E43B61703A5D733F0F"),
+    ("surface.metric", "surface-metric", "metric-capsule.png",
+     "5539902850BA5EA59A20B356B34A7539516108D349B95F3E458AA2EA4590DC51"),
+    ("surface.card-selectable", "surface-card-selectable", "card-lime.png",
+     "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"),
+    ("slot.tool", "slot-tool", "card-lime.png",
+     "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"),
+    ("slot.nursery", "slot-nursery", "slot-nursery.png",
+     "335028CADB393454E90B8D0D66DC27B3F39C2839D13C12084B3BB4204131ABFE"),
+    ("surface.gameplay-stage", "surface-gameplay-stage", "stage-frame.png",
+     "DB106DA52028C9128DD56FD76D6FC7084DFDDC639634AF3C3D359537C0EF9750"),
+)
+IMAGEGEN_MATERIAL_IDS = frozenset(row[0] for row in IMAGEGEN_DIRECT_ASSETS)
 
 ACTION_GLYPH_IDS = {
     "icon.control-pause",
@@ -52,10 +108,15 @@ ACTION_GLYPH_IDS = {
     "icon.control-refresh",
 }
 SEMANTIC_CONTAINER_TARGETS = {
-    "action.primary": (0x43, 0x6C, 0x15),
-    "action.danger": (0x9F, 0x30, 0x2B),
+    "action.primary": (0xA0, 0xC7, 0x3D),
+    "action.secondary": (0xA0, 0xC7, 0x3D),
+    "action.danger": (0xC8, 0x14, 0x09),
 }
-CONTENT_REFERENCE_RGB = (0xFF, 0xF6, 0xE0)
+CONTENT_REFERENCE_RGB = {
+    "action.primary": (0x56, 0x34, 0x1F),
+    "action.secondary": (0x56, 0x34, 0x1F),
+    "action.danger": (0xFF, 0xF9, 0xEE),
+}
 MINIMUM_CONTENT_CONTRAST = 4.5
 PLACEMENT_NORMALIZED_ACTION_GLYPH_IDS = {
     "icon.control-pause",
@@ -74,6 +135,46 @@ class Slot:
     semantic_id: str
     geometry: str
     source_stem: str | None = None
+
+
+@dataclass(frozen=True)
+class ReferenceMaterialStyle:
+    recipe: str
+    face: tuple[int, int, int, int]
+    outline: tuple[int, int, int, int] = (0x6D, 0x48, 0x28, 255)
+    rim: tuple[int, int, int, int] = (0xFF, 0xF4, 0xDB, 255)
+    highlight: tuple[int, int, int, int] = (0xFF, 0xFF, 0xF8, 255)
+    shadow: tuple[int, int, int, int] = (0x78, 0x49, 0x28, 96)
+    transparent_center_inset: int = 0
+
+
+REFERENCE_MATERIAL_ANATOMY = (
+    "outer-cream-rim|face|soil-outline|upper-highlight|short-bottom-shadow")
+LINE_FREE_CARRIER_MATERIAL_ANATOMY = (
+    "rounded-paper-face|soft-tonal-edge|upper-highlight|short-bottom-shadow|no-linear-rail")
+REFERENCE_MATERIAL_STYLES = {
+    "surface.status": ReferenceMaterialStyle(
+        "sunlight-phase-status", (0xFF, 0xD2, 0x54, 255),
+        outline=(0xA5, 0x70, 0x22, 255),
+        highlight=(0xFF, 0xEC, 0xA4, 255)),
+    "surface.detail": ReferenceMaterialStyle(
+        "raised-detail-paper", (0xFF, 0xF6, 0xE3, 255),
+        outline=(0xB8, 0x91, 0x62, 255)),
+    "surface.modal": ReferenceMaterialStyle(
+        "raised-modal-paper", (0xFF, 0xF7, 0xE8, 255),
+        outline=(0x9C, 0x72, 0x47, 255)),
+    "surface.result": ReferenceMaterialStyle(
+        "sunlit-result-paper", (0xFF, 0xED, 0xC2, 255),
+        outline=(0x9C, 0x72, 0x47, 255),
+        highlight=(0xFF, 0xF9, 0xE4, 255)),
+    "surface.section-ribbon": ReferenceMaterialStyle(
+        "pale-leaf-section", (0xED, 0xF3, 0xCC, 255),
+        outline=(0x87, 0xA9, 0x3E, 255),
+        highlight=(0xFA, 0xFC, 0xE8, 255)),
+    "surface.illustration-frame": ReferenceMaterialStyle(
+        "cream-illustration-frame", (0xF1, 0xD9, 0xA7, 255),
+        outline=(0x73, 0x4C, 0x2B, 255), transparent_center_inset=48),
+}
 
 
 SLOTS = (
@@ -161,6 +262,111 @@ def save_png(image: Image.Image, path: Path) -> None:
     finally:
         if temporary.exists():
             temporary.unlink()
+
+
+def author_reference_material(style: ReferenceMaterialStyle) -> Image.Image:
+    """Build one 2x source master with five independently visible material layers."""
+    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+    draw.rounded_rectangle((8, 14, 248, 248), radius=40, fill=style.shadow)
+    draw.rounded_rectangle((8, 8, 248, 240), radius=40, fill=style.rim)
+    draw.rounded_rectangle((14, 14, 242, 234), radius=34, fill=style.outline)
+    draw.rounded_rectangle((18, 18, 238, 228), radius=30, fill=style.face)
+    draw.line((34, 23, 222, 23), fill=style.highlight, width=5)
+    draw.arc((20, 20, 236, 226), start=200, end=340,
+             fill=style.highlight, width=3)
+    if style.transparent_center_inset:
+        inset = style.transparent_center_inset
+        radius = 20 if inset <= 40 else 12
+        draw.rounded_rectangle(
+            (inset, inset, 256 - inset, 256 - inset), radius=radius,
+            fill=(0, 0, 0, 0))
+    return canvas
+
+
+def author_gameplay_stage(style: ReferenceMaterialStyle) -> Image.Image:
+    """Build the 20 px protected transparent-center gameplay-stage rail."""
+    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+    draw.rounded_rectangle((16, 24, 238, 248), radius=30, fill=style.shadow)
+    draw.rounded_rectangle((16, 16, 238, 238), radius=30, fill=style.rim)
+    draw.rounded_rectangle((22, 22, 232, 232), radius=24, fill=style.outline)
+    draw.rounded_rectangle((26, 26, 228, 228), radius=20, fill=style.face)
+    draw.line((40, 29, 222, 29), fill=style.highlight, width=5)
+    draw.rounded_rectangle((32, 32, 222, 222), radius=6, fill=(0, 0, 0, 0))
+    return canvas
+
+
+def author_reference_material_masters(source_root: Path) -> None:
+    """Author only non-action surfaces that still use the deterministic kit."""
+    for slot in SLOTS:
+        style = REFERENCE_MATERIAL_STYLES.get(slot.semantic_id)
+        if style is None:
+            continue
+        master = (author_gameplay_stage(style)
+                  if slot.semantic_id == "surface.gameplay-stage"
+                  else author_reference_material(style))
+        path = source_root / subdirectory(slot) / f"{source_stem(slot)}.png"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        save_png(master, path)
+
+
+def mark_reference_material_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    if slot.semantic_id not in REFERENCE_MATERIAL_STYLES:
+        return
+    for owner, path in (
+            ("ui-art-source", source_root / subdirectory(slot)
+             / f"{source_stem(slot)}.png.meta"),
+            ("ui-art-set", runtime_root / subdirectory(slot)
+             / f"{slot.stem}.png.meta")):
+        text = path.read_text(encoding="utf-8")
+        marker = (f"{owner}={SET_ID};slot={slot.semantic_id};source-scale=2;"
+                  "authored=deterministic-reference-material-kit")
+        if not re.search(r"(?m)^\s*userData:.*$", text):
+            raise RuntimeError(f"No userData field in material meta: {path}")
+        text = re.sub(r"(?m)^\s*userData:.*$", "  userData: " + marker, text)
+        path.write_text(text, encoding="utf-8")
+
+
+def imagegen_material_record(
+        semantic_id: str) -> tuple[str, str, str, str]:
+    for asset_semantic_id, _, filename, asset_sha256 in (
+            IMAGEGEN_DIRECT_ASSETS):
+        if asset_semantic_id == semantic_id:
+            mask = IMAGEGEN_GEOMETRY_MASKS.get(filename)
+            return (f"{IMAGEGEN_DIRECT_ROOT}/{filename}", asset_sha256,
+                    f"{IMAGEGEN_DIRECT_ROOT}/{mask[0]}" if mask else "",
+                    "connected-neutral-background-cleanup"
+                    if filename in IMAGEGEN_CONNECTED_BACKGROUND_ASSETS else "")
+    raise RuntimeError(f"No direct ImageGen material for {semantic_id}")
+
+
+def mark_imagegen_material_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    """Record one hash-locked direct ImageGen master on each material."""
+    if slot.semantic_id not in IMAGEGEN_MATERIAL_IDS:
+        return
+    asset_path, asset_sha256, geometry_mask, background_cleanup = (
+        imagegen_material_record(
+        slot.semantic_id)
+    )
+    transform = ("geometry-alpha-mask" if geometry_mask else
+                 "connected-neutral-background-cleanup"
+                 if background_cleanup else "alpha-crop")
+    for owner, path in (
+            ("ui-art-source", source_root / subdirectory(slot)
+             / f"{source_stem(slot)}.png.meta"),
+            ("ui-art-set", runtime_root / subdirectory(slot)
+             / f"{slot.stem}.png.meta")):
+        text = path.read_text(encoding="utf-8")
+        marker = (f"{owner}={SET_ID};slot={slot.semantic_id};source-scale=2;"
+                  f"authored=imagegen-direct-master;transform={transform};"
+                  f"asset={asset_path};asset-sha256={asset_sha256}")
+        if not re.search(r"(?m)^\s*userData:.*$", text):
+            raise RuntimeError(f"No userData field in ImageGen material meta: {path}")
+        text = re.sub(r"(?m)^\s*userData:.*$", "  userData: " + marker, text)
+        path.write_text(text, encoding="utf-8")
 
 
 def target_size(slot: Slot) -> tuple[int, int]:
@@ -266,62 +472,31 @@ def is_semantic_container_ink(semantic_id: str, pixel: tuple[int, int, int, int]
     red, green, blue, alpha = pixel
     if alpha < 192:
         return False
-    if semantic_id == "action.primary":
+    if semantic_id in {"action.primary", "action.secondary"}:
         return green >= red * 1.2 and green >= blue * 1.5
     if semantic_id == "action.danger":
         return red >= green * 1.4 and red >= blue * 1.2
     return False
 
 
-def normalize_semantic_container_master(
-        image: Image.Image, semantic_id: str) -> Image.Image:
-    """Re-anchor painted container ink while preserving texture deltas and alpha."""
-    rgba = image.convert("RGBA")
-    width, height = rgba.size
-    content = rgba.crop((width // 4, height // 4, width * 3 // 4, height * 3 // 4))
-    samples = [pixel for pixel in content.get_flattened_data()
-               if is_semantic_container_ink(semantic_id, pixel)]
-    if not samples:
-        raise RuntimeError(f"No semantic container ink found for {semantic_id}")
-    anchor = tuple(round(median(pixel[channel] for pixel in samples))
-                   for channel in range(3))
-    target = SEMANTIC_CONTAINER_TARGETS[semantic_id]
-    delta = tuple(target[channel] - anchor[channel] for channel in range(3))
-    normalized = []
-    for pixel in rgba.get_flattened_data():
-        red, green, blue, alpha = pixel
-        if is_semantic_container_ink(semantic_id, pixel):
-            red = min(255, max(0, red + delta[0]))
-            green = min(255, max(0, green + delta[1]))
-            blue = min(255, max(0, blue + delta[2]))
-        normalized.append((red, green, blue, alpha))
-    result = Image.new("RGBA", rgba.size)
-    result.putdata(normalized)
-    if result.getchannel("A").tobytes() != rgba.getchannel("A").tobytes():
-        raise RuntimeError(f"Semantic container alpha changed: {semantic_id}")
-    return result
-
-
-def normalize_semantic_container_master_file(path: Path, semantic_id: str) -> None:
-    with Image.open(path) as source:
-        rgba = source.convert("RGBA")
-    normalized = normalize_semantic_container_master(rgba, semantic_id)
-    if normalized.tobytes() != rgba.tobytes():
-        save_png(normalized, path)
-
-
 def mark_semantic_container_import_meta(meta_path: Path, semantic_id: str) -> None:
     text = meta_path.read_text(encoding="utf-8")
     role = semantic_id.removeprefix("action.")
     target = SEMANTIC_CONTAINER_TARGETS[semantic_id]
+    content = CONTENT_REFERENCE_RGB[semantic_id]
     marker = (f"container={role};target-rgb={target[0]:02X}{target[1]:02X}{target[2]:02X}"
-              f";content-reference=FFF6E0;minimum-contrast=4.5")
+              f";content-reference={content[0]:02X}{content[1]:02X}{content[2]:02X}"
+              f";minimum-contrast=4.5")
     match = re.search(r"(?m)^(\s*userData:)\s*(.*)$", text)
     if match is None:
         raise RuntimeError(f"No userData field in container meta: {meta_path}")
     current = match.group(2).strip()
-    if marker not in current:
-        updated = current + (";" if current else "") + marker
+    cleaned = re.sub(
+        r"(?:^|;)container=[^;]+;target-rgb=[0-9A-Fa-f]{6}"
+        r";content-reference=[0-9A-Fa-f]{6};minimum-contrast=[0-9.]+",
+        "", current).strip(";")
+    updated = cleaned + (";" if cleaned else "") + marker
+    if updated != current:
         text = text[:match.start(2)] + updated + text[match.end(2):]
         meta_path.write_text(text, encoding="utf-8")
 
@@ -347,7 +522,8 @@ def content_region_min_contrast(image: Image.Image, semantic_id: str) -> float:
     rgba = image.convert("RGBA")
     width, height = rgba.size
     content = rgba.crop((width // 4, height // 4, width * 3 // 4, height * 3 // 4))
-    ratios = [contrast_ratio(CONTENT_REFERENCE_RGB, pixel[:3])
+    content_reference = CONTENT_REFERENCE_RGB[semantic_id]
+    ratios = [contrast_ratio(content_reference, pixel[:3])
               for pixel in content.get_flattened_data()
               if is_semantic_container_ink(semantic_id, pixel)]
     if not ratios:
@@ -355,7 +531,9 @@ def content_region_min_contrast(image: Image.Image, semantic_id: str) -> float:
     minimum = min(ratios)
     if minimum < MINIMUM_CONTENT_CONTRAST:
         raise RuntimeError(
-            f"{semantic_id} content contrast {minimum:.3f}:1 is below 4.5:1")
+            f"{semantic_id} content contrast {minimum:.3f}:1 is below 4.5:1; "
+            "change the separate text/icon content token first and keep the "
+            "reference-authoritative container raster unchanged")
     return minimum
 
 
@@ -383,6 +561,258 @@ def alpha_safe_resize(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     result = Image.new("RGBA", size)
     result.putdata(unpremultiplied)
     return result
+
+
+def imagegen_content_bbox(image: Image.Image) -> tuple[int, int, int, int]:
+    """Find generated content while ignoring transparent fringe pixels."""
+    visible = image.convert("RGBA").getchannel("A").point(
+        lambda alpha: 255 if alpha >= 8 else 0)
+    bbox = visible.getbbox()
+    if bbox is None:
+        raise RuntimeError("Direct ImageGen material has no visible pixels")
+    return bbox
+
+
+def fit_direct_imagegen_master(
+        image: Image.Image, semantic_id: str) -> Image.Image:
+    """Crop one transparent ImageGen output directly into the 2x master."""
+    rgba = image.convert("RGBA")
+    crop = rgba.crop(imagegen_content_bbox(rgba))
+    is_stage = semantic_id == "surface.gameplay-stage"
+    fitted_size = (224, 234) if is_stage else (240, 240)
+    offset = (16, 16) if is_stage else (8, 8)
+    fitted = alpha_safe_resize(crop, fitted_size)
+    master = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    master.alpha_composite(fitted, offset)
+    return master
+
+
+def fit_rgb_imagegen_master_with_geometry_mask(
+        image: Image.Image, geometry_mask: Image.Image) -> Image.Image:
+    """Use only the approved target alpha when ImageGen bakes a checkerboard."""
+    rgb = image.convert("RGB")
+    foreground = Image.new("1", rgb.size)
+    foreground.putdata([
+        255 if max(pixel) - min(pixel) >= 8 or min(pixel) < 215 else 0
+        for pixel in rgb.get_flattened_data()
+    ])
+    bbox = foreground.getbbox()
+    if bbox is None:
+        raise RuntimeError("RGB ImageGen material has no detectable foreground")
+    fitted = rgb.crop(bbox).resize((240, 240), Image.Resampling.LANCZOS)
+    master = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    master.paste(fitted, (8, 8))
+    approved_alpha = geometry_mask.convert("RGBA").getchannel("A")
+    if approved_alpha.size != master.size:
+        raise RuntimeError("ImageGen geometry mask must be 256x256")
+    master.putalpha(approved_alpha)
+    return master
+
+
+def extract_center_connected_material_from_neutral_background(
+        image: Image.Image) -> Image.Image:
+    """Remove only the edge-connected neutral checkerboard around one material.
+
+    The selected ImageGen output is RGB even though transparency was requested.
+    Its checkerboard is bright and neutral while the paper carrier is warm. The
+    cleanup derives alpha from this same output, then keeps only the foreground
+    component connected to the image center. It never reuses legacy geometry or
+    paints visible material pixels.
+    """
+    rgb = image.convert("RGB")
+    width, height = rgb.size
+    pixels = list(rgb.get_flattened_data())
+    background = bytearray(width * height)
+    queue: deque[int] = deque()
+
+    def is_neutral_background(index: int) -> bool:
+        red, green, blue = pixels[index]
+        return max(red, green, blue) - min(red, green, blue) <= 10 \
+            and min(red, green, blue) >= 225
+
+    def enqueue_background(index: int) -> None:
+        if not background[index] and is_neutral_background(index):
+            background[index] = 1
+            queue.append(index)
+
+    for x in range(width):
+        enqueue_background(x)
+        enqueue_background((height - 1) * width + x)
+    for y in range(height):
+        enqueue_background(y * width)
+        enqueue_background(y * width + width - 1)
+
+    while queue:
+        index = queue.popleft()
+        x = index % width
+        y = index // width
+        if x > 0:
+            enqueue_background(index - 1)
+        if x + 1 < width:
+            enqueue_background(index + 1)
+        if y > 0:
+            enqueue_background(index - width)
+        if y + 1 < height:
+            enqueue_background(index + width)
+
+    center = (height // 2) * width + width // 2
+    if background[center]:
+        raise RuntimeError(
+            "Direct ImageGen material center was classified as background")
+    foreground = bytearray(width * height)
+    foreground[center] = 1
+    queue.append(center)
+    while queue:
+        index = queue.popleft()
+        x = index % width
+        y = index // width
+        for neighbor in (
+                index - 1 if x > 0 else -1,
+                index + 1 if x + 1 < width else -1,
+                index - width if y > 0 else -1,
+                index + width if y + 1 < height else -1):
+            if neighbor >= 0 and not background[neighbor] \
+                    and not foreground[neighbor]:
+                foreground[neighbor] = 1
+                queue.append(neighbor)
+
+    cleaned = Image.new("RGBA", rgb.size)
+    cleaned.putdata([
+        (red, green, blue, 255) if foreground[index] else (0, 0, 0, 0)
+        for index, (red, green, blue) in enumerate(pixels)
+    ])
+    if cleaned.getchannel("A").getbbox() is None:
+        raise RuntimeError("Connected background cleanup found no material")
+    return cleaned
+
+
+def validate_imagegen_material_ownership() -> None:
+    """Forbid master reuse across semantic edge/anatomy contracts."""
+    contracts_by_filename: dict[str, set[str]] = {}
+    for semantic_id, _, filename, _ in IMAGEGEN_DIRECT_ASSETS:
+        contract = ("line-free-carrier" if semantic_id in LINE_FREE_CARRIER_IDS
+                    else "reviewed-material")
+        contracts_by_filename.setdefault(filename, set()).add(contract)
+    mixed = {
+        filename: contracts for filename, contracts in contracts_by_filename.items()
+        if len(contracts) > 1
+    }
+    if mixed:
+        raise RuntimeError(
+            "Direct ImageGen master is shared across incompatible edge contracts: "
+            f"{mixed}")
+
+
+def validate_transparent_imagegen_edge(
+        image: Image.Image, semantic_id: str) -> None:
+    """Reject hidden matte RGB and low-alpha ringing for every direct material."""
+    for red, green, blue, alpha in image.convert("RGBA").get_flattened_data():
+        if alpha == 0 and (red != 0 or green != 0 or blue != 0):
+            raise RuntimeError(
+                f"{semantic_id} contains hidden RGB under zero alpha: "
+                f"rgba=({red},{green},{blue},{alpha})")
+        if 0 < alpha < OPTICAL_ALPHA_THRESHOLD:
+            raise RuntimeError(
+                f"{semantic_id} contains low-alpha resize ringing: "
+                f"rgba=({red},{green},{blue},{alpha})")
+
+
+def has_metric_perimeter_rail(image: Image.Image) -> bool:
+    """Detect a continuous dark authored rail around the compact metric carrier."""
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    pixels = list(rgba.get_flattened_data())
+    minimum_x, maximum_x = width // 4, width - width // 4
+    minimum_y, maximum_y = height // 4, height - height // 4
+    search_depth = max(1, min(width, height) // 4)
+
+    def is_dark(index: int) -> bool:
+        red, green, blue, alpha = pixels[index]
+        return alpha >= 96 and red + green + blue < 225 * 3
+
+    def is_rail(indices: list[int]) -> bool:
+        return sum(1 for index in indices if is_dark(index)) * 4 \
+            >= len(indices) * 3
+
+    for offset in range(search_depth):
+        top = offset
+        bottom = height - 1 - offset
+        if is_rail([top * width + x for x in range(minimum_x, maximum_x)]) \
+                or is_rail([bottom * width + x
+                            for x in range(minimum_x, maximum_x)]):
+            return True
+        left = offset
+        right = width - 1 - offset
+        if is_rail([y * width + left for y in range(minimum_y, maximum_y)]) \
+                or is_rail([y * width + right
+                            for y in range(minimum_y, maximum_y)]):
+            return True
+    return False
+
+
+def validate_line_free_carrier_edge(
+        image: Image.Image, semantic_id: str) -> None:
+    """Reject edge pixels that PC filtering can reconstruct as four lines."""
+    for red, green, blue, alpha in image.convert("RGBA").get_flattened_data():
+        if alpha == 0 or alpha == 255:
+            continue
+        minimum = min(red, green, blue)
+        maximum = max(red, green, blue)
+        if maximum < 160 or maximum - minimum <= 10 and minimum < 225:
+            raise RuntimeError(
+                f"{semantic_id} contains a neutral dark semi-transparent fringe: "
+                f"rgba=({red},{green},{blue},{alpha})")
+    if semantic_id == "surface.metric" and has_metric_perimeter_rail(image):
+        raise RuntimeError(
+            "surface.metric contains a continuous dark perimeter rail")
+
+
+def extract_imagegen_material_masters(
+        project_root: Path, source_root: Path) -> None:
+    """Integrate hash-locked individual ImageGen outputs without a sheet pass."""
+    validate_imagegen_material_ownership()
+    for semantic_id, stem, filename, expected_sha256 in (
+            IMAGEGEN_DIRECT_ASSETS):
+        asset_path = project_root / IMAGEGEN_DIRECT_ROOT / filename
+        if not asset_path.is_file():
+            raise RuntimeError(f"Missing direct ImageGen material: {asset_path}")
+        if sha256(asset_path) != expected_sha256:
+            raise RuntimeError(f"Direct ImageGen material hash drift: {asset_path}")
+        with Image.open(asset_path) as source:
+            mask_record = IMAGEGEN_GEOMETRY_MASKS.get(filename)
+            if mask_record:
+                mask_path = project_root / IMAGEGEN_DIRECT_ROOT / mask_record[0]
+                if (not mask_path.is_file()
+                        or sha256(mask_path) != mask_record[1]):
+                    raise RuntimeError(f"ImageGen geometry mask drift: {mask_path}")
+                with Image.open(mask_path) as source_mask:
+                    master = fit_rgb_imagegen_master_with_geometry_mask(
+                        source, source_mask.convert("RGBA"))
+            elif filename in IMAGEGEN_CONNECTED_BACKGROUND_ASSETS:
+                cleaned = extract_center_connected_material_from_neutral_background(
+                    source)
+                master = fit_direct_imagegen_master(cleaned, semantic_id)
+            else:
+                master = fit_direct_imagegen_master(source, semantic_id)
+
+        master = clear_low_alpha_fringe(master)
+        validate_transparent_imagegen_edge(master, semantic_id)
+        if semantic_id in LINE_FREE_CARRIER_IDS:
+            validate_line_free_carrier_edge(master, semantic_id)
+
+        center_alpha = master.crop((80, 80, 176, 176)).getchannel(
+            "A").getextrema()
+        if semantic_id == "surface.gameplay-stage":
+            if center_alpha[1] > 8:
+                raise RuntimeError(
+                    "Generated gameplay-stage center is not transparent")
+            if master.getpixel((0, 0))[3] != 0:
+                raise RuntimeError(
+                    "Generated gameplay-stage outer corner is not transparent")
+        elif center_alpha[0] < 248:
+            raise RuntimeError(
+                f"Generated material center is not stretch-safe: {semantic_id}")
+        save_png(master, source_root / "surfaces" / f"{stem}.png")
 
 
 def fit_alpha_content(
@@ -575,16 +1005,16 @@ def stable_guid(scope: str, semantic_id: str) -> str:
         f"{SET_ID}:{scope}:{semantic_id}".encode("utf-8")).hexdigest()
 
 
-def ensure_generated_import_meta(
+def ensure_reference_material_import_meta(
         slot: Slot, source_root: Path, runtime_root: Path) -> None:
-    """Create stable source/runtime importer metadata for newly authored slots."""
-    if slot.index not in (53, 54, 55):
+    """Create stable importer metadata for reference-kit slots added after v1."""
+    if slot.index not in (53, 54):
         return
     folder = subdirectory(slot)
     source_path = source_root / folder / f"{source_stem(slot)}.png"
     runtime_path = runtime_root / folder / f"{slot.stem}.png"
     if not source_path.is_file():
-        raise RuntimeError(f"Missing imagegen master: {source_path}")
+        raise RuntimeError(f"Missing reference material master: {source_path}")
 
     source_meta = source_path.with_suffix(".png.meta")
     if not source_meta.exists():
@@ -594,12 +1024,10 @@ def ensure_generated_import_meta(
                       "guid: " + stable_guid("source", slot.semantic_id), text)
         text = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
                       r"\g<1> 2048", text)
-        provenance = ("generated=built-in-imagegen" if slot.index in (53, 54)
-                      else "authored=deterministic-vector")
         text = re.sub(
             r"(?m)^\s*userData:.*$",
             "  userData: ui-art-source=" + SET_ID + ";slot=" + slot.semantic_id
-            + ";" + provenance, text)
+            + ";source-scale=2;authored=deterministic-reference-material-kit", text)
         source_meta.write_text(text, encoding="utf-8")
 
     runtime_meta = runtime_path.with_suffix(".png.meta")
@@ -619,12 +1047,10 @@ def ensure_generated_import_meta(
             r"(?m)^\s*spriteBorder:.*$",
             "  spriteBorder: {x: " + str(border) + ", y: " + str(border)
             + ", z: " + str(border) + ", w: " + str(border) + "}", text)
-        provenance = ("generated=built-in-imagegen" if slot.index in (53, 54)
-                      else "authored=deterministic-vector")
         text = re.sub(
             r"(?m)^\s*userData:.*$",
             "  userData: ui-art-set=" + SET_ID + ";slot=" + slot.semantic_id
-            + ";source-scale=2;" + provenance, text)
+            + ";source-scale=2;authored=deterministic-reference-material-kit", text)
         runtime_meta.write_text(text, encoding="utf-8")
 
 
@@ -694,7 +1120,6 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         mark_tintable_import_meta(source_path.with_suffix(".png.meta"))
         mark_tintable_import_meta(runtime_path.with_suffix(".png.meta"))
     if slot.semantic_id in SEMANTIC_CONTAINER_TARGETS:
-        normalize_semantic_container_master_file(source_path, slot.semantic_id)
         mark_semantic_container_import_meta(
             source_path.with_suffix(".png.meta"), slot.semantic_id)
         mark_semantic_container_import_meta(
@@ -720,8 +1145,10 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         else:
             exported = (alpha_safe_resize(rgba, size)
                         if slot.index >= 40
+                        or slot.semantic_id in IMAGEGEN_MATERIAL_IDS
                         else rgba.resize(size, Image.Resampling.LANCZOS))
-        if slot.index >= 40 and not (49 <= slot.index <= 51):
+        if slot.semantic_id in IMAGEGEN_MATERIAL_IDS \
+                or slot.index >= 40 and not (49 <= slot.index <= 51):
             exported = clear_low_alpha_fringe(exported)
         if slot.geometry == "icon" and not (49 <= slot.index <= 51):
             bbox = alpha_bbox(exported)
@@ -786,9 +1213,9 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             raise RuntimeError("Shell orchard depth illustration must be fully opaque")
         if slot.index == 55:
             bbox = significant_alpha_bbox(rgba)
-            if bbox != (8, 8, 116, 120):
+            if bbox != (8, 8, 120, 125):
                 raise RuntimeError(
-                    f"Gameplay stage bbox must be [8,8,116,120): {runtime_path} {bbox}")
+                    f"Gameplay stage bbox must be [8,8,120,125): {runtime_path} {bbox}")
             if rgba.getpixel((64, 64))[3] != 0 or rgba.getpixel((0, 0))[3] != 0:
                 raise RuntimeError(
                     "Gameplay stage must keep its center and outer corners transparent")
@@ -804,6 +1231,10 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             validate_neutral_action_glyph(rgba, runtime_path)
         if slot.semantic_id in SEMANTIC_CONTAINER_TARGETS:
             content_region_min_contrast(rgba, slot.semantic_id)
+        if slot.semantic_id in IMAGEGEN_MATERIAL_IDS:
+            validate_transparent_imagegen_edge(rgba, slot.semantic_id)
+        if slot.semantic_id in LINE_FREE_CARRIER_IDS:
+            validate_line_free_carrier_edge(rgba, slot.semantic_id)
 
 
 def main() -> None:
@@ -811,11 +1242,16 @@ def main() -> None:
     project_root = source_root.parents[4]
     runtime_root = project_root / "Assets/UI/Art/Runtime" / SET_ID
 
+    author_reference_material_masters(source_root)
+    extract_imagegen_material_masters(project_root, source_root)
+
     unique: dict[str, Slot] = {}
     for slot in SLOTS:
         unique.setdefault(slot.stem, slot)
     for slot in unique.values():
-        ensure_generated_import_meta(slot, source_root, runtime_root)
+        ensure_reference_material_import_meta(slot, source_root, runtime_root)
+        mark_reference_material_import_meta(slot, source_root, runtime_root)
+        mark_imagegen_material_import_meta(slot, source_root, runtime_root)
         export_unique(slot, source_root, runtime_root)
         runtime_path = runtime_root / subdirectory(slot) / f"{slot.stem}.png"
         normalize_target_import_meta(slot, runtime_path, runtime_root)
@@ -855,12 +1291,60 @@ def main() -> None:
                 minimum_contrast = content_region_min_contrast(
                     runtime, slot.semantic_id)
             target = SEMANTIC_CONTAINER_TARGETS[slot.semantic_id]
+            content_reference = CONTENT_REFERENCE_RGB[slot.semantic_id]
             item.update({
                 "container_contract": "semantic-action-container",
                 "target_rgb": f"{target[0]:02X}{target[1]:02X}{target[2]:02X}",
-                "content_reference_rgb": "FFF6E0",
+                "content_reference_rgb": (
+                    f"{content_reference[0]:02X}{content_reference[1]:02X}"
+                    f"{content_reference[2]:02X}"),
                 "content_region_min_contrast": round(minimum_contrast, 4),
             })
+        style = REFERENCE_MATERIAL_STYLES.get(slot.semantic_id)
+        if style is not None:
+            item.update({
+                "authoring_contract": "deterministic-reference-material-kit",
+                "material_recipe": style.recipe,
+                "material_anatomy": REFERENCE_MATERIAL_ANATOMY,
+                "outer_cream_rgb": "{:02X}{:02X}{:02X}".format(*style.rim[:3]),
+                "face_rgb": "{:02X}{:02X}{:02X}".format(*style.face[:3]),
+                "soil_outline_rgb": "{:02X}{:02X}{:02X}".format(*style.outline[:3]),
+                "upper_highlight_rgb": "{:02X}{:02X}{:02X}".format(*style.highlight[:3]),
+                "bottom_shadow_rgb": "{:02X}{:02X}{:02X}".format(*style.shadow[:3]),
+            })
+            if slot.semantic_id == "slot.tool":
+                item["content_layout_contract"] = (
+                    "main-icon|multiply|target-glyph|corner-inventory-badge")
+            if slot.semantic_id in {"action.primary", "action.secondary"}:
+                item["content_tone"] = "primary"
+            elif slot.semantic_id == "action.danger":
+                item["content_tone"] = "inverse"
+        if slot.semantic_id in IMAGEGEN_MATERIAL_IDS:
+            asset_path, asset_sha256, geometry_mask, background_cleanup = (
+                imagegen_material_record(slot.semantic_id))
+            item.update({
+                "authoring_contract": "imagegen-direct-master",
+                "material_anatomy": (
+                    LINE_FREE_CARRIER_MATERIAL_ANATOMY
+                    if slot.semantic_id in LINE_FREE_CARRIER_IDS
+                    else REFERENCE_MATERIAL_ANATOMY),
+                "generated_asset": asset_path,
+                "generated_asset_sha256": asset_sha256,
+                "deterministic_transform": (
+                     "content-crop|transparent-padding|alpha-safe-resize"
+                     + ("|approved-geometry-alpha-mask"
+                        if geometry_mask else "")
+                     + ("|connected-neutral-background-cleanup"
+                        if background_cleanup else "")),
+            })
+            if slot.semantic_id == "slot.nursery":
+                item["render_contract"] = "line-free-rounded-paper-slot"
+            elif slot.semantic_id == "surface.metric":
+                item["render_contract"] = "line-free-rounded-paper-metric"
+            if slot.semantic_id in {"action.primary", "action.secondary"}:
+                item["content_tone"] = "primary"
+            elif slot.semantic_id == "action.danger":
+                item["content_tone"] = "inverse"
         if slot.semantic_id in IMAGEGEN_OUTPUTS:
             item.update({
                 "imagegen_provider": "built-in-imagegen",
@@ -886,7 +1370,7 @@ def main() -> None:
         "schema": "fruit-defense.runtime-ui-art-manifest.v2",
         "setId": SET_ID,
         "revision": REVISION,
-        "approvedDirection": "Sunny Orchard Painted v3 target-size hierarchy",
+        "approvedDirection": "Reference-faithful Sky Paper Orchard material kit",
         "sourceScale": SOURCE_SCALE,
         "slotCount": len(SLOTS),
         "uniqueExportCount": len(unique),
@@ -916,57 +1400,7 @@ def main() -> None:
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     art_set_path = project_root / "Assets/UI/Art/Sets/SunnyOrchardPaintedRuntimeUiArtSet.asset"
     art_set_path.write_text(build_art_set_asset(bindings), encoding="utf-8")
-    build_gallery(source_root, runtime_root)
     print(f"Exported {len(unique)} PNGs and {len(SLOTS)} bindings to {manifest_path}")
-
-
-def build_gallery(source_root: Path, runtime_root: Path) -> None:
-    """Compose reviewed exports only; this does not create or alter asset art."""
-    review_root = source_root.parent / "ReferenceBoards" / "Review"
-    review_root.mkdir(parents=True, exist_ok=True)
-    unique: dict[str, Slot] = {}
-    for slot in SLOTS:
-        unique.setdefault(slot.stem, slot)
-    gallery_slots = tuple(unique.values())
-    columns = 5
-    rows = math.ceil(len(gallery_slots) / columns)
-    cell_width, cell_height = 240, 190
-    gallery = Image.new("RGBA", (cell_width * columns, cell_height * rows), (242, 232, 213, 255))
-    draw = ImageDraw.Draw(gallery)
-    for offset, slot in enumerate(gallery_slots):
-        path = runtime_root / subdirectory(slot) / f"{slot.stem}.png"
-        with Image.open(path) as image:
-            tile = image.convert("RGBA")
-        max_width, max_height = 184, 132
-        scale = min(max_width / tile.width, max_height / tile.height)
-        display_size = (max(1, round(tile.width * scale)), max(1, round(tile.height * scale)))
-        display = alpha_safe_resize(tile, display_size)
-        column, row = offset % columns, offset // columns
-        cell_x, cell_y = column * cell_width, row * cell_height
-        draw.rectangle((cell_x + 4, cell_y + 4, cell_x + cell_width - 4, cell_y + cell_height - 4),
-                       fill=(255, 246, 224, 255), outline=(139, 94, 60, 96), width=1)
-        x = cell_x + (cell_width - display.width) // 2
-        y = cell_y + 10 + (max_height - display.height) // 2
-        checker = Image.new("RGBA", display.size, (248, 238, 219, 255))
-        checker_draw = ImageDraw.Draw(checker)
-        checker_size = 10
-        for checker_y in range(0, display.height, checker_size):
-            for checker_x in range(0, display.width, checker_size):
-                if (checker_x // checker_size + checker_y // checker_size) % 2:
-                    checker_draw.rectangle((checker_x, checker_y,
-                                            checker_x + checker_size - 1,
-                                            checker_y + checker_size - 1),
-                                           fill=(215, 197, 170, 255))
-        checker.alpha_composite(display)
-        gallery.alpha_composite(checker, (x, y))
-        draw.text((cell_x + 10, cell_y + 150),
-                  f"{slot.index:02d} {slot.semantic_id}", fill=(75, 50, 30, 255))
-        draw.text((cell_x + 10, cell_y + 166),
-                  f"{slot.geometry} {tile.width}x{tile.height}", fill=(107, 81, 55, 255))
-        draw.rectangle((cell_x, cell_y,
-                        (column + 1) * cell_width - 1, (row + 1) * cell_height - 1),
-                       outline=(139, 94, 60, 96), width=1)
-    save_png(gallery, review_root / "sunny-orchard-painted-56-gallery.png")
 
 
 if __name__ == "__main__":

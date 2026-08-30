@@ -22,6 +22,7 @@ namespace FruitDefense.Development.GmStress
         public const string LevelMismatch = "gm-stress-level-mismatch";
         public const string TerrainPaletteRequired = "gm-stress-terrain-palette-required";
         public const string TerrainPaletteInvalid = "gm-stress-terrain-palette-invalid";
+        public const string CombatVfxAtlasInvalid = "gm-stress-combat-vfx-atlas-invalid";
 
         private enum AtlasSprite
         {
@@ -54,6 +55,7 @@ namespace FruitDefense.Development.GmStress
         private GmStressBattleLayout _layout;
         private CombatFloatingTextSdfOverlay _floatingTextOverlay;
         private Texture2D _tempArtAtlas;
+        private Texture2D _combatVfxAtlas;
         private GUIStyle _worldLabel;
         private bool _initialized;
         private bool _disposed;
@@ -124,6 +126,14 @@ namespace FruitDefense.Development.GmStress
                     BattleSessionInitializationResult.RuntimeUiThemeRequired);
             if (terrainPalette == null)
                 return BattleSessionInitializationResult.Failed(TerrainPaletteRequired);
+            _combatVfxAtlas = Resources.Load<Texture2D>(
+                BattleCombatGuiRenderer.AtlasResourcePath);
+            if (!BattleCombatGuiRenderer.ValidateAtlas(
+                    _combatVfxAtlas, out var combatAtlasError))
+                return BattleSessionInitializationResult.Failed(
+                    CombatVfxAtlasInvalid + ":" + combatAtlasError);
+            _combatVfxAtlas.filterMode = FilterMode.Bilinear;
+            _combatVfxAtlas.wrapMode = TextureWrapMode.Clamp;
             var themeValidation = runtimeUiTheme.Validate();
             if (!themeValidation.IsValid)
                 return BattleSessionInitializationResult.Failed(
@@ -170,7 +180,9 @@ namespace FruitDefense.Development.GmStress
             _terrainPalette = terrainPalette;
             _worldLabel = new GUIStyle
             {
-                font = runtimeUiTheme.PackagedChineseFont,
+                font = runtimeUiTheme.Typography.For(
+                    RuntimeUiTypographyRole.Body).Font,
+                fontStyle = FontStyle.Normal,
                 fontSize = 11,
                 alignment = TextAnchor.MiddleCenter,
                 clipping = TextClipping.Clip,
@@ -290,6 +302,7 @@ namespace FruitDefense.Development.GmStress
         {
             DisposeSession();
             _tempArtAtlas = null;
+            _combatVfxAtlas = null;
             _worldLabel = null;
         }
 
@@ -492,11 +505,12 @@ namespace FruitDefense.Development.GmStress
                 if (plant != null)
                 {
                     var reaction = _presentation.ReactionFor(plant.Id);
-                    var plantRect = ScaleAroundCenter(visual, .9f * reaction.Scale.x,
-                        .9f * reaction.Scale.y);
-                    plantRect.position += reaction.Offset;
-                    DrawAtlas(plantRect, PlantSprite(plant.DefinitionId),
-                        Color.Lerp(Color.white, new Color(1f, .94f, .63f), reaction.Flash));
+                    var plantRect = ScaleAroundCenter(visual, .9f, .9f);
+                    plantRect = ApplyPlantVisualHeight(plantRect,
+                        PlantVisualHeightOffset(plant));
+                    BattleCombatGuiRenderer.DrawPlant(_tempArtAtlas, plantRect,
+                        (int)PlantSprite(plant.DefinitionId),
+                        _controller.Simulation.State.Elapsed, plant.Id, reaction);
                 }
                 if (dragTarget != null && dragTarget.Id == pot.Id)
                     RuntimeUiGui.DrawIndicator(_drawContext,
@@ -516,8 +530,19 @@ namespace FruitDefense.Development.GmStress
                 var size = Mathf.Min(42f, _layout.Battlefield.TileSize * .82f);
                 var rect = new Rect(center.x - size * .5f, center.y - size * .5f, size, size);
                 rect = ScaleAroundCenter(rect, reaction.Scale.x, reaction.Scale.y);
+                var frozen = _controller.Simulation.HasStatus(
+                    zombie.Id, BattleContentIds.Statuses.IceFreeze);
+                var slowed = _controller.Simulation.HasStatus(
+                    zombie.Id, BattleContentIds.Statuses.IceSlow);
+                if (frozen) BattleCombatGuiRenderer.DrawFrozenAura(
+                    _combatVfxAtlas, rect, new Color(1f, 1f, 1f, .82f));
+                var baseTint = slowed ? new Color(.72f, .9f, 1f) : Color.white;
                 DrawAtlas(rect, EnemySprite(zombie.DefinitionId),
-                    Color.Lerp(Color.white, new Color(1f, .9f, .55f), reaction.Flash));
+                    Color.Lerp(baseTint, new Color(1f, .9f, .55f), reaction.Flash));
+                if (_controller.Simulation.HasStatus(
+                        zombie.Id, BattleContentIds.Statuses.ChiliBurn))
+                    BattleCombatGuiRenderer.DrawBurningStatus(
+                        _combatVfxAtlas, rect);
                 var hp = new Rect(center.x - size * .42f, rect.y - 2f, size * .84f, 2f);
                 DrawRect(hp, new Color(.19f, .13f, .1f, 1f));
                 hp.width *= Mathf.Clamp01(zombie.Hp / zombie.MaxHp);
@@ -527,24 +552,26 @@ namespace FruitDefense.Development.GmStress
 
         private void DrawProjectiles(Vector2 offset)
         {
+            var visualScale = _layout.Battlefield.LegacyVisualSize(1f);
             foreach (var projectile in _controller.Simulation.State.Projectiles)
             {
                 var point = _layout.Battlefield.MapToScreen(projectile.Position) + offset;
-                DrawRect(new Rect(point.x - 3f, point.y - 3f, 6f, 6f),
-                    new Color(.99f, .9f, .25f, 1f));
+                BattleCombatGuiRenderer.DrawProjectile(_combatVfxAtlas, point,
+                    visualScale, projectile,
+                    _controller.Simulation.Content.Projectiles[
+                        projectile.ProjectileId].presentationId,
+                    _controller.Simulation.State.Elapsed);
             }
         }
 
         private void DrawCombatEffects(Vector2 offset)
         {
+            var visualScale = _layout.Battlefield.LegacyVisualSize(1f);
             foreach (var effect in _presentation.CombatEffects)
             {
                 var point = _layout.Battlefield.MapToScreen(effect.Position) + offset;
-                var progress = effect.Duration <= 0f
-                    ? 1f : 1f - Mathf.Clamp01(effect.Ttl / effect.Duration);
-                var size = Mathf.Lerp(8f, 28f, progress);
-                DrawOutline(new Rect(point.x - size * .5f, point.y - size * .5f, size, size),
-                    2f, new Color(1f, .82f, .25f, 1f - progress));
+                BattleCombatGuiRenderer.DrawCombatEffect(_combatVfxAtlas, point,
+                    visualScale, effect);
             }
         }
 
@@ -598,25 +625,29 @@ namespace FruitDefense.Development.GmStress
         {
             var state = selected
                 ? RuntimeUiInteractionState.Selected : ButtonState(rect);
-            RuntimeUiGui.DrawSlot(_drawContext, rect, RuntimeUiSlotKind.Tool,
+            var visualRect = RuntimeUiGui.DrawSlot(_drawContext, rect, RuntimeUiSlotKind.Tool,
                 state, selected);
             if (sprite.HasValue)
             {
-                var stacked = rect.height > 50f && rect.width < 80f;
+                var stacked = visualRect.height > 50f && visualRect.width < 80f;
                 var iconRect = stacked
-                    ? new Rect(rect.x + (rect.width - 34f) * .5f, rect.y + 3f, 34f, 34f)
-                    : new Rect(rect.x + 4f, rect.y + 4f, rect.height - 8f,
-                        rect.height - 8f);
+                    ? new Rect(visualRect.x + (visualRect.width - 34f) * .5f,
+                        visualRect.y + 3f, 34f, 34f)
+                    : new Rect(visualRect.x + 4f, visualRect.y + 4f,
+                        visualRect.height - 8f, visualRect.height - 8f);
                 DrawAtlas(iconRect, sprite.Value, Color.white);
             }
-            var stackedLabel = sprite.HasValue && rect.height > 50f && rect.width < 80f;
+            var stackedLabel = sprite.HasValue
+                && visualRect.height > 50f && visualRect.width < 80f;
             RuntimeUiGui.DrawSingleLineText(_drawContext,
                 sprite.HasValue
                     ? stackedLabel
-                        ? new Rect(rect.x + 3f, rect.yMax - 24f, rect.width - 6f, 22f)
-                        : new Rect(rect.x + rect.height, rect.y,
-                            rect.width - rect.height - 3f, rect.height)
-                    : rect,
+                        ? new Rect(visualRect.x + 3f, visualRect.yMax - 24f,
+                            visualRect.width - 6f, 22f)
+                        : new Rect(visualRect.x + visualRect.height, visualRect.y,
+                            visualRect.width - visualRect.height - 3f,
+                            visualRect.height)
+                    : visualRect,
                 label, RuntimeUiTypographyRole.Supplemental,
                 RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, state);
             if (acceptsClick
@@ -794,19 +825,8 @@ namespace FruitDefense.Development.GmStress
 
         private void DrawAtlas(Rect rect, AtlasSprite sprite, Color tint)
         {
-            if (_tempArtAtlas == null) return;
-            const float cell = .25f;
-            const float inset = .004f;
-            var index = (int)sprite;
-            var column = index % 4;
-            var rowFromTop = index / 4;
-            var uv = new Rect(column * cell + inset,
-                1f - (rowFromTop + 1) * cell + inset,
-                cell - inset * 2f, cell - inset * 2f);
-            var previous = GUI.color;
-            GUI.color = tint;
-            GUI.DrawTextureWithTexCoords(rect, _tempArtAtlas, uv, true);
-            GUI.color = previous;
+            BattleCombatGuiRenderer.DrawAtlasSprite(
+                _tempArtAtlas, rect, (int)sprite, tint);
         }
 
         private void DrawWorldLabel(Rect rect, string text)
@@ -855,9 +875,33 @@ namespace FruitDefense.Development.GmStress
             return rect;
         }
 
-        private static AtlasSprite PlantSprite(string definitionId)
+        private float PlantVisualHeightOffset(Plant plant)
         {
-            switch (BattlePresentationVisualCatalog.Plant(definitionId))
+            if (plant == null || _controller == null
+                || _controller.Simulation.Content == null) return 0f;
+            PlantDefinitionDto definition;
+            return _controller.Simulation.Content.Plants.TryGetValue(
+                    plant.DefinitionId ?? string.Empty, out definition)
+                ? definition.potVisualHeightOffset
+                : 0f;
+        }
+
+        private static Rect ApplyPlantVisualHeight(Rect rect, float height)
+        {
+            var center = rect.center;
+            center.y -= Mathf.Max(0f, height);
+            rect.center = center;
+            return rect;
+        }
+
+        private AtlasSprite PlantSprite(string definitionId)
+        {
+            PlantDefinitionDto definition;
+            var presentationId = _controller != null
+                && _controller.Simulation.Content.Plants.TryGetValue(
+                    definitionId ?? string.Empty, out definition)
+                    ? definition.presentationId : string.Empty;
+            switch (BattlePresentationVisualCatalog.Plant(presentationId))
             {
                 case PlantVisualArchetype.Watermelon: return AtlasSprite.Watermelon;
                 case PlantVisualArchetype.Banana: return AtlasSprite.Banana;
@@ -867,9 +911,14 @@ namespace FruitDefense.Development.GmStress
             }
         }
 
-        private static AtlasSprite EnemySprite(string definitionId)
+        private AtlasSprite EnemySprite(string definitionId)
         {
-            switch (BattlePresentationVisualCatalog.Enemy(definitionId))
+            EnemyDefinitionDto definition;
+            var presentationId = _controller != null
+                && _controller.Simulation.Content.Enemies.TryGetValue(
+                    definitionId ?? string.Empty, out definition)
+                    ? definition.presentationId : string.Empty;
+            switch (BattlePresentationVisualCatalog.Enemy(presentationId))
             {
                 case EnemyVisualArchetype.Runner: return AtlasSprite.RunnerEnemy;
                 case EnemyVisualArchetype.Armored: return AtlasSprite.ArmoredEnemy;
@@ -878,7 +927,7 @@ namespace FruitDefense.Development.GmStress
             }
         }
 
-        private static AtlasSprite AtlasSpriteForEnemySelector(int index)
+        private AtlasSprite AtlasSpriteForEnemySelector(int index)
         {
             return EnemySprite(GmStressBattleIds.EnemyDefinitionIds[index]);
         }

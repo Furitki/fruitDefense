@@ -189,7 +189,7 @@ namespace FruitDefense
             _game.Reset(20260714);
             _game.DiscardPendingPresentationEvents();
             _presentation.Clear();
-            _battleUiLayout = new BattleUiLayout(_game.Map);
+            _battleUiLayout = new BattleUiLayout(_game.Map, _game.NurserySlotCount);
             _acceptanceGeometryBefore = CaptureAcceptanceGeometry();
             _game.State.Pots.Clear();
             _game.State.Plants.Clear();
@@ -336,10 +336,10 @@ namespace FruitDefense
                 case "dense-board":
                 case "combat-feedback-role-grass":
                 case "combat-feedback-role-route":
-                case "combat-feedback-rebound-entry":
-                case "combat-feedback-rebound-peak":
-                case "combat-feedback-rebound-return":
-                case "combat-feedback-rebound-hold":
+                case "combat-feedback-motion-start":
+                case "combat-feedback-motion-early":
+                case "combat-feedback-motion-settle":
+                case "combat-feedback-motion-hold":
                 case "combat-feedback-dense-1x":
                 case "combat-feedback-dense-2x":
                 case "combat-feedback-profile":
