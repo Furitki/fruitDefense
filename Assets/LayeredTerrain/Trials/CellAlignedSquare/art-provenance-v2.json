@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "approvedAt": "2026-08-31",
+  "generator": "OpenAI ImageGen built-in tool",
+  "approvedReference": {
+    "asset": "approved-in-game-grid-reference-v2.png",
+    "sourceOutput": "exec-e26ace74-1a86-4c49-839a-efbdc3952fd6.png",
+    "sha256": "E1E3F5180FCBA505571E96401B09BAE2F1B3756A5DCD63A8376CF18568C2671D",
+    "dimensions": [1672, 941],
+    "role": "review-only P0 visual authority"
+  },
+  "transform": {
+    "tool": "FFmpeg",
+    "scale": "64x64",
+    "filter": "lanczos",
+    "recolor": false,
+    "regenerate": false
+  },
+  "assets": [
+    {
+      "asset": "GrassSquareBase-v2.png",
+      "crop": [692, 292, 48, 48],
+      "sha256": "CF2EAC649F4F92F86B4999CF9D7447272A1233220D2ABC2395E3458BDBE4F321"
+    },
+    {
+      "asset": "SoilSquareBase-v2.png",
+      "crop": [788, 196, 48, 48],
+      "sha256": "2B3794E23E55C5BFE3643C5AF833A3E473BAB19D08DA09AC10741D7FA54554F4"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using FruitDefense.Core;
 using FruitDefense.Tilemaps;
 using UnityEditor;
@@ -17,20 +18,31 @@ namespace FruitDefense.Editor
     {
         internal const string Root =
             "Assets/LayeredTerrain/Trials/CellAlignedSquare";
-        internal const string GrassTexturePath = Root + "/GrassSquareBase-v1.png";
-        internal const string SoilTexturePath = Root + "/SoilSquareBase-v1.png";
-        internal const string GrassTilePath = Root + "/GrassSquareBase-v1.asset";
-        internal const string SoilTilePath = Root + "/SoilSquareBase-v1.asset";
+        internal const string ApprovedReferencePath =
+            Root + "/approved-in-game-grid-reference-v2.png";
+        internal const string GrassTexturePath = Root + "/GrassSquareBase-v2.png";
+        internal const string SoilTexturePath = Root + "/SoilSquareBase-v2.png";
+        internal const string GrassTilePath = Root + "/GrassSquareBase-v2.asset";
+        internal const string SoilTilePath = Root + "/SoilSquareBase-v2.asset";
+        internal const string PromptPath = Root + "/prompts-v2.md";
+        internal const string ProvenancePath = Root + "/art-provenance-v2.json";
         internal const string PalettePath = Root + "/CellAlignedSquareTrialPalette.asset";
         internal const string ScenePath = Root + "/CellAlignedSquareTerrainTrial.unity";
         internal const string EvidencePath =
-            "Builds/Evidence/cell-aligned-square-terrain/cell-aligned-square-terrain-v1.png";
+            "Builds/Evidence/cell-aligned-square-terrain/cell-aligned-square-terrain-v2.png";
         internal const string WebGlBuildPath =
             "Builds/CellAlignedSquareTerrainTrialWebGL";
-        internal const string PaletteId = "palette.trial.cell-aligned-square.v1";
+        internal const string PaletteId = "palette.trial.cell-aligned-square.v2";
         internal const int TextureSize = 64;
         internal const int BoardWidth = 8;
         internal const int BoardHeight = 14;
+
+        private const string ApprovedReferenceSha256 =
+            "E1E3F5180FCBA505571E96401B09BAE2F1B3756A5DCD63A8376CF18568C2671D";
+        private const string GrassTextureSha256 =
+            "CF2EAC649F4F92F86B4999CF9D7447272A1233220D2ABC2395E3458BDBE4F321";
+        private const string SoilTextureSha256 =
+            "2B3794E23E55C5BFE3643C5AF833A3E473BAB19D08DA09AC10741D7FA54554F4";
 
         private const string MarkerAPath =
             "Assets/LayeredTerrain/GrassSoil/Authoring/MarkerA.asset";
@@ -142,6 +154,7 @@ namespace FruitDefense.Editor
 
         internal static bool Validate(out string reason)
         {
+            if (!ValidateApprovedSources(out reason)) return false;
             if (!ValidateTexture(GrassTexturePath, out reason)
                 || !ValidateTexture(SoilTexturePath, out reason)) return false;
 
@@ -294,7 +307,7 @@ namespace FruitDefense.Editor
                 var cameraObject = new GameObject("Main Camera");
                 cameraObject.transform.SetParent(root.transform, false);
                 cameraObject.tag = "MainCamera";
-                cameraObject.transform.position = new Vector3(3.5f, 6.5f, -10f);
+                cameraObject.transform.position = new Vector3(4f, 7f, -10f);
                 var camera = cameraObject.AddComponent<Camera>();
                 camera.orthographic = true;
                 camera.orthographicSize = 9.5f;
@@ -318,12 +331,18 @@ namespace FruitDefense.Editor
         private static void PaintBoard(LayeredTerrainTilemap renderer)
         {
             string reason;
-            for (var y = 0; y < BoardHeight; y++)
+            for (var y = 0; y < 5; y++)
+            for (var x = 0; x < BoardWidth; x++)
+                Require(renderer.PaintBase(new Vector3Int(x, y, 0),
+                    LayeredTerrainMaterial.B,
+                    out reason), reason);
+
+            for (var y = 7; y < BoardHeight; y++)
             for (var x = 0; x < BoardWidth; x++)
             {
-                var material = y >= 9
-                    ? LayeredTerrainMaterial.A : LayeredTerrainMaterial.B;
-                Require(renderer.PaintBase(new Vector3Int(x, y, 0), material,
+                var isGrass = x < 7 && y > 7 && y < BoardHeight - 1;
+                Require(renderer.PaintBase(new Vector3Int(x, y, 0),
+                    isGrass ? LayeredTerrainMaterial.A : LayeredTerrainMaterial.B,
                     out reason), reason);
             }
 
@@ -367,56 +386,106 @@ namespace FruitDefense.Editor
                 return false;
             }
             var pixels = texture.GetPixels32();
-            if (pixels.Any(pixel => pixel.a != byte.MaxValue))
+            if (texture.width != TextureSize || texture.height != TextureSize
+                || pixels.Any(pixel => pixel.a != byte.MaxValue))
             {
-                reason = "Trial base texture is not fully opaque: " + path;
+                reason = "Trial base texture must be an opaque 64x64 cell: " + path;
                 return false;
             }
-            var horizontal = BorderDifference(pixels, texture.width, texture.height, true);
-            var vertical = BorderDifference(pixels, texture.width, texture.height, false);
-            if (horizontal > 8f || vertical > 8f)
+            var interiorMean = MeanLuminance(pixels, texture.width, texture.height, 8, true);
+            var frameMean = MeanLuminance(pixels, texture.width, texture.height, 8, false);
+            var frameContrast = interiorMean - frameMean;
+            if (frameContrast < 6f || frameContrast > 24f)
             {
-                reason = "Trial texture opposite-edge difference is too high: " + path
-                    + " horizontal=" + horizontal.ToString("0.00")
-                    + " vertical=" + vertical.ToString("0.00");
+                reason = "Trial texture does not preserve one restrained inset frame: " + path
+                    + " contrast=" + frameContrast.ToString("0.00");
                 return false;
             }
-            if (MaximumChannelStandardDeviation(pixels) > 2f)
+            if (InteriorLuminanceStandardDeviation(pixels, texture.width,
+                    texture.height, 8) > 5f)
             {
-                reason = "Trial texture contains too much within-cell tonal variation: " + path;
+                reason = "Trial texture contains too much interior tonal noise: " + path;
                 return false;
             }
             reason = "ok";
             return true;
         }
 
-        private static float MaximumChannelStandardDeviation(Color32[] pixels)
+        private static bool ValidateApprovedSources(out string reason)
         {
-            if (pixels == null || pixels.Length == 0) return float.PositiveInfinity;
-            var meanR = pixels.Average(pixel => (double)pixel.r);
-            var meanG = pixels.Average(pixel => (double)pixel.g);
-            var meanB = pixels.Average(pixel => (double)pixel.b);
-            var varianceR = pixels.Average(pixel => Math.Pow(pixel.r - meanR, 2d));
-            var varianceG = pixels.Average(pixel => Math.Pow(pixel.g - meanG, 2d));
-            var varianceB = pixels.Average(pixel => Math.Pow(pixel.b - meanB, 2d));
-            return (float)Math.Sqrt(Math.Max(varianceR,
-                Math.Max(varianceG, varianceB)));
+            var requiredText = new[] { PromptPath, ProvenancePath };
+            var missing = requiredText.FirstOrDefault(path => !File.Exists(Path.GetFullPath(path)));
+            if (!string.IsNullOrEmpty(missing))
+            {
+                reason = "Approved trial record is missing: " + missing;
+                return false;
+            }
+            var expectedHashes = new[]
+            {
+                new KeyValuePair<string, string>(ApprovedReferencePath,
+                    ApprovedReferenceSha256),
+                new KeyValuePair<string, string>(GrassTexturePath, GrassTextureSha256),
+                new KeyValuePair<string, string>(SoilTexturePath, SoilTextureSha256),
+            };
+            foreach (var entry in expectedHashes)
+            {
+                if (!File.Exists(Path.GetFullPath(entry.Key))
+                    || !string.Equals(HashFile(entry.Key), entry.Value,
+                        StringComparison.Ordinal))
+                {
+                    reason = "Approved trial pixel source drifted: " + entry.Key;
+                    return false;
+                }
+            }
+            reason = "ok";
+            return true;
         }
 
-        private static float BorderDifference(Color32[] pixels, int width, int height,
-            bool horizontal)
+        private static float MeanLuminance(Color32[] pixels, int width, int height,
+            int inset, bool interior)
         {
-            var samples = horizontal ? height : width;
             var total = 0f;
-            for (var index = 0; index < samples; index++)
+            var count = 0;
+            for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
             {
-                var first = horizontal ? pixels[index * width] : pixels[index];
-                var second = horizontal ? pixels[index * width + width - 1]
-                    : pixels[(height - 1) * width + index];
-                total += (Mathf.Abs(first.r - second.r) + Mathf.Abs(first.g - second.g)
-                    + Mathf.Abs(first.b - second.b)) / 3f;
+                var isInterior = x >= inset && x < width - inset
+                    && y >= inset && y < height - inset;
+                if (isInterior != interior) continue;
+                total += Luminance(pixels[y * width + x]);
+                count++;
             }
-            return total / Mathf.Max(1, samples);
+            return total / Mathf.Max(1, count);
+        }
+
+        private static float InteriorLuminanceStandardDeviation(Color32[] pixels,
+            int width, int height, int inset)
+        {
+            var mean = MeanLuminance(pixels, width, height, inset, true);
+            var total = 0d;
+            var count = 0;
+            for (var y = inset; y < height - inset; y++)
+            for (var x = inset; x < width - inset; x++)
+            {
+                var difference = Luminance(pixels[y * width + x]) - mean;
+                total += difference * difference;
+                count++;
+            }
+            return count == 0 ? float.PositiveInfinity
+                : (float)Math.Sqrt(total / count);
+        }
+
+        private static float Luminance(Color32 pixel)
+        {
+            return .2126f * pixel.r + .7152f * pixel.g + .0722f * pixel.b;
+        }
+
+        private static string HashFile(string path)
+        {
+            using (var sha = SHA256.Create())
+            using (var stream = File.OpenRead(Path.GetFullPath(path)))
+                return BitConverter.ToString(sha.ComputeHash(stream))
+                    .Replace("-", string.Empty);
         }
 
         private static void ConfigureTexture(string path)

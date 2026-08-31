@@ -8,6 +8,7 @@ The current terrain pipeline can technically render a base-only visual cell, but
 - Keep pure square terrain on the existing opaque base layer and keep Dual-Grid terrain on the existing transparent landform/edge layers; do not add a parallel map schema or a sixteen-mask square-tile substitute.
 - Reject a same-surface boundary where one side represents the surface as a pure base and the touching side represents it as a Dual-Grid landform, because the current mask resolver would create a false internal contour.
 - Add a compact grass/soil trial layout and focused validation/preview evidence covering pure squares, Dual-Grid regions, and their supported separation.
+- Promote the user-approved in-game `8 × 7` square-grid preview into deterministic grass and soil cell exports whose restrained inset framing makes the gameplay grid readable without changing projection or hit geometry.
 - Preserve Battle interaction geometry, simulation, map identity, route rules, persistence, runtime UI semantics, and the current clean orchard visual standard.
 
 ## Capabilities
@@ -24,6 +25,6 @@ None.
 ## Impact
 
 - Affected systems: layered terrain editor tooling, canonical visual-cell validation, terrain-focused editor smoke, and terrain preview/evidence generation.
-- Player-visible flow: Battle terrain presentation only; no Lobby, controls, actions, copy, or settlement behavior changes.
+- Player-visible flow: isolated Battle-scale terrain presentation only; no release palette promotion, Lobby, controls, actions, copy, or settlement behavior changes.
 - Runtime rendering continues to use the current base-first, landform-second, edge-third order and current palette bindings.
 - No new dependency, gameplay rule, saved-state migration, compatibility layer, or platform claim is introduced.

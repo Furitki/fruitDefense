@@ -125,11 +125,19 @@ namespace FruitDefense.Editor
                     new Vector3Int(2, 3, 0), new Vector3Int(3, 3, 0),
                     new Vector3Int(4, 3, 0), new Vector3Int(5, 3, 0),
                 };
+                var expectedBaseCount = 0;
+                var approvedGrassCount = 0;
+                var approvedSoilCount = 0;
                 for (var y = 0; y < CellAlignedSquareTerrainTrial.BoardHeight; y++)
                 for (var x = 0; x < CellAlignedSquareTerrainTrial.BoardWidth; x++)
                 {
                     var cell = new Vector3Int(x, y, 0);
-                    var expectedBase = y >= 9 ? grassMarker : soilMarker;
+                    var inDualGridReference = y < 5;
+                    var inApprovedGrid = y >= 7;
+                    var isApprovedGrass = inApprovedGrid && x < 7 && y > 7
+                        && y < CellAlignedSquareTerrainTrial.BoardHeight - 1;
+                    var expectedBase = isApprovedGrass ? grassMarker
+                        : inDualGridReference || inApprovedGrid ? soilMarker : null;
                     Assert(renderer.BaseLogicalTilemap.GetTile(cell) == expectedBase,
                         "comparison-board base semantic at " + cell);
                     Assert(renderer.LandformLogicalTilemap.GetTile(cell)
@@ -138,20 +146,29 @@ namespace FruitDefense.Editor
                     Assert(renderer.EdgeLogicalTilemap.GetTile(cell)
                             == (dualGridCells.Contains(cell) ? edgeMarker : null),
                         "comparison-board edge semantic at " + cell);
+                    if (expectedBase != null) expectedBaseCount++;
+                    if (isApprovedGrass) approvedGrassCount++;
+                    else if (inApprovedGrid) approvedSoilCount++;
                 }
                 Assert(renderer.BaseOutputTilemap.GetTilesBlock(new BoundsInt(0, 0, 0,
                             CellAlignedSquareTerrainTrial.BoardWidth,
                             CellAlignedSquareTerrainTrial.BoardHeight, 1))
                         .Count(tile => tile != null)
-                    == CellAlignedSquareTerrainTrial.BoardWidth
-                        * CellAlignedSquareTerrainTrial.BoardHeight,
+                    == expectedBaseCount,
                     "comparison board renders one opaque base tile per gameplay cell");
+                Assert(approvedGrassCount == 35 && approvedSoilCount == 21,
+                    "approved board preserves the exact 7x5 grass and 21-cell soil frame");
                 Assert(renderer.LandformAOutputTilemap.cellBounds.size.x > 0,
                     "comparison board renders the separated Dual-Grid grass reference");
                 var camera = scene.GetRootGameObjects()
                     .SelectMany(root => root.GetComponentsInChildren<Camera>(true)).Single();
                 Assert(Mathf.Approximately(874f / (camera.orthographicSize * 2f), 46f),
                     "comparison board uses the 46-pixel battlefield cell scale");
+                Assert(Mathf.Approximately(camera.transform.position.x,
+                        CellAlignedSquareTerrainTrial.BoardWidth * .5f)
+                    && Mathf.Approximately(camera.transform.position.y,
+                        CellAlignedSquareTerrainTrial.BoardHeight * .5f),
+                    "comparison board camera is centered on the complete grid bounds");
             }
             finally
             {

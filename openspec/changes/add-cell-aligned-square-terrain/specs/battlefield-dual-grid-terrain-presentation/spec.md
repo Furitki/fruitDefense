@@ -16,7 +16,7 @@ The battlefield terrain renderer SHALL present a base-only visual cell as one op
 - **THEN** the renderer presents an intentional hard boundary aligned to the gameplay grid
 
 ### Requirement: Isolated square-terrain trial evidence
-The project SHALL provide an isolated grass-and-soil square-terrain trial whose assets and palette do not replace release content. Its base textures MUST be opaque, use Repeat wrapping, remain free of visible seams in a repeated view, and follow the approved clean cartoon palette with broad hand-painted variation rather than fine noise.
+The project SHALL provide an isolated grass-and-soil square-terrain trial whose assets and palette do not replace release content. Its base textures MUST be opaque, use Repeat wrapping, and follow the approved clean cartoon palette with broad hand-painted variation rather than fine noise. The user-approved soft inset cell frame SHALL appear once per gameplay cell as intentional grid language; accidental discontinuities, double borders, and unrelated seam colors remain invalid.
 
 #### Scenario: Generate the comparison board
 - **WHEN** the square-terrain trial generator runs
@@ -24,7 +24,11 @@ The project SHALL provide an isolated grass-and-soil square-terrain trial whose 
 
 #### Scenario: Validate trial texture imports
 - **WHEN** automated trial-art validation inspects the grass and soil base textures
-- **THEN** each texture is opaque, imported with Repeat wrapping, and passes the configured opposite-edge continuity threshold
+- **THEN** each texture is opaque, imported with Repeat wrapping, matches its recorded approved-source crop, and passes the configured regular-frame and interior-noise thresholds
+
+#### Scenario: Render the approved game-grid composition
+- **WHEN** the square-terrain trial generator builds its primary review region
+- **THEN** it presents an exact `8 × 7` cell grid with a `7 × 5` grass region touching the left edge and soil occupying the full top row, right column, and bottom row at real Battle cell scale
 
 #### Scenario: Protect release content
 - **WHEN** the trial assets and comparison board are generated

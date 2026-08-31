@@ -2,7 +2,7 @@
 
 The battlefield presentation already stores an opaque `BaseSurfaceId` per visual cell and optional Dual-Grid landform, contour, and pair-edge layers. A cell with only a base surface is therefore already representable and rendered as a square; the missing pieces are an explicit production authoring action, a guard against mixing two representations of the same material at a shared vertex, and an isolated art trial that lets the team judge the cleaner visual direction before changing release content.
 
-The current grass and soil base textures are visually noisier and less cohesive than the approved clean, broad-brush reference. The trial must use newly generated, opaque, repeatable base textures while leaving the release palette, playable catalog, gameplay data, and scene flow unchanged.
+The current grass and soil base textures are visually noisier and less cohesive than the approved clean, broad-brush reference. The user has now approved an in-game `8 × 7` preview with a `7 × 5` grass planting region and soil on the top, right, and bottom. The trial must use opaque, repeatable square-cell textures derived deterministically from that approved preview while leaving the release palette, playable catalog, gameplay data, and scene flow unchanged.
 
 ## Goals / Non-Goals
 
@@ -12,6 +12,7 @@ The current grass and soil base textures are visually noisier and less cohesive 
 - Reuse the existing base-surface schema and renderer instead of creating square variants for all sixteen Dual-Grid masks.
 - Reject maps that let the same surface touch itself across the base-only and Dual-Grid representations, including diagonal contact.
 - Produce an isolated, reproducible comparison board with clean grass and soil square textures at gameplay cell scale.
+- Preserve the approved preview's restrained inset cell frame as intentional grid language while rejecting accidental seams, double borders, and texture discontinuities.
 - Verify texture import settings, repeat continuity, authoring semantics, and compiler diagnostics with focused editor automation.
 
 **Non-Goals:**
@@ -50,11 +51,17 @@ The release palette and playable map catalog remain untouched. Promotion of a ch
 
 ### Validate seamlessness as a production constraint
 
-The trial base textures SHALL be opaque, imported with Repeat wrapping, and free of visible seams when tiled at least 3x3. Automated validation SHALL compare opposite border samples and reject excessive discontinuity; the generated comparison board provides the final visual check for broad patterns or repeated focal marks that a numeric edge test cannot detect.
+The trial base textures SHALL be opaque and imported with Repeat wrapping. Each cell MAY contain the approved soft inset frame, so repeated presentation intentionally exposes one regular grid rhythm. Automated validation SHALL reject asymmetric edge ownership, double borders, unrelated seam colors, excessive interior noise, and drift from the approved source crop; the generated board provides the final visual check for repeated focal marks that a numeric check cannot detect.
+
+### Derive production cells from the approved in-game preview
+
+The approved ImageGen preview SHALL be stored as review-only source evidence. Grass and soil runtime candidates SHALL be deterministic crops of unobstructed representative cells, normalized to `64 × 64` without recoloring, repainting, or another generative pass. Crop rectangles, scaling method, source hash, output hashes, and the final prompt SHALL be versioned with the trial assets.
+
+This is preferred over regenerating isolated tiles because the approved full-game composition is the P0 visual authority. It also avoids interpreting the preview's color balance a second time. The review source remains outside release bindings, and only normalized cell exports may be bound by the isolated trial palette.
 
 ## Risks / Trade-offs
 
-- [Generated art can claim to be seamless without matching pixels exactly] → Run border-continuity validation, render a repeated board, and regenerate rather than hiding seams with runtime blending.
+- [The approved cell frame can be mistaken for an accidental seam] → Validate one owned frame per repeated cell and review the complete `8 × 7` pattern at real Battle scale rather than requiring invisible same-surface boundaries.
 - [Hard boundaries between two base-only surfaces expose the grid] → Treat this as the intentional square-mode aesthetic; use Dual-Grid for organic transitions.
 - [The new representation-mix rule can expose an existing invalid map] → Run the focused compiler smoke and aggregate project smoke before considering the change complete; fix the map rather than adding a fallback.
 - [A trial palette can drift from the release palette bindings] → Clone only the required bindings deterministically and validate surface identifiers against the registered palette.
@@ -64,11 +71,12 @@ The trial base textures SHALL be opaque, imported with Repeat wrapping, and free
 1. Add the isolated textures, prompt records, trial palette, and comparison-board generator.
 2. Add canonical square preset actions and the compiler representation rule.
 3. Run focused authoring/compiler/art validation, aggregate editor smoke, and generate the comparison evidence.
-4. Keep the release palette and playable catalog unchanged until the team explicitly selects a direction.
+4. Replace the rejected trial texture candidates with deterministic `64 × 64` crops from the user-approved in-game preview and render its `8 × 7` grid layout.
+5. Keep the release palette and playable catalog unchanged until the team explicitly requests promotion into normal Battle content.
 
 Rollback is a branch revert that removes the trial directory and the new editor/compiler behavior. No serialized production data migration is required.
 
 ## Open Questions
 
-- Which of the grass/soil art variants, if any, should replace the release base textures after review?
+- Should the approved trial cells later replace the release base textures, or remain available only as explicit pure-square map presets?
 - Should a later production change expose additional square presets for future surfaces beyond grass and soil?

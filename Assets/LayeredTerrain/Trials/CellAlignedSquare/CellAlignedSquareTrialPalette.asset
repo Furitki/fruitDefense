@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea79c4856d194bd41a4bc31a4bc82d90, type: 3}
   m_Name: CellAlignedSquareTrialPalette
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Tilemaps.BattlefieldTerrainPalette
-  paletteId: palette.trial.cell-aligned-square.v1
-  soilBaseTexture: {fileID: 2800000, guid: 54ebb4e77407b7f4c9bf5ecba8d2e47a, type: 3}
+  paletteId: palette.trial.cell-aligned-square.v2
+  soilBaseTexture: {fileID: 2800000, guid: 8f867f405ba9675429919c64699970ab, type: 3}
   surfaceBindings:
   - surfaceId: surface.grass
-    baseTexture: {fileID: 2800000, guid: 63e9690aed794484c9348d35be1619ab, type: 3}
+    baseTexture: {fileID: 2800000, guid: 5777a19d681cec34a84511c64923edd7, type: 3}
     tileSet: {fileID: 0}
   - surfaceId: surface.soil
-    baseTexture: {fileID: 2800000, guid: 54ebb4e77407b7f4c9bf5ecba8d2e47a, type: 3}
+    baseTexture: {fileID: 2800000, guid: 8f867f405ba9675429919c64699970ab, type: 3}
     tileSet: {fileID: 0}
   - surfaceId: surface.stone-road
     baseTexture: {fileID: 2800000, guid: 3223a6246f2f27743be6e032971cf4d1, type: 3}
