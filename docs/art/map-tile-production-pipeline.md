@@ -225,7 +225,7 @@ Assets/Battlefield/Terrain/Orchard01SquareGrid/
 具体实现与验收合同见：
 
 ```text
-openspec/changes/apply-square-terrain-to-first-level/
+openspec/changes/archive/2026-08-31-apply-square-terrain-to-first-level/
 ```
 
 该参考锁定的是流程、表现结构和批准后的生产像素，不授权后续关卡直接复制第一关配色。每个新主题仍需重新完成游戏内预演和两次人工门禁。
