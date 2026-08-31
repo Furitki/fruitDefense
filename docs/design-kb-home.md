@@ -21,7 +21,8 @@ status: active
 
 ## 美术生产管线
 
-- [Dual-Grid 地图图块生成管线](art/dual-grid-tile-generation-pipeline.md)
+- [地图图块统一生产管线](art/map-tile-production-pipeline.md)
+- [Dual-Grid 地图图块生成技术分支](art/dual-grid-tile-generation-pipeline.md)
 - [AI 整图地图精修与 Unity 接入管线](art/whole-map-visual-refinement-pipeline.md)
 
 ## 平台证据

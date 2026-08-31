@@ -116,6 +116,7 @@ Action 颜色必须以 `container/content` 语义对定义，而不是让文字�
 
 - UI ArtSet 拥有面板、按钮、卡片底板、槽位底板、状态标记、控制图标和资源指标图标。
 - 植物、武器、敌人、地形和战斗特效由 gameplay content art 拥有。`slot.tool` / `slot.nursery` 只规定它们进入 UI 槽后的裁切、留白、状态覆盖和层级。
+- 地图图块的风格预演、方格审核、拆分、生产化和关卡实机验收由 [地图图块统一生产管线](../art/map-tile-production-pipeline.md) 负责；本文只规定地形与 UI chrome 的所有权和层级边界，不复制地图图块生产规则。
 - 花盆若作为操作/槽位符号使用，可由 `icon.tool-pot` 表达；战场中的花盆实体仍属于 gameplay content。
 - 关卡可以改变战场配色和内容插画，但不能改变应用按钮、导航、结果卡或状态语义。
 - 美术换集不能改变命令、内容 identity、数值或任何战斗结果。
