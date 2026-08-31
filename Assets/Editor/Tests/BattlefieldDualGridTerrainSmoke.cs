@@ -29,6 +29,8 @@ namespace FruitDefense.Editor
                 ProjectSetup.BattlefieldTerrainBaseTexturePath);
             var palette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
                 ProjectSetup.BattlefieldTerrainPalettePath);
+            var firstLevelPalette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
+                ProjectSetup.FirstLevelSquareTerrainPalettePath);
             var terrainValid = BattlefieldDualGridTerrain.Validate(palette, out var terrainReason);
             Assert(terrainValid,
                 "battlefield terrain assets validate: " + terrainReason);
@@ -60,12 +62,16 @@ namespace FruitDefense.Editor
                          StringComparer.Ordinal))
             {
                 var map = catalog.Maps[mapId];
+                var firstLevelSquare = string.Equals(map.MapId,
+                    BundledLevelCatalogIds.Maps.Orchard01, StringComparison.Ordinal);
+                var mapPalette = firstLevelSquare ? firstLevelPalette : palette;
                 Assert(validatedMapIds.Add(map.MapId),
                     "each current catalog map participates in terrain validation once: "
                     + map.MapId);
-                Assert(BattlefieldDualGridTerrain.Validate(map, palette, out terrainReason),
+                Assert(BattlefieldDualGridTerrain.Validate(map, mapPalette, out terrainReason),
                     "map requires only exact contour palette bindings: " + terrainReason);
-                ValidateMap(map, grassTileSet, routeTileSet, baseTexture, true);
+                ValidateMap(map, grassTileSet, routeTileSet, baseTexture, true,
+                    !firstLevelSquare);
             }
             Assert(validatedMapIds.SetEquals(expectedMapIds),
                 "every unique current catalog map participates in terrain validation");
@@ -87,7 +93,7 @@ namespace FruitDefense.Editor
                     acceptanceMap, palette, out terrainReason),
                 "isolated acceptance map requires exact contour palette bindings: "
                 + terrainReason);
-            ValidateMap(acceptanceMap, grassTileSet, routeTileSet, baseTexture, false);
+            ValidateMap(acceptanceMap, grassTileSet, routeTileSet, baseTexture, false, true);
 
             ValidateSetupBinding(palette, grassTileSet, routeTileSet, baseTexture);
             ValidateReleaseSceneBinding(palette, grassTileSet, routeTileSet, baseTexture);
@@ -272,7 +278,7 @@ namespace FruitDefense.Editor
                     "runtime rejects a material pair when neither ordered binding exists");
 
                 var catalog = BundledLevelCatalogFactory.CreateCompiled();
-                var resolved = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard01);
+                var resolved = catalog.Resolve(BundledLevelCatalogIds.Levels.Orchard02);
                 Assert(resolved.Succeeded && resolved.Value != null,
                     "runtime terrain failure fixture resolves the bundled level");
                 var navigator = new AppNavigator();
@@ -350,7 +356,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateMap(BattlefieldMapDefinition map,
             DualGridTileSet grassTileSet, DualGridTileSet routeTileSet, Texture2D baseTexture,
-            bool expectBaseOnlyDirtRoute)
+            bool expectBaseOnlyDirtRoute, bool expectGrassLandform)
         {
             Assert(map != null, "terrain map is present");
             Assert(map.UsesLayeredMap, "terrain map uses layered semantic surfaces");
@@ -424,8 +430,16 @@ namespace FruitDefense.Editor
                     "terrain tile clips inside GridRect for " + map.MapId);
             }
 
-            Assert(grassFullCount > 0 && grassTransitionCount > 0 && grassMasks.Count > 1,
-                "terrain map exercises full grass and transition masks: " + map.MapId);
+            Assert(expectGrassLandform
+                    ? grassFullCount > 0 && grassTransitionCount > 0 && grassMasks.Count > 1
+                    : grassFullCount == 0 && grassTransitionCount == 0
+                        && grassMasks.SetEquals(new[] { DualGridMask.Empty })
+                        && map.VisualCells.Count(cell => cell.BaseSurfaceId
+                            == BattlefieldLayerIds.Surfaces.Grass) == 35,
+                (expectGrassLandform
+                    ? "terrain map exercises full grass and transition masks: "
+                    : "base-only square map has 35 grass cells and no grass masks: ")
+                + map.MapId);
             if (!expectBaseOnlyDirtRoute)
                 Assert(routeNonEmptyCount > 0 && routeTransitionCount > 0 && routeMasks.Count > 1,
                     "acceptance map exercises authored route transition masks: " + map.MapId);
@@ -489,8 +503,10 @@ namespace FruitDefense.Editor
                 var game = root.AddComponent<FruitDefenseGame>();
                 ProjectSetup.ConfigureBattlefieldTerrain(game);
                 var valid = game.ValidateBattlefieldTerrain(out var reason);
-                Assert(game.BattlefieldTerrainPalettes.Count == 1
+                Assert(game.BattlefieldTerrainPalettes.Count == 2
                     && game.BattlefieldTerrainPalettes[0] == palette
+                    && game.BattlefieldTerrainPalettes[1].PaletteId
+                        == BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid
                     && game.BattlefieldGrassTileSet == grassTileSet
                     && game.BattlefieldRouteTileSet == routeTileSet
                     && game.BattlefieldSoilBaseTexture == baseTexture
@@ -522,8 +538,10 @@ namespace FruitDefense.Editor
                     "release Battle scene contains exactly one FruitDefenseGame");
                 var game = games[0];
                 var valid = game.ValidateBattlefieldTerrain(out var reason);
-                Assert(game.BattlefieldTerrainPalettes.Count == 1
+                Assert(game.BattlefieldTerrainPalettes.Count == 2
                     && game.BattlefieldTerrainPalettes[0] == palette
+                    && game.BattlefieldTerrainPalettes[1].PaletteId
+                        == BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid
                     && game.BattlefieldGrassTileSet == grassTileSet
                     && game.BattlefieldRouteTileSet == routeTileSet
                     && game.BattlefieldSoilBaseTexture == baseTexture

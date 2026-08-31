@@ -47,6 +47,7 @@ namespace FruitDefense.Content
 
         public static class TerrainPalettes
         {
+            public const string Orchard01SquareGrid = "palette.orchard-01.square-grid";
             public const string OrchardDefault = "palette.orchard.default";
         }
     }
@@ -104,7 +105,7 @@ namespace FruitDefense.Content
                 new LevelPresentationThemeDefinition(BundledLevelCatalogIds.Themes.DayOrchard,
                     "Day Orchard", "#DDF3C4", "#B8D98A", "#D7BE86", "#8A6B3E",
                     "#94C973", "#65725A", "#E66D4A", "#F2C94C",
-                    BundledLevelCatalogIds.TerrainPalettes.OrchardDefault),
+                    BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid),
                 new LevelPresentationThemeDefinition(BundledLevelCatalogIds.Themes.Creek,
                     "Creek Orchard", "#CBE8EC", "#86C8B2", "#CFB98D", "#5A7D72",
                     "#70BFA1", "#4F6A66", "#D95F59", "#4EA5D9",
@@ -126,7 +127,11 @@ namespace FruitDefense.Content
             return new LevelCatalogSource(BundledLevelCatalogIds.Catalog,
                 BattleContentSchema.BundledCatalogId, BattleContentSchema.BundledContentVersion,
                 BundledLevelCatalogIds.Levels.Orchard01, levels, maps, waveSets, ruleSets, themes,
-                new[] { BundledLevelCatalogIds.TerrainPalettes.OrchardDefault });
+                new[]
+                {
+                    BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid,
+                    BundledLevelCatalogIds.TerrainPalettes.OrchardDefault,
+                });
         }
 
         public static LevelCatalogSource ComposePublished(LevelCatalogSource bundled,
@@ -252,7 +257,8 @@ namespace FruitDefense.Content
         {
             return new BattlefieldMapDefinition(BattlefieldLayeredMapFactory.CreateSingleRouteMap(
                 mapId, GridWidth, GridHeight, MapUnitsPerCell,
-                orderedRoute, core, initialPotGroups));
+                orderedRoute, core, initialPotGroups,
+                BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil));
         }
 
         private static LevelRuleSetDefinition CreateRules(string id, int initialSun,

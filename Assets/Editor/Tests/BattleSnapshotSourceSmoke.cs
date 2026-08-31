@@ -128,7 +128,8 @@ namespace FruitDefense.Editor
             var baseMapSource = BattlefieldLayeredMapFactory.CreateSingleRouteMap(
                 baseMap.MapId, baseMap.GridWidth, baseMap.GridHeight,
                 baseMap.MapUnitsPerCell, baseMap.RouteCells, baseMap.CoreCell,
-                baseMap.InitialPotGroupOrder.Select(id => baseMap.InitialPotGroups[id]));
+                baseMap.InitialPotGroupOrder.Select(id => baseMap.InitialPotGroups[id]),
+                BattlefieldPlantableVisualStyle.BaseOnlyGrass);
             var gameplay = baseMapSource.GameplayCells.ToArray();
             var changedCell = Array.FindIndex(gameplay, value => value.CapabilityIds.Contains(
                 BattlefieldLayerIds.Capabilities.Plantable));

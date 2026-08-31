@@ -1266,11 +1266,18 @@ namespace FruitDefense.Core
         }
     }
 
+    public enum BattlefieldPlantableVisualStyle
+    {
+        LayeredSquareGrassOnSoil = 0,
+        BaseOnlyGrass = 1,
+    }
+
     public static class BattlefieldLayeredMapFactory
     {
         public static BattlefieldLayeredMapSource CreateSingleRouteMap(string mapId, int width, int height,
             float mapUnitsPerCell, IEnumerable<Vector2Int> orderedRoute, Vector2Int core,
-            IEnumerable<InitialPotGroup> initialPotGroups)
+            IEnumerable<InitialPotGroup> initialPotGroups,
+            BattlefieldPlantableVisualStyle plantableVisualStyle)
         {
             var route = (orderedRoute ?? Enumerable.Empty<Vector2Int>()).ToArray();
             var routeLookup = new HashSet<Vector2Int>(route);
@@ -1294,10 +1301,22 @@ namespace FruitDefense.Core
                 }
                 else
                 {
-                    visuals[index] = new BattlefieldVisualCellSource(
-                        BattlefieldLayerIds.Surfaces.Soil,
-                        BattlefieldLayerIds.Surfaces.Grass,
-                        BattlefieldLayerIds.ContourStyles.Square, string.Empty);
+                    switch (plantableVisualStyle)
+                    {
+                        case BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil:
+                            visuals[index] = new BattlefieldVisualCellSource(
+                                BattlefieldLayerIds.Surfaces.Soil,
+                                BattlefieldLayerIds.Surfaces.Grass,
+                                BattlefieldLayerIds.ContourStyles.Square, string.Empty);
+                            break;
+                        case BattlefieldPlantableVisualStyle.BaseOnlyGrass:
+                            visuals[index] = new BattlefieldVisualCellSource(
+                                BattlefieldLayerIds.Surfaces.Grass);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(plantableVisualStyle),
+                                plantableVisualStyle, "Unknown plantable visual style.");
+                    }
                     gameplay[index] = new BattlefieldGameplayCellSource(
                         new[] { BattlefieldLayerIds.Capabilities.Plantable });
                 }

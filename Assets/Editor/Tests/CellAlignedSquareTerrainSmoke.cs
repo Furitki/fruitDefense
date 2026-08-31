@@ -232,7 +232,7 @@ namespace FruitDefense.Editor
                 {
                     new InitialPotGroup("pot-group", 1,
                         new[] { new Vector2Int(1, 1) }),
-                });
+                }, BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil);
             return new BattlefieldLayeredMapSource(baseline.SchemaVersion,
                 baseline.MapId, baseline.GridWidth, baseline.GridHeight,
                 baseline.MapUnitsPerCell, baseline.PrimaryRouteId, visualCells,

@@ -24,6 +24,8 @@ namespace FruitDefense.Editor
             "Assets/LayeredTerrain/CompositeBrushes/GrassSoil/Runtime64/Mask-00.png";
         internal const string BattlefieldTerrainPalettePath =
             "Assets/Battlefield/Terrain/OrchardDefaultTerrainPalette.asset";
+        internal const string FirstLevelSquareTerrainPalettePath =
+            LayeredTerrainArtSetup.FirstLevelSquarePalettePath;
         internal const string ReleaseRuntimeUiThemePath =
             "Assets/UI/Theme/ReleaseRuntimeUiTheme.asset";
         internal const string ReleaseRuntimeUiArtSetPath =
@@ -301,8 +303,13 @@ namespace FruitDefense.Editor
             if (game == null) throw new System.ArgumentNullException(nameof(game));
             EnsureFolder("Assets/Battlefield");
             EnsureFolder("Assets/Battlefield/Terrain");
-            var palette = LayeredTerrainArtSetup.EnsurePaletteAssets();
-            game.ConfigureBattlefieldTerrain(new[] { palette });
+            var defaultPalette = LayeredTerrainArtSetup.EnsurePaletteAssets();
+            var firstLevelPalette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
+                FirstLevelSquareTerrainPalettePath);
+            if (firstLevelPalette == null)
+                throw new System.InvalidOperationException(
+                    "First-level square terrain palette was not generated.");
+            game.ConfigureBattlefieldTerrain(new[] { defaultPalette, firstLevelPalette });
             EditorUtility.SetDirty(game);
         }
 
@@ -336,6 +343,7 @@ namespace FruitDefense.Editor
             TerrainBrushRegistrySmoke.Validate();
             BattlefieldDualGridTerrainSmoke.Validate();
             CellAlignedSquareTerrainSmoke.Run();
+            FirstLevelSquareTerrainSmoke.Run();
             PlantInteractionPresentationSmoke.Run();
             var simulation = new GameSimulation(12345);
             Assert(simulation.State.Pots.Count == 8, "initial pot count");
@@ -903,7 +911,8 @@ namespace FruitDefense.Editor
             }
             return new BattlefieldMapDefinition(BattlefieldLayeredMapFactory.CreateSingleRouteMap(
                 "canonical-test", width, height, 1f, route, core,
-                CreateInitialGroup(resolvedInitialCell)));
+                CreateInitialGroup(resolvedInitialCell),
+                BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil));
         }
 
         private static InitialPotGroup[] CreateInitialGroup(Vector2Int cell)

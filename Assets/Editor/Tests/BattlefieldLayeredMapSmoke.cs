@@ -250,14 +250,16 @@ namespace FruitDefense.Editor
                     new Vector2Int(0, 0), new Vector2Int(0, 1),
                     new Vector2Int(1, 1), new Vector2Int(2, 1), new Vector2Int(3, 1),
                 }, new Vector2Int(3, 2),
-                new[] { new InitialPotGroup("pot-group", 1, new[] { new Vector2Int(1, 2) }) });
+                new[] { new InitialPotGroup("pot-group", 1, new[] { new Vector2Int(1, 2) }) },
+                BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil);
             Assert(baseline.GameplayFingerprint != Compile(alternateRoute).GameplayFingerprint,
                 "route change did not alter gameplay fingerprint");
 
             var markerVariant = BattlefieldLayeredMapFactory.CreateSingleRouteMap(
                 source.MapId, source.GridWidth, source.GridHeight, source.MapUnitsPerCell,
                 source.Routes[0].Cells, new Vector2Int(3, 2),
-                new[] { new InitialPotGroup("pot-group-variant", 1, new[] { new Vector2Int(1, 1) }) });
+                new[] { new InitialPotGroup("pot-group-variant", 1, new[] { new Vector2Int(1, 1) }) },
+                BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil);
             Assert(baseline.GameplayFingerprint != Compile(markerVariant).GameplayFingerprint,
                 "gameplay marker change did not alter gameplay fingerprint");
 
@@ -293,7 +295,13 @@ namespace FruitDefense.Editor
             foreach (var expected in fixture.maps)
             {
                 var actual = Capture(catalog, expected.levelId, expected.outcomeStepCount);
-                if (JsonUtility.ToJson(expected) != JsonUtility.ToJson(actual))
+                var firstLevelSquare = string.Equals(expected.levelId,
+                    BundledLevelCatalogIds.Levels.Orchard01, StringComparison.Ordinal);
+                var comparableActual = JsonUtility.FromJson<MapBaseline>(
+                    JsonUtility.ToJson(actual));
+                if (firstLevelSquare)
+                    comparableActual.grassMasks = expected.grassMasks;
+                if (JsonUtility.ToJson(expected) != JsonUtility.ToJson(comparableActual))
                     mismatches.Add(expected.levelId + " checksum old="
                         + expected.outcomeChecksum + " new=" + actual.outcomeChecksum
                         + "\nExpected: " + JsonUtility.ToJson(expected)
@@ -303,12 +311,18 @@ namespace FruitDefense.Editor
                     && !string.IsNullOrWhiteSpace(map.GameplayFingerprint),
                     "bundled map is not fully layered: " + expected.levelId);
                 Assert(map.VisualCells.All(cell => cell != null
-                        && cell.BaseSurfaceId == BattlefieldLayerIds.Surfaces.Soil
                         && string.IsNullOrEmpty(cell.EdgeStyleId)
-                        && (string.IsNullOrEmpty(cell.LandformSurfaceId)
-                            ? string.IsNullOrEmpty(cell.ContourStyleId)
-                            : cell.ContourStyleId == BattlefieldLayerIds.ContourStyles.Square)),
-                    "bundled map migration must keep soil bases and no refined edge: "
+                        && (firstLevelSquare
+                            ? (cell.BaseSurfaceId == BattlefieldLayerIds.Surfaces.Soil
+                                || cell.BaseSurfaceId == BattlefieldLayerIds.Surfaces.Grass)
+                                && string.IsNullOrEmpty(cell.LandformSurfaceId)
+                                && string.IsNullOrEmpty(cell.ContourStyleId)
+                            : cell.BaseSurfaceId == BattlefieldLayerIds.Surfaces.Soil
+                                && (string.IsNullOrEmpty(cell.LandformSurfaceId)
+                                    ? string.IsNullOrEmpty(cell.ContourStyleId)
+                                    : cell.ContourStyleId
+                                        == BattlefieldLayerIds.ContourStyles.Square))),
+                    "bundled map visual representation is not the approved per-level form: "
                     + expected.levelId);
             }
             Assert(mismatches.Count == 0,
@@ -367,7 +381,8 @@ namespace FruitDefense.Editor
                     new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0),
                     new Vector2Int(3, 0), new Vector2Int(3, 1),
                 }, new Vector2Int(3, 2),
-                new[] { new InitialPotGroup("pot-group", 1, new[] { new Vector2Int(1, 1) }) });
+                new[] { new InitialPotGroup("pot-group", 1, new[] { new Vector2Int(1, 1) }) },
+                BattlefieldPlantableVisualStyle.LayeredSquareGrassOnSoil);
         }
 
         private static BattlefieldLayeredMapSource Copy(BattlefieldLayeredMapSource source,

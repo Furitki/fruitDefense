@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.FruitDefenseGame
   battlefieldTerrainPalettes:
   - {fileID: 11400000, guid: 8f09d513b82ee0048abd5a50378dbb0c, type: 2}
+  - {fileID: 11400000, guid: d95472875c61aed418fa290933bfa791, type: 2}
 --- !u!4 &1936511177
 Transform:
   m_ObjectHideFlags: 0

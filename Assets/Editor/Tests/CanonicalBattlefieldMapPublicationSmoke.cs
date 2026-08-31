@@ -169,7 +169,7 @@ namespace FruitDefense.Editor
             IReadOnlyList<BattlefieldTerrainPalette> palettes)
         {
             var actual = palettes.Single(palette => palette.PaletteId
-                == BundledLevelCatalogIds.TerrainPalettes.OrchardDefault);
+                == BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid);
             var missingWaterBasePalette = UnityEngine.Object.Instantiate(actual);
             missingWaterBasePalette.ConfigureLayered(actual.PaletteId,
                 actual.BaseBindings.Where(binding => binding != null

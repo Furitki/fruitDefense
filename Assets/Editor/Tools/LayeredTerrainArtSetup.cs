@@ -25,6 +25,14 @@ namespace FruitDefense.Editor
             "Assets/DualGridTerrain/StoneFloor/Generated/StoneFloorDualGridTileSet.asset";
         internal const string GrassOnSoilEdgeTileSetPath =
             Root + "/EdgeGrassOnSoilRefined/GrassOnSoilRefinedTileSet.asset";
+        internal const string FirstLevelSquareRoot =
+            "Assets/Battlefield/Terrain/Orchard01SquareGrid";
+        internal const string FirstLevelSquareGrassPath =
+            FirstLevelSquareRoot + "/GrassSquareBase.png";
+        internal const string FirstLevelSquareSoilPath =
+            FirstLevelSquareRoot + "/SoilSquareBase.png";
+        internal const string FirstLevelSquarePalettePath =
+            FirstLevelSquareRoot + "/Orchard01SquareTerrainPalette.asset";
         internal const string SoilOnGrassEdgeTileSetPath =
             Root + "/EdgeSoilOnGrassRefined/SoilOnGrassRefinedTileSet.asset";
         internal const string AcceptanceScenePath = "Assets/Scenes/LayeredTerrainDemo.unity";
@@ -40,6 +48,7 @@ namespace FruitDefense.Editor
             OriginalBrushRoot + "/SourceManifest.json";
 
         private const int NativeTileSize = 32;
+        private const int FirstLevelSquareTileSize = 64;
         private const string AuthoringFolder = Root + "/Authoring";
         internal const string GrassBaseTilePath = AuthoringFolder + "/GrassBase.asset";
         internal const string SoilBaseTilePath = AuthoringFolder + "/SoilBase.asset";
@@ -60,8 +69,10 @@ namespace FruitDefense.Editor
         {
             AssetDatabase.Refresh();
             SquareTerrainArtGenerator.GenerateAvailableSquareAssets();
-            ConfigureTexture(GrassBasePath, true);
-            ConfigureTexture(SoilBasePath, true);
+            ConfigureTexture(GrassBasePath, true, NativeTileSize);
+            ConfigureTexture(SoilBasePath, true, NativeTileSize);
+            ConfigureTexture(FirstLevelSquareGrassPath, true, FirstLevelSquareTileSize);
+            ConfigureTexture(FirstLevelSquareSoilPath, true, FirstLevelSquareTileSize);
             BuildBaseTile(GrassBasePath, GrassBaseTilePath);
             BuildBaseTile(SoilBasePath, SoilBaseTilePath);
             LoadOrCreateTile(MarkerAPath);
@@ -121,7 +132,52 @@ namespace FruitDefense.Editor
             if (!palette.Validate(out reason))
                 throw new InvalidOperationException("Layered terrain palette is invalid: " + reason);
             EditorUtility.SetDirty(palette);
+            EnsureFirstLevelSquarePalette(palette);
             AssetDatabase.SaveAssets();
+            return palette;
+        }
+
+        internal static BattlefieldTerrainPalette EnsureFirstLevelSquarePalette(
+            BattlefieldTerrainPalette defaultPalette)
+        {
+            if (defaultPalette == null)
+                throw new ArgumentNullException(nameof(defaultPalette));
+            var grass = RequireAsset<Texture2D>(FirstLevelSquareGrassPath);
+            var soil = RequireAsset<Texture2D>(FirstLevelSquareSoilPath);
+            if (grass.width != FirstLevelSquareTileSize || grass.height != FirstLevelSquareTileSize
+                || soil.width != FirstLevelSquareTileSize || soil.height != FirstLevelSquareTileSize)
+                throw new InvalidOperationException(
+                    "First-level square terrain textures must remain normalized 64x64 exports.");
+
+            var palette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
+                FirstLevelSquarePalettePath);
+            if (palette == null)
+            {
+                EnsureFolder(FirstLevelSquareRoot);
+                palette = ScriptableObject.CreateInstance<BattlefieldTerrainPalette>();
+                AssetDatabase.CreateAsset(palette, FirstLevelSquarePalettePath);
+            }
+
+            var bases = defaultPalette.SurfaceBindings.Select(binding =>
+                new BattlefieldTerrainSurfaceBinding(binding.SurfaceId,
+                    string.Equals(binding.SurfaceId, BattlefieldLayerIds.Surfaces.Grass,
+                        StringComparison.Ordinal) ? grass
+                    : string.Equals(binding.SurfaceId, BattlefieldLayerIds.Surfaces.Soil,
+                        StringComparison.Ordinal) ? soil
+                    : binding.BaseTexture)).ToArray();
+            var landforms = defaultPalette.LandformBindings.Select(binding =>
+                new BattlefieldTerrainLandformBinding(binding.SurfaceId,
+                    binding.ContourStyleId, binding.TileSet)).ToArray();
+            var edges = defaultPalette.EdgeBindings.Select(binding =>
+                new BattlefieldTerrainEdgeBinding(binding.LandformSurfaceId,
+                    binding.BaseSurfaceId, binding.ContourStyleId,
+                    binding.EdgeStyleId, binding.TileSet)).ToArray();
+            palette.ConfigureLayered(BundledLevelCatalogIds.TerrainPalettes.Orchard01SquareGrid,
+                bases, landforms, edges);
+            if (!palette.Validate(out var reason))
+                throw new InvalidOperationException(
+                    "First-level square terrain palette is invalid: " + reason);
+            EditorUtility.SetDirty(palette);
             return palette;
         }
 
@@ -443,7 +499,7 @@ namespace FruitDefense.Editor
             for (var mask = 0; mask < DualGridMaskUtility.MaskCount; mask++)
             {
                 var texturePath = folder + "/Mask-" + mask.ToString("00") + ".png";
-                ConfigureTexture(texturePath, false);
+                ConfigureTexture(texturePath, false, NativeTileSize);
                 var tilePath = folder + "/Mask-" + mask.ToString("00") + ".asset";
                 tileSet.SetTile((DualGridMask)mask, BuildTile(texturePath, tilePath));
             }
@@ -453,7 +509,7 @@ namespace FruitDefense.Editor
 
         private static Tile BuildBaseTile(string texturePath, string tilePath)
         {
-            ConfigureTexture(texturePath, true);
+            ConfigureTexture(texturePath, true, NativeTileSize);
             return BuildTile(texturePath, tilePath);
         }
 
@@ -480,7 +536,7 @@ namespace FruitDefense.Editor
             return tile;
         }
 
-        private static void ConfigureTexture(string path, bool repeat)
+        private static void ConfigureTexture(string path, bool repeat, int nativeTileSize)
         {
             if (!File.Exists(Path.GetFullPath(path)))
                 throw new FileNotFoundException("Layered terrain source image is missing.", path);
@@ -490,7 +546,7 @@ namespace FruitDefense.Editor
             if (importer == null) throw new InvalidOperationException("Texture importer missing: " + path);
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = NativeTileSize;
+            importer.spritePixelsPerUnit = nativeTileSize;
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
             settings.spriteMeshType = SpriteMeshType.FullRect;
@@ -502,7 +558,7 @@ namespace FruitDefense.Editor
             importer.filterMode = FilterMode.Bilinear;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.npotScale = TextureImporterNPOTScale.None;
-            importer.maxTextureSize = NativeTileSize;
+            importer.maxTextureSize = nativeTileSize;
             if (AssetDatabase.WriteImportSettingsIfDirty(path))
                 AssetDatabase.ImportAsset(path,
                     ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);

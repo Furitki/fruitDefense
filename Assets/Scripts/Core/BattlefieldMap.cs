@@ -338,7 +338,8 @@ namespace FruitDefense.Core
             };
             return new BattlefieldMapDefinition(BattlefieldLayeredMapFactory.CreateSingleRouteMap(
                 DefaultMapId, width, height, DefaultRouteLength / DefaultRouteSegmentCount,
-                route, new Vector2Int(0, 6), initialGroups));
+                route, new Vector2Int(0, 6), initialGroups,
+                BattlefieldPlantableVisualStyle.BaseOnlyGrass));
         }
 
         public bool IsPlantable(Vector2Int cell)
