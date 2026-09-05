@@ -218,7 +218,23 @@ function Get-UnityResourceTiming {
   }));
 })()
 "@
-  $timings = (Invoke-JavaScript -Expression $expression) | ConvertFrom-Json
+  # The Unity loading indicator can disappear a few frames before Chrome publishes
+  # every payload's PerformanceResourceTiming entry. Wait for the complete delivery
+  # set instead of treating that browser bookkeeping delay as a missing download.
+  $timings = $null
+  $timingDeadline = (Get-Date).AddSeconds(10)
+  do {
+    $candidate = @((Invoke-JavaScript -Expression $expression) | ConvertFrom-Json)
+    $missing = @($candidate | Where-Object { $_.missing })
+    if ($missing.Count -eq 0) {
+      $timings = $candidate
+      break
+    }
+    Start-Sleep -Milliseconds 200
+  } while ((Get-Date) -lt $timingDeadline)
+  if ($null -eq $timings) {
+    $timings = $candidate
+  }
   $assets = [ordered]@{}
   [long]$totalTransferSize = 0
   foreach ($timing in $timings) {
