@@ -15,7 +15,7 @@ namespace FruitDefense.Editor
     {
         public static void Validate()
         {
-            LayeredTerrainArtSetup.EnsurePaletteAssets();
+            LayeredTerrainArtSetup.RequirePaletteAssets();
             var first = CreateRig("TerrainPainterSmoke-SharedEdge", true, false);
             var second = CreateRig("TerrainPainterSmoke-B", true, true);
             var missingDirection = CreateRig("TerrainPainterSmoke-MissingEdge", false, false);
@@ -96,7 +96,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateRegisteredBrushApplication()
         {
-            var palette = LayeredTerrainArtSetup.EnsurePaletteAssets();
+            var palette = LayeredTerrainArtSetup.RequirePaletteAssets();
             var definitions = TerrainBrushRegistry.FindAll();
             var choices = TerrainBrushRegistry.FindPaintChoices();
             var grassSoil = definitions.Single(value => value.BrushId

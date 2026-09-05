@@ -11,7 +11,7 @@ namespace FruitDefense.Editor
     {
         public static void Validate()
         {
-            var palette = LayeredTerrainArtSetup.EnsurePaletteAssets();
+            var palette = LayeredTerrainArtSetup.RequirePaletteAssets();
             var definitions = TerrainBrushRegistry.FindAll();
             Assert(TerrainBrushRegistry.Validate(out var registryReason), registryReason);
             Assert(definitions.Count == 3,

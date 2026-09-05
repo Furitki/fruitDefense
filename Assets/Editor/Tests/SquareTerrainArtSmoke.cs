@@ -15,75 +15,8 @@ namespace FruitDefense.Editor
             ValidateCanonicalTextHashing();
             ValidateDeterministicTopologyRepeat();
             ValidateProvenanceGuards();
-            SquareTerrainArtGenerator.GenerateAvailableSquareAssets();
-            var report = SquareTerrainArtValidator.ValidateGeneratedAssetsInternal(true);
-            SquareTerrainEvidence.RenderReviewEvidence();
-            var absolute = SquareTerrainArtGenerator.AbsolutePath(EvidencePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(absolute));
-            File.WriteAllText(absolute,
-                "Square terrain art smoke passed.\n"
-                + "tileSize=" + report.tileSize + "\n"
-                + "atlasSize=" + report.atlasSize + "\n"
-                + "horizontalCompatiblePairs=" + report.horizontalCompatiblePairs + "\n"
-                + "verticalCompatiblePairs=" + report.verticalCompatiblePairs + "\n"
-                + "mask05Components=" + report.mask05Components + "\n"
-                + "mask10Components=" + report.mask10Components + "\n"
-                + "paintedEdgeMask05Components="
-                    + report.paintedEdgeMask05Components + "\n"
-                + "paintedEdgeMask10Components="
-                    + report.paintedEdgeMask10Components + "\n"
-                + "diagonalGrassComponentsSeparated="
-                    + report.diagonalGrassComponentsSeparated + "\n"
-                + "isolatedCellRoundedSquare=" + report.isolatedCellRoundedSquare + "\n"
-                + "stripsTurnsHolesValid=" + report.stripsTurnsHolesValid + "\n"
-                + "provenanceValid=" + report.provenanceValid + "\n"
-                + "edgeRgbComesFromGrassBase="
-                    + report.edgeRgbComesFromGrassBase + "\n"
-                + "grassLandformUsesBaseTexture="
-                    + report.grassLandformUsesBaseTexture + "\n"
-                + "grassLandformColorCount=" + report.grassLandformColorCount + "\n"
-                + "outsideOpaquePixelCount=" + report.outsideOpaquePixelCount + "\n"
-                + "maximumOutsideDepthPixels=" + report.maximumOutsideDepthPixels + "\n"
-                + "editorScaleOutsideFeatherPixels="
-                    + report.editorScaleOutsideFeatherPixels + "\n"
-                + "portraitScaleOutsideFeatherPixels="
-                    + report.portraitScaleOutsideFeatherPixels + "\n"
-                + "runtimeMipmapsEnabled=" + report.runtimeMipmapsEnabled + "\n"
-                + "minimumBoundaryCoveragePermille="
-                    + report.minimumBoundaryCoveragePermille + "\n"
-                + "minimumStraightInsideDepthPixels="
-                    + report.minimumStraightInsideDepthPixels + "\n"
-                + "minimumStraightOutsideDepthPixels="
-                    + report.minimumStraightOutsideDepthPixels + "\n"
-                + "boundaryCoveragePermilleByMask="
-                    + string.Join(",", report.boundaryCoveragePermilleByMask) + "\n"
-                + "medianInsideDepthByMask="
-                    + string.Join(",", report.medianInsideDepthByMask) + "\n"
-                + "medianOutsideDepthByMask="
-                    + string.Join(",", report.medianOutsideDepthByMask) + "\n"
-                + "grassPixelCountByMask="
-                    + string.Join(",", report.grassPixelCountByMask) + "\n"
-                + "soilPixelCountByMask="
-                    + string.Join(",", report.soilPixelCountByMask) + "\n"
-                + "darkContactPixelCountByMask="
-                    + string.Join(",", report.darkContactPixelCountByMask) + "\n"
-                + "semiTransparentPixelCountByMask="
-                    + string.Join(",", report.semiTransparentPixelCountByMask) + "\n"
-                + "minimumSemiTransparentPixels="
-                    + report.minimumSemiTransparentPixels + "\n"
-                + "soilBaseSha256=" + report.baseSoilSha256 + "\n"
-                + "approvedStyleReferenceSha256="
-                    + report.approvedStyleReferenceSha256 + "\n"
-                + "rawImagegenSha256=" + report.rawImagegenSha256 + "\n"
-                + "rejectedAttemptSha256=" + report.rejectedAttemptSha256 + "\n"
-                + "attempt01PromptSha256=" + report.attempt01PromptSha256 + "\n"
-                + "attempt02PromptSha256=" + report.attempt02PromptSha256 + "\n"
-                + "continuousRibbonSha256=" + report.continuousRibbonSha256 + "\n"
-                + "grassLandformSha256=" + report.grassLandformSha256 + "\n"
-                + "soilLandformSha256=" + report.soilLandformSha256 + "\n"
-                + "stoneRoadLandformSha256=" + report.stoneRoadLandformSha256 + "\n"
-                + "paintedEdgeSha256=" + report.paintedEdgeSha256 + "\n");
-            Debug.Log("Square terrain art smoke passed: " + EvidencePath);
+            SquareTerrainArtValidator.ValidateGeneratedAssetsInternal(true);
+            Debug.Log("Square terrain art smoke passed against the committed authored assets.");
         }
 
         private static void ValidateProvenanceGuards()

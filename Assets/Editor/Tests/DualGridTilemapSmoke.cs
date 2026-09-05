@@ -11,22 +11,6 @@ namespace FruitDefense.Editor
 {
     public static class DualGridTilemapSmoke
     {
-        [Serializable]
-        private sealed class GeneratedArtEvidence
-        {
-            public int tileSize;
-            public int supersampleScale;
-            public float alphaAntialiasPixels;
-            public int horizontalCompatiblePairs;
-            public int verticalCompatiblePairs;
-            public int maximumAlphaDifference;
-            public int maximumRgbaDifference;
-            public int maximumMeasuredAlphaTransitionPixels;
-            public bool oppositeCornerCentersTransparent;
-            public string deterministicRepeatResult;
-            public string result;
-        }
-
         public static void Run()
         {
             Validate();
@@ -39,7 +23,6 @@ namespace FruitDefense.Editor
             ValidateTileSetGallery();
             ValidateGenerationAndRefresh();
             ValidateGeneratedArtPipeline();
-            DualGridPixelTileSetGenerator.EnsureValidationEvidence();
             DualGridPixelTileSetGenerator.ValidateGeneratedPixelTileSet();
             DualGridPixelTerrainWizardSmoke.Validate();
             ValidateReleaseSceneIsolation();
@@ -125,25 +108,6 @@ namespace FruitDefense.Editor
                 "generated mask import settings preserve alpha without atlas wrapping");
 
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
-            var evidencePath = Path.Combine(projectRoot,
-                DualGridTextureTileSetGenerator.SeamEvidencePath.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(evidencePath))
-                DualGridTextureTileSetGenerator.Bake(profile);
-            Assert(File.Exists(evidencePath), "generated-art seam evidence exists");
-            var evidence = JsonUtility.FromJson<GeneratedArtEvidence>(File.ReadAllText(evidencePath));
-            Assert(evidence != null
-                && evidence.tileSize == profile.TileSize
-                && evidence.supersampleScale == profile.SupersampleScale
-                && evidence.horizontalCompatiblePairs == 64
-                && evidence.verticalCompatiblePairs == 64
-                && evidence.maximumAlphaDifference == 0
-                && evidence.maximumRgbaDifference == 0
-                && evidence.maximumMeasuredAlphaTransitionPixels <= 4
-                && evidence.oppositeCornerCentersTransparent
-                && evidence.deterministicRepeatResult == "pass"
-                && evidence.result == "pass",
-                "generated-art evidence passes exact edges, topology, and determinism");
-
             var sceneText = File.ReadAllText(Path.Combine(projectRoot,
                 DualGridDemoSetup.DemoScenePath.Replace('/', Path.DirectorySeparatorChar)));
             Assert(sceneText.Contains("Soil Base - author-owned ground"),

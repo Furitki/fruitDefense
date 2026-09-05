@@ -27,8 +27,7 @@ namespace FruitDefense.Editor
                 ProjectSetup.BattlefieldRouteTileSetPath);
             var baseTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(
                 ProjectSetup.BattlefieldTerrainBaseTexturePath);
-            var palette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
-                ProjectSetup.BattlefieldTerrainPalettePath);
+            var palette = LayeredTerrainArtSetup.RequirePaletteAssets();
             var firstLevelPalette = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
                 ProjectSetup.FirstLevelSquareTerrainPalettePath);
             var terrainValid = BattlefieldDualGridTerrain.Validate(palette, out var terrainReason);
@@ -95,7 +94,8 @@ namespace FruitDefense.Editor
                 + terrainReason);
             ValidateMap(acceptanceMap, grassTileSet, routeTileSet, baseTexture, false, true);
 
-            ValidateSetupBinding(palette, grassTileSet, routeTileSet, baseTexture);
+            ValidateSetupBinding(palette, firstLevelPalette, grassTileSet, routeTileSet,
+                baseTexture);
             ValidateReleaseSceneBinding(palette, grassTileSet, routeTileSet, baseTexture);
             Debug.Log("FRUIT_DEFENSE_BATTLEFIELD_DUAL_GRID_TERRAIN_OK productionMaps="
                 + validatedMapIds.Count + " acceptanceFixtures=1");
@@ -496,14 +496,14 @@ namespace FruitDefense.Editor
         }
 
         private static void ValidateSetupBinding(BattlefieldTerrainPalette palette,
-            DualGridTileSet grassTileSet,
+            BattlefieldTerrainPalette firstLevelPalette, DualGridTileSet grassTileSet,
             DualGridTileSet routeTileSet, Texture2D baseTexture)
         {
             var root = new GameObject("BattlefieldTerrainSetupSmoke");
             try
             {
                 var game = root.AddComponent<FruitDefenseGame>();
-                ProjectSetup.ConfigureBattlefieldTerrain(game);
+                game.ConfigureBattlefieldTerrain(new[] { palette, firstLevelPalette });
                 var valid = game.ValidateBattlefieldTerrain(out var reason);
                 Assert(game.BattlefieldTerrainPalettes.Count == 2
                     && game.BattlefieldTerrainPalettes[0] == palette
@@ -513,7 +513,7 @@ namespace FruitDefense.Editor
                     && game.BattlefieldRouteTileSet == routeTileSet
                     && game.BattlefieldSoilBaseTexture == baseTexture
                     && valid,
-                    "project setup reproduces terrain binding: " + reason);
+                    "runtime accepts the authored terrain binding: " + reason);
             }
             finally
             {

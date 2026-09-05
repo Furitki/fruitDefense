@@ -11,7 +11,7 @@ namespace FruitDefense.Editor
     {
         public static void Validate()
         {
-            LayeredTerrainArtSetup.EnsurePaletteAssets();
+            LayeredTerrainArtSetup.RequirePaletteAssets();
             ValidateSocketContinuity(LayeredTerrainArtSetup.Root + "/LandformGrass");
             ValidateSocketContinuity(LayeredTerrainArtSetup.Root + "/LandformSoil");
             ValidateSocketContinuity(LayeredTerrainArtSetup.Root + "/EdgeGrassOnSoilRefined");

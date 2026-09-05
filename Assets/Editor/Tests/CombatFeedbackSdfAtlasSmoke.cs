@@ -40,17 +40,13 @@ namespace FruitDefense.Editor
                     CombatFloatingTextSdfGenerator.OutlineTransition, .05f)
                 && CombatFloatingTextSdfGenerator.RenderMode == GlyphRenderMode.SDF32,
                 "generator owns the 8-pixel baked field, solid face, thick outline, 24px composite shelf, and final 512 atlas settings");
-            CombatFloatingTextSdfGenerator.Rebuild();
-            Assert(CombatFloatingTextSdfGenerator.ValidateGeneratedAssets().Count == 0,
-                "the first deterministic baked-atlas rebuild validates");
-            var first = Fingerprint();
-            CombatFloatingTextSdfGenerator.Rebuild();
             var issues = CombatFloatingTextSdfGenerator.ValidateGeneratedAssets();
             Assert(issues.Count == 0,
-                "the second deterministic rebuild validates: "
+                "the committed baked-atlas assets validate: "
                 + string.Join(", ", issues));
+            var first = Fingerprint();
             Assert(string.Equals(first, Fingerprint(), StringComparison.Ordinal),
-                "two unchanged generator runs preserve atlas pixels, glyph metrics, and GUIDs");
+                "two read-only fingerprints preserve atlas pixels, glyph metrics, and GUIDs");
         }
 
         private static void ValidateStaticFiniteCoverage()

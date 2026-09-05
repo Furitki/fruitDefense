@@ -87,6 +87,56 @@ namespace FruitDefense.Editor
             return RefreshPaletteFromRegisteredBrushes();
         }
 
+        /// <summary>
+        /// Loads the authored terrain package without repairing it. Release validation must use
+        /// this path so a missing or stale authored asset fails the gate instead of being silently
+        /// regenerated during a build.
+        /// </summary>
+        internal static BattlefieldTerrainPalette RequirePaletteAssets()
+        {
+            var palette = RequireAsset<BattlefieldTerrainPalette>(
+                ProjectSetup.BattlefieldTerrainPalettePath);
+            var firstLevelPalette = RequireAsset<BattlefieldTerrainPalette>(
+                FirstLevelSquarePalettePath);
+
+            RequireAsset<Texture2D>(GrassBasePath);
+            RequireAsset<Texture2D>(SoilBasePath);
+            RequireAsset<Texture2D>(FirstLevelSquareGrassPath);
+            RequireAsset<Texture2D>(FirstLevelSquareSoilPath);
+            RequireAsset<Tile>(GrassBaseTilePath);
+            RequireAsset<Tile>(SoilBaseTilePath);
+            RequireAsset<Tile>(MarkerAPath);
+            RequireAsset<Tile>(MarkerBPath);
+            RequireAsset<Tile>(EdgeMarkerPath);
+            RequireAsset<TerrainBrushDefinition>(OriginalBrushDefinitionPath);
+            RequireAsset<TextAsset>(OriginalBrushSourceRecordPath);
+
+            foreach (var path in new[]
+                     {
+                         GrassLandformTileSetPath,
+                         SoilLandformTileSetPath,
+                         GrassOnSoilEdgeTileSetPath,
+                         OrganicStoneRoadTileSetPath,
+                         ProjectSetup.BattlefieldGrassTileSetPath,
+                         SquareTerrainArtProfile.SoilLandformTileSetPath,
+                         SquareTerrainArtProfile.StoneRoadLandformTileSetPath,
+                         SquareTerrainArtProfile.GrassOnSoilEdgeTileSetPath,
+                     })
+                RequireValidTileSet(path);
+
+            if (!palette.Validate(out var paletteReason))
+                throw new InvalidOperationException(
+                    "Authored layered terrain palette is invalid: " + paletteReason);
+            if (!firstLevelPalette.Validate(out var firstLevelReason))
+                throw new InvalidOperationException(
+                    "Authored first-level square terrain palette is invalid: "
+                    + firstLevelReason);
+            if (!TerrainBrushRegistry.Validate(out var registryReason))
+                throw new InvalidOperationException(
+                    "Authored terrain brush registry is invalid: " + registryReason);
+            return palette;
+        }
+
         internal static BattlefieldTerrainPalette RefreshPaletteFromRegisteredBrushes()
         {
             var grassLandform = RequireAsset<DualGridTileSet>(GrassLandformTileSetPath);
@@ -569,6 +619,14 @@ namespace FruitDefense.Editor
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset != null) return asset;
             throw new InvalidOperationException(typeof(T).Name + " asset is unavailable: " + path);
+        }
+
+        private static void RequireValidTileSet(string path)
+        {
+            var tileSet = RequireAsset<DualGridTileSet>(path);
+            if (!tileSet.Validate(out var reason))
+                throw new InvalidOperationException("DualGridTileSet is invalid: "
+                    + path + ": " + reason);
         }
 
         private static void EnsureFolder(string path)

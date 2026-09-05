@@ -11,19 +11,24 @@ namespace FruitDefense.Editor
 {
     public static class CanonicalBattlefieldMapEditorSmoke
     {
-        private const string OperationsAssetPath =
-            "Assets/Editor/Tests/Fixtures/CanonicalBattlefieldMap/EditorOperationsSmoke.asset";
-
         public static void Validate()
         {
-            var asset = PreparePersistentAsset();
-            ValidateSharedCanvas(asset);
-            ValidateRectangleEyedropperAndUndo(asset);
-            ValidateFloodFillAndUndo(asset);
-            ValidateRecommendationAndResizeUndo(asset);
-            ValidateContourPopupAvailability();
-            ValidateEditorBattleTerrainParity();
-            Debug.Log("CANONICAL_BATTLEFIELD_MAP_EDITOR_SMOKE_OK");
+            var asset = CreateTransientAsset();
+            try
+            {
+                ValidateSharedCanvas(asset);
+                ValidateRectangleEyedropperAndUndo(asset);
+                ValidateFloodFillAndUndo(asset);
+                ValidateRecommendationAndResizeUndo(asset);
+                ValidateContourPopupAvailability();
+                ValidateEditorBattleTerrainParity();
+                Debug.Log("CANONICAL_BATTLEFIELD_MAP_EDITOR_SMOKE_OK");
+            }
+            finally
+            {
+                Undo.ClearAll();
+                UnityEngine.Object.DestroyImmediate(asset);
+            }
         }
 
         private static void ValidateContourPopupAvailability()
@@ -74,13 +79,7 @@ namespace FruitDefense.Editor
 
         private static BattlefieldTerrainPalette LoadCurrentReleasePalette()
         {
-            LayeredTerrainArtSetup.EnsurePaletteAssets();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(ProjectSetup.BattlefieldTerrainPalettePath,
-                ImportAssetOptions.ForceSynchronousImport
-                | ImportAssetOptions.ForceUpdate);
-            var persisted = AssetDatabase.LoadAssetAtPath<BattlefieldTerrainPalette>(
-                ProjectSetup.BattlefieldTerrainPalettePath);
+            var persisted = LayeredTerrainArtSetup.RequirePaletteAssets();
             Assert(persisted != null && persisted.LandformBindings.Count > 0,
                 "current contour registry is persisted in the release palette asset");
 
@@ -270,8 +269,6 @@ namespace FruitDefense.Editor
             EditorUtility.CopySerialized(valid, asset);
             UnityEngine.Object.DestroyImmediate(valid);
             asset.name = "EditorOperationsSmoke";
-            EditorUtility.SetDirty(asset);
-            AssetDatabase.SaveAssets();
 
             var beforeRecommendation = EditorJsonUtility.ToJson(asset, true);
             var gameplayBefore = GameplayBytes(asset);
@@ -407,26 +404,12 @@ namespace FruitDefense.Editor
             }, new Vector3Int(vertexX, -vertexY, 0));
         }
 
-        private static BattlefieldMapAuthoringAsset PreparePersistentAsset()
+        private static BattlefieldMapAuthoringAsset CreateTransientAsset()
         {
-            EnsureFolder("Assets/Editor/Tests/Fixtures/CanonicalBattlefieldMap");
-            var fresh = BattlefieldMapAuthoringAsset.Create("map.smoke.editor-operations", 4, 3);
-            fresh.name = "EditorOperationsSmoke";
-            var persistent = AssetDatabase.LoadAssetAtPath<BattlefieldMapAuthoringAsset>(
-                OperationsAssetPath);
-            if (persistent == null)
-            {
-                AssetDatabase.CreateAsset(fresh, OperationsAssetPath);
-                persistent = fresh;
-            }
-            else
-            {
-                EditorUtility.CopySerialized(fresh, persistent);
-                UnityEngine.Object.DestroyImmediate(fresh);
-            }
-            EditorUtility.SetDirty(persistent);
-            AssetDatabase.SaveAssets();
-            return persistent;
+            var asset = BattlefieldMapAuthoringAsset.Create(
+                "map.smoke.editor-operations", 4, 3);
+            asset.name = "EditorOperationsSmoke";
+            return asset;
         }
 
         private static void Reset(BattlefieldMapAuthoringAsset asset)
@@ -436,8 +419,6 @@ namespace FruitDefense.Editor
             EditorUtility.CopySerialized(fresh, asset);
             UnityEngine.Object.DestroyImmediate(fresh);
             asset.name = "EditorOperationsSmoke";
-            EditorUtility.SetDirty(asset);
-            AssetDatabase.SaveAssets();
         }
 
         private static int BeginUndo(BattlefieldMapAuthoringAsset asset, string label)
@@ -468,15 +449,6 @@ namespace FruitDefense.Editor
                 + "#" + string.Join("|", source.Markers.Select(marker => marker.MarkerId
                     + ":" + marker.Kind + ":" + marker.Cell.x + "," + marker.Cell.y
                     + ":" + marker.RouteId + ":" + marker.GroupId));
-        }
-
-        private static void EnsureFolder(string path)
-        {
-            if (AssetDatabase.IsValidFolder(path)) return;
-            var separator = path.LastIndexOf('/');
-            var parent = path.Substring(0, separator);
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, path.Substring(separator + 1));
         }
 
         private static void Assert(bool condition, string message)

@@ -23,7 +23,7 @@ namespace FruitDefense.Editor
         [MenuItem("Fruit Defense/Validation/Run First-Level Square Terrain Smoke")]
         public static void Run()
         {
-            var defaultPalette = LayeredTerrainArtSetup.EnsurePaletteAssets();
+            var defaultPalette = LayeredTerrainArtSetup.RequirePaletteAssets();
             ValidateProductionTextures();
             ValidateFirstLevelPalette(defaultPalette);
             ValidateCatalogIsolation();
