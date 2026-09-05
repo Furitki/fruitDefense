@@ -10,7 +10,6 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectDir = $PSScriptRoot
 $webBuild = Join-Path $projectDir 'Builds\WebGL'
-$acceptanceBuild = Join-Path $projectDir 'Builds\WebGL-Acceptance'
 $visualAcceptance = Join-Path $projectDir 'scripts\accept-webgl-portrait.ps1'
 $hostAcceptance = Join-Path $projectDir 'scripts\accept-webgl-host.ps1'
 $archive = Join-Path $env:TEMP 'fruitDefense-unity-webgl-deploy.tar.gz'
@@ -77,8 +76,6 @@ if (-not (Test-Path -LiteralPath $visualAcceptance)) {
   throw "WebGL visual acceptance script not found: $visualAcceptance"
 }
 
-Write-Host 'Running local portrait visual acceptance...'
-& $visualAcceptance -ServeLocal -BuildRoot $acceptanceBuild
 Write-Host 'Running local release delivery acceptance...'
 & $visualAcceptance `
   -ServeLocal `
