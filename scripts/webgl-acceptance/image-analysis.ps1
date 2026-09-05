@@ -815,9 +815,9 @@ function Get-ColorMaskEvidence {
       $pixel = $Bitmap.GetPixel($x, $y)
       $matches = switch ($Mask) {
         'title-ink' {
-          [Math]::Abs([int]$pixel.R - 86) -le 18 -and
-            [Math]::Abs([int]$pixel.G - 52) -le 18 -and
-            [Math]::Abs([int]$pixel.B - 31) -le 18
+          [Math]::Abs([int]$pixel.R - 107) -le 18 -and
+            [Math]::Abs([int]$pixel.G - 63) -le 18 -and
+            [Math]::Abs([int]$pixel.B - 18) -le 18
           break
         }
         'hint-icon' {
