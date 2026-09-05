@@ -29,6 +29,7 @@ namespace FruitDefense.Editor
             ValidateScreenBackgroundOpacityContract();
             ValidateLoadingPrimaryContrast(releaseTheme);
             ValidateSemanticStateContrast(releaseTheme);
+            ValidateHubComponentAnatomy(releaseTheme);
             var production = releaseTheme.ActiveArtSet;
             Assert(production != null && RuntimeUiArtSetRegistry.IsProductionSet(production),
                 "release theme starts with one production art set");
@@ -96,9 +97,9 @@ namespace FruitDefense.Editor
 
         private static void ValidateFinitePaintedSlotContract()
         {
-            Assert(RuntimeUiArtSlots.RequiredCount == 56
-                && RuntimeUiArtSlots.Required.Count == 56,
-                "runtime visual contract owns exactly 56 required semantic slots");
+            Assert(RuntimeUiArtSlots.RequiredCount == 62
+                && RuntimeUiArtSlots.Required.Count == 62,
+                "runtime visual contract owns exactly 62 required semantic slots");
             for (var index = 0; index < RuntimeUiArtSlots.Required.Count; index++)
             {
                 Assert((int)RuntimeUiArtSlots.Required[index] == index,
@@ -161,6 +162,47 @@ namespace FruitDefense.Editor
                     RuntimeUiArtSlot.SurfaceGameplayStage)
                     == RuntimeUiArtGeometry.NineSlice,
                 "gameplay-stage remains the appended slot 56 nine-slice contract");
+            var hubIcons = new[]
+            {
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconHubHome, "icon.hub-home"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconHubActivity, "icon.hub-activity"),
+                new KeyValuePair<RuntimeUiArtSlot, string>(
+                    RuntimeUiArtSlot.IconHubGrowth, "icon.hub-growth"),
+            };
+            for (var index = 0; index < hubIcons.Length; index++)
+            {
+                Assert((int)hubIcons[index].Key == 56 + index
+                    && RuntimeUiArtSlots.SemanticId(hubIcons[index].Key)
+                        == hubIcons[index].Value
+                    && RuntimeUiArtSlots.Geometry(hubIcons[index].Key)
+                        == RuntimeUiArtGeometry.Icon,
+                    "Hub navigation owns its formal icon slot at " + (56 + index));
+            }
+            Assert((int)RuntimeUiArtSlot.IllustrationHubActivityReward == 59
+                && RuntimeUiArtSlots.SemanticId(
+                    RuntimeUiArtSlot.IllustrationHubActivityReward)
+                    == "illustration.hub-activity-reward"
+                && RuntimeUiArtSlots.Geometry(
+                    RuntimeUiArtSlot.IllustrationHubActivityReward)
+                    == RuntimeUiArtGeometry.Stretch,
+                "Activity reward hero owns appended text-free illustration slot 60");
+            Assert((int)RuntimeUiArtSlot.SurfaceHubNavigationBase == 60
+                && RuntimeUiArtSlots.SemanticId(
+                    RuntimeUiArtSlot.SurfaceHubNavigationBase)
+                    == "surface.hub-navigation-base"
+                && RuntimeUiArtSlots.Geometry(
+                    RuntimeUiArtSlot.SurfaceHubNavigationBase)
+                    == RuntimeUiArtGeometry.Stretch
+                && (int)RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab == 61
+                && RuntimeUiArtSlots.SemanticId(
+                    RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab)
+                    == "surface.hub-navigation-selected-tab"
+                && RuntimeUiArtSlots.Geometry(
+                    RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab)
+                    == RuntimeUiArtGeometry.Stretch,
+                "Hub navigation owns one base and one selected-tab silhouette");
 
             var gui = RuntimeUiSourceAuthority.ReadRuntimeGui();
             var requiredApis = new[]
@@ -177,13 +219,52 @@ namespace FruitDefense.Editor
                 "public static Rect ResolveOpticalEnvelopeDrawRect(",
                 "public static void DrawOrchardVista(",
                 "public static void DrawLobbyThumbnail(",
+                "public static void DrawHubLevelIllustration(",
+                "public static void DrawHubActivityRewardIllustration(",
                 "public static void DrawGameplayStage(",
+                "public static void DrawHubTopBarWithBalance(",
+                "public static RuntimeUiHubBalanceLayout ResolveHubBalanceLayout(",
+                "public static void DrawHubPageSurface(",
+                "public static void DrawHubNavigationTray(",
+                "public static void DrawHubNavigationItem(",
+                "public static void DrawHubGrowthTab(",
+                "public static void DrawHubActivityCard(",
+                "public static void DrawHubActivityBanner(",
+                "public static void DrawHubRewardPanel(",
+                "public static void DrawHubRewardTile(",
+                "public static RuntimeUiHubRewardTileLayout ResolveHubRewardTileLayout(",
+                "public static void DrawHubActivityStatus(",
+                "public static void DrawHubGrowthEntry(",
+                "public static void DrawHubGrowthDetail(",
+                "public static void DrawHubHomeGrowthPreview(",
                 "public static RuntimeUiMetricContentLayout ResolveCompactInlineMetricContentLayout(",
                 "private static RuntimeUiArtSlot LobbyThumbnailSlot(",
             };
             for (var index = 0; index < requiredApis.Length; index++)
                 Assert(gui.Contains(requiredApis[index]),
                     "shared renderer is missing explicit hierarchy API: " + requiredApis[index]);
+            var hubGui = File.ReadAllText(Path.Combine(
+                Application.dataPath, "Scripts/UI/RuntimeUiGui.Hub.cs"));
+            var hubNavigation = Slice(hubGui,
+                "public static void DrawHubNavigationItem(",
+                "public static RuntimeUiHubNavigationItemLayout ResolveHubNavigationItemLayout(");
+            Assert(hubGui.Contains("RuntimeUiArtSlot.IconHubHome")
+                && hubGui.Contains("RuntimeUiArtSlot.IconHubActivity")
+                && hubGui.Contains("RuntimeUiArtSlot.IconHubGrowth")
+                && hubGui.Contains("RuntimeUiArtSlot.SurfaceHubNavigationBase")
+                && hubNavigation.Contains(
+                    "RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab")
+                && hubGui.Contains("DrawStateIndicator(context,")
+                && hubGui.Contains("RuntimeUiMotion.InteractionState(")
+                && hubNavigation.Contains(
+                    "DrawIcon(context, layout.Icon, iconSlot, RuntimeUiInteractionState.Normal);")
+                && !hubNavigation.Contains("RuntimeUiArtSlot.IconControl")
+                && !hubNavigation.Contains("RuntimeUiArtSlot.IconResource")
+                && !hubNavigation.Contains("RuntimeUiArtSlot.SurfacePanelRaised")
+                && !hubGui.Contains("GUI.Button(")
+                && !hubGui.Contains("Texture2D.whiteTexture")
+                && !hubGui.Contains("GUI.skin"),
+                "Hub chrome uses the dedicated two-silhouette base/tab art and single-subject icons without generic panel substitution");
             var standardAction = Slice(gui,
                 "public static void DrawActionVisual(",
                 "public static void DrawCompactControlVisual(");
@@ -204,16 +285,33 @@ namespace FruitDefense.Editor
                 "painted hierarchy renderer uses marker-free contained interaction motion and no path, primitive, resource or default-skin fallback");
 
             var lobby = File.ReadAllText(Path.Combine(
-                Application.dataPath, "Scripts/Shell/LobbyPresenter.cs"));
+                Application.dataPath, "Scripts/Shell/LobbyHubPresenter.cs"));
             Assert(lobby.Contains("RuntimeUiGui.DrawScreenCorners")
-                && lobby.Contains("RuntimeUiGui.DrawSectionRibbon")
-                && lobby.Contains("RuntimeUiGui.DrawLobbyThumbnail")
+                && lobby.Contains("PortraitHubLayout.Create(")
+                && lobby.Contains("RuntimeUiGui.DrawHubTopBarWithBalance")
+                && lobby.Contains("RuntimeUiGui.DrawHubPageSurface")
+                && lobby.Contains("RuntimeUiGui.DrawHubNavigationTray")
+                && lobby.Contains("RuntimeUiGui.DrawHubNavigationItem")
+                && lobby.Contains("RuntimeUiGui.DrawHubGrowthTab")
+                && lobby.Contains("RuntimeUiGui.DrawHubHomeGrowthPreview(")
+                && lobby.Contains("RuntimeUiGui.DrawHubActivityBanner(")
+                && lobby.Contains("RuntimeUiGui.DrawHubLevelCardSurface(")
+                && lobby.Contains("RuntimeUiGui.DrawHubRewardPanel(")
+                && lobby.Contains("RuntimeUiGui.DrawHubRewardTile(")
+                && lobby.Contains("RuntimeUiGui.DrawHubGrowthEntry(")
+                && lobby.Contains("RuntimeUiGui.DrawHubGrowthDetail(")
+                && lobby.Contains("RuntimeUiGui.DrawHubLevelIllustration")
+                && lobby.Contains(
+                    "RuntimeUiGui.DrawHubActivityRewardIllustration")
                 && lobby.Contains("RuntimeUiGui.DrawIllustrationFrame")
                 && lobby.Contains("RuntimeUiIndicatorKind.Selected")
                 && lobby.Contains("_pressTracker.Update(LevelControlId(levelId), rect")
                 && lobby.Contains("RuntimeUiGui.DrawActionVisual")
+                && !lobby.Contains("RuntimeUiGui.DrawHubHomeGrowthPreviewUnavailable")
+                && !lobby.Contains("RuntimeUiGui.DrawHubUnavailablePanel")
+                && !lobby.Contains("RuntimeUiGui.DrawHubActivityCard(")
                 && !lobby.Contains("GUI.Button(rect, GUIContent.none"),
-                "Lobby hierarchy keeps art/copy inside the original finite card and action hits");
+                "Lobby Hub keeps shared chrome, real Activity/Growth pages, Home art/copy, and input on one finite hierarchy");
             var settlement = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/Shell/SettlementPresenter.cs"));
             Assert(settlement.Contains("RuntimeUiGui.DrawScreenCorners")
@@ -327,6 +425,79 @@ namespace FruitDefense.Editor
             Assert(graphicsSettings.Contains("79a8debad077477fbbe3d774e1e90eff"),
                 "runtime nine-slice shader is always included in PC and WebGL players");
             Debug.Log("RUNTIME_UI_NINE_SLICE_PARTITION_OK draws=1 pcScales=6");
+        }
+
+        private static void ValidateHubComponentAnatomy(RuntimeUiTheme theme)
+        {
+            var scales = new[] { 360f / 402f, 375f / 402f, 1f, 932f / 874f };
+            var states = (RuntimeUiInteractionState[])Enum.GetValues(
+                typeof(RuntimeUiInteractionState));
+            RuntimeUiDrawContext context = null;
+            for (var scaleIndex = 0; scaleIndex < scales.Length; scaleIndex++)
+            {
+                var scale = scales[scaleIndex];
+                context = RuntimeUiGui.RequireContext(context, theme, scale);
+                var balanceOwner = new Rect(235f * scale, 29f * scale,
+                    142f * scale, 46f * scale);
+                var previewOwner = new Rect(24f * scale, 555f * scale,
+                    354f * scale, 221f * scale);
+                for (var stateIndex = 0; stateIndex < states.Length; stateIndex++)
+                {
+                    var state = states[stateIndex];
+                    var balance = RuntimeUiGui.ResolveHubBalanceLayout(
+                        context, balanceOwner, "晨露", "999", state);
+                    Assert(Contains(balanceOwner, balance.Surface)
+                        && Contains(balance.Surface, balance.Label)
+                        && Contains(balance.Surface, balance.Value)
+                        && balance.Label.xMax <= balance.Value.xMin,
+                        "Hub resource balance stays finite and non-overlapping at "
+                        + scale + " / " + state);
+
+                    var preview = RuntimeUiGui.ResolveHubHomeGrowthPreviewLayout(
+                        context, previewOwner, state);
+                    Assert(Contains(previewOwner, preview.Title)
+                        && Contains(previewOwner, preview.Body)
+                        && preview.Title.yMax <= preview.Body.yMin,
+                        "Hub growth preview stays finite and ordered at "
+                        + scale + " / " + state);
+                }
+            }
+
+            var source = File.ReadAllText(Path.Combine(
+                Application.dataPath, "Scripts/UI/RuntimeUiGui.Hub.cs"));
+            var activity = Slice(source,
+                "public static void DrawHubActivityCard(",
+                "public static void DrawHubRewardPanel(");
+            var reward = Slice(source,
+                "public static void DrawHubRewardPanel(",
+                "public static void DrawHubGrowthEntry(");
+            var entry = Slice(source,
+                "public static void DrawHubGrowthEntry(",
+                "public static void DrawHubGrowthDetail(");
+            var detail = Slice(source,
+                "public static void DrawHubGrowthDetail(",
+                "public static void DrawHubHomeGrowthPreview(");
+            Assert(!activity.Contains("DrawStateIndicator(")
+                && !entry.Contains("DrawStateIndicator(")
+                && !detail.Contains("DrawStateIndicator(")
+                && activity.Contains("SurfacePanelRaised")
+                && entry.Contains("DrawSelectableCard(")
+                && reward.Contains("SurfacePanelStandard")
+                && reward.Contains("SurfaceMetric")
+                && !reward.Contains("SurfaceStatus")
+                && reward.Contains("RuntimeUiArtSlot.IconHubActivity")
+                && reward.Contains(
+                    "DrawStateIndicator(context, stateIndicator, state);")
+                && detail.Contains("SurfaceDetail"),
+                "Hub page surfaces reuse semantic raised/reward surfaces and keep one explicit state indicator owner");
+        }
+
+        private static bool Contains(Rect owner, Rect child)
+        {
+            return child.xMin >= owner.xMin - .01f
+                && child.yMin >= owner.yMin - .01f
+                && child.xMax <= owner.xMax + .01f
+                && child.yMax <= owner.yMax + .01f;
         }
 
         private static void AssertNineSliceTargetBorders(MethodInfo resolver,
@@ -1127,8 +1298,8 @@ namespace FruitDefense.Editor
                 .ToArray();
             Assert(discovered.Length == 1 && discovered.SequenceEqual(expected)
                 && discovered[0].SetId == "sunny-orchard-painted"
-                && discovered[0].Revision == "9",
-                "production registry contains only sunny-orchard-painted@9 in stable order");
+                && discovered[0].Revision == "19",
+                "production registry contains only sunny-orchard-painted@19 in stable order");
             Assert(discovered.Select(set => set.SetId + "\n" + set.Revision)
                     .Distinct(StringComparer.Ordinal).Count() == discovered.Length,
                 "production registry identities are unique");

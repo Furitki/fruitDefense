@@ -43,6 +43,7 @@ namespace FruitDefense.Core
         public ResolvedLevelDefinition ActiveLevel { get; private set; }
         public LevelCompositeIdentity Identity { get; private set; }
         public ResolvedBattleSourceIdentity ResolvedSourceIdentity { get; private set; }
+        public BattleGrowthSnapshot LaunchGrowthSnapshot { get; private set; }
         public IReadOnlyList<WaveDefinitionDto> OrderedWaves { get { return _orderedWaves; } }
         public LevelRuleSetDefinition RuleSet { get { return _ruleSet; } }
         public LevelPresentationThemeDefinition Theme
@@ -83,9 +84,10 @@ namespace FruitDefense.Core
             var ability = _content.ResolvePlantAbilities(plant.DefinitionId, plant.EquipmentId)
                 .FirstOrDefault(value => value.Activation.Kind == AbilityActivationKind.Cooldown);
             if (ability == null) return 0f;
-            var seconds = BattleAbilityTiming.TicksToSeconds(ability.Activation.CooldownTicks)
-                / UpgradeTier(plant).attackSpeedMultiplier;
-            return GetEffectiveAttribute(plant, CombatAttributeKind.AttackInterval, seconds);
+            var seconds = BattleAbilityTiming.TicksToSeconds(
+                ability.Activation.CooldownTicks);
+            return GetEffectiveAttribute(plant, CombatAttributeKind.AttackInterval,
+                seconds, 1f / UpgradeTier(plant).attackSpeedMultiplier);
         }
 
         public GameSimulation(int seed = 0, BattlefieldMapDefinition map = null)
@@ -112,16 +114,19 @@ namespace FruitDefense.Core
         {
         }
 
-        public GameSimulation(CompiledLevelCatalog levelCatalog, string levelId, int seed = 0)
-            : this(ResolvedBattleSourceIdentity.Resolve(levelCatalog, levelId), seed)
+        public GameSimulation(CompiledLevelCatalog levelCatalog, string levelId, int seed,
+            BattleGrowthSnapshot growthSnapshot)
+            : this(ResolvedBattleSourceIdentity.Resolve(levelCatalog, levelId,
+                growthSnapshot), seed, growthSnapshot)
         {
         }
 
-        private GameSimulation(CatalogResolvedBattleSource source, int seed)
+        private GameSimulation(CatalogResolvedBattleSource source, int seed,
+            BattleGrowthSnapshot growthSnapshot)
             : this(source.ResolvedLevel.BattleContent, seed, source.ResolvedLevel.Map,
                 BattleSimulationMode.Standard, source.ResolvedLevel,
                 source.ResolvedLevel.OrderedWaves, source.ResolvedLevel.RuleSet,
-                source.Identity)
+                source.Identity, growthSnapshot)
         {
         }
 
@@ -129,7 +134,8 @@ namespace FruitDefense.Core
             BattlefieldMapDefinition map, BattleSimulationMode mode,
             ResolvedLevelDefinition resolvedLevel,
             IEnumerable<WaveDefinitionDto> orderedWaves, LevelRuleSetDefinition ruleSet,
-            ResolvedBattleSourceIdentity resolvedSourceIdentity = null)
+            ResolvedBattleSourceIdentity resolvedSourceIdentity = null,
+            BattleGrowthSnapshot launchGrowthSnapshot = null)
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
             if (!Enum.IsDefined(typeof(BattleSimulationMode), mode))
@@ -139,6 +145,9 @@ namespace FruitDefense.Core
             ActiveLevel = resolvedLevel;
             Identity = resolvedLevel == null ? null : resolvedLevel.Identity;
             ResolvedSourceIdentity = resolvedSourceIdentity;
+            LaunchGrowthSnapshot = launchGrowthSnapshot == null
+                ? null
+                : launchGrowthSnapshot.DeepCopy();
             _ruleSet = ruleSet ?? throw new ArgumentNullException(nameof(ruleSet));
             _orderedWaves = Array.AsReadOnly((orderedWaves ?? throw new ArgumentNullException(nameof(orderedWaves)))
                 .Select(CloneWave).ToArray());
@@ -209,10 +218,10 @@ namespace FruitDefense.Core
 
         private static CompiledBattleContentCatalog CreateBundledContent()
         {
-            GameContentManifestDto manifest;
-            CompiledBattleContentCatalog compiled;
             ContentValidationResult validation;
-            if (BundledGameContentLoader.TryLoad(out manifest, out compiled, out validation)) return compiled;
+            CompiledGameContentBundle bundle;
+            if (BundledGameContentLoader.TryLoadBundle(out bundle, out validation))
+                return bundle.Battle;
             throw new InvalidOperationException("Bundled battle content is invalid: "
                 + string.Join("\n", validation.Issues.Select(issue => issue.ToString()).ToArray()));
         }

@@ -15,6 +15,8 @@ namespace FruitDefense.Editor
 {
     public static class BattleSessionHostSmoke
     {
+        private static CompiledOutgameContentCatalog _outgameCatalog;
+
 #if FRUIT_DEFENSE_ACCEPTANCE
         [Serializable]
         private sealed class CombatFeedbackAcceptanceRecord
@@ -102,12 +104,18 @@ namespace FruitDefense.Editor
         {
             var runtimeUiTheme = ProjectSetup.RequireReleaseRuntimeUiTheme();
             var catalog = BundledLevelCatalogFactory.CreateCompiled();
+            Assert(BundledGameContentLoader.TryLoadBundle(out var bundle,
+                    out var bundleValidation),
+                "bundled game content loads: "
+                + (bundleValidation.Issues.Count == 0
+                    ? string.Empty : bundleValidation.Issues[0].ToString()));
+            _outgameCatalog = bundle.Outgame;
             var resolution = catalog.Resolve(
                 BundledLevelCatalogIds.Levels.Orchard01);
             Assert(resolution.Succeeded && resolution.Value != null,
                 "bundled host smoke level resolves");
             ValidateHostContract();
-            ValidateResultContract();
+            ValidateResultContract(catalog);
             ValidateInitializationAndLifecycle(
                 runtimeUiTheme, catalog, resolution.Value);
             ValidateDefeatResult(runtimeUiTheme, catalog, resolution.Value);
@@ -137,11 +145,13 @@ namespace FruitDefense.Editor
             var initializeParameters = initialize == null
                 ? Array.Empty<ParameterInfo>()
                 : initialize.GetParameters();
-            Assert(initializeParameters.Length == 5
+            Assert(initializeParameters.Length == 6
                 && initializeParameters[4].ParameterType == typeof(CompiledLevelCatalog)
+                && initializeParameters[5].ParameterType
+                    == typeof(CompiledOutgameContentCatalog)
                 && initializeParameters.All(parameter =>
                     parameter.ParameterType != typeof(ResolvedLevelDefinition)),
-                "host initialization receives one compiled catalog authority and no detached resolved level");
+                "host initialization receives both compiled catalog authorities and no detached resolved level");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Assert(typeof(FruitDefense.Development.GmStress.GmStressBattlePresenter)
                     .GetProperty("Simulation", BindingFlags.Instance
@@ -169,10 +179,10 @@ namespace FruitDefense.Editor
                 "battle status cannot carry a reference or collection");
         }
 
-        private static void ValidateResultContract()
+        private static void ValidateResultContract(CompiledLevelCatalog catalog)
         {
-            var request = new BattleLaunchRequest("result-contract", "orchard-01", 31415,
-                "1.0.0", BattleSessionMode.Standard);
+            var request = BattleGrowthTestFixture.Launch(catalog,
+                "result-contract", "orchard-01", 31415, "1.0.0");
             var valid = new BattleResult("result-contract", "orchard-01", 31415, BattleOutcome.Victory, 15, 3);
             Assert(valid.TryValidate(request, out var error) && string.IsNullOrEmpty(error),
                 "matching result contract is accepted");
@@ -210,70 +220,83 @@ namespace FruitDefense.Editor
                     "uninitialized host rejects snapshot export");
                 AssertFailure(
                     host.Initialize(null, navigator, sink, runtimeUiTheme,
-                        catalog),
+                        catalog, _outgameCatalog),
                     BattleSessionInitializationResult.InvalidRequest,
                     "null launch request is rejected");
                 AssertFailure(
                     host.Initialize(new BattleLaunchRequest("", "orchard-01", 11, "builtin",
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard,
+                            BattleGrowthTestFixture.ResolveBundled(catalog, "orchard-01")),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.InvalidSessionId,
                     "missing session id is rejected");
                 AssertFailure(
                     host.Initialize(new BattleLaunchRequest("session-a", "", 11, "builtin",
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard,
+                            BattleGrowthTestFixture.ResolveBundled(catalog, "orchard-01")),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.InvalidLevelId,
                     "missing level id is rejected");
                 AssertFailure(
                     host.Initialize(new BattleLaunchRequest("session-a", "orchard-01", 11, "",
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard,
+                            BattleGrowthTestFixture.ResolveBundled(catalog, "orchard-01")),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.InvalidContentVersion,
                     "missing content version is rejected");
 
                 var request = new BattleLaunchRequest("session-a",
                     resolvedLevel.Identity.LevelId, 24680,
                     resolvedLevel.BattleContent.Header.contentVersion,
-                    BattleSessionMode.Standard);
+                    BattleSessionMode.Standard,
+                    BattleGrowthTestFixture.ResolveBundled(catalog,
+                        resolvedLevel.Identity.LevelId));
                 AssertFailure(
                     host.Initialize(request, null, sink, runtimeUiTheme,
-                        catalog),
+                        catalog, _outgameCatalog),
                     BattleSessionInitializationResult.NavigatorRequired,
                     "missing navigator is rejected");
                 AssertFailure(
                     host.Initialize(request, navigator, null, runtimeUiTheme,
-                        catalog),
+                        catalog, _outgameCatalog),
                     BattleSessionInitializationResult.ResultSinkRequired,
                     "missing result sink is rejected");
 
                 AssertFailure(
                     host.Initialize(request, navigator, sink, null,
-                        catalog),
+                        catalog, _outgameCatalog),
                     BattleSessionInitializationResult.RuntimeUiThemeRequired,
                     "missing runtime UI theme is rejected");
                 AssertFailure(
                     host.Initialize(request, navigator, sink, runtimeUiTheme,
-                        null),
+                        null, _outgameCatalog),
                     BattleSessionInitializationResult.LevelCatalogRequired,
                     "missing level catalog is rejected");
                 AssertFailure(
+                    host.Initialize(request, navigator, sink, runtimeUiTheme,
+                        catalog, null),
+                    BattleSessionInitializationResult.OutgameCatalogRequired,
+                    "missing outgame catalog is rejected");
+                AssertFailure(
                     host.Initialize(new BattleLaunchRequest("session-unresolved",
                             "level.missing", request.Seed, request.ContentVersion,
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard, request.GrowthSnapshot),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.LevelResolutionFailed,
                     "unknown level identity is rejected through the catalog boundary");
                 AssertFailure(
                     host.Initialize(new BattleLaunchRequest("session-content-mismatch",
                             request.LevelId, request.Seed, "content.missing",
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard, request.GrowthSnapshot),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.ContentVersionMismatch,
                     "resolved content-version mismatch is rejected");
 
+                ValidateChangedOutgameIdentityRejected(host, navigator, sink,
+                    runtimeUiTheme, catalog, request);
+
                 var initialized = host.Initialize(request, navigator, sink,
-                    runtimeUiTheme, catalog);
+                    runtimeUiTheme, catalog, _outgameCatalog);
                 Assert(initialized.Success
                     && host.Status.IsInitialized
                     && host.Status.Phase == GamePhase.Ready
@@ -298,8 +321,8 @@ namespace FruitDefense.Editor
                         new BattleLaunchRequest("session-b",
                             resolvedLevel.Identity.LevelId, 999,
                             resolvedLevel.BattleContent.Header.contentVersion,
-                            BattleSessionMode.Standard),
-                        navigator, sink, runtimeUiTheme, catalog),
+                            BattleSessionMode.Standard, request.GrowthSnapshot),
+                        navigator, sink, runtimeUiTheme, catalog, _outgameCatalog),
                     BattleSessionInitializationResult.AlreadyInitialized,
                     "repeated initialization is rejected");
                 var afterRepeatedInitialization = host.ExportCurrentSessionSnapshot();
@@ -381,6 +404,50 @@ namespace FruitDefense.Editor
                 "destroying the scene host releases navigation callbacks");
         }
 
+        private static void ValidateChangedOutgameIdentityRejected(
+            FruitDefenseGame host, IAppNavigator navigator,
+            IBattleResultSink sink, RuntimeUiTheme runtimeUiTheme,
+            CompiledLevelCatalog levels, BattleLaunchRequest baseline)
+        {
+            AssertOutgameMismatch(host, navigator, sink, runtimeUiTheme, levels,
+                baseline, authored => authored.header.catalogId += ".changed",
+                BattleGrowthValidationCode.OutgameCatalogMismatch);
+            AssertOutgameMismatch(host, navigator, sink, runtimeUiTheme, levels,
+                baseline, authored => authored.header.contentVersion += ".changed",
+                BattleGrowthValidationCode.OutgameContentVersionMismatch);
+            AssertOutgameMismatch(host, navigator, sink, runtimeUiTheme, levels,
+                baseline, authored => authored.items[0].description += " changed",
+                BattleGrowthValidationCode.OutgameContentFingerprintMismatch);
+        }
+
+        private static void AssertOutgameMismatch(FruitDefenseGame host,
+            IAppNavigator navigator, IBattleResultSink sink,
+            RuntimeUiTheme runtimeUiTheme, CompiledLevelCatalog levels,
+            BattleLaunchRequest baseline, Action<OutgameContentCatalogDto> mutate,
+            BattleGrowthValidationCode expected)
+        {
+            var asset = Resources.Load<TextAsset>(
+                "Content/outgame-content-bundled.v1");
+            Assert(asset != null, "outgame source is available for identity mutation");
+            var authored = OutgameContentJson.Deserialize(asset.text);
+            mutate(authored);
+            Assert(OutgameContentCompiler.TryCompile(authored, out var changed,
+                    out var validation),
+                "changed outgame identity remains structurally valid: "
+                + (validation.Issues.Count == 0
+                    ? string.Empty : validation.Issues[0].ToString()));
+            var snapshot = BattleGrowthTestFixture.Resolve(levels, changed,
+                baseline.LevelId);
+            var request = new BattleLaunchRequest("changed-" + expected,
+                baseline.LevelId, baseline.Seed, baseline.ContentVersion,
+                BattleSessionMode.Standard, snapshot);
+            AssertFailure(host.Initialize(request, navigator, sink, runtimeUiTheme,
+                    levels, _outgameCatalog),
+                BattleSessionInitializationResult.GrowthSnapshotMismatch + ":"
+                    + expected,
+                "host rejects changed outgame identity " + expected);
+        }
+
         private static void ValidateDefeatResult(RuntimeUiTheme runtimeUiTheme,
             CompiledLevelCatalog catalog, ResolvedLevelDefinition resolvedLevel)
         {
@@ -393,9 +460,11 @@ namespace FruitDefense.Editor
                 var request = new BattleLaunchRequest("session-defeat",
                     resolvedLevel.Identity.LevelId, 13579,
                     resolvedLevel.BattleContent.Header.contentVersion,
-                    BattleSessionMode.Standard);
+                    BattleSessionMode.Standard,
+                    BattleGrowthTestFixture.ResolveBundled(catalog,
+                        resolvedLevel.Identity.LevelId));
                 Assert(host.Initialize(request, navigator, sink,
-                        runtimeUiTheme, catalog).Success,
+                        runtimeUiTheme, catalog, _outgameCatalog).Success,
                     "defeat host initializes");
                 var defeat = CreateTerminalSnapshot(
                     catalog, request.LevelId, request.Seed,
@@ -426,7 +495,8 @@ namespace FruitDefense.Editor
             Assert(resolution.Succeeded && resolution.Value != null,
                 "terminal snapshot fixture resolves through the supplied catalog");
             var resolvedLevel = resolution.Value;
-            var simulation = new GameSimulation(catalog, levelId, seed);
+            var simulation = new GameSimulation(catalog, levelId, seed,
+                BattleGrowthTestFixture.ResolveBundled(catalog, levelId));
             var victory = outcome == BattleOutcome.Victory;
             var waveIndex = victory ? resolvedLevel.OrderedWaves.Count : 1;
             var waveTotal = resolvedLevel.OrderedWaves[waveIndex - 1]
@@ -470,9 +540,11 @@ namespace FruitDefense.Editor
                 var request = new BattleLaunchRequest(
                     "session-acceptance-port", resolvedLevel.Identity.LevelId,
                     86420, resolvedLevel.BattleContent.Header.contentVersion,
-                    BattleSessionMode.Standard);
+                    BattleSessionMode.Standard,
+                    BattleGrowthTestFixture.ResolveBundled(catalog,
+                        resolvedLevel.Identity.LevelId));
                 Assert(host.Initialize(request, navigator, sink,
-                        runtimeUiTheme, catalog).Success,
+                        runtimeUiTheme, catalog, _outgameCatalog).Success,
                     "acceptance-port host initializes");
                 var port = (IAcceptanceBattlePort)host;
 

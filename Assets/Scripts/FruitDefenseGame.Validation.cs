@@ -210,15 +210,15 @@ namespace FruitDefense
                 return false;
             }
 
-            GameContentManifestDto manifest;
-            CompiledBattleContentCatalog content;
             ContentValidationResult validation;
-            if (!BundledGameContentLoader.TryLoad(out manifest, out content, out validation))
+            CompiledGameContentBundle bundle;
+            if (!BundledGameContentLoader.TryLoadBundle(out bundle, out validation))
             {
                 reason = "bundled game content could not be loaded: " + string.Join(" | ",
                     validation.Issues.Select(value => value.ToString()).ToArray());
                 return false;
             }
+            var content = bundle.Battle;
 
             foreach (var definitionId in BattlePresentationVisualCatalog.BundledPlantDefinitionIds)
             {

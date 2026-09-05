@@ -27,10 +27,10 @@ namespace FruitDefense.Editor
         private static void ValidateReadyAndBetweenWaves(CompiledLevelCatalog catalog)
         {
             var levelId = BundledLevelCatalogIds.Levels.Orchard01;
-            var ready = new GameSimulation(catalog, levelId, 8101);
+            var ready = NewResolvedSimulation(catalog, levelId, 8101);
             RoundTripAndContinue(ready, catalog, levelId, 5, "Ready");
 
-            var between = new GameSimulation(catalog, levelId, 8102);
+            var between = NewResolvedSimulation(catalog, levelId, 8102);
             between.State.Phase = GamePhase.BetweenWaves;
             between.State.WaveIndex = 1;
             between.State.WaveTotal = 5;
@@ -66,7 +66,7 @@ namespace FruitDefense.Editor
                     .statuses.Single().definitionId == BattleContentIds.Statuses.IceSlow,
                 "entity runtime is the sole status owner and enemy route is not serialized");
 
-            var target = new GameSimulation(catalog, levelId, 999);
+            var target = NewResolvedSimulation(catalog, levelId, 999);
             var result = target.RestoreSnapshot(BattleSnapshotSmoke.Clone(snapshot), catalog);
             BattleSnapshotSmoke.Assert(result.Succeeded
                 && target.State.Zombies.Single().RouteId == target.Map.PrimaryRouteId
@@ -172,7 +172,7 @@ namespace FruitDefense.Editor
             var read = BattleSnapshotJson.Deserialize(json, out var decoded);
             BattleSnapshotSmoke.Assert(read.Succeeded,
                 "complete runtime JSON passes the structural gate");
-            var target = new GameSimulation(catalog, levelId, 8152);
+            var target = NewResolvedSimulation(catalog, levelId, 8152);
             var result = target.RestoreSnapshot(decoded, catalog);
             BattleSnapshotSmoke.Assert(result.Succeeded
                     && target.OutcomeStateChecksum() == source.OutcomeStateChecksum(),
@@ -205,7 +205,7 @@ namespace FruitDefense.Editor
             BattleSnapshotSmoke.Assert(export.Succeeded
                 && export.Snapshot.escapedEnemyCount == 1,
                 "escaped enemy count is exported");
-            var target = new GameSimulation(catalog, levelId, 8302);
+            var target = NewResolvedSimulation(catalog, levelId, 8302);
             var result = target.RestoreSnapshot(export.Snapshot, catalog);
             BattleSnapshotSmoke.Assert(result.Succeeded
                 && target.EscapedEnemyCount == 1
@@ -248,11 +248,11 @@ namespace FruitDefense.Editor
         private static void ValidatePresentationEventBoundary(CompiledLevelCatalog catalog)
         {
             var levelId = BundledLevelCatalogIds.Levels.Orchard01;
-            var source = new GameSimulation(catalog, levelId, 8401);
+            var source = NewResolvedSimulation(catalog, levelId, 8401);
             var export = source.ExportSnapshot();
             BattleSnapshotSmoke.Assert(export.Succeeded, "event boundary source exports");
 
-            var successTarget = new GameSimulation(catalog, levelId, 8402);
+            var successTarget = NewResolvedSimulation(catalog, levelId, 8402);
             var successStream = PresentationStream(successTarget);
             successStream.EmitBattleStateChanged(1, "pre-restore", Vector2.zero);
             var result = successTarget.RestoreSnapshot(export.Snapshot, catalog);
@@ -262,7 +262,7 @@ namespace FruitDefense.Editor
                 && successStream.LastIssuedSequence == 0,
                 "successful restore resets pending, sequence, and drop history without an event");
 
-            var failureTarget = new GameSimulation(catalog, levelId, 8403);
+            var failureTarget = NewResolvedSimulation(catalog, levelId, 8403);
             var failureStream = PresentationStream(failureTarget);
             failureTarget.DiscardPendingPresentationEvents();
             var initialIssued = failureStream.LastIssuedSequence;
@@ -312,7 +312,8 @@ namespace FruitDefense.Editor
         {
             var levelId = BundledLevelCatalogIds.Levels.Orchard01;
             var resolved = catalog.Resolve(levelId).Value;
-            var valid = new GameSimulation(catalog, levelId, 8500).ExportSnapshot().Snapshot;
+            var valid = NewResolvedSimulation(catalog, levelId, 8500)
+                .ExportSnapshot().Snapshot;
             var simulations = new List<GameSimulation>
             {
                 new GameSimulation(8501),
@@ -509,7 +510,8 @@ namespace FruitDefense.Editor
             var read = BattleSnapshotJson.Deserialize(json, out var decoded);
             BattleSnapshotSmoke.Assert(read.Succeeded,
                 phase + " JSON passes the structural gate: " + read);
-            var target = new GameSimulation(catalog, levelId, source.State.RandomSeed + 1);
+            var target = new GameSimulation(catalog, levelId,
+                source.State.RandomSeed + 1, source.LaunchGrowthSnapshot);
             var result = target.RestoreSnapshot(decoded, catalog);
             BattleSnapshotSmoke.Assert(result.Succeeded
                 && target.State.Phase == source.State.Phase
@@ -522,6 +524,13 @@ namespace FruitDefense.Editor
             }
             BattleSnapshotSmoke.Assert(target.OutcomeStateChecksum()
                 == source.OutcomeStateChecksum(), phase + " continuation matches");
+        }
+
+        private static GameSimulation NewResolvedSimulation(
+            CompiledLevelCatalog catalog, string levelId, int seed)
+        {
+            return new GameSimulation(catalog, levelId, seed,
+                BattleGrowthTestFixture.ResolveBundled(catalog, levelId));
         }
 
         private static BattleSnapshotAbilityRuntime Runtime(BattleSnapshot snapshot,

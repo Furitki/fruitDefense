@@ -64,10 +64,8 @@ namespace FruitDefense.UI
 
                 if (contentLayout.HasLabel)
                 {
-                    DrawTextCore(context, contentLayout.LabelRect, label, labelRole,
-                        RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, visualState, true,
-                        context.Styles.SingleLineText(labelRole, TextAnchor.MiddleCenter),
-                        style.ContentColor);
+                    DrawActionLabel(context, contentLayout.LabelRect, label, spec,
+                        style, visualState, labelRole);
                 }
 
                 if (state != RuntimeUiInteractionState.Selected)
@@ -77,6 +75,44 @@ namespace FruitDefense.UI
             {
                 GUI.color = previousColor;
             }
+        }
+
+        private static void DrawActionLabel(RuntimeUiDrawContext context, Rect rect,
+            string label, RuntimeUiActionSpec spec,
+            RuntimeUiResolvedActionStyle style, RuntimeUiInteractionState state,
+            RuntimeUiTypographyRole labelRole)
+        {
+            var textStyle = context.Styles.SingleLineText(labelRole, TextAnchor.MiddleCenter);
+            if (spec.Role != RuntimeUiActionKind.Primary
+                || style.VisualRole != RuntimeUiActionVisualRole.Primary
+                || labelRole != RuntimeUiTypographyRole.SectionTitle)
+            {
+                DrawTextCore(context, rect, label, labelRole,
+                    RuntimeUiTextTone.Primary, TextAnchor.MiddleCenter, state, true,
+                    textStyle, style.ContentColor);
+                return;
+            }
+
+            var textRect = ResolveSingleLineDrawRect(rect, textStyle,
+                TextAnchor.MiddleCenter);
+            var outlinePixels = Mathf.Max(1,
+                Mathf.RoundToInt(context.Scaled(EmphasisOutlineWidthLogical)));
+            for (var y = -outlinePixels; y <= outlinePixels; y += outlinePixels)
+            {
+                for (var x = -outlinePixels; x <= outlinePixels; x += outlinePixels)
+                {
+                    if (x == 0 && y == 0) continue;
+                    DrawTextCore(context,
+                        new Rect(textRect.x + x, textRect.y + y,
+                            textRect.width, textRect.height),
+                        label, labelRole, RuntimeUiTextTone.Primary,
+                        TextAnchor.MiddleCenter, state, false, textStyle,
+                        context.Theme.Colors.Outline);
+                }
+            }
+            DrawTextCore(context, textRect, label, labelRole,
+                RuntimeUiTextTone.Inverse, TextAnchor.MiddleCenter, state, false,
+                textStyle, context.Theme.Colors.InverseText);
         }
 
         public static void DrawCompactControlVisual(RuntimeUiDrawContext context,

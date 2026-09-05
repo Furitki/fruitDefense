@@ -175,8 +175,8 @@ namespace FruitDefense.Editor
         private static void ValidateAuthoritativeHitGeometry(RuntimeUiFeedbackTokens tokens)
         {
             var safeArea = new Rect(0f, 0f, 402f, 874f);
-            var layout = PortraitShellLayout.CreateLobby(402f, 874f, safeArea);
-            var original = layout.StartButton;
+            var layout = PortraitHubLayout.Create(402f, 874f, safeArea);
+            var original = layout.HomePage.StartButton;
             var pulse = RuntimeUiFeedbackPulse.Begin(0f,
                 tokens.UnscaledSelectionSeconds);
             var visual = RuntimeUiMotion.Evaluate(pulse,
@@ -184,14 +184,14 @@ namespace FruitDefense.Editor
                 tokens, RuntimeUiMotionPattern.Pop).Transform(original);
             var hitOnlyPoint = new Vector2(original.xMin + 1f, original.center.y);
             Assert(!Approximately(visual, original)
-                && PortraitShellLayout.HitTest(layout, original.center, false)
-                    == ShellHitTarget.Start
+                && PortraitHubLayout.HitTest(layout, original.center,
+                    HubPageId.Home, false) == HubHitTarget.Start
                 && original.Contains(hitOnlyPoint)
                 && !visual.Contains(hitOnlyPoint)
                 && visual.xMin >= original.xMin && visual.xMax <= original.xMax
                 && visual.yMin >= original.yMin && visual.yMax <= original.yMax
-                && PortraitShellLayout.HitTest(layout, hitOnlyPoint, false)
-                    == ShellHitTarget.Start,
+                && PortraitHubLayout.HitTest(layout, hitOnlyPoint,
+                    HubPageId.Home, false) == HubHitTarget.Start,
                 "inset-only motion stays contained while hit geometry remains authoritative");
         }
 

@@ -1,5 +1,5 @@
 {
-  "schemaId":"fruit-defense.battle-snapshot","schemaVersion":4,
+  "schemaId":"fruit-defense.battle-snapshot","schemaVersion":5,
   "levelCatalogId":"catalog","contentCatalogId":"content","contentVersion":"1",
   "levelId":"level","mapId":"map","gameplayMapFingerprint":"map-fingerprint",
   "waveSetId":"waves","ruleSetId":"rules","themeId":"theme",

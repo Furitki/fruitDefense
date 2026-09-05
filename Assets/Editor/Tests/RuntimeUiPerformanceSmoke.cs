@@ -83,8 +83,8 @@ namespace FruitDefense.Editor
             var context = RuntimeUiDrawContext.Create(releaseTheme, 1f);
             var cache = cacheField.GetValue(context) as RuntimeUiArtBinding[];
             Assert(cache != null && cache.Length == RuntimeUiArtSlots.RequiredCount
-                && cache.Length == 56,
-                "draw context cache contains exactly the finite 56-slot contract");
+                && cache.Length == 62,
+                "draw context cache contains exactly the finite 62-slot contract");
             for (var index = 0; index < RuntimeUiArtSlots.Required.Count; index++)
             {
                 var slot = RuntimeUiArtSlots.Required[index];

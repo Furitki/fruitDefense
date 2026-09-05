@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using FruitDefense.App.Services;
 using FruitDefense.Battle;
 using FruitDefense.Content;
+using FruitDefense.Core;
 using FruitDefense.Shell;
 using FruitDefense.UI;
 using UnityEngine;
@@ -18,10 +19,19 @@ using FruitDefense.Development.GmStress;
 
 namespace FruitDefense.App
 {
+    public enum ProfileStartupDisposition
+    {
+        Interactive = 0,
+        UnsupportedSchema = 1,
+        Unavailable = 2,
+    }
+
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(-900)]
     public sealed class AppFlowCoordinator : MonoBehaviour, IShellFlowContext,
-        ILevelSelectionFlowContext, IBattleResultSink
+        ILevelSelectionFlowContext, IHubProgressionReadContext,
+        IHubProgressionCommandContext, IProfileRecoveryCommandContext,
+        IBattleResultSink
     {
         public const string BootstrapScene = "Bootstrap";
         public const string LobbyScene = "Lobby";
@@ -32,7 +42,7 @@ namespace FruitDefense.App
         public const string SceneUnavailable = "app-scene-unavailable";
         public const string SceneLoadFailed = "app-scene-load-failed";
         public const string BattleHostMissing = "battle-host-missing";
-        public const string LobbyPresenterMissing = "lobby-presenter-missing";
+        public const string LobbyHubPresenterMissing = "lobby-hub-presenter-missing";
         public const string SettlementPresenterMissing = "settlement-presenter-missing";
         public const string BattleRequestActive = "battle-request-already-active";
         public const string BattleResultMissing = "battle-result-missing";
@@ -43,7 +53,12 @@ namespace FruitDefense.App
         public const string LevelResolutionFailed = "battle-level-resolution-failed";
         public const string StoredLevelUnavailable = "stored-level-unavailable";
         public const string ProfileSelectionSaveFailed = "profile-selection-save-failed";
+        public const string ProfileLoadUnavailable = "local-profile-unavailable";
+        public const string ProfileSchemaUnsupported = "local-profile-schema-unsupported";
+        public const string ProfileResetFailed = "local-profile-reset-failed";
         public const string RuntimeUiThemeInvalid = "runtime-ui-theme-invalid";
+        public const string BattleGrowthProjectionInvalid =
+            "battle-growth-projection-invalid";
 
         public readonly struct BootstrapPresentationLayout
         {
@@ -74,10 +89,13 @@ namespace FruitDefense.App
 
         private AppBootstrap _bootstrap;
         private IPlayerProfileStore _profileStore;
+        private PlayerProgressionService _progressionService;
         private IRemoteConfigService _remoteConfigService;
-        private PlayerProfileEnvelopeV1 _profile;
+        private PlayerProfile _profile;
         private RuntimeConfigV1 _runtimeConfig;
         private CompiledLevelCatalog _levelCatalog;
+        private CompiledOutgameContentCatalog _outgameCatalog;
+        private BattleGrowthResolution _currentGrowthPreview;
         private BattleLaunchRequest _currentRequest;
         private ResolvedLevelDefinition _currentResolvedLevel;
         private BattleResult _currentResult;
@@ -89,6 +107,8 @@ namespace FruitDefense.App
         private string _selectedLevelId = string.Empty;
         private bool _profileSaveRoutineActive;
         private bool _profileSavePending;
+        private bool _hubCommandRoutineActive;
+        private bool _profileRecoveryRoutineActive;
         private bool _runtimeUiPresentationReady;
         private RuntimeUiDrawContext _runtimeUiDrawContext;
         private RuntimeUiFeedbackPulse _bootstrapTransitionPulse;
@@ -105,9 +125,21 @@ namespace FruitDefense.App
         public ShellFlowError LastRecoverableError => _lastRecoverableError;
         public BattleLaunchRequest CurrentRequest => _currentRequest;
         public BattleResult CurrentResult => _currentResult;
-        public PlayerProfileEnvelopeV1 CurrentProfile => _profile;
+        internal PlayerProfile CurrentProfile => _profile;
         public RuntimeConfigV1 CurrentRuntimeConfig => _runtimeConfig;
         public CompiledLevelCatalog CurrentLevelCatalog => _levelCatalog;
+        public CompiledOutgameContentCatalog CurrentOutgameCatalog => _outgameCatalog;
+        public CompiledOutgameContentCatalog OutgameContent => _outgameCatalog;
+        public PlayerProgressionProjection Progression => _progressionService?.Current;
+        public bool ProgressionCommandInProgress => _hubCommandRoutineActive
+            || _profileSaveRoutineActive
+            || (_progressionService != null
+                && _progressionService.CommandInProgress);
+        public bool ProfileRecoveryRequired => HasErrorCode(_blockingError,
+            ProfileSchemaUnsupported) || HasErrorCode(_blockingError,
+            ProfileResetFailed);
+        public bool ProfileRecoveryInProgress => _profileRecoveryRoutineActive;
+        public BattleGrowthResolution CurrentGrowthPreview => _currentGrowthPreview;
         public ResolvedLevelDefinition CurrentResolvedLevel => _currentResolvedLevel;
         public IReadOnlyList<LevelDefinition> PlayableLevels => _levelCatalog == null
             ? Array.Empty<LevelDefinition>()
@@ -171,7 +203,6 @@ namespace FruitDefense.App
                 yield break;
             }
 
-            _profileStore = LocalProfileStoreFactory.CreateDefault();
             _remoteConfigService = new BundledRemoteConfigService();
 
             RemoteConfigLoadResult configResult = null;
@@ -184,18 +215,8 @@ namespace FruitDefense.App
             }
             _runtimeConfig = configResult.Config;
 
-            ProfileLoadResult profileResult = null;
-            yield return _profileStore.Load(value => profileResult = value);
-            _profile = profileResult != null && profileResult.HasProfile
-                ? profileResult.Profile
-                : PlayerProfileEnvelopeV1.CreateDefault();
-            if (profileResult == null || !profileResult.HasProfile)
-                _lastRecoverableError = new ShellFlowError("local-profile-unavailable", profileResult?.Error);
-            else if (profileResult.Status == ProfileLoadStatus.StorageError)
-                _lastRecoverableError = new ShellFlowError("local-profile-storage-degraded", profileResult.Error);
-
-            if (!BundledLevelCatalogFactory.TryCompile(out _levelCatalog,
-                    out var levelValidation, out var contentValidation))
+            if (!BundledGameContentLoader.TryLoadBundle(out var contentBundle,
+                    out var contentValidation))
             {
                 if (contentValidation != null && !contentValidation.IsValid
                     && contentValidation.Issues.Count > 0)
@@ -204,14 +225,25 @@ namespace FruitDefense.App
                 }
                 else
                 {
-                    var issue = levelValidation != null && levelValidation.Issues.Count > 0
-                        ? levelValidation.Issues[0].Code
-                        : "unknown";
-                    _blockingError = BundledLevelCatalogInvalid + ":" + issue;
+                    _blockingError = BundledContentInvalid + ":unknown";
                 }
                 _startupRoutineActive = false;
                 yield break;
             }
+
+            var levelSource = BundledLevelCatalogFactory.CreateSource();
+            if (!LevelCatalogCompiler.TryCompile(levelSource, contentBundle.Battle,
+                    out _levelCatalog, out var levelValidation))
+            {
+                var issue = levelValidation != null && levelValidation.Issues.Count > 0
+                    ? levelValidation.Issues[0].Code
+                    : "unknown";
+                _blockingError = BundledLevelCatalogInvalid + ":" + issue;
+                _startupRoutineActive = false;
+                yield break;
+            }
+            _outgameCatalog = contentBundle.Outgame;
+
             BundledContentVersion = _levelCatalog.ContentVersion;
             if (!string.Equals(
                     BundledContentVersion,
@@ -222,6 +254,29 @@ namespace FruitDefense.App
                 _startupRoutineActive = false;
                 yield break;
             }
+
+            _profileStore = LocalProfileStoreFactory.CreateDefault(_outgameCatalog);
+            ProfileLoadResult profileResult = null;
+            yield return _profileStore.Load(value => profileResult = value);
+            var profileDisposition = ClassifyProfileLoad(profileResult);
+            if (profileDisposition == ProfileStartupDisposition.UnsupportedSchema)
+            {
+                _blockingError = ProfileSchemaUnsupported + ":"
+                    + (profileResult?.Error ?? string.Empty);
+                _startupRoutineActive = false;
+                yield break;
+            }
+            if (profileDisposition == ProfileStartupDisposition.Unavailable)
+            {
+                _blockingError = ProfileLoadUnavailable + ":"
+                    + (profileResult?.Error ?? string.Empty);
+                _startupRoutineActive = false;
+                yield break;
+            }
+
+            _profile = profileResult.Profile;
+            if (profileResult.Status == ProfileLoadStatus.StorageError)
+                _lastRecoverableError = new ShellFlowError("local-profile-storage-degraded", profileResult.Error);
 
             if (_levelCatalog.TryResolve(_profile.lastSelectedLevelId,
                     out var storedLevel, out var storedLevelError))
@@ -251,6 +306,8 @@ namespace FruitDefense.App
                 }
             }
 
+            ReplaceProgressionService(_profile);
+            TryRefreshSelectedGrowthPreview(out _);
             _compositionReady = true;
             _startupRoutineActive = false;
 
@@ -314,14 +371,18 @@ namespace FruitDefense.App
             if (_currentRequest != null || _activeBattleHost != null)
                 return Fail(BattleRequestActive, out error);
 
-            var request = new BattleLaunchRequest(sessionId, levelId, seed, contentVersion,
-                BattleSessionMode.Standard);
-            if (!request.TryValidate(out var requestError))
-                return Fail(requestError, out error);
             if (!string.Equals(contentVersion, BundledContentVersion, StringComparison.Ordinal))
                 return Fail(BundledContentMismatch, out error);
             if (!TryResolveLevel(levelId, out var resolvedLevel, out error))
                 return false;
+            if (!TryResolveBattleGrowth(resolvedLevel, out var growth))
+                return Fail(BattleGrowthProjectionInvalid,
+                    growth.Code + ":" + growth.Path, out error);
+            _currentGrowthPreview = growth;
+            var request = new BattleLaunchRequest(sessionId, levelId, seed, contentVersion,
+                BattleSessionMode.Standard, growth.Snapshot);
+            if (!request.TryValidate(out var requestError))
+                return Fail(requestError, out error);
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 return Fail(navigationError, out error);
 
@@ -344,7 +405,7 @@ namespace FruitDefense.App
 
             var request = new BattleLaunchRequest(sessionId,
                 GmStressBattleIds.LevelId, seed, BundledContentVersion,
-                BattleSessionMode.GmStress);
+                BattleSessionMode.GmStress, null);
             if (!request.TryValidate(out var requestError))
                 return Fail(requestError, out error);
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
@@ -367,6 +428,7 @@ namespace FruitDefense.App
                 return false;
 
             _selectedLevelId = resolvedLevel.Identity.LevelId;
+            TryResolveBattleGrowth(resolvedLevel, out _currentGrowthPreview);
             if (_profile != null
                 && !string.Equals(_profile.lastSelectedLevelId, _selectedLevelId,
                     StringComparison.Ordinal))
@@ -475,12 +537,14 @@ namespace FruitDefense.App
             var retrySeed = CreateNonzeroSeed();
             while (retrySeed == _currentRequest.Seed) retrySeed = CreateNonzeroSeed();
 
-            var retry = new BattleLaunchRequest(
-                Guid.NewGuid().ToString("N"),
-                _currentResult.LevelId,
-                retrySeed,
-                _currentRequest.ContentVersion,
-                BattleSessionMode.Standard);
+            var retry = BattleLaunchRequest.CreateRetry(_currentRequest,
+                Guid.NewGuid().ToString("N"), retrySeed);
+            var retryGrowthValidation = BattleGrowthSnapshotValidator.ValidateForLaunch(
+                retry.GrowthSnapshot, retryLevel, _outgameCatalog);
+            if (!retryGrowthValidation.Succeeded)
+                return Fail(BattleGrowthProjectionInvalid,
+                    retryGrowthValidation.Code + ":" + retryGrowthValidation.Path,
+                    out error);
             if (!Navigator.TryBeginTransition(AppRoute.Battle, out var navigationError))
                 return Fail(navigationError, out error);
 
@@ -491,6 +555,204 @@ namespace FruitDefense.App
             StartCoroutine(LoadBattle(retry));
             error = ShellFlowError.None;
             return true;
+        }
+
+        public bool TryRefreshSelectedGrowthPreview(
+            out BattleGrowthResolution preview)
+        {
+            if (_levelCatalog == null || string.IsNullOrEmpty(_selectedLevelId)
+                || !_levelCatalog.TryResolve(_selectedLevelId,
+                    out var resolvedLevel, out _))
+            {
+                preview = default;
+                _currentGrowthPreview = preview;
+                return false;
+            }
+            var success = TryResolveBattleGrowth(resolvedLevel, out preview);
+            _currentGrowthPreview = preview;
+            return success;
+        }
+
+        private bool TryResolveBattleGrowth(ResolvedLevelDefinition resolvedLevel,
+            out BattleGrowthResolution resolution)
+        {
+            if (_outgameCatalog == null || _progressionService == null
+                || resolvedLevel == null)
+            {
+                resolution = default;
+                return false;
+            }
+            try
+            {
+                resolution = BattleGrowthResolver.Resolve(_outgameCatalog,
+                    resolvedLevel, _progressionService.Current);
+                return resolution.Succeeded;
+            }
+            catch (Exception exception)
+            {
+                resolution = BattleGrowthResolution.Fail(
+                    BattleGrowthResolveCode.ProfileRequired, "profile",
+                    exception.Message);
+                return false;
+            }
+        }
+
+        public IEnumerator TryClaimActivity(string activityId,
+            Action<PlayerProgressionCommandResult> completed)
+        {
+            return RunProgressionCommand(
+                PlayerProgressionCommandKind.ClaimActivity, activityId,
+                string.Empty, completed);
+        }
+
+        public IEnumerator TryEquipGrowthEquipment(string growthEquipmentId,
+            string slotId, Action<PlayerProgressionCommandResult> completed)
+        {
+            return RunProgressionCommand(
+                PlayerProgressionCommandKind.EquipGrowthEquipment,
+                growthEquipmentId, slotId, completed);
+        }
+
+        public IEnumerator TryUpgradeGrowthEquipment(string growthEquipmentId,
+            Action<PlayerProgressionCommandResult> completed)
+        {
+            return RunProgressionCommand(
+                PlayerProgressionCommandKind.UpgradeGrowthEquipment,
+                growthEquipmentId, string.Empty, completed);
+        }
+
+        public IEnumerator TryUpgradeCultivation(string cultivationNodeId,
+            Action<PlayerProgressionCommandResult> completed)
+        {
+            return RunProgressionCommand(
+                PlayerProgressionCommandKind.UpgradeCultivation,
+                cultivationNodeId, string.Empty, completed);
+        }
+
+        private IEnumerator RunProgressionCommand(
+            PlayerProgressionCommandKind kind, string identity,
+            string secondaryIdentity,
+            Action<PlayerProgressionCommandResult> completed)
+        {
+            if (_progressionService == null)
+            {
+                completed?.Invoke(new PlayerProgressionCommandResult(kind,
+                    PlayerProgressionCommandStatus.InvalidProfile, identity,
+                    Progression, message: "Player progression is unavailable."));
+                yield break;
+            }
+            if (_hubCommandRoutineActive || _profileSaveRoutineActive)
+            {
+                completed?.Invoke(new PlayerProgressionCommandResult(kind,
+                    PlayerProgressionCommandStatus.InProgress, identity,
+                    Progression,
+                    message: "Another profile command is persisting."));
+                yield break;
+            }
+
+            _hubCommandRoutineActive = true;
+            PlayerProgressionCommandResult result = null;
+            IEnumerator routine;
+            switch (kind)
+            {
+                case PlayerProgressionCommandKind.ClaimActivity:
+                    routine = _progressionService.TryClaimActivity(identity,
+                        value => result = value);
+                    break;
+                case PlayerProgressionCommandKind.EquipGrowthEquipment:
+                    routine = _progressionService.TryEquip(identity,
+                        secondaryIdentity, value => result = value);
+                    break;
+                case PlayerProgressionCommandKind.UpgradeGrowthEquipment:
+                    routine = _progressionService.TryUpgradeGrowthEquipment(
+                        identity, value => result = value);
+                    break;
+                case PlayerProgressionCommandKind.UpgradeCultivation:
+                    routine = _progressionService.TryUpgradeCultivation(identity,
+                        value => result = value);
+                    break;
+                default:
+                    result = new PlayerProgressionCommandResult(kind,
+                        PlayerProgressionCommandStatus.InvalidRequest, identity,
+                        Progression, message: "Unsupported Hub command.");
+                    routine = null;
+                    break;
+            }
+
+            try
+            {
+                if (routine != null) yield return routine;
+                if (result != null && result.Succeeded)
+                {
+                    _profile = _progressionService
+                        .CreateCommittedProfileSnapshot();
+                    TryRefreshSelectedGrowthPreview(out _);
+                }
+            }
+            finally
+            {
+                _hubCommandRoutineActive = false;
+            }
+            completed?.Invoke(result ?? new PlayerProgressionCommandResult(kind,
+                PlayerProgressionCommandStatus.PersistenceFailed, identity,
+                Progression, message: "Profile command did not complete."));
+        }
+
+        private void ReplaceProgressionService(PlayerProfile profile)
+        {
+            _progressionService = new PlayerProgressionService(_profileStore,
+                _outgameCatalog, profile);
+        }
+
+        public static ProfileStartupDisposition ClassifyProfileLoad(
+            ProfileLoadResult result)
+        {
+            if (result != null
+                && result.Status == ProfileLoadStatus.UnsupportedSchema)
+                return ProfileStartupDisposition.UnsupportedSchema;
+            return result != null && result.HasProfile
+                ? ProfileStartupDisposition.Interactive
+                : ProfileStartupDisposition.Unavailable;
+        }
+
+        public bool TryResetUnsupportedProfile(out ShellFlowError error)
+        {
+            if (!ProfileRecoveryRequired || _profileStore == null
+                || _profileRecoveryRoutineActive)
+            {
+                error = new ShellFlowError(ProfileResetFailed,
+                    "Profile reset is not currently available.");
+                return false;
+            }
+
+            _profileRecoveryRoutineActive = true;
+            StartCoroutine(ResetUnsupportedProfile());
+            error = ShellFlowError.None;
+            return true;
+        }
+
+        private IEnumerator ResetUnsupportedProfile()
+        {
+            ProfileLoadResult reset = null;
+            try
+            {
+                yield return _profileStore.Reset(value => reset = value);
+            }
+            finally
+            {
+                _profileRecoveryRoutineActive = false;
+            }
+            if (reset == null || reset.Status != ProfileLoadStatus.ResetCreated
+                || !reset.HasProfile)
+            {
+                _blockingError = ProfileResetFailed + ":"
+                    + (reset?.Error ?? "Profile reset did not complete.");
+                yield break;
+            }
+
+            _blockingError = string.Empty;
+            _lastRecoverableError = ShellFlowError.None;
+            BeginStartup();
         }
 
         public void ReportRecoverableError(ShellFlowError error)
@@ -507,7 +769,7 @@ namespace FruitDefense.App
                     _blockingError = result.ErrorCode;
                     return;
                 }
-                if (BindLobbyPresenter())
+                if (BindLobbyHubPresenter())
                 {
 #if FRUIT_DEFENSE_ACCEPTANCE
                     SignalAcceptanceRouteReady(AppRoute.Lobby);
@@ -535,7 +797,7 @@ namespace FruitDefense.App
                 }
                 ClearCompletedSession();
                 _lastRecoverableError = ShellFlowError.None;
-                if (BindLobbyPresenter())
+                if (BindLobbyHubPresenter())
                 {
 #if FRUIT_DEFENSE_ACCEPTANCE
                     SignalAcceptanceRouteReady(AppRoute.Lobby);
@@ -562,7 +824,8 @@ namespace FruitDefense.App
                 }
 
                 var initialization = host.Initialize(
-                    request, Navigator, this, runtimeUiTheme, _levelCatalog);
+                    request, Navigator, this, runtimeUiTheme, _levelCatalog,
+                    _outgameCatalog);
                 if (!initialization.Success)
                 {
                     RecoverAfterRouteFailure(initialization.ErrorCode);
@@ -715,12 +978,12 @@ namespace FruitDefense.App
             completed(SceneLoadResult.Succeeded());
         }
 
-        private bool BindLobbyPresenter()
+        private bool BindLobbyHubPresenter()
         {
-            var presenter = FindFirstObjectByType<LobbyPresenter>();
+            var presenter = FindFirstObjectByType<LobbyHubPresenter>();
             if (presenter == null)
             {
-                _blockingError = LobbyPresenterMissing;
+                _blockingError = LobbyHubPresenterMissing;
                 return false;
             }
             presenter.Initialize(this, runtimeUiTheme);
@@ -873,9 +1136,11 @@ namespace FruitDefense.App
             _profileSaveRoutineActive = true;
             while (_profileSavePending)
             {
+                while (_hubCommandRoutineActive) yield return null;
                 _profileSavePending = false;
                 var selectedAtSave = _selectedLevelId;
-                var profileToSave = PlayerProfileCodec.Clone(_profile);
+                var profileToSave = PlayerProfileCodec.Clone(_profile,
+                    _outgameCatalog);
                 profileToSave.lastSelectedLevelId = selectedAtSave;
 
                 ProfileSaveResult saveResult = null;
@@ -883,6 +1148,8 @@ namespace FruitDefense.App
                 if (saveResult != null && saveResult.Status == ProfileSaveStatus.Success)
                 {
                     _profile = saveResult.Profile;
+                    ReplaceProgressionService(_profile);
+                    TryRefreshSelectedGrowthPreview(out _);
                     if (!string.Equals(_selectedLevelId, selectedAtSave, StringComparison.Ordinal))
                     {
                         _profile.lastSelectedLevelId = _selectedLevelId;
@@ -901,6 +1168,13 @@ namespace FruitDefense.App
         private bool Fail(string code, out ShellFlowError error)
         {
             error = new ShellFlowError(code);
+            ReportRecoverableError(error);
+            return false;
+        }
+
+        private bool Fail(string code, string detail, out ShellFlowError error)
+        {
+            error = new ShellFlowError(code, detail);
             ReportRecoverableError(error);
             return false;
         }
@@ -945,9 +1219,9 @@ namespace FruitDefense.App
             var title = new Rect(contentX, modal.y + 16f * scale,
                 contentWidth, 34f * scale);
             var status = new Rect(contentX, modal.y + 56f * scale,
-                contentWidth, 45f * scale);
+                contentWidth, 60f * scale);
             var retryAction = hasRetryAction
-                ? new Rect(contentX, modal.y + 105f * scale,
+                ? new Rect(contentX, modal.y + 124f * scale,
                     contentWidth, 52f * scale)
                 : default;
             var recoverableStatus = new Rect(
@@ -981,10 +1255,17 @@ namespace FruitDefense.App
                     RuntimeUiCopyId.BootstrapContentUnavailable).Text;
             }
 
+            if (HasErrorCode(rawError, ProfileSchemaUnsupported)
+                || HasErrorCode(rawError, ProfileResetFailed))
+            {
+                return RuntimeUiCopyCatalog.Get(
+                    RuntimeUiCopyId.BootstrapProfileUnsupported).Text;
+            }
+
             if (HasErrorCode(rawError, SceneUnavailable)
                 || HasErrorCode(rawError, SceneLoadFailed)
                 || HasErrorCode(rawError, BattleHostMissing)
-                || HasErrorCode(rawError, LobbyPresenterMissing)
+                || HasErrorCode(rawError, LobbyHubPresenterMissing)
                 || HasErrorCode(rawError, SettlementPresenterMissing))
             {
                 return RuntimeUiCopyCatalog.Get(
@@ -1010,10 +1291,12 @@ namespace FruitDefense.App
             RefreshBootstrapFeedback(unscaledTime);
 
             var hasBlockingError = !string.IsNullOrEmpty(_blockingError);
-            var hasRetryAction = hasBlockingError
+            var hasProfileRecovery = hasBlockingError && ProfileRecoveryRequired;
+            var hasPlatformRetry = hasBlockingError
                 && _bootstrap != null
                 && _bootstrap.IsInitialized
                 && !_bootstrap.InitializationResult.Success;
+            var hasRetryAction = hasProfileRecovery || hasPlatformRetry;
             var layout = CreateBootstrapPresentationLayout(
                 Screen.width, Screen.height, RuntimeSafeAreaResolver.ResolveCurrent(),
                 hasRetryAction);
@@ -1038,8 +1321,9 @@ namespace FruitDefense.App
                 return;
             }
 
-            var presentationState = hasBlockingError
-                ? RuntimeUiInteractionState.Error
+            var presentationState = _profileRecoveryRoutineActive
+                ? RuntimeUiInteractionState.Loading
+                : hasBlockingError ? RuntimeUiInteractionState.Error
                 : RuntimeUiInteractionState.Loading;
             RuntimeUiGui.DrawScreenBackground(_runtimeUiDrawContext, layout.Screen);
             RuntimeUiGui.DrawSafeArea(_runtimeUiDrawContext, layout.SafeArea);
@@ -1074,13 +1358,18 @@ namespace FruitDefense.App
                 }
                 var retryPressed = IsPointerPress(layout.RetryAction)
                     || _retryPressPulse.IsActive(unscaledTime);
-                var retryState = retryPressed
+                var retryState = _profileRecoveryRoutineActive
+                    ? RuntimeUiInteractionState.Loading
+                    : retryPressed
                     ? RuntimeUiInteractionState.Pressed
                     : retryHovered || _retryFocusPulse.IsActive(unscaledTime)
                         ? RuntimeUiInteractionState.HoveredOrFocused
                         : RuntimeUiInteractionState.Normal;
-                var retryCopy = RuntimeUiCopyCatalog.Get(
-                    RuntimeUiCopyId.BootstrapRetry);
+                var retryCopy = RuntimeUiCopyCatalog.Get(hasProfileRecovery
+                    ? _profileRecoveryRoutineActive
+                        ? RuntimeUiCopyId.BootstrapProfileResetting
+                        : RuntimeUiCopyId.BootstrapProfileReset
+                    : RuntimeUiCopyId.BootstrapRetry);
                 if (!RuntimeUiGui.DrawAction(_runtimeUiDrawContext,
                     layout.RetryAction,
                     retryCopy.Text,
@@ -1093,10 +1382,15 @@ namespace FruitDefense.App
 
                 _retryPressPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
                     runtimeUiTheme.Feedback.UnscaledPressSeconds);
-                if (_bootstrap.TryRetryInitialization())
+                if (hasProfileRecovery)
+                {
+                    TryResetUnsupportedProfile(out _);
+                }
+                else if (_bootstrap.TryRetryInitialization())
                 {
                     _blockingError = string.Empty;
-                    _bootstrapTransitionPulse = RuntimeUiFeedbackPulse.Begin(unscaledTime,
+                    _bootstrapTransitionPulse = RuntimeUiFeedbackPulse.Begin(
+                        unscaledTime,
                         runtimeUiTheme.Feedback.UnscaledTransitionSeconds);
                     BeginStartup();
                 }

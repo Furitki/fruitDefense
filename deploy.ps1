@@ -10,7 +10,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectDir = $PSScriptRoot
 $webBuild = Join-Path $projectDir 'Builds\WebGL'
+$acceptanceBuild = Join-Path $projectDir 'Builds\WebGL-Acceptance'
 $visualAcceptance = Join-Path $projectDir 'scripts\accept-webgl-portrait.ps1'
+$hostAcceptance = Join-Path $projectDir 'scripts\accept-webgl-host.ps1'
 $archive = Join-Path $env:TEMP 'fruitDefense-unity-webgl-deploy.tar.gz'
 $staging = Join-Path $env:TEMP 'fruitDefense-unity-webgl-deploy'
 $transitionId = "$(Get-Date -Format 'yyyyMMdd-HHmmss')-$([Guid]::NewGuid().ToString('N').Substring(0, 8))"
@@ -20,7 +22,7 @@ $transitionEvidencePath = Join-Path $projectDir 'Builds\Pipeline\deployment-tran
 $seedOutput = Join-Path $transitionRoot 'seed'
 $candidateOutput = Join-Path $transitionRoot 'candidate'
 $seedManifestPath = Join-Path $seedOutput 'cache-seed.json'
-$candidateManifestPath = Join-Path $candidateOutput 'acceptance.json'
+$candidateManifestPath = Join-Path $candidateOutput 'release-delivery.json'
 $publicUrl = "http://${Server}:3000/"
 Remove-Item -LiteralPath $transitionEvidencePath -Force -ErrorAction SilentlyContinue
 $target = "$User@$Server"
@@ -76,12 +78,29 @@ if (-not (Test-Path -LiteralPath $visualAcceptance)) {
 }
 
 Write-Host 'Running local portrait visual acceptance...'
-& $visualAcceptance -ServeLocal -BuildRoot $webBuild
+& $visualAcceptance -ServeLocal -BuildRoot $acceptanceBuild
+Write-Host 'Running local release delivery acceptance...'
+& $visualAcceptance `
+  -ServeLocal `
+  -BuildRoot $webBuild `
+  -ReleaseDelivery `
+  -OutputDirectory (Join-Path $transitionRoot 'local-release')
+Write-Host 'Running local release host acceptance...'
+& $hostAcceptance `
+  -Mode release `
+  -BuildRoot $webBuild `
+  -OutputDirectory (Join-Path $transitionRoot 'local-host-release')
 
 $baselineReachable = $false
 try {
-  $baselineResponse = Invoke-WebRequest -UseBasicParsing -Method Head -Uri $publicUrl -TimeoutSec 10
-  $baselineReachable = $baselineResponse.StatusCode -eq 200
+  $baselineResponse = Invoke-WebRequest -UseBasicParsing -Uri $publicUrl -TimeoutSec 10
+  $baselineProfileMarker =
+    '<meta name="fruit-defense-build-profile" content="release">'
+  $baselineReachable = $baselineResponse.StatusCode -eq 200 -and
+    [string]$baselineResponse.Content -cmatch [regex]::Escape($baselineProfileMarker)
+  if (-not $baselineReachable) {
+    Write-Warning 'The previous public artifact is not a verified release profile; transition evidence will start at the new release.'
+  }
 }
 catch {
   Write-Warning "No reachable previous WebGL release; transition will be recorded as first-release: $($_.Exception.Message)"
@@ -93,6 +112,7 @@ if ($baselineReachable) {
     -TimeoutSeconds 120 `
     -ProfilePath $transitionProfile `
     -OutputDirectory $seedOutput `
+    -ReleaseDelivery `
     -CacheSeedOnly
   if (-not (Test-Path -LiteralPath $seedManifestPath -PathType Leaf)) {
     throw "WebGL cache seed evidence was not created: $seedManifestPath"
@@ -175,13 +195,15 @@ bash '$RemoteDir/deploy/service.sh' status
       -TimeoutSeconds 120 `
       -ProfilePath $transitionProfile `
       -CacheSeedManifestPath $seedManifestPath `
-      -OutputDirectory $candidateOutput
+      -OutputDirectory $candidateOutput `
+      -ReleaseDelivery
   }
   else {
     & $visualAcceptance `
       -Url $publicUrl `
       -TimeoutSeconds 120 `
-      -OutputDirectory $candidateOutput
+      -OutputDirectory $candidateOutput `
+      -ReleaseDelivery
   }
   if (-not (Test-Path -LiteralPath $candidateManifestPath -PathType Leaf)) {
     throw "Deployed WebGL acceptance evidence was not created: $candidateManifestPath"

@@ -1,0 +1,212 @@
+{
+    "header": {
+        "schemaVersion": 1,
+        "catalogId": "catalog.outgame.orchard",
+        "contentVersion": "1.0.0",
+        "minCodeVersion": "0.1.0"
+    },
+    "items": [
+        {
+            "id": "item.growth.morning-dew",
+            "presentationId": "presentation.outgame.item.morning-dew",
+            "displayName": "晨露",
+            "description": "果园活动产出的成长素材，可用于装备强化与培育。",
+            "maximumQuantity": 999
+        }
+    ],
+    "activities": [
+        {
+            "id": "activity.orchard.starter-supplies",
+            "presentationId": "presentation.outgame.activity.starter-supplies",
+            "displayName": "果园启程礼",
+            "description": "领取一次起步物资，获得成长装备与可完成首轮强化的素材。",
+            "bundledAvailable": true,
+            "receiptId": "receipt.activity.orchard.starter-supplies",
+            "rewards": [
+                {
+                    "operationId": "reward.growth-equipment",
+                    "itemId": "",
+                    "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+                    "quantity": 1,
+                    "initialRank": 0
+                },
+                {
+                    "operationId": "reward.item",
+                    "itemId": "item.growth.morning-dew",
+                    "growthEquipmentId": "",
+                    "quantity": 6,
+                    "initialRank": 0
+                }
+            ]
+        }
+    ],
+    "growthEquipment": [
+        {
+            "id": "growth-equipment.sunleaf-emblem",
+            "presentationId": "presentation.outgame.equipment.sunleaf-emblem",
+            "displayName": "晨叶徽章",
+            "description": "出战前佩戴的进攻成长装备，提高守卫伤害。",
+            "slotId": "growth-slot.offense",
+            "ranks": [
+                {
+                    "rank": 0,
+                    "costs": [],
+                    "contributions": [
+                        {
+                            "domainId": "growth-domain.equipment",
+                            "attributeId": "attribute.damage",
+                            "operationId": "modifier.additive",
+                            "value": 0.029999999329447748
+                        }
+                    ]
+                },
+                {
+                    "rank": 1,
+                    "costs": [
+                        {
+                            "itemId": "item.growth.morning-dew",
+                            "quantity": 4
+                        }
+                    ],
+                    "contributions": [
+                        {
+                            "domainId": "growth-domain.equipment",
+                            "attributeId": "attribute.damage",
+                            "operationId": "modifier.additive",
+                            "value": 0.10000000149011612
+                        }
+                    ]
+                },
+                {
+                    "rank": 2,
+                    "costs": [
+                        {
+                            "itemId": "item.growth.morning-dew",
+                            "quantity": 8
+                        }
+                    ],
+                    "contributions": [
+                        {
+                            "domainId": "growth-domain.equipment",
+                            "attributeId": "attribute.damage",
+                            "operationId": "modifier.additive",
+                            "value": 0.18000000715255738
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "cultivationNodes": [
+        {
+            "id": "cultivation.vital-roots",
+            "presentationId": "presentation.outgame.cultivation.vital-roots",
+            "displayName": "壮根培育",
+            "description": "稳固根系，在允许该成长的玩法中提高阳光收益。",
+            "prerequisites": [],
+            "ranks": [
+                {
+                    "rank": 1,
+                    "costs": [
+                        {
+                            "itemId": "item.growth.morning-dew",
+                            "quantity": 6
+                        }
+                    ],
+                    "contributions": [
+                        {
+                            "domainId": "growth-domain.cultivation",
+                            "attributeId": "attribute.resource-gain",
+                            "operationId": "modifier.additive",
+                            "value": 0.07999999821186066
+                        }
+                    ]
+                },
+                {
+                    "rank": 2,
+                    "costs": [
+                        {
+                            "itemId": "item.growth.morning-dew",
+                            "quantity": 10
+                        }
+                    ],
+                    "contributions": [
+                        {
+                            "domainId": "growth-domain.cultivation",
+                            "attributeId": "attribute.resource-gain",
+                            "operationId": "modifier.additive",
+                            "value": 0.14000000059604646
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "growthPolicies": [
+        {
+            "id": "growth-policy.orchard-01",
+            "displayName": "教学果园成长规则",
+            "permittedDomainIds": [
+                "growth-domain.cultivation",
+                "growth-domain.equipment"
+            ],
+            "permittedAttributeIds": [
+                "attribute.damage",
+                "attribute.resource-gain"
+            ],
+            "permittedSourceIds": [],
+            "caps": [
+                {
+                    "attributeId": "attribute.damage",
+                    "minimumValue": 0.0,
+                    "maximumValue": 0.15000000596046449
+                },
+                {
+                    "attributeId": "attribute.resource-gain",
+                    "minimumValue": 0.0,
+                    "maximumValue": 0.10000000149011612
+                }
+            ]
+        },
+        {
+            "id": "growth-policy.orchard-02",
+            "displayName": "溪流果园成长规则",
+            "permittedDomainIds": [
+                "growth-domain.equipment"
+            ],
+            "permittedAttributeIds": [
+                "attribute.damage"
+            ],
+            "permittedSourceIds": [
+                "growth-equipment.sunleaf-emblem"
+            ],
+            "caps": [
+                {
+                    "attributeId": "attribute.damage",
+                    "minimumValue": 0.0,
+                    "maximumValue": 0.11999999731779099
+                }
+            ]
+        },
+        {
+            "id": "growth-policy.orchard-03",
+            "displayName": "暮色果园成长规则",
+            "permittedDomainIds": [
+                "growth-domain.cultivation"
+            ],
+            "permittedAttributeIds": [
+                "attribute.resource-gain"
+            ],
+            "permittedSourceIds": [
+                "cultivation.vital-roots"
+            ],
+            "caps": [
+                {
+                    "attributeId": "attribute.resource-gain",
+                    "minimumValue": 0.0,
+                    "maximumValue": 0.20000000298023225
+                }
+            ]
+        }
+    ]
+}

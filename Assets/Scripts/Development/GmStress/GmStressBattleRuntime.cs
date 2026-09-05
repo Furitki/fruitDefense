@@ -204,9 +204,9 @@ namespace FruitDefense.Development.GmStress
 
         public static CompiledBattleContentCatalog CreateContent()
         {
-            if (BundledGameContentLoader.TryLoad(out var manifest,
-                    out var content, out var validation))
-                return content;
+            if (BundledGameContentLoader.TryLoadBundle(out var bundle,
+                    out var validation))
+                return bundle.Battle;
             var issues = validation == null
                 ? "validation-unavailable"
                 : string.Join("\n", validation.Issues.Select(issue => issue.ToString()));

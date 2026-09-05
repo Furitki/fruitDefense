@@ -50,8 +50,9 @@ function Complete-AcceptanceWarmCache {
       $warmCanvasReady = $candidateReadiness.width -eq $Width -and $candidateReadiness.height -eq $Height -and
         [Math]::Abs([double]$candidateReadiness.cssWidth - $Width) -lt 0.51 -and
         [Math]::Abs([double]$candidateReadiness.cssHeight - $Height) -lt 0.51
+      $warmRuntimeReady = $ReleaseDelivery -or $candidateReadiness.acceptanceReady
       if ($newDocument -and $candidateReadiness.canvas -and
-          $candidateReadiness.loading -eq 'none' -and $candidateReadiness.acceptanceReady -and
+          $candidateReadiness.loading -eq 'none' -and $warmRuntimeReady -and
           $warmViewportReady -and $warmCanvasReady) {
         $warmReadiness = $candidateReadiness
         break
@@ -91,4 +92,36 @@ function Complete-AcceptanceWarmCache {
     delivery = $delivery
     releaseTransition = $releaseTransition
   }
+}
+
+function Invoke-ReleaseDeliveryMode {
+  if ([bool]$readiness.acceptanceReady -or [int]$readiness.appRoute -ne -1) {
+    throw 'Release delivery exposed acceptance-only browser state.'
+  }
+  $screenshot = Save-Screenshot -Name 'release-ready'
+  $manifest = [ordered]@{
+    schemaVersion = 1
+    evidenceType = 'webgl-release-delivery'
+    accepted = $true
+    capturedAtUtc = [DateTimeOffset]::UtcNow.ToString('o')
+    url = $Url
+    verifiedBuildProfile = $verifiedBuildProfile
+    browser = $browserEvidence
+    viewport = [ordered]@{ width = $Width; height = $Height }
+    readiness = $readiness
+    delivery = $delivery
+    screenshot = $screenshot
+    checks = [ordered]@{
+      unityLoaded = 'pass'
+      fixedPortraitCanvas = 'pass'
+      acceptanceBridgeAbsent = 'pass'
+      perAssetContentVersions = 'pass'
+      strongContentEtags = 'pass'
+      warmCacheTransfer = 'pass'
+    }
+  }
+  $manifestPath = Join-Path $outputDir 'release-delivery.json'
+  $manifest | ConvertTo-Json -Depth 14 |
+    Set-Content -LiteralPath $manifestPath -Encoding UTF8
+  Write-Host "FRUIT_DEFENSE_RELEASE_DELIVERY_OK manifest=$manifestPath"
 }

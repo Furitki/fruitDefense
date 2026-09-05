@@ -287,11 +287,13 @@ namespace FruitDefense.Editor
                 var request = new BattleLaunchRequest("terrain-failure-smoke",
                     resolved.Value.Identity.LevelId, 7319,
                     resolved.Value.BattleContent.Header.contentVersion,
-                    BattleSessionMode.Standard);
+                    BattleSessionMode.Standard,
+                    BattleGrowthTestFixture.ResolveBundled(catalog,
+                        resolved.Value.Identity.LevelId));
                 host.ConfigureBattlefieldTerrain(new[] { missingSquareGrass });
                 var initialization = host.Initialize(request, navigator,
                     new AcceptingResultSink(), ProjectSetup.RequireReleaseRuntimeUiTheme(),
-                    catalog);
+                    catalog, BundledOutgame());
                 Assert(initialization.Success && host.Status.IsInitialized,
                     "missing terrain presentation does not destroy non-terrain gameplay initialization");
                 Assert(!host.IsTerrainPresentationAvailable
@@ -570,6 +572,16 @@ namespace FruitDefense.Editor
         {
             return inner.xMin >= outer.xMin - .001f && inner.yMin >= outer.yMin - .001f
                 && inner.xMax <= outer.xMax + .001f && inner.yMax <= outer.yMax + .001f;
+        }
+
+        private static CompiledOutgameContentCatalog BundledOutgame()
+        {
+            Assert(BundledGameContentLoader.TryLoadBundle(out var bundle,
+                    out var validation),
+                "bundled outgame content loads: "
+                + (validation.Issues.Count == 0
+                    ? string.Empty : validation.Issues[0].ToString()));
+            return bundle.Outgame;
         }
 
         private static void Assert(bool condition, string message)

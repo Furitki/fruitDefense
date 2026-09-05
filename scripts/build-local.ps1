@@ -86,8 +86,28 @@ try {
         throw "WebGL payload determinism check failed: $details"
       }
 
+      $acceptanceOutput = Join-Path $projectRoot 'Builds\WebGL-Acceptance'
+      $acceptanceEntry = Join-Path $acceptanceOutput 'index.html'
+      $acceptanceLog = Join-Path $logsRoot 'pipeline-local-web-acceptance.log'
+      $acceptanceArgs = @(
+        '-batchmode', '-nographics', '-quit',
+        '-projectPath', $projectRoot,
+        '-buildTarget', 'WebGL',
+        '-executeMethod', 'FruitDefense.Editor.WebBuild.BuildAcceptance',
+        '-logFile', $acceptanceLog
+      )
+      $acceptanceStep = Invoke-FruitDefenseUnityBatch `
+        -UnityPath $UnityPath `
+        -Arguments $acceptanceArgs `
+        -LogPath $acceptanceLog `
+        -SuccessPattern 'FRUIT_DEFENSE_ACCEPTANCE_WEB_BUILD_OK' `
+        -StepName 'WebGL acceptance profile build'
+      $acceptancePayloads = Get-FruitDefenseWebPayloadEvidence `
+        -EntryPath $acceptanceEntry
+
       $targetEvidence += [pscustomobject]@{
         target = 'Web'
+        profile = 'release'
         outputPath = $webOutput
         primaryArtifact = $webEntry
         primarySha256 = Get-FruitDefenseFileHash -Path $webEntry
@@ -100,6 +120,16 @@ try {
         durationSeconds = [math]::Round(
           $firstWebStep.durationSeconds + $secondWebStep.durationSeconds,
           3)
+        acceptance = [pscustomobject]@{
+          profile = 'acceptance'
+          outputPath = $acceptanceOutput
+          primaryArtifact = $acceptanceEntry
+          primarySha256 = Get-FruitDefenseFileHash -Path $acceptanceEntry
+          sizeBytes = Get-FruitDefenseDirectorySize -Path $acceptanceOutput
+          payloads = $acceptancePayloads
+          logPath = $acceptanceStep.logPath
+          durationSeconds = $acceptanceStep.durationSeconds
+        }
       }
       continue
     }

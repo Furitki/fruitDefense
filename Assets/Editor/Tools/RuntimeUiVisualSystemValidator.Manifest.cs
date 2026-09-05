@@ -198,6 +198,7 @@ namespace FruitDefense.Editor
                 ownedSourcePaths, "source");
             ValidateProductionAncillaryFiles(report, artSet);
             ValidateMicroSilhouetteFamily(report, artSet);
+            ValidateHubNavigationSilhouetteFamily(report, artSet);
         }
 
         internal static RuntimeUiVisualValidationReport ValidatePanelFamilyMetadata(
@@ -441,6 +442,9 @@ namespace FruitDefense.Editor
             ValidateOwnedFile(report, source, row.sourceSha256, string.Empty, "source");
             ValidateOwnedFile(report, runtime, row.runtimeSha256, row.guid, "runtime");
             ValidateTintableActionGlyph(report, binding.Slot, row, source, runtime);
+            ValidateHubIconManifest(report, binding.Slot, row, source, manifestPath);
+            ValidateActivityRewardIllustrationManifest(
+                report, binding.Slot, row, source, manifestPath);
             var texturePath = RuntimeUiArtSetRegistry.Normalize(AssetDatabase.GetAssetPath(binding.Texture));
             var spritePath = RuntimeUiArtSetRegistry.Normalize(AssetDatabase.GetAssetPath(binding.Sprite));
             if (texturePath != runtime || spritePath != runtime)
@@ -667,7 +671,179 @@ namespace FruitDefense.Editor
             public string generated_sheet;
             public string generated_sheet_sha256;
             public int[] generated_crop;
+            public string fixed_master;
+            public string fixed_master_sha256;
+            public string historical_commit;
+            public string historical_path;
             public string deterministic_transform;
+            public int visible_safe_inset;
+            public int review_logical_size_min;
+            public int review_logical_size_max;
+            public string silhouette_contract;
+            public float silhouette_perimeter_ratio_max;
+            public float silhouette_iou_max;
+        }
+
+        private static bool IsHubNavigationIcon(RuntimeUiArtSlot slot)
+        {
+            return slot == RuntimeUiArtSlot.IconHubHome
+                || slot == RuntimeUiArtSlot.IconHubActivity
+                || slot == RuntimeUiArtSlot.IconHubGrowth;
+        }
+
+        private static void ValidateActivityRewardIllustrationManifest(
+            RuntimeUiVisualValidationReport report, RuntimeUiArtSlot slot,
+            ArtManifestBinding row, string source, string manifestPath)
+        {
+            if (slot != RuntimeUiArtSlot.IllustrationHubActivityReward) return;
+            const string generatedAsset =
+                "openspec/changes/restore-reference-home-activity-pages/evidence/"
+                + "imagegen/activity-reward-hero-raw.png";
+            const string generatedHash =
+                "7E5E30FA89F2C74F15D4BA9C8426989BCAF89999111F3F8FF64003953C5A95E5";
+            const string transform =
+                "connected-neutral-background-cleanup|transparent-padding|"
+                + "alpha-safe-resize|low-alpha-cleanup";
+            if (row.authoring_contract
+                    != "imagegen-single-illustration-master"
+                || row.imagegen_provider != "built-in-imagegen"
+                || row.imagegen_output
+                    != "exec-908aded2-9728-4448-9e7f-02661dea23cb.png"
+                || row.prompt_record
+                    != "Assets/UI/Art/Sources/sunny-orchard-painted/"
+                    + "prompt-record.json"
+                || row.generated_asset != generatedAsset
+                || row.generated_asset_sha256 != generatedHash
+                || row.deterministic_transform != transform)
+            {
+                report.Error("activity-reward.provenance", manifestPath,
+                    "Activity reward illustration does not retain its separate "
+                    + "ImageGen output, hash, prompt, and cleanup record.",
+                    "Restore the formal illustration provenance binding.");
+            }
+
+            var generatedPath = ToAbsolute(generatedAsset);
+            if (!File.Exists(generatedPath)
+                || !string.Equals(Sha256(generatedPath), generatedHash,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                report.Error("activity-reward.generated-source", generatedPath,
+                    "Activity reward ImageGen evidence is missing or hash-drifted.",
+                    "Restore the selected immutable ImageGen output.");
+            }
+
+            var sourceTexture = DecodePng(
+                report, source, "activity-reward.source.decode");
+            if (sourceTexture == null) return;
+            try
+            {
+                ValidateTransparentGeneratedAlphaContract(report, source,
+                    sourceTexture.GetPixels32(), "activity-reward.alpha-contract");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(sourceTexture);
+            }
+        }
+
+        private static void ValidateTransparentGeneratedAlphaContract(
+            RuntimeUiVisualValidationReport report, string assetPath,
+            Color32[] pixels, string errorCode)
+        {
+            var visible = 0;
+            var lowAlpha = 0;
+            var hiddenRgb = 0;
+            for (var index = 0; index < pixels.Length; index++)
+            {
+                var pixel = pixels[index];
+                if (pixel.a > 0) visible++;
+                if (pixel.a > 0 && pixel.a < 48) lowAlpha++;
+                if (pixel.a == 0 && (pixel.r != 0 || pixel.g != 0 || pixel.b != 0))
+                    hiddenRgb++;
+            }
+            if (visible == 0 || lowAlpha != 0 || hiddenRgb != 0)
+            {
+                report.Error(errorCode, assetPath,
+                    "Generated art visible=" + visible + ", lowAlpha=" + lowAlpha
+                    + ", hiddenRgb=" + hiddenRgb + ".",
+                    "Keep one visible icon, clear alpha<48 ringing, and store transparent pixels as RGBA zero.");
+            }
+        }
+
+        private static void ValidateHubIconManifest(
+            RuntimeUiVisualValidationReport report, RuntimeUiArtSlot slot,
+            ArtManifestBinding row, string source, string manifestPath)
+        {
+            if (!IsHubNavigationIcon(slot)) return;
+            string output;
+            string generatedAsset;
+            string generatedHash;
+            switch (slot)
+            {
+                case RuntimeUiArtSlot.IconHubHome:
+                    output = "exec-568a67c0-0394-40ac-86d1-aadfad4f62e4.png";
+                    generatedAsset = "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-home-reference-derived.png";
+                    generatedHash = "8A8A7D7245DD6CD96355EAC96437EC4E08DCE6214AB11E9CEF39AC46361990F6";
+                    break;
+                case RuntimeUiArtSlot.IconHubActivity:
+                    output = "exec-46dbc74e-49ff-4a76-a853-7c0b646225fa.png";
+                    generatedAsset = "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-activity-reference-derived-v3.png";
+                    generatedHash = "352483D4CAC6ECD5ED3A3D7027B6D890D0F43BE55854E2FCC5F0D3B945671A73";
+                    break;
+                case RuntimeUiArtSlot.IconHubGrowth:
+                    output = "exec-68d23152-a65e-4b57-9a35-10533143e573.png";
+                    generatedAsset = "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-growth-reference-derived-v2.png";
+                    generatedHash = "D0C8D105469C268A02E29C8ED09DF13B34E35AF43DF8699797DF841D9B5CEE60";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
+            }
+            var expectedTransform = slot == RuntimeUiArtSlot.IconHubActivity
+                ? "same-output-neutral-alpha|transparent-padding|alpha-safe-resize|low-alpha-cleanup"
+                : "connected-neutral-background-cleanup|transparent-padding|alpha-safe-resize|low-alpha-cleanup";
+            if (row.authoring_contract != "imagegen-single-icon-master"
+                || row.imagegen_provider != "built-in-imagegen"
+                || row.imagegen_output != output
+                || row.prompt_record
+                    != "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json"
+                || row.generated_asset != generatedAsset
+                || row.generated_asset_sha256 != generatedHash
+                || row.deterministic_transform != expectedTransform
+                || row.visible_safe_inset
+                    != RuntimeUiQualityProfile.CommonIconSafeInset
+                || row.review_logical_size_min
+                    != RuntimeUiQualityProfile.HubNavigationIconReviewSizeMinimum
+                || row.review_logical_size_max
+                    != RuntimeUiQualityProfile.HubNavigationIconReviewSizeMaximum
+                || row.silhouette_contract
+                    != "single-dominant-subject|calendar-binders-only|bounded-perimeter|distinct-family|stable-color"
+                || Mathf.Abs(row.silhouette_perimeter_ratio_max
+                    - RuntimeUiQualityProfile
+                        .HubNavigationIconSilhouettePerimeterRatioMaximum) > .0001f
+                || Mathf.Abs(row.silhouette_iou_max
+                    - RuntimeUiQualityProfile.HubNavigationIconSilhouetteIouMaximum)
+                    > .0001f)
+            {
+                report.Error("hub-icon.provenance", manifestPath,
+                    RuntimeUiArtSlots.SemanticId(slot)
+                    + " does not retain its separate ImageGen output/prompt/transform and actual-size silhouette contract.",
+                    "Restore the formal one-icon-per-output manifest binding and the 24/33-point readability gate.");
+            }
+            else
+                ValidateOwnedFile(report, row.generated_asset,
+                    row.generated_asset_sha256, string.Empty, "generated-asset");
+
+            var sourceTexture = DecodePng(report, source, "hub-icon.source.decode");
+            if (sourceTexture == null) return;
+            try
+            {
+                ValidateTransparentGeneratedAlphaContract(report, source,
+                    sourceTexture.GetPixels32(), "hub-icon.alpha-contract");
+            }
+            finally
+            {
+                Object.DestroyImmediate(sourceTexture);
+            }
         }
 
         [Serializable]

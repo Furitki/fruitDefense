@@ -45,7 +45,7 @@ namespace FruitDefense.Content
             issues.Add(new ContentValidationIssue(code, category, itemId, field, message));
         }
 
-        internal void Append(ContentValidationResult other)
+        public void Append(ContentValidationResult other)
         {
             if (other == null) return;
             foreach (var issue in other.issues) issues.Add(issue);

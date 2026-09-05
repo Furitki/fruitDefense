@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "outgame-growth-loop-final-acceptance",
+  "accepted": false,
+  "source": {
+    "revision": "REQUIRED",
+    "workingTreeState": "REQUIRED"
+  },
+  "builds": {
+    "ordinaryRelease": {
+      "profile": "release",
+      "manifestPath": "REQUIRED",
+      "artifactIdentity": "REQUIRED",
+      "sourceRevision": "REQUIRED",
+      "acceptanceSurfaceIsolation": "not-run"
+    },
+    "dedicatedAcceptance": {
+      "profile": "acceptance",
+      "manifestPath": "REQUIRED",
+      "artifactIdentity": "REQUIRED",
+      "sourceRevision": "REQUIRED"
+    },
+    "sameRevision": false
+  },
+  "contentIdentity": {
+    "manifestId": "REQUIRED",
+    "manifestVersion": "REQUIRED",
+    "manifestFingerprint": "REQUIRED",
+    "outgameContentId": "REQUIRED",
+    "outgameContentVersion": "REQUIRED",
+    "outgameContentFingerprint": "REQUIRED",
+    "battleContentId": "REQUIRED",
+    "battleContentVersion": "REQUIRED",
+    "battleContentFingerprint": "REQUIRED"
+  },
+  "progressionIdentity": {
+    "profileId": "REQUIRED",
+    "freshRevision": -1,
+    "rewardRevision": -1,
+    "growthRevision": -1,
+    "levelSelectionRevision": -1,
+    "receiptCount": -1,
+    "itemGrants": [],
+    "itemDebits": [],
+    "ownedGrowthEquipment": [],
+    "loadout": [],
+    "cultivation": []
+  },
+  "growthIdentity": {
+    "selectedLevelId": "REQUIRED",
+    "growthPolicyId": "REQUIRED",
+    "growthFingerprint": "REQUIRED",
+    "appliedSourceCount": -1,
+    "suppressedSourceCount": -1,
+    "battleFingerprintMatchesPreview": false,
+    "settlementFingerprintMatchesBattle": false,
+    "retryFingerprintMatchesCompletedSession": false,
+    "retryHasFreshSessionAndSeed": false
+  },
+  "namedStates": [],
+  "realLoopTimeline": [],
+  "portraitMatrix": [],
+  "desktopHost": {
+    "url": "REQUIRED",
+    "browser": {},
+    "canvas": {},
+    "inputTelemetry": {},
+    "manifestPath": "REQUIRED",
+    "outcome": "not-run"
+  },
+  "quality": {
+    "geometry": "not-run",
+    "minimum44PointTargets": "not-run",
+    "finiteCopy": "not-run",
+    "safeAreaContainment": "not-run",
+    "sharedChromeStability": "not-run",
+    "contrast": "not-run",
+    "typography": "not-run",
+    "artSetAndImporter": "not-run",
+    "manualVisualReview": {
+      "reviewer": "REQUIRED",
+      "completedAtUtc": "REQUIRED",
+      "outcome": "not-reviewed",
+      "notes": "REQUIRED"
+    }
+  },
+  "cleanup": {
+    "oneShotRunners": "not-run",
+    "markerFiles": "not-run",
+    "disposableDebugCommands": "not-run",
+    "nonSuiteAcceptanceHelpers": "not-run"
+  },
+  "checks": {
+    "focusedTests": "not-run",
+    "aggregateEditorSmoke": "not-run",
+    "strictOpenSpec": "not-run",
+    "ordinaryReleaseIsolation": "not-run",
+    "completePortraitMatrix": "not-run",
+    "realRewardToBattleLoop": "not-run",
+    "realDesktopHost": "not-run"
+  }
+}

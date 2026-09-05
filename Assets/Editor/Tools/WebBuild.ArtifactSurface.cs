@@ -57,6 +57,12 @@ namespace FruitDefense.Editor
             "CombatFeedbackAcceptanceTelemetryJson",
             "ConfigureCombatFeedbackAcceptance",
             "PublishCombatFeedbackAcceptanceTelemetry",
+            "AcceptanceHubStateCatalog",
+            "OutgameHubAcceptanceBridge",
+            "ConfigureAcceptanceHubState",
+            "TryConfigureNamedHubState",
+            "HubAcceptanceTelemetryJson",
+            "AcceptanceHubIdentityTelemetry",
             "safeTop",
             "safeBottom",
         };
@@ -65,6 +71,7 @@ namespace FruitDefense.Editor
             "_FruitDefenseAcceptanceReady(",
             "_FruitDefensePublishSettlementOutcomeReveal(",
             "_FruitDefensePublishCombatFeedbackTelemetry(",
+            "_FruitDefensePublishHubTelemetry(",
             "window.fruitDefenseAcceptanceRouteReady=true",
             "window.fruitDefenseAppRoute=route",
             "window.fruitDefenseAcceptanceIdentity=identity",
@@ -75,12 +82,15 @@ namespace FruitDefense.Editor
             "window.fruitDefenseSettlementOutcomeRevealHistory=",
             "window.fruitDefenseCombatFeedbackTelemetry=JSON.parse(json)",
             "window.fruitDefenseCombatFeedbackTelemetryHistory=",
+            "window.fruitDefenseHubTelemetry=telemetry",
+            "window.fruitDefenseHubTelemetryHistory=",
         };
         private static readonly string[] AcceptanceWasmRequiredTokens =
         {
             "FruitDefenseAcceptanceReady",
             "FruitDefensePublishSettlementOutcomeReveal",
             "FruitDefensePublishCombatFeedbackTelemetry",
+            "FruitDefensePublishHubTelemetry",
         };
         private static readonly string[] ForbiddenAcceptanceSurfaceTokens =
         {
@@ -96,9 +106,12 @@ namespace FruitDefense.Editor
             "fruitDefenseSettlementOutcomeRevealHistory",
             "fruitDefenseCombatFeedbackTelemetry",
             "fruitDefenseCombatFeedbackTelemetryHistory",
+            "fruitDefenseHubTelemetry",
+            "fruitDefenseHubTelemetryHistory",
             "FruitDefenseAcceptanceReady",
             "FruitDefensePublishSettlementOutcomeReveal",
             "FruitDefensePublishCombatFeedbackTelemetry",
+            "FruitDefensePublishHubTelemetry",
             "ConfigureAcceptanceState",
             "ConfigureAcceptanceFlow",
             "AcceptanceLaunchQuery",
@@ -115,6 +128,13 @@ namespace FruitDefense.Editor
             "CombatFeedbackAcceptanceTelemetryJson",
             "ConfigureCombatFeedbackAcceptance",
             "PublishCombatFeedbackAcceptanceTelemetry",
+            "AcceptanceHubStateCatalog",
+            "IAcceptanceHubPort",
+            "OutgameHubAcceptanceBridge",
+            "ConfigureAcceptanceHubState",
+            "TryConfigureNamedHubState",
+            "HubAcceptanceTelemetryJson",
+            "AcceptanceHubIdentityTelemetry",
         };
         private static readonly string[] ArtifactScanTokens =
             ForbiddenAcceptanceSurfaceTokens

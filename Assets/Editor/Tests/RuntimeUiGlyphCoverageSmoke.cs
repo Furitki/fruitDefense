@@ -27,9 +27,9 @@ namespace FruitDefense.Editor
         private static readonly FontSpec[] FontSpecs =
         {
             new FontSpec(ProjectSetup.ReadingRuntimeUiFontPath, 400,
-                "80f96e594ca0803386487d2d27ca45184e7807baeb6b02731b9a2f03ead12cdd"),
+                "1fd3333be8e3496dbced280b559ea6f708abcfdb4e6f880bffaf67c8f9b9320d"),
             new FontSpec(ProjectSetup.DisplayRuntimeUiFontPath, 400,
-                "6b5f7097630a9236b33b38c365cecbd8bc64062acadf9eac907c09d10f0d2ee9"),
+                "dad00a57a3d3bb474abe7abf4a33e5c4e08742a900a00f7770ac37d723c1d7f3"),
         };
 
         public static void Run()
@@ -39,6 +39,8 @@ namespace FruitDefense.Editor
             for (var index = 0; index < glyphs.Length; index++)
                 Assert(unique.Add(glyphs[index]),
                     "authoritative glyph probe contains duplicate '" + glyphs[index] + "'");
+
+            ValidatePlayerVisibleGlyphClosure(glyphs);
 
             foreach (var spec in FontSpecs)
                 ValidateStaticFont(spec);
@@ -66,6 +68,38 @@ namespace FruitDefense.Editor
 
             Debug.Log("RUNTIME_UI_GLYPH_COVERAGE_OK glyphs=" + glyphs.Length
                 + " unique=" + unique.Count + " fonts=" + FontSpecs.Length);
+        }
+
+        private static void ValidatePlayerVisibleGlyphClosure(string glyphs)
+        {
+            foreach (RuntimeUiCopyId id in Enum.GetValues(typeof(RuntimeUiCopyId)))
+            {
+                var copy = RuntimeUiCopyCatalog.Get(id);
+                ValidateCopyGlyphClosure(glyphs, id + " finite copy", copy.Text);
+            }
+
+            var bundledCopy = RuntimeUiChineseGlyphCoverage
+                .ReadBundledOutgameVisibleCopy();
+            Assert(bundledCopy.Count > 0,
+                "bundled outgame content contributes player-visible copy");
+            for (var index = 0; index < bundledCopy.Count; index++)
+                ValidateCopyGlyphClosure(glyphs,
+                    "bundled outgame copy #" + index, bundledCopy[index]);
+        }
+
+        private static void ValidateCopyGlyphClosure(string glyphs,
+            string owner, string copy)
+        {
+            for (var index = 0; index < copy.Length; index++)
+            {
+                var glyph = copy[index];
+                if (char.IsControl(glyph)
+                    || (glyph >= 32 && glyph <= 126))
+                    continue;
+                Assert(glyphs.IndexOf(glyph) >= 0,
+                    owner + " contains glyph '" + glyph
+                    + "' outside the packaged release authority");
+            }
         }
 
         private static void ValidateStaticFont(FontSpec spec)

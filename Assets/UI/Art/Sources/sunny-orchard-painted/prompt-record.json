@@ -8,7 +8,24 @@
     "openspec/changes/reset-sky-paper-orchard-ui/evidence/reference/sky-paper-orchard-reference.png",
     "openspec/changes/reset-sky-paper-orchard-ui/evidence/imagegen/reference-faithful-battle-chrome-styleboard.png"
   ],
-  "generationBoundary": "This record owns retained built-in ImageGen materials, icons, ornaments, background, and illustrations. Six action surfaces and eight high-exposure structural surfaces now enter export as individual hash-locked ImageGen masters; no generated component sheet remains in the active path. Explicitly supplied or user-approved reference visual parameters are P0 authority, while generic visual guidance fills only unspecified parameters. Export crops transparent content and applies alpha-safe scaling. The action-green RGB plate uses its separately hash-locked approved geometry alpha; the line-free nursery and metric RGB plates each use one deterministic connected-neutral-background cleanup derived from their own pixels so legacy or foreign geometry cannot expose hidden gray/orange edge RGB. A master cannot be shared across incompatible edge/anatomy contracts. Every transparent ImageGen nine-slice clears low-alpha ringing after source and runtime resize and stores zero RGB under zero alpha. It never paints or recolors visible generated material pixels, and contrast failures are corrected through the separate text/icon content token before any resource change. Remaining non-selected nine-slice surfaces retain their owned deterministic source path.",
+  "generationBoundary": "This record owns retained built-in ImageGen materials, icons, ornaments, background, and illustrations. The primary action enters export from the exact user-selected historical PNG as a separate hash-locked fixed raster master; both Hub navigation surfaces remain separate hash-locked ImageGen raster masters. Explicitly supplied or user-approved reference visual parameters are P0 authority, while generic visual guidance fills only unspecified parameters. Export may verify hashes, copy fixed bytes, derive alpha from the same output, crop, pad, alpha-safe resize, clean fringe, measure, encode, and update metadata. It must never paint visible pixels, draw primitive geometry, reconstruct contours, recolor, synthesize shadows, or regenerate through a script. Every transparent resource stores zero RGB under zero alpha. Contrast failures are corrected through the separate text/icon content token before any resource change.",
+  "fixedPrimaryActionMaster": {
+    "semanticId": "action.primary",
+    "path": "openspec/changes/restore-reference-home-activity-pages/evidence/fixed-master/action-primary-original-square.png",
+    "sha256": "967A2AE0DFECC4196D99CF4DA236774B11C1D716EF6AB48EC18C2E665D6C7801",
+    "historicalCommit": "d423af201917d6a66a1328f55533d2119203db28",
+    "historicalPath": "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-primary.png",
+    "sourceSize": "256x256",
+    "sliceBorder": 32,
+    "faceTargetRgb": "A0C73D",
+    "deterministicTransform": "Hash validation, byte-for-byte master copy, alpha-safe runtime resize, low-alpha cleanup, measurement, metadata update, and PNG encoding. No pixel is drawn, recolored, composited into a new silhouette, or borrowed from another asset."
+  },
+  "supersededPrimaryActionCapsule": {
+    "path": "openspec/changes/restore-reference-home-activity-pages/evidence/imagegen/action-primary-light-lime-restored.png",
+    "sha256": "9657E3DA4B63149D3EF749FB7B512E31106F0B228D7905C3B5E14645B7DFEFA6",
+    "generatedOutput": "exec-6ab3de84-3644-49f7-b762-9ebbdb88388f.png",
+    "status": "review-rejected-and-not-an-export-dependency"
+  },
   "supersededActionMaterialSheet": {
     "semanticIds": [
       "action.compact-control",
@@ -69,10 +86,10 @@
   },
   "directMaterialAssets": {
     "root": "openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen",
-    "deterministicTransform": "Hash validation, content-alpha crop, transparent padding, alpha-safe resize, low-alpha cleanup after source/runtime resize, zero-RGB transparent pixels, and PNG export. The green action RGB output alone receives its separately hash-locked approved geometry alpha. The line-free nursery and metric RGB plates derive alpha only from their own edge-connected neutral background; no generated color or material pixel is repainted or recolored.",
+    "deterministicTransform": "Hash validation, content-alpha crop or same-output edge-connected neutral-background cleanup, transparent padding, alpha-safe resize, low-alpha cleanup after source/runtime resize, zero-RGB transparent pixels, and PNG export. The line-free nursery and metric RGB plates derive alpha only from their own edge-connected neutral background; secondary retains the separately hash-locked approved action geometry alpha. No generated color or material pixel is repainted or recolored.",
     "groups": [
       {
-        "semanticIds": ["action.primary", "action.secondary"],
+        "semanticIds": ["action.secondary"],
         "file": "action-green.png",
         "generatedOutput": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
         "sourceSha256": "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA",
@@ -99,10 +116,17 @@
         "alphaContract": "The generated RGB plate uses one deterministic center-connected neutral-background cleanup from its own pixels, followed by alpha-safe resize and low-alpha fringe clearing after every resize. It never shares panel-paper.png or any foreign geometry mask."
       },
       {
-        "semanticIds": ["surface.card-selectable", "slot.tool"],
+        "semanticIds": ["slot.tool"],
         "file": "card-lime.png",
         "generatedOutput": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
         "sourceSha256": "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"
+      },
+      {
+        "semanticIds": ["surface.card-selectable"],
+        "file": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/surface-card-selectable-reference-derived.png",
+        "generatedOutput": "exec-02d2c426-49fd-4b02-97d3-8b88c5970a6d.png",
+        "sourceSha256": "25BD5ADE71CBF98F38B16B48222011C5CE1FC5CE74AD8BA88390CD96D94C3784",
+        "alphaContract": "The selected output's edge-connected neutral checkerboard is removed from that same output before complete-component crop, fixed-canvas fitting, and low-alpha cleanup; no border or surface pixel is drawn by script."
       },
       {
         "semanticIds": ["slot.nursery"],
@@ -250,6 +274,18 @@
   ],
   "revisionRejectedAttempts": [
     {
+      "generatedOutput": "exec-3851a274-a04c-432e-9d09-09ba08e74685.png",
+      "reason": "User rejected the detailed farmhouse navigation icon because its windows, chimney, plants, and painterly micro-texture collapse at the real 24-33 logical-pixel size."
+    },
+    {
+      "generatedOutput": "exec-ccb2e7ca-1cc5-47a8-8772-9782c2ccea0c.png",
+      "reason": "User rejected the event pennant, apple, and reward-seal cluster because it does not match the reference calendar-star silhouette and is unreadable at navigation size."
+    },
+    {
+      "generatedOutput": "exec-ea42e3bf-d723-461d-9491-5572868873a0.png",
+      "reason": "User rejected the textured sprout and detailed soil mound because it contains too many small silhouette breaks for the bottom navigation."
+    },
+    {
       "generatedOutput": "exec-6516d18a-0189-4734-a758-8fc5a9211291.png",
       "reason": "User rejected the integrated v4 action master because it made the runtime green visibly too dark; the accepted light-green output now uses the approved geometry-alpha mask."
     },
@@ -266,19 +302,94 @@
       "reason": "Secondary and danger passed; primary minimum content pixels remained slightly below 4.5:1 before the final ImageGen correction."
     }
   ],
+  "hubNavigationIcons": {
+    "generationContract": "Each semantic icon is one separate reference-derived built-in ImageGen extraction from the approved Home navigation crop. The reference controls the low-detail silhouette language and no cross-semantic reuse enters production.",
+    "backgroundContract": "Home and Growth retain genuine native transparency. The final Activity output contains only a neutral baked checkerboard outside and in its star cutout; production derives alpha from neutral pixels in that same output. No foreign mask, recolor, outline redraw, or shape reconstruction is used.",
+    "deterministicTransform": "Hash validation, native-alpha preservation for Home/Growth or same-output neutral alpha extraction for Activity, alpha-safe resize into a 96x96 runtime canvas, maximum 70px occupied extent, 12px safe inset, and post-resize low-alpha cleanup.",
+    "reviewSizeLogicalPixels": "24-33",
+    "assets": [
+      {
+        "semanticId": "icon.hub-home",
+        "generatedOutput": "exec-568a67c0-0394-40ac-86d1-aadfad4f62e4.png",
+        "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-home-reference-derived.png",
+        "sourceSha256": "8A8A7D7245DD6CD96355EAC96437EC4E08DCE6214AB11E9CEF39AC46361990F6",
+        "normalizedMasterSha256": "9A027B05F1A342E43111C93798392DA7A929F61BABF66A34CC0CA2CF8C50CABC",
+        "prompt": "Use case: stylized-concept\nAsset type: production game UI bottom-navigation icon, transparent square PNG\nInput images: Image 1 is the authoritative reference for the bottom-navigation silhouette language and proportions; Image 2 is the rejected current icon and must be completely simplified, not preserved.\nStyle/medium: minimal hand-cut paper icon, nearly flat fills, crisp thick rounded soil-brown outline (#6B3F12), warm cream (#F9EFDA), restrained orchard accent color only where specified.\nComposition/framing: exactly one centered dominant subject, front view, strong negative space, generous transparent padding, readable at 24–33 logical pixels.\nConstraints: true transparent background; one connected visual subject; maximum two fill colors plus the soil-brown outline; simple large shapes; consistent line weight; no text, no numbers, no badge, no container, no scene, no detached props, no decorative leaves or fruit, no gradients, no gloss, no shadow, no painterly brush texture, no speckles, no watermark.\nPrimary request: replace the rejected detailed farmhouse illustration with a single simple Home silhouette matching Image 1: one triangular roof, one square house body, and one large centered doorway negative space.\nColor palette: soil-brown main silhouette with one warm-cream doorway cutout.\nAvoid: chimney, windows, roof logs, plants, flowers, stones, fence, extra leaves, secondary objects, interior detail."
+      },
+      {
+        "semanticId": "icon.hub-activity",
+        "generatedOutput": "exec-46dbc74e-49ff-4a76-a853-7c0b646225fa.png",
+        "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-activity-reference-derived-v3.png",
+        "sourceSha256": "352483D4CAC6ECD5ED3A3D7027B6D890D0F43BE55854E2FCC5F0D3B945671A73",
+        "normalizedMasterSha256": "1D9478D34118D1367211639D5338CEF14593BC0800D0ABD9F86216C7D8F5BA61",
+        "prompt": "Edit the attached navigation icon itself. Keep its compact rounded calendar identity and warm soil-brown color, but simplify the alpha silhouette much further for perfect readability at 24 px. Make ONE connected solid brown calendar body: fill the entire calendar interior brown instead of using an outline-only frame. Carve exactly one very large centered five-point STAR-SHAPED TRANSPARENT CUTOUT through the solid body. Merge both top binder tabs physically into the calendar body with thick short necks, so there are no detached components. Use completely flat near-solid color with only imperceptible tonal variation, no internal frame opening, no separate star object, no outline-only construction, no thin gaps, no small holes, no texture, no shadow, no glow, no black stroke, no text, no label, no panel, no checkerboard. Genuinely transparent background outside and in the single star cutout. One isolated centered icon, generous transparent padding, crisp hard alpha, very low perimeter complexity."
+      },
+      {
+        "semanticId": "icon.hub-growth",
+        "generatedOutput": "exec-68d23152-a65e-4b57-9a35-10533143e573.png",
+        "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/icon-hub-growth-reference-derived-v2.png",
+        "sourceSha256": "D0C8D105469C268A02E29C8ED09DF13B34E35AF43DF8699797DF841D9B5CEE60",
+        "normalizedMasterSha256": "4332D7843CC927F0EEC8365123662C320CB364D3E0DB65B10117147E0CCBF7FC",
+        "prompt": "Create one production-ready bottom-navigation icon derived from the attached reference sprout/growth symbol. Output a single isolated icon only, centered on a genuinely transparent background. Preserve the reference identity: one short upright stem growing from one compact oval soil base, with exactly two broad leaves, one left and one right. Make it radically simpler and more readable at 24 px: broad SOLID warm soil-brown filled silhouette, thicker stem, fuller leaves, compact proportions, minimal perimeter, no internal veins, no thin outline-only shapes, no micro-detail, no texture, no shadow, no glow, no text, no label, no panel, no black stroke, no checkerboard. Keep all pieces visibly connected as one dominant silhouette. Square canvas, generous transparent padding, crisp hard alpha edge. Match the gentle handmade rounded character of the reference while minimizing complexity."
+      }
+    ]
+  },
+  "hubNavigationSurfaces": {
+    "generationContract": "The navigation base and selected tab are two separate hash-locked built-in ImageGen raster masters. Their output pixels own all visible paper material, contour, rim, highlight, and shadow. The exporter contains no visible-pixel drawing API and may only derive alpha from each output, pad, resize, clean fringe, verify, and encode.",
+    "backgroundContract": "Both selected outputs contain genuine native transparency. Production preserves native alpha and uses no foreign mask, procedural shape, vector rail, recolor, or synthesized shadow.",
+    "deterministicTransform": "Hash validation, native-alpha preservation, alpha<48 cleanup, significant-content crop, transparent padding, alpha-safe resize to the fixed 2x master, zero RGB under full transparency, and PNG export.",
+    "assets": [
+      {
+        "semanticId": "surface.hub-navigation-base",
+        "generatedOutput": "exec-f1577221-c06a-41ab-83e4-5e7201f27f9c.png",
+        "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/surface-hub-navigation-base-reference-derived.png",
+        "sourceSha256": "FC9112C52E5B9B3C27439B89330BCE6E32FB8808D0C2B0F423B219AD561AE9BA",
+        "prompt": "Use case: precise-object-edit. Asset type: production Unity game UI bottom-navigation base raster master. Image 1 is the edit target and owns the exact wide canvas, one-piece tray silhouette, shallow center-rise top contour, full-width proportions, and transparent exterior. Replace the crude flat fills and hard polygon-like rails with a refined single-piece warm-paper navigation tray material suitable for the Sunny Orchard portrait game. Use polished hand-painted 2D paper-craft with subtle fine paper fiber, gentle tonal variation, smooth antialiased curves, and restrained craftsmanship. Keep exactly one continuous full-width tray, front-on orthographic, with a broad quiet center and no internal item cards or divisions. Use a warm ivory paper face, thin warm soil-brown edge, restrained pale-gold paper thickness, soft short lower shadow, and delicate warm-white upper highlight. Preserve the overall silhouette and layout intent. Text-free, icon-free, and genuinely transparent outside. Avoid flat primitive rectangles, jagged polygon edges, thick dark rails, rough cardboard, dirty grunge, wood, plastic gloss, heavy bevel, stitched seams, three separate buttons, internal dividers, ornaments, checkerboard depiction, opaque background, mockup, and watermark."
+      },
+      {
+        "semanticId": "surface.hub-navigation-selected-tab",
+        "generatedOutput": "exec-669b662f-2ed8-4bf0-955b-d1930a73a662.png",
+        "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/surface-hub-navigation-selected-tab-reference-derived.png",
+        "sourceSha256": "CC24CFCE88CA9C5BCDA5D73C14638A049183378193198A500328987498AFF3D5",
+        "prompt": "Use case: precise-object-edit. Asset type: production Unity game UI selected bottom-navigation tab raster master. Image 1 is the edit target and owns the exact single rising-tab silhouette, upright proportions, merge-at-bottom geometry, and transparent exterior. Image 2 is the authoritative material reference for the refined warm-paper navigation base. Replace the crude flat yellow fill and hard rails with one polished sun-yellow paper tab that belongs to the same refined paper-craft family and visually merges into the base. Preserve the overall rising-tab silhouette, rounded top corners, broad quiet interior, and open merged bottom edge. Use subtle fine paper fiber, low-contrast tonal variation, thin warm soil-brown edge, pale cream/gold thickness, delicate upper highlight, and a soft short shadow matching the base. Text-free, icon-free, and genuinely transparent outside. Avoid a flat primitive trapezoid, jagged polygon edges, thick dark rails, orange plastic, coarse cardboard, dirty grunge, wood, heavy bevel, stitched seams, badges, labels, ornaments, checkerboard depiction, opaque background, mockup, and watermark."
+      }
+    ]
+  },
+  "hubActivityRewardIllustration": {
+    "semanticId": "illustration.hub-activity-reward",
+    "generationContract": "One project-bound built-in ImageGen output generated from the approved Activity concept as a style and subject-composition reference only; no full-page UI pixels, text, labels, panels, buttons, counters, tabs, or navigation enter production.",
+    "generatedOutput": "exec-908aded2-9728-4448-9e7f-02661dea23cb.png",
+    "generatedAsset": "openspec/changes/restore-reference-home-activity-pages/evidence/imagegen/activity-reward-hero-raw.png",
+    "sourceSha256": "7E5E30FA89F2C74F15D4BA9C8426989BCAF89999111F3F8FF64003953C5A95E5",
+    "backgroundContract": "The built-in output returned an opaque bright-neutral checkerboard despite a transparent-background request. Production alpha is derived once from the same output by edge-connected neutral-background cleanup; no foreign mask, recolor, outline redraw, shadow synthesis, or second generation is used.",
+    "deterministicTransform": "Hash validation, edge-connected neutral-background cleanup from the selected output itself, significant-content crop, transparent padding, alpha-safe resize, and alpha<48 cleanup.",
+    "prompt": "Use case: stylized-concept. Asset type: production game UI reward hero illustration for a portrait mobile Activity page. Image 1 is a style and subject-composition reference only; do not reproduce the full page or include UI frames, words, labels, buttons, counters, tabs, or navigation. Create one standalone cheerful orchard starter-supply reward cluster: an open rustic wooden crate with red apples and restrained golden fruit tokens, a small tied burlap pouch, two compact wooden barrels, and green leaves. Polished hand-painted 2D sunny-orchard paper-craft/storybook style, centered 3:2 landscape silhouette, warm morning light, generous transparent padding. Exactly one cluster; no text, letters, numbers, logos, watermark, badges, UI panels, borders, buttons, stars, currency symbols, opaque backdrop, photo realism, glossy 3D, neon, sci-fi, pixel art, emoji, hard black outline, or cropped edges."
+  },
   "alphaProcess": {
-    "method": "Active direct materials use reviewed native alpha plus content cropping. The green action RGB plate uses its separately hash-locked approved geometry alpha. The line-free nursery and metric RGB plates each use their own center-connected neutral-background cleanup. Every transparent ImageGen nine-slice clears low-alpha fringe after source and runtime resize and stores zero RGB under zero alpha. Retained legacy art keeps its previously recorded native-alpha or deterministic cleanup contract.",
+    "method": "The fixed primary action uses its historical native RGBA bytes directly. The three current Hub icons and both current Hub navigation surfaces preserve native alpha; the reference-derived selected card, line-free nursery, metric plate, and Activity hero use only their own same-output connected-neutral-background cleanup. The three Home level illustrations are complete text-free component crops from the hash-locked approved Home reference. Every transparent resource clears low-alpha fringe after runtime resize and stores zero RGB under zero alpha. No script draws or reconstructs visible production UI raster pixels.",
     "nativeRgba": [
       "ornament.result-banner",
       "icon.control-pause",
       "icon.control-continue",
       "icon.control-speed",
-      "icon.control-close"
+      "icon.control-close",
+      "icon.hub-home",
+      "icon.hub-growth",
+      "surface.hub-navigation-base",
+      "surface.hub-navigation-selected-tab"
     ],
+        "connectedNeutralBackground": [
+      "surface.metric",
+      "slot.nursery",
+      "illustration.hub-activity-reward",
+            "surface.card-selectable"
+        ],
+        "sameOutputNeutralAlpha": [
+            "icon.hub-activity"
+        ],
     "chromaKeyed": [
       "action.compact-control",
       "action.compact-control-active",
-      "action.primary",
       "action.secondary",
       "action.quiet",
       "action.danger",
@@ -286,7 +397,6 @@
       "surface.panel-standard",
       "surface.panel-raised",
       "surface.metric",
-      "surface.card-selectable",
       "slot.tool",
       "slot.nursery",
       "surface.gameplay-stage"

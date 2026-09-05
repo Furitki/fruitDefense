@@ -125,6 +125,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-source=sunny-orchard-painted;slot=action.primary;source-scale=2;authored=imagegen-direct-master;transform=geometry-alpha-mask;asset=openspec/changes/polish-sky-paper-ui-eight-point/evidence/direct-replacement-v2/imagegen/action-green.png;asset-sha256=99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA;container=primary;target-rgb=A0C73D;content-reference=56341F;minimum-contrast=4.5
+  userData: ui-art-source=sunny-orchard-painted;slot=action.primary;source-scale=2;authored=user-approved-fixed-raster-master;transform=byte-for-byte-master-copy|alpha-safe-resize|low-alpha-cleanup;asset=openspec/changes/restore-reference-home-activity-pages/evidence/fixed-master/action-primary-original-square.png;asset-sha256=967A2AE0DFECC4196D99CF4DA236774B11C1D716EF6AB48EC18C2E665D6C7801;historical-commit=d423af201917d6a66a1328f55533d2119203db28;historical-path=Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-primary.png;container=primary;target-rgb=A0C73D;content-reference=0C0804;minimum-contrast=4.5
   assetBundleName:
   assetBundleVariant:

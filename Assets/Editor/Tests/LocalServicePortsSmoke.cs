@@ -30,7 +30,8 @@ namespace FruitDefense.Editor
         private static void ValidateFileStore(string root)
         {
             var backend = new EditorFileProfileBackend(root);
-            IPlayerProfileStore store = new LocalPlayerProfileStore(backend);
+            IPlayerProfileStore store = new LocalPlayerProfileStore(backend,
+                LoadOutgameContent());
 
             var callbackCount = 0;
             ProfileLoadResult initial = null;
@@ -76,7 +77,7 @@ namespace FruitDefense.Editor
             ProfileLoadResult unsupportedResult = null;
             Drain(store.Load(result => unsupportedResult = result));
             Assert(unsupportedResult.Status == ProfileLoadStatus.UnsupportedSchema && !unsupportedResult.HasProfile,
-                "unsupported schema is not interpreted as V1 or overwritten");
+                "unsupported schema is not interpreted or overwritten");
         }
 
         private static void ValidateWebStore()
@@ -84,7 +85,8 @@ namespace FruitDefense.Editor
             var backend = new WebPlayerPrefsProfileBackend("fruit-defense.profile.smoke." + Guid.NewGuid().ToString("N"));
             try
             {
-                IPlayerProfileStore store = new LocalPlayerProfileStore(backend);
+                IPlayerProfileStore store = new LocalPlayerProfileStore(backend,
+                    LoadOutgameContent());
                 var callbackCount = 0;
                 ProfileLoadResult loaded = null;
                 Drain(store.Load(result =>
@@ -114,7 +116,7 @@ namespace FruitDefense.Editor
 
         private static void ValidateSubstitutionAndBundledConfig()
         {
-            IPlayerProfileStore substitute = new FakeProfileStore(PlayerProfileEnvelopeV1.CreateDefault());
+            IPlayerProfileStore substitute = new FakeProfileStore(PlayerProfile.CreateDefault());
             ProfileLoadResult substituted = null;
             Drain(substitute.Load(result => substituted = result));
             Assert(substituted.Status == ProfileLoadStatus.Success && substituted.HasProfile,
@@ -141,6 +143,16 @@ namespace FruitDefense.Editor
             while (operation.MoveNext()) { }
         }
 
+        private static CompiledOutgameContentCatalog LoadOutgameContent()
+        {
+            if (BundledGameContentLoader.TryLoadBundle(out var bundle,
+                    out var validation))
+                return bundle.Outgame;
+            throw new InvalidOperationException(
+                "Bundled outgame content is invalid: " + string.Join(" | ",
+                    validation.Issues));
+        }
+
         private static void Assert(bool condition, string message)
         {
             if (!condition) throw new InvalidOperationException("Local service smoke failed: " + message);
@@ -148,9 +160,9 @@ namespace FruitDefense.Editor
 
         private sealed class FakeProfileStore : IPlayerProfileStore
         {
-            private readonly PlayerProfileEnvelopeV1 _profile;
+            private readonly PlayerProfile _profile;
 
-            public FakeProfileStore(PlayerProfileEnvelopeV1 profile)
+            public FakeProfileStore(PlayerProfile profile)
             {
                 _profile = profile;
             }
@@ -161,10 +173,17 @@ namespace FruitDefense.Editor
                 completed?.Invoke(new ProfileLoadResult(ProfileLoadStatus.Success, PlayerProfileCodec.Clone(_profile)));
             }
 
-            public IEnumerator Save(PlayerProfileEnvelopeV1 profile, Action<ProfileSaveResult> completed)
+            public IEnumerator Save(PlayerProfile profile, Action<ProfileSaveResult> completed)
             {
                 yield return null;
                 completed?.Invoke(new ProfileSaveResult(ProfileSaveStatus.Success, PlayerProfileCodec.Clone(profile)));
+            }
+
+            public IEnumerator Reset(Action<ProfileLoadResult> completed)
+            {
+                yield return null;
+                completed?.Invoke(new ProfileLoadResult(ProfileLoadStatus.ResetCreated,
+                    PlayerProfile.CreateDefault()));
             }
         }
     }

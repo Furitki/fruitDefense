@@ -225,13 +225,17 @@ namespace FruitDefense
             IAppNavigator navigator,
             IBattleResultSink resultSink,
             RuntimeUiTheme runtimeUiTheme,
-            CompiledLevelCatalog levelCatalog)
+            CompiledLevelCatalog levelCatalog,
+            CompiledOutgameContentCatalog outgameCatalog)
         {
             if (!TryValidateInitialization(
                     request, navigator, resultSink, runtimeUiTheme, out var failure)) return failure;
             if (levelCatalog == null)
                 return BattleSessionInitializationResult.Failed(
                     BattleSessionInitializationResult.LevelCatalogRequired);
+            if (outgameCatalog == null)
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.OutgameCatalogRequired);
             var resolution = levelCatalog.Resolve(request.LevelId);
             if (!resolution.Succeeded || resolution.Value == null)
                 return BattleSessionInitializationResult.Failed(
@@ -244,12 +248,19 @@ namespace FruitDefense
                 return BattleSessionInitializationResult.Failed(
                     BattleSessionInitializationResult.ContentVersionMismatch);
             }
+            var growthValidation = BattleGrowthSnapshotValidator.ValidateForLaunch(
+                request.GrowthSnapshot, resolvedLevel, outgameCatalog);
+            if (!growthValidation.Succeeded)
+                return BattleSessionInitializationResult.Failed(
+                    BattleSessionInitializationResult.GrowthSnapshotMismatch + ":"
+                    + growthValidation.Code);
 
             GameSimulation simulation;
             try
             {
                 simulation = new GameSimulation(
-                    levelCatalog, request.LevelId, request.Seed);
+                    levelCatalog, request.LevelId, request.Seed,
+                    request.GrowthSnapshot);
             }
             catch (Exception exception)
             {

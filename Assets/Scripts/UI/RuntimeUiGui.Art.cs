@@ -107,6 +107,22 @@ namespace FruitDefense.UI
                 RuntimeUiInteractionState.Normal);
         }
 
+        public static void DrawHubLevelIllustration(RuntimeUiDrawContext context,
+            Rect rect, RuntimeUiLobbyThumbnail thumbnail)
+        {
+            DrawAspectFillSlotArt(Require(context), rect,
+                LobbyThumbnailSlot(thumbnail), RuntimeUiInteractionState.Normal,
+                1f);
+        }
+
+        public static void DrawHubActivityRewardIllustration(
+            RuntimeUiDrawContext context, Rect rect)
+        {
+            DrawAspectFitSlotArt(Require(context), rect,
+                RuntimeUiArtSlot.IllustrationHubActivityReward,
+                RuntimeUiInteractionState.Normal);
+        }
+
         public static void DrawStandardPanel(RuntimeUiDrawContext context, Rect rect,
             RuntimeUiInteractionState state = RuntimeUiInteractionState.Normal)
         {

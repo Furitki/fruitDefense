@@ -3,12 +3,12 @@
 The release UI packages two static, project-specific role fonts:
 
 - `Assets/Resources/Fonts/NotoSansSC-Reading-400.ttf`: Regular 400 for body,
-  metric, and supplemental roles; 153,644 bytes; SHA-256
-  `80f96e594ca0803386487d2d27ca45184e7807baeb6b02731b9a2f03ead12cdd`.
+  metric, and supplemental roles; 172,484 bytes; SHA-256
+  `1fd3333be8e3496dbced280b559ea6f708abcfdb4e6f880bffaf67c8f9b9320d`.
 - `Assets/Resources/Fonts/FruitDefense-OrchardDisplay-400.ttf`: a renamed,
   static subset derived from Smiley Sans Oblique 2.0.1 for display,
-  screen-title, section-title, and control-label roles; 99,196 bytes; SHA-256
-  `6b5f7097630a9236b33b38c365cecbd8bc64062acadf9eac907c09d10f0d2ee9`.
+  screen-title, section-title, and control-label roles; 115,024 bytes; SHA-256
+  `dad00a57a3d3bb474abe7abf4a33e5c4e08742a900a00f7770ac37d723c1d7f3`.
 
 Both assets are truly static TTFs: the reading face's variable `wght` axis is
 pinned before subsetting, both omit `fvar`, and `OS/2.usWeightClass` is 400.
@@ -34,8 +34,9 @@ fallback is used.
 ## Deterministic rebuild
 
 Run `scripts/rebuild-ui-font.ps1`. It uses fontTools 4.63.0, verifies both pinned
-sources, reads the one finite glyph authority from
-`RuntimeUiChineseGlyphCoverage.RequiredGlyphs`, adds printable ASCII, creates a
+sources, resolves the one finite glyph authority from fixed runtime copy plus the
+player-visible names and descriptions in the canonical bundled outgame JSON,
+adds printable ASCII, creates a
 static reading instance, subsets both faces, and renames the display family with
-timestamp recalculation disabled. Two consecutive rebuilds on 2026-08-26
+timestamp recalculation disabled. Two consecutive rebuilds on 2026-09-01
 produced the identical hashes recorded above.

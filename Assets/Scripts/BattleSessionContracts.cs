@@ -22,13 +22,17 @@ namespace FruitDefense.Battle
     public sealed class BattleLaunchRequest
     {
         public BattleLaunchRequest(string sessionId, string levelId, int seed,
-            string contentVersion, BattleSessionMode mode)
+            string contentVersion, BattleSessionMode mode,
+            BattleGrowthSnapshot growthSnapshot)
         {
             SessionId = sessionId;
             LevelId = levelId;
             Seed = seed;
             ContentVersion = contentVersion;
             Mode = mode;
+            GrowthSnapshot = growthSnapshot == null
+                ? null
+                : growthSnapshot.DeepCopy();
         }
 
         public string SessionId { get; }
@@ -36,6 +40,21 @@ namespace FruitDefense.Battle
         public int Seed { get; }
         public string ContentVersion { get; }
         public BattleSessionMode Mode { get; }
+        public BattleGrowthSnapshot GrowthSnapshot { get; }
+
+        public static BattleLaunchRequest CreateRetry(BattleLaunchRequest completed,
+            string sessionId, int seed)
+        {
+            if (completed == null) throw new ArgumentNullException(nameof(completed));
+            if (completed.Mode != BattleSessionMode.Standard
+                || completed.GrowthSnapshot == null)
+                throw new ArgumentException(
+                    "Only a complete Standard launch request can be retried.",
+                    nameof(completed));
+            return new BattleLaunchRequest(sessionId, completed.LevelId, seed,
+                completed.ContentVersion, BattleSessionMode.Standard,
+                completed.GrowthSnapshot);
+        }
 
         public bool TryValidate(out string errorCode)
         {
@@ -60,6 +79,20 @@ namespace FruitDefense.Battle
             {
                 errorCode = BattleSessionInitializationResult.InvalidSessionMode;
                 return false;
+            }
+            if (Mode == BattleSessionMode.Standard)
+            {
+                var growthValidation =
+                    BattleGrowthSnapshotValidator.ValidateCanonical(GrowthSnapshot);
+                if (!growthValidation.Succeeded)
+                {
+                    errorCode = growthValidation.Code
+                        == BattleGrowthValidationCode.SnapshotRequired
+                            ? BattleSessionInitializationResult.GrowthSnapshotRequired
+                            : BattleSessionInitializationResult.GrowthSnapshotInvalid
+                                + ":" + growthValidation.Code;
+                    return false;
+                }
             }
 
             errorCode = string.Empty;
@@ -150,11 +183,15 @@ namespace FruitDefense.Battle
         public const string InvalidLevelId = "battle-level-id-required";
         public const string InvalidContentVersion = "battle-content-version-required";
         public const string InvalidSessionMode = "battle-session-mode-invalid";
+        public const string GrowthSnapshotRequired = "battle-growth-snapshot-required";
+        public const string GrowthSnapshotInvalid = "battle-growth-snapshot-invalid";
+        public const string GrowthSnapshotMismatch = "battle-growth-snapshot-mismatch";
         public const string NavigatorRequired = "battle-navigator-required";
         public const string ResultSinkRequired = "battle-result-sink-required";
         public const string RuntimeUiThemeRequired = "battle-runtime-ui-theme-required";
         public const string RuntimeUiThemeInvalid = "battle-runtime-ui-theme-invalid";
         public const string LevelCatalogRequired = "battle-level-catalog-required";
+        public const string OutgameCatalogRequired = "battle-outgame-catalog-required";
         public const string LevelResolutionFailed = "battle-level-resolution-failed";
         public const string ContentVersionMismatch = "battle-content-version-mismatch";
         public const string SimulationConstructionFailed = "battle-simulation-construction-failed";
@@ -230,7 +267,8 @@ namespace FruitDefense.Battle
             IAppNavigator navigator,
             IBattleResultSink resultSink,
             RuntimeUiTheme runtimeUiTheme,
-            CompiledLevelCatalog levelCatalog);
+            CompiledLevelCatalog levelCatalog,
+            CompiledOutgameContentCatalog outgameCatalog);
 
         void HandlePlatformVisibility(PlatformVisibility visibility);
         bool RestartCurrentSession(out string errorCode);

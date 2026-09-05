@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: GameContentManifest
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Content.GameContentManifestAsset
   manifest:
-    schemaVersion: 1
+    schemaVersion: 2
     manifestId: manifest.fruit-defense.bundled
     battleCatalogResourcePath: Content/battle-content-bundled.v3
     battleCatalogId: catalog.bundled.orchard
     battleContentVersion: 3.0.0
+    outgameCatalogResourcePath: Content/outgame-content-bundled.v1
+    outgameCatalogId: catalog.outgame.orchard
+    outgameContentVersion: 1.0.0
+    outgameContentFingerprint: 27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7
     levelCatalogId: catalog.levels.orchard
     presentationCatalogId: presentation.orchard.bundled
     defaultNurseryProfileId: nursery.orchard.baseline

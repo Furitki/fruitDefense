@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Text;
+using FruitDefense.Content;
 using UnityEngine;
 
 namespace FruitDefense.App.Services
@@ -25,6 +26,7 @@ namespace FruitDefense.App.Services
         ProfileStorageReadResult ReadPrimary();
         ProfileStorageReadResult ReadBackup();
         bool TryWriteAtomically(string json, out string error);
+        bool TryReset(out string error);
         void QuarantinePrimary();
     }
 
@@ -34,7 +36,8 @@ namespace FruitDefense.App.Services
         public string PrimaryPath { get; }
         public string BackupPath { get; }
 
-        public EditorFileProfileBackend(string directory, string fileName = "profile-v1.json")
+        public EditorFileProfileBackend(string directory,
+            string fileName = "player-profile.json")
         {
             _directory = Path.GetFullPath(directory ?? throw new ArgumentNullException(nameof(directory)));
             PrimaryPath = Path.Combine(_directory, fileName);
@@ -88,6 +91,23 @@ namespace FruitDefense.App.Services
             File.Move(PrimaryPath, quarantine);
         }
 
+        public bool TryReset(out string error)
+        {
+            error = string.Empty;
+            try
+            {
+                DeleteIfPresent(PrimaryPath);
+                DeleteIfPresent(BackupPath);
+                DeleteIfPresent(PrimaryPath + ".staging");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                error = exception.Message;
+                return false;
+            }
+        }
+
         private static ProfileStorageReadResult Read(string path)
         {
             if (!File.Exists(path)) return new ProfileStorageReadResult(false, string.Empty);
@@ -100,6 +120,11 @@ namespace FruitDefense.App.Services
                 return new ProfileStorageReadResult(false, string.Empty, exception.Message);
             }
         }
+
+        private static void DeleteIfPresent(string path)
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
     }
 
     public sealed class WebPlayerPrefsProfileBackend : IProfileStorageBackend
@@ -111,7 +136,8 @@ namespace FruitDefense.App.Services
         private readonly string _stagingKey;
         private readonly string _corruptKey;
 
-        public WebPlayerPrefsProfileBackend(string keyPrefix = "fruit-defense.profile.v1")
+        public WebPlayerPrefsProfileBackend(
+            string keyPrefix = "fruit-defense.player-profile")
         {
             if (string.IsNullOrWhiteSpace(keyPrefix)) throw new ArgumentException("Key prefix is required.", nameof(keyPrefix));
             _primaryKey = keyPrefix + ".primary";
@@ -161,11 +187,26 @@ namespace FruitDefense.App.Services
 
         public void ClearForTesting()
         {
-            PlayerPrefs.DeleteKey(_primaryKey);
-            PlayerPrefs.DeleteKey(_backupKey);
-            PlayerPrefs.DeleteKey(_stagingKey);
-            PlayerPrefs.DeleteKey(_corruptKey);
-            PlayerPrefs.Save();
+            TryReset(out _);
+        }
+
+        public bool TryReset(out string error)
+        {
+            error = string.Empty;
+            try
+            {
+                PlayerPrefs.DeleteKey(_primaryKey);
+                PlayerPrefs.DeleteKey(_backupKey);
+                PlayerPrefs.DeleteKey(_stagingKey);
+                PlayerPrefs.DeleteKey(_corruptKey);
+                PlayerPrefs.Save();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                error = exception.Message;
+                return false;
+            }
         }
 
         private static ProfileStorageReadResult Read(string key)
@@ -186,10 +227,13 @@ namespace FruitDefense.App.Services
     public sealed class LocalPlayerProfileStore : IPlayerProfileStore
     {
         private readonly IProfileStorageBackend _backend;
+        private readonly CompiledOutgameContentCatalog _content;
 
-        public LocalPlayerProfileStore(IProfileStorageBackend backend)
+        public LocalPlayerProfileStore(IProfileStorageBackend backend,
+            CompiledOutgameContentCatalog content)
         {
             _backend = backend ?? throw new ArgumentNullException(nameof(backend));
+            _content = content ?? throw new ArgumentNullException(nameof(content));
         }
 
         public IEnumerator Load(Action<ProfileLoadResult> completed)
@@ -206,7 +250,8 @@ namespace FruitDefense.App.Services
 
             if (primary.Found)
             {
-                var validation = PlayerProfileCodec.TryDeserialize(primary.Json, out var profile);
+                var validation = PlayerProfileCodec.TryDeserialize(primary.Json,
+                    _content, out var profile);
                 if (validation.Success)
                 {
                     gate.Complete(new ProfileLoadResult(ProfileLoadStatus.Success, profile));
@@ -214,7 +259,9 @@ namespace FruitDefense.App.Services
                 }
                 if (validation.Code == ProfileValidationCode.UnsupportedSchema)
                 {
-                    gate.Complete(new ProfileLoadResult(ProfileLoadStatus.UnsupportedSchema, null, validation.Message));
+                    gate.Complete(new ProfileLoadResult(
+                        ProfileLoadStatus.UnsupportedSchema, null,
+                        validation.Message, validation));
                     yield break;
                 }
                 try { _backend.QuarantinePrimary(); }
@@ -233,7 +280,8 @@ namespace FruitDefense.App.Services
             }
             if (backup.Found)
             {
-                var validation = PlayerProfileCodec.TryDeserialize(backup.Json, out var profile);
+                var validation = PlayerProfileCodec.TryDeserialize(backup.Json,
+                    _content, out var profile);
                 if (validation.Success)
                 {
                     if (!_backend.TryWriteAtomically(backup.Json, out var recoveryError))
@@ -246,13 +294,15 @@ namespace FruitDefense.App.Services
                 }
                 if (validation.Code == ProfileValidationCode.UnsupportedSchema)
                 {
-                    gate.Complete(new ProfileLoadResult(ProfileLoadStatus.UnsupportedSchema, null, validation.Message));
+                    gate.Complete(new ProfileLoadResult(
+                        ProfileLoadStatus.UnsupportedSchema, null,
+                        validation.Message, validation));
                     yield break;
                 }
             }
 
-            var created = PlayerProfileEnvelopeV1.CreateDefault();
-            var json = PlayerProfileCodec.Serialize(created);
+            var created = PlayerProfile.CreateDefault();
+            var json = PlayerProfileCodec.Serialize(created, _content);
             if (!_backend.TryWriteAtomically(json, out var error))
             {
                 gate.Complete(new ProfileLoadResult(ProfileLoadStatus.StorageError, created, error));
@@ -261,22 +311,24 @@ namespace FruitDefense.App.Services
             gate.Complete(new ProfileLoadResult(ProfileLoadStatus.DefaultCreated, created));
         }
 
-        public IEnumerator Save(PlayerProfileEnvelopeV1 profile, Action<ProfileSaveResult> completed)
+        public IEnumerator Save(PlayerProfile profile,
+            Action<ProfileSaveResult> completed)
         {
             var gate = new CompletionGate<ProfileSaveResult>(completed);
             yield return null;
 
-            var validation = PlayerProfileCodec.Validate(profile);
+            var validation = PlayerProfileCodec.Validate(profile, _content);
             if (!validation.Success)
             {
-                gate.Complete(new ProfileSaveResult(ProfileSaveStatus.InvalidProfile, null, validation.Message));
+                gate.Complete(new ProfileSaveResult(ProfileSaveStatus.InvalidProfile,
+                    null, validation.Message, validation));
                 yield break;
             }
 
-            var persisted = PlayerProfileCodec.Clone(profile);
+            var persisted = PlayerProfileCodec.Clone(profile, _content);
             persisted.revision++;
             persisted.updatedAtUtc = DateTimeOffset.UtcNow.ToString("o");
-            var json = PlayerProfileCodec.Serialize(persisted);
+            var json = PlayerProfileCodec.Serialize(persisted, _content);
             if (!_backend.TryWriteAtomically(json, out var error))
             {
                 gate.Complete(new ProfileSaveResult(ProfileSaveStatus.StorageError, null, error));
@@ -284,16 +336,43 @@ namespace FruitDefense.App.Services
             }
             gate.Complete(new ProfileSaveResult(ProfileSaveStatus.Success, persisted));
         }
+
+        public IEnumerator Reset(Action<ProfileLoadResult> completed)
+        {
+            var gate = new CompletionGate<ProfileLoadResult>(completed);
+            yield return null;
+
+            if (!_backend.TryReset(out var resetError))
+            {
+                gate.Complete(new ProfileLoadResult(ProfileLoadStatus.StorageError,
+                    null, resetError));
+                yield break;
+            }
+
+            var created = PlayerProfile.CreateDefault();
+            var json = PlayerProfileCodec.Serialize(created, _content);
+            if (!_backend.TryWriteAtomically(json, out var writeError))
+            {
+                gate.Complete(new ProfileLoadResult(ProfileLoadStatus.StorageError,
+                    null, writeError));
+                yield break;
+            }
+            gate.Complete(new ProfileLoadResult(ProfileLoadStatus.ResetCreated,
+                created));
+        }
     }
 
     public static class LocalProfileStoreFactory
     {
-        public static IPlayerProfileStore CreateDefault()
+        public static IPlayerProfileStore CreateDefault(
+            CompiledOutgameContentCatalog content)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            return new LocalPlayerProfileStore(new WebPlayerPrefsProfileBackend());
+            return new LocalPlayerProfileStore(new WebPlayerPrefsProfileBackend(),
+                content);
 #else
-            return new LocalPlayerProfileStore(new EditorFileProfileBackend(Application.persistentDataPath));
+            return new LocalPlayerProfileStore(
+                new EditorFileProfileBackend(Application.persistentDataPath), content);
 #endif
         }
     }

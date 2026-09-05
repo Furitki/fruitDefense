@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 1936511177}
   - component: {fileID: 1936511176}
   m_Layer: 0
-  m_Name: LobbyPresenter
+  m_Name: LobbyHubPresenter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -147,7 +147,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 89d4ba0c5f174d299e5dfb5bd23cd34e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Shell.LobbyPresenter
+  m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.Shell.LobbyHubPresenter
 --- !u!4 &1936511177
 Transform:
   m_ObjectHideFlags: 0

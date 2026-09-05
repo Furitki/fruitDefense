@@ -47,25 +47,27 @@ namespace FruitDefense.Editor
             }
 
             ValidateApprovedColor(report, path, "colors.baseSurface", theme.Colors.BaseSurface,
-                new Color32(255, 249, 238, 255));
+                new Color32(249, 239, 218, 255));
             ValidateApprovedColor(report, path, "colors.edgeBackground", theme.Colors.EdgeBackground,
                 new Color32(115, 201, 244, 255));
             ValidateApprovedColor(report, path, "colors.raisedSurface", theme.Colors.RaisedSurface,
-                new Color32(255, 241, 210, 255));
+                new Color32(251, 232, 170, 255));
             ValidateApprovedColor(report, path, "colors.selectionAccent", theme.Colors.SelectionAccent,
-                new Color32(255, 197, 66, 255));
+                new Color32(251, 207, 82, 255));
             ValidateApprovedColor(report, path, "colors.success", theme.Colors.Success,
                 new Color32(84, 169, 40, 255));
             ValidateApprovedColor(report, path, "colors.disabled", theme.Colors.Disabled,
-                new Color32(167, 185, 155, 255));
+                new Color32(228, 220, 205, 255));
             ValidateApprovedColor(report, path, "colors.primaryText", theme.Colors.PrimaryText,
-                new Color32(86, 52, 31, 255));
+                new Color32(107, 63, 18, 255));
             ValidateApprovedColor(report, path, "colors.warning", theme.Colors.Warning,
                 new Color32(230, 154, 25, 255));
             ValidateApprovedColor(report, path, "colors.danger", theme.Colors.Danger,
                 new Color32(200, 77, 63, 255));
             ValidateApprovedColor(report, path, "colors.scrim", theme.Colors.Scrim,
                 new Color32(59, 36, 22, 255));
+            ValidateApprovedColor(report, path, "colors.outline", theme.Colors.Outline,
+                new Color32(75, 42, 19, 255));
             ValidateApprovedColor(report, path, "colors.secondaryText", theme.Colors.SecondaryText,
                 new Color32(111, 88, 70, 255));
             ValidateApprovedColor(report, path, "colors.inverseText", theme.Colors.InverseText,
@@ -97,22 +99,22 @@ namespace FruitDefense.Editor
 
             ValidateApprovedActionColors(report, path, "actionStyles.primary",
                 theme.ActionStyles.Primary, new Color32(160, 199, 61, 255),
-                new Color32(86, 52, 31, 255));
+                new Color32(12, 8, 4, 255));
             ValidateApprovedActionColors(report, path, "actionStyles.secondary",
-                theme.ActionStyles.Secondary, new Color32(160, 199, 61, 255),
-                new Color32(86, 52, 31, 255));
+                theme.ActionStyles.Secondary, new Color32(136, 175, 53, 255),
+                new Color32(75, 42, 19, 255));
             ValidateApprovedActionColors(report, path, "actionStyles.quiet",
-                theme.ActionStyles.Quiet, new Color32(255, 249, 238, 255),
-                new Color32(86, 52, 31, 255));
+                theme.ActionStyles.Quiet, new Color32(249, 239, 218, 255),
+                new Color32(107, 63, 18, 255));
             ValidateApprovedActionColors(report, path, "actionStyles.danger",
                 theme.ActionStyles.Danger, new Color32(168, 56, 49, 255),
-                new Color32(255, 249, 238, 255));
+                new Color32(249, 239, 218, 255));
             ValidateApprovedActionColors(report, path, "actionStyles.modeActive",
-                theme.ActionStyles.ModeActive, new Color32(255, 197, 66, 255),
-                new Color32(59, 36, 22, 255));
+                theme.ActionStyles.ModeActive, new Color32(251, 207, 82, 255),
+                new Color32(107, 63, 18, 255));
             ValidateApprovedActionColors(report, path, "actionStyles.disabled",
-                theme.ActionStyles.Disabled, new Color32(223, 227, 216, 255),
-                new Color32(86, 52, 31, 255));
+                theme.ActionStyles.Disabled, new Color32(228, 220, 205, 255),
+                new Color32(124, 116, 107, 255));
 
             ValidateContrast(report, path, "primaryText/baseSurface", theme.Colors.PrimaryText,
                 theme.Colors.BaseSurface, RuntimeUiQualityProfile.NormalTextContrast);
@@ -222,10 +224,15 @@ namespace FruitDefense.Editor
                     form, RuntimeUiActionBehavior.PersistentMode);
                 foreach (var state in interactionStates)
                 {
+                    var disabled = state == RuntimeUiInteractionState.Disabled;
                     ValidateResolvedActionStyle(report, theme, path, spec,
-                        state, false, RuntimeUiArtSlot.ActionCompactControl);
+                        state, false, disabled
+                            ? RuntimeUiArtSlot.ActionQuiet
+                            : RuntimeUiArtSlot.ActionCompactControl);
                     ValidateResolvedActionStyle(report, theme, path, spec,
-                        state, true, RuntimeUiArtSlot.ActionCompactControlActive);
+                        state, true, disabled
+                            ? RuntimeUiArtSlot.ActionQuiet
+                            : RuntimeUiArtSlot.ActionCompactControlActive);
                 }
             }
         }
@@ -282,7 +289,9 @@ namespace FruitDefense.Editor
                 "action-content/" + spec.Role + "/" + state
                 + "/modeActive=" + modeActive,
                 style.ContentColor, style.ContainerColor,
-                RuntimeUiQualityProfile.NormalTextContrast);
+                state == RuntimeUiInteractionState.Disabled
+                    ? RuntimeUiQualityProfile.LargeOrBoldTextContrast
+                    : RuntimeUiQualityProfile.NormalTextContrast);
         }
 
         private static RuntimeUiArtSlot ActionContainerSlot(RuntimeUiActionKind role)

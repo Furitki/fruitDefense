@@ -118,11 +118,14 @@ namespace FruitDefense.Content
             var levels = new[]
             {
                 new LevelDefinition(BundledLevelCatalogIds.Levels.Orchard01,
-                    maps[0].MapId, waveSets[0].WaveSetId, ruleSets[0].RuleSetId, themes[0].ThemeId),
+                    maps[0].MapId, waveSets[0].WaveSetId, ruleSets[0].RuleSetId,
+                    themes[0].ThemeId, OutgameContentIds.GrowthPolicies.Orchard01),
                 new LevelDefinition(BundledLevelCatalogIds.Levels.Orchard02,
-                    maps[1].MapId, waveSets[1].WaveSetId, ruleSets[1].RuleSetId, themes[1].ThemeId),
+                    maps[1].MapId, waveSets[1].WaveSetId, ruleSets[1].RuleSetId,
+                    themes[1].ThemeId, OutgameContentIds.GrowthPolicies.Orchard02),
                 new LevelDefinition(BundledLevelCatalogIds.Levels.Orchard03,
-                    maps[2].MapId, waveSets[2].WaveSetId, ruleSets[2].RuleSetId, themes[2].ThemeId),
+                    maps[2].MapId, waveSets[2].WaveSetId, ruleSets[2].RuleSetId,
+                    themes[2].ThemeId, OutgameContentIds.GrowthPolicies.Orchard03),
             };
             return new LevelCatalogSource(BundledLevelCatalogIds.Catalog,
                 BattleContentSchema.BundledCatalogId, BattleContentSchema.BundledContentVersion,
@@ -177,7 +180,8 @@ namespace FruitDefense.Content
                             .Select(issue => issue.ToString()).ToArray()));
                 maps.Add(new BattlefieldMapDefinition(compiledMap));
                 levels.Add(new LevelDefinition(entry.LevelId, entry.Map.MapId,
-                    template.WaveSetId, template.RuleSetId, template.ThemeId));
+                    template.WaveSetId, template.RuleSetId, template.ThemeId,
+                    template.GrowthPolicyId));
             }
 
             return new LevelCatalogSource(bundled.CatalogId, bundled.ContentCatalogId,
@@ -190,16 +194,15 @@ namespace FruitDefense.Content
             out LevelCatalogValidationResult levelValidation,
             out ContentValidationResult contentValidation)
         {
-            GameContentManifestDto manifest;
-            CompiledBattleContentCatalog battleContent;
-            if (!BundledGameContentLoader.TryLoad(out manifest, out battleContent,
+            CompiledGameContentBundle bundle;
+            if (!BundledGameContentLoader.TryLoadBundle(out bundle,
                     out contentValidation))
             {
                 levelValidation = LevelCatalogValidator.Validate(CreateSource(), null);
                 compiled = null;
                 return false;
             }
-            return LevelCatalogCompiler.TryCompile(CreateSource(), battleContent,
+            return LevelCatalogCompiler.TryCompile(CreateSource(), bundle.Battle,
                 out compiled, out levelValidation);
         }
 

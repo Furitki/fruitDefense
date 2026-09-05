@@ -72,6 +72,205 @@ namespace FruitDefense.Editor
             }
         }
 
+        private static void ValidateHubNavigationIconReadability(
+            RuntimeUiVisualValidationReport report, string assetPath,
+            Color32[] pixels, int width, int height)
+        {
+            var reviewSizes = new[]
+            {
+                RuntimeUiQualityProfile.HubNavigationIconReviewSizeMinimum,
+                RuntimeUiQualityProfile.HubNavigationIconReviewSizeMaximum,
+            };
+            foreach (var reviewSize in reviewSizes)
+            {
+                var mask = BuildBilinearAlphaMask(pixels, width, height, reviewSize,
+                    RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh);
+                CountMaskComponents(mask, reviewSize, out var componentCount,
+                    out var largestComponent, out var visibleCount,
+                    out var perimeter);
+                var calendarBinders = assetPath.EndsWith(
+                        "/icon-hub-activity.png", StringComparison.Ordinal)
+                    && componentCount >= 1 && componentCount <= 3
+                    && largestComponent * 4 >= visibleCount * 3;
+                if (visibleCount == 0 || componentCount != 1
+                    && !calendarBinders)
+                {
+                    report.Error("hub-icon.silhouette.connected", assetPath,
+                        "At " + reviewSize + " logical points the icon has "
+                        + componentCount + " significant-alpha component(s), largest="
+                        + largestComponent + ", visible=" + visibleCount + ".",
+                        "Keep one dominant house, calendar-star, or two-leaf-sprout subject; only the calendar's two necessary binder tabs may remain subordinate components.");
+                    continue;
+                }
+
+                var perimeterRatio = perimeter / (float)visibleCount;
+                if (perimeterRatio <= RuntimeUiQualityProfile
+                        .HubNavigationIconSilhouettePerimeterRatioMaximum)
+                    continue;
+                report.Error("hub-icon.silhouette.complexity", assetPath,
+                    "At " + reviewSize + " logical points perimeter/area is "
+                    + perimeterRatio.ToString("0.###") + "; maximum is "
+                    + RuntimeUiQualityProfile
+                        .HubNavigationIconSilhouettePerimeterRatioMaximum
+                        .ToString("0.###") + ".",
+                    "Use one low-detail silhouette with large negative space and no illustration-scale micro-detail.");
+            }
+        }
+
+        private static void ValidateHubNavigationSilhouetteFamily(
+            RuntimeUiVisualValidationReport report, RuntimeUiArtSet artSet)
+        {
+            var slots = new[]
+            {
+                RuntimeUiArtSlot.IconHubHome,
+                RuntimeUiArtSlot.IconHubActivity,
+                RuntimeUiArtSlot.IconHubGrowth,
+            };
+            var sources = new List<(RuntimeUiArtSlot Slot, string Path,
+                Color32[] Pixels, int Width, int Height)>();
+            foreach (var slot in slots)
+            {
+                if (!artSet.TryGetBinding(slot, out var binding)
+                    || binding?.Texture == null)
+                    continue;
+                var path = RuntimeUiArtSetRegistry.Normalize(
+                    AssetDatabase.GetAssetPath(binding.Texture));
+                var texture = DecodePng(report, path, "hub-icon.family.decode");
+                try
+                {
+                    if (texture != null)
+                        sources.Add((slot, path, texture.GetPixels32(),
+                            texture.width, texture.height));
+                }
+                finally
+                {
+                    if (texture != null) Object.DestroyImmediate(texture);
+                }
+            }
+
+            var reviewSizes = new[]
+            {
+                RuntimeUiQualityProfile.HubNavigationIconReviewSizeMinimum,
+                RuntimeUiQualityProfile.HubNavigationIconReviewSizeMaximum,
+            };
+            foreach (var reviewSize in reviewSizes)
+            {
+                var masks = sources.Select(source => (Slot: source.Slot,
+                    Path: source.Path,
+                    Mask: BuildBilinearAlphaMask(source.Pixels, source.Width,
+                        source.Height, reviewSize,
+                        RuntimeUiQualityProfile.NineSliceSignificantAlphaHigh)))
+                    .ToArray();
+                for (var firstIndex = 0; firstIndex < masks.Length; firstIndex++)
+                for (var secondIndex = firstIndex + 1;
+                     secondIndex < masks.Length; secondIndex++)
+                {
+                    var first = masks[firstIndex];
+                    var second = masks[secondIndex];
+                    var intersection = 0;
+                    var union = 0;
+                    for (var pixelIndex = 0;
+                         pixelIndex < first.Mask.Length; pixelIndex++)
+                    {
+                        if (first.Mask[pixelIndex] && second.Mask[pixelIndex])
+                            intersection++;
+                        if (first.Mask[pixelIndex] || second.Mask[pixelIndex])
+                            union++;
+                    }
+                    var iou = union == 0 ? 1f : intersection / (float)union;
+                    if (iou < RuntimeUiQualityProfile
+                            .HubNavigationIconSilhouetteIouMaximum)
+                        continue;
+                    report.Error("hub-icon.silhouette-confusion", first.Path,
+                        RuntimeUiArtSlots.SemanticId(first.Slot) + " and "
+                        + RuntimeUiArtSlots.SemanticId(second.Slot)
+                        + " have " + reviewSize + "-point silhouette IoU "
+                        + iou.ToString("0.###") + ".",
+                        "Keep house, calendar-star, and sprout silhouettes distinguishable without relying on color or labels.");
+                }
+            }
+        }
+
+        private static bool[] BuildBilinearAlphaMask(Color32[] pixels,
+            int width, int height, int targetSize, byte minimumAlpha)
+        {
+            var mask = new bool[targetSize * targetSize];
+            for (var targetY = 0; targetY < targetSize; targetY++)
+            for (var targetX = 0; targetX < targetSize; targetX++)
+            {
+                var sourceX = (targetX + .5f) * width / targetSize - .5f;
+                var sourceY = (targetY + .5f) * height / targetSize - .5f;
+                var x0 = Mathf.Clamp(Mathf.FloorToInt(sourceX), 0, width - 1);
+                var y0 = Mathf.Clamp(Mathf.FloorToInt(sourceY), 0, height - 1);
+                var x1 = Mathf.Min(x0 + 1, width - 1);
+                var y1 = Mathf.Min(y0 + 1, height - 1);
+                var xWeight = Mathf.Clamp01(sourceX - x0);
+                var yWeight = Mathf.Clamp01(sourceY - y0);
+                var bottom = Mathf.Lerp(pixels[y0 * width + x0].a,
+                    pixels[y0 * width + x1].a, xWeight);
+                var top = Mathf.Lerp(pixels[y1 * width + x0].a,
+                    pixels[y1 * width + x1].a, xWeight);
+                var alpha = Mathf.Lerp(bottom, top, yWeight);
+                mask[targetY * targetSize + targetX] = alpha >= minimumAlpha;
+            }
+            return mask;
+        }
+
+        private static void CountMaskComponents(bool[] mask, int size,
+            out int componentCount, out int largestComponent,
+            out int visibleCount, out int perimeter)
+        {
+            var seen = new bool[mask.Length];
+            var pending = new Queue<int>();
+            componentCount = 0;
+            largestComponent = 0;
+            visibleCount = 0;
+            perimeter = 0;
+            for (var index = 0; index < mask.Length; index++)
+            {
+                if (!mask[index]) continue;
+                visibleCount++;
+                var x = index % size;
+                var y = index / size;
+                if (x == 0 || !mask[index - 1]) perimeter++;
+                if (x == size - 1 || !mask[index + 1]) perimeter++;
+                if (y == 0 || !mask[index - size]) perimeter++;
+                if (y == size - 1 || !mask[index + size]) perimeter++;
+                if (seen[index]) continue;
+
+                componentCount++;
+                var componentSize = 0;
+                pending.Enqueue(index);
+                seen[index] = true;
+                while (pending.Count > 0)
+                {
+                    var current = pending.Dequeue();
+                    componentSize++;
+                    var currentX = current % size;
+                    var currentY = current / size;
+                    EnqueueMaskNeighbor(currentX - 1, currentY, mask, seen,
+                        size, pending);
+                    EnqueueMaskNeighbor(currentX + 1, currentY, mask, seen,
+                        size, pending);
+                    EnqueueMaskNeighbor(currentX, currentY - 1, mask, seen,
+                        size, pending);
+                    EnqueueMaskNeighbor(currentX, currentY + 1, mask, seen,
+                        size, pending);
+                }
+                largestComponent = Mathf.Max(largestComponent, componentSize);
+            }
+        }
+
+        private static void EnqueueMaskNeighbor(int x, int y, bool[] mask,
+            bool[] seen, int size, Queue<int> pending)
+        {
+            if (x < 0 || x >= size || y < 0 || y >= size) return;
+            var index = y * size + x;
+            if (!mask[index] || seen[index]) return;
+            seen[index] = true;
+            pending.Enqueue(index);
+        }
+
         private static bool HasVisibleSquare(Color32[] pixels, int width, int height,
             int size, byte minimumAlpha)
         {
@@ -186,7 +385,9 @@ namespace FruitDefense.Editor
         {
             var expectedBorder = binding.Slot == RuntimeUiArtSlot.SurfaceGameplayStage
                 ? RuntimeUiQualityProfile.GameplayStageNineSliceBorder
-                : RuntimeUiQualityProfile.NineSliceBorder;
+                : binding.Slot == RuntimeUiArtSlot.ActionPrimary
+                    ? RuntimeUiQualityProfile.PrimaryActionNineSliceBorder
+                    : RuntimeUiQualityProfile.NineSliceBorder;
             if (width != RuntimeUiQualityProfile.NineSliceCanvasSize
                 || height != RuntimeUiQualityProfile.NineSliceCanvasSize
                 || binding.SliceBorder.Left != expectedBorder

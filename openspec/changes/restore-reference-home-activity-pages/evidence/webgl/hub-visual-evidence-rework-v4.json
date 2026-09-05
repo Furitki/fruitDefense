@@ -1,0 +1,835 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "outgame-hub-webgl-visual",
+  "accepted": true,
+  "completion": "four-live-hub-pages-captured",
+  "capturedAtUtc": "2026-09-01T09:01:02.1242190+00:00",
+  "url": "http://127.0.0.1:59471/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-09-01T09:00:49.4102181+00:00"
+  },
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 402,
+      "height": 874
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 1.0,
+    "designOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 16.0,
+      "y": 18.0,
+      "width": 370.0,
+      "height": 838
+    }
+  },
+  "geometry": {
+    "safeBounds": {
+      "xMin": 0,
+      "yMin": 0,
+      "xMax": 402,
+      "yMax": 874
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "scale": 1.0,
+    "rects": {
+      "topBar": {
+        "xMin": 7,
+        "yMin": 15,
+        "xMax": 395,
+        "yMax": 95
+      },
+      "pageHost": {
+        "xMin": 11,
+        "yMin": 103,
+        "xMax": 397,
+        "yMax": 793
+      },
+      "bottomNavigation": {
+        "xMin": 0,
+        "yMin": 794,
+        "xMax": 402,
+        "yMax": 874
+      },
+      "home": {
+        "xMin": 16,
+        "yMin": 794,
+        "xMax": 134,
+        "yMax": 874
+      },
+      "activity": {
+        "xMin": 142,
+        "yMin": 794,
+        "xMax": 260,
+        "yMax": 874
+      },
+      "growth": {
+        "xMin": 268,
+        "yMin": 794,
+        "xMax": 386,
+        "yMax": 874
+      },
+      "equipmentTab": {
+        "xMin": 24,
+        "yMin": 106,
+        "xMax": 197,
+        "yMax": 158
+      },
+      "cultivationTab": {
+        "xMin": 205,
+        "yMin": 106,
+        "xMax": 378,
+        "yMax": 158
+      },
+      "start": {
+        "xMin": 57,
+        "yMin": 700,
+        "xMax": 346,
+        "yMax": 756
+      },
+      "activityClaim": {
+        "xMin": 66,
+        "yMin": 641,
+        "xMax": 336,
+        "yMax": 698
+      },
+      "growthEntry": {
+        "xMin": 27,
+        "yMin": 174,
+        "xMax": 378,
+        "yMax": 290
+      },
+      "equipmentPrimary": {
+        "xMin": 109,
+        "yMin": 707,
+        "xMax": 293,
+        "yMax": 762
+      },
+      "cultivationPrimary": {
+        "xMin": 115,
+        "yMin": 723,
+        "xMax": 286,
+        "yMax": 774
+      }
+    },
+    "logicalBoundaries": {
+      "topBarBottom": 95.0,
+      "pageHostTop": 103.0,
+      "pageHostBottom": 793.0,
+      "bottomNavigationTop": 794.0
+    },
+    "targets": {
+      "home": {
+        "rect": {
+          "xMin": 16,
+          "yMin": 794,
+          "xMax": 134,
+          "yMax": 874
+        },
+        "shortestCapturePixels": 80.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "activity": {
+        "rect": {
+          "xMin": 142,
+          "yMin": 794,
+          "xMax": 260,
+          "yMax": 874
+        },
+        "shortestCapturePixels": 80.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "growth": {
+        "rect": {
+          "xMin": 268,
+          "yMin": 794,
+          "xMax": 386,
+          "yMax": 874
+        },
+        "shortestCapturePixels": 80.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "equipmentTab": {
+        "rect": {
+          "xMin": 24,
+          "yMin": 106,
+          "xMax": 197,
+          "yMax": 158
+        },
+        "shortestCapturePixels": 52.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "cultivationTab": {
+        "rect": {
+          "xMin": 205,
+          "yMin": 106,
+          "xMax": 378,
+          "yMax": 158
+        },
+        "shortestCapturePixels": 52.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "start": {
+        "rect": {
+          "xMin": 57,
+          "yMin": 700,
+          "xMax": 346,
+          "yMax": 756
+        },
+        "shortestCapturePixels": 56.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "activityClaim": {
+        "rect": {
+          "xMin": 66,
+          "yMin": 641,
+          "xMax": 336,
+          "yMax": 698
+        },
+        "shortestCapturePixels": 57.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "growthEntry": {
+        "rect": {
+          "xMin": 27,
+          "yMin": 174,
+          "xMax": 378,
+          "yMax": 290
+        },
+        "shortestCapturePixels": 116.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "equipmentPrimary": {
+        "rect": {
+          "xMin": 109,
+          "yMin": 707,
+          "xMax": 293,
+          "yMax": 762
+        },
+        "shortestCapturePixels": 55.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      },
+      "cultivationPrimary": {
+        "rect": {
+          "xMin": 115,
+          "yMin": 723,
+          "xMax": 286,
+          "yMax": 774
+        },
+        "shortestCapturePixels": 51.0,
+        "minimumProjectedCapturePixels": 44.0,
+        "minimumLogicalPoints": 44,
+        "passed": true
+      }
+    },
+    "checks": {
+      "safeAreaContainment": "pass",
+      "sharedChromeNonOverlap": "pass",
+      "pageClosesAboveNavigation": "pass",
+      "projectedMinimum44PointTargets": "pass"
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "11",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "15",
+    "display": "ui.sunny-orchard@11 / sunny-orchard-painted@15",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:59471/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 402,
+    "height": 874,
+    "cssWidth": 402,
+    "cssHeight": 874,
+    "innerWidth": 402,
+    "innerHeight": 874,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1788253254672.1,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 0,
+    "body": ""
+  },
+  "controls": {
+    "home": {
+      "x": 75.0,
+      "y": 834.0
+    },
+    "activity": {
+      "x": 201.0,
+      "y": 834.0
+    },
+    "growth": {
+      "x": 327.0,
+      "y": 834.0
+    },
+    "equipment": {
+      "x": 110.5,
+      "y": 132.0
+    },
+    "cultivation": {
+      "x": 291.5,
+      "y": 132.0
+    },
+    "start": {
+      "x": 201.5,
+      "y": 728.0
+    }
+  },
+  "referenceControls": {
+    "home": {
+      "x": 75,
+      "y": 834
+    },
+    "activity": {
+      "x": 201,
+      "y": 834
+    },
+    "growth": {
+      "x": 327,
+      "y": 834
+    },
+    "equipment": {
+      "x": 110.5,
+      "y": 132
+    },
+    "cultivation": {
+      "x": 291.5,
+      "y": 132
+    },
+    "start": {
+      "x": 201.5,
+      "y": 728
+    }
+  },
+  "routeIdentities": {
+    "home": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "activity": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "equipment": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    },
+    "cultivation": {
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "levelId": "orchard-01",
+      "mapId": "orchard-01",
+      "waveSetId": "waves.orchard-01.teaching",
+      "ruleSetId": "rules.orchard-01.baseline",
+      "themeId": "theme.orchard-01.day"
+    }
+  },
+  "hubTelemetry": {
+    "home": {
+      "schemaVersion": 1,
+      "stateId": "reward-to-battle",
+      "fixtureActive": false,
+      "fixtureId": "",
+      "evidenceKind": "RealInteractionSequence",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "home",
+      "growthPage": "equipment",
+      "resolvedState": "fresh",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "4756009d20924b34b1c3b62815241356",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "64e7ead95e7a79256ede06679c6fc2541a4514e2ce7dd53fc7e62533a8b0814c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "activity": {
+      "schemaVersion": 1,
+      "stateId": "reward-to-battle",
+      "fixtureActive": false,
+      "fixtureId": "",
+      "evidenceKind": "RealInteractionSequence",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "claimable",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "4756009d20924b34b1c3b62815241356",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "64e7ead95e7a79256ede06679c6fc2541a4514e2ce7dd53fc7e62533a8b0814c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "equipment": {
+      "schemaVersion": 1,
+      "stateId": "reward-to-battle",
+      "fixtureActive": false,
+      "fixtureId": "",
+      "evidenceKind": "RealInteractionSequence",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "locked",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "4756009d20924b34b1c3b62815241356",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "64e7ead95e7a79256ede06679c6fc2541a4514e2ce7dd53fc7e62533a8b0814c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation": {
+      "schemaVersion": 1,
+      "stateId": "reward-to-battle",
+      "fixtureActive": false,
+      "fixtureId": "",
+      "evidenceKind": "RealInteractionSequence",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "insufficient",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "4756009d20924b34b1c3b62815241356",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "64e7ead95e7a79256ede06679c6fc2541a4514e2ce7dd53fc7e62533a8b0814c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    }
+  },
+  "returnIdentity": {
+    "route": 0,
+    "routeName": "lobby",
+    "sessionId": "",
+    "seed": 0,
+    "levelId": "orchard-01",
+    "mapId": "orchard-01",
+    "waveSetId": "waves.orchard-01.teaching",
+    "ruleSetId": "rules.orchard-01.baseline",
+    "themeId": "theme.orchard-01.day"
+  },
+  "returnHubTelemetry": {
+    "schemaVersion": 1,
+    "stateId": "reward-to-battle",
+    "fixtureActive": false,
+    "fixtureId": "",
+    "evidenceKind": "RealInteractionSequence",
+    "route": 0,
+    "routeName": "lobby",
+    "sessionId": "",
+    "seed": 0,
+    "page": "home",
+    "growthPage": "cultivation",
+    "resolvedState": "fresh",
+    "selectedLevelId": "orchard-01",
+    "manifestId": "manifest.fruit-defense.bundled",
+    "manifestVersion": "2",
+    "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+    "outgameContentId": "catalog.outgame.orchard",
+    "outgameContentVersion": "1.0.0",
+    "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+    "battleContentId": "catalog.bundled.orchard",
+    "battleContentVersion": "3.0.0",
+    "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+    "profileId": "4756009d20924b34b1c3b62815241356",
+    "profileRevision": 0,
+    "growthPolicyId": "growth-policy.orchard-01",
+    "growthFingerprint": "64e7ead95e7a79256ede06679c6fc2541a4514e2ce7dd53fc7e62533a8b0814c",
+    "launchGrowthProfileRevision": 0,
+    "launchGrowthPolicyId": "",
+    "launchGrowthFingerprint": "",
+    "appliedSourceCount": 0,
+    "suppressedSourceCount": 0,
+    "receiptCount": 0,
+    "committedRewardRevisionCount": 0,
+    "committedGrowthRevisionCount": 0,
+    "commandInProgress": false,
+    "lastCommand": "",
+    "lastCommandStatus": "",
+    "lastCommandError": "",
+    "itemBalances": [],
+    "growthEquipment": [],
+    "loadout": [],
+    "cultivation": []
+  },
+  "screenshots": {
+    "home": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-v4-icons-402x874\\01-hub-home.png",
+    "activity": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-v4-icons-402x874\\02-hub-activity.png",
+    "equipment": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-v4-icons-402x874\\03-hub-growth-equipment.png",
+    "cultivation": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-v4-icons-402x874\\04-hub-growth-cultivation.png"
+  },
+  "screenshotSha256": {
+    "home": "44DEBF07BAB059D6AB0777B25B4CA94ED4853C4A2C00CDF1D404FC60979166FB",
+    "activity": "86622726BE783B41CCFAFBBC9384B6D40CFE245B144010BD14336FBCAEF703CE",
+    "equipment": "215CC9BC1EF2F5A192E3B89A690AAF06CE58278F0AB2B62362FA77A9811FDA26",
+    "cultivation": "624E051093C3E8EBCC90DB6FC9C09277B4856DD39D47E80CC6EFEB2BFC67A14C"
+  },
+  "imageMetrics": {
+    "home": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 984,
+      "headerLightPixels": 30658,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0025317600253176,
+      "maxNearBlackHorizontalRunFraction": 0.03980099502487562,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8293157326014673,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "activity": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 782,
+      "headerLightPixels": 31659,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0022605000226050003,
+      "maxNearBlackHorizontalRunFraction": 0.05970149253731343,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8807648286053456,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "equipment": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 927,
+      "headerLightPixels": 30989,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.8607436910331996,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    },
+    "cultivation": {
+      "width": 402,
+      "height": 874,
+      "headerDarkPixels": 918,
+      "headerLightPixels": 30954,
+      "blackFraction": 0.0,
+      "nearBlackFraction": 0.0,
+      "maxNearBlackHorizontalRunFraction": 0.0,
+      "invalidFraction": 0.0,
+      "averageLuma": 0.901748661012716,
+      "sampledRegions": {
+        "header": {
+          "xMin": 20,
+          "yMin": 42,
+          "xMax": 374,
+          "yMax": 147
+        },
+        "frameContent": {
+          "xMin": 0,
+          "yMin": 0,
+          "xMax": 402,
+          "yMax": 874
+        }
+      }
+    }
+  },
+  "paletteTargets": {
+    "edgeBackground": "#73C9F4",
+    "basePaper": "#F9EFDA",
+    "raisedPaper": "#FBE8AA",
+    "selectionAccent": "#FBCF52",
+    "primaryAction": "#88AF35",
+    "primaryText": "#6B3F12",
+    "actionContent": "#4B2A13",
+    "disabledSurface": "#E4DCCD",
+    "disabledContent": "#7C746B"
+  },
+  "paletteSamples": {
+    "edgeBackground": {
+      "r": 115,
+      "g": 197,
+      "b": 248,
+      "a": 255
+    },
+    "basePaper": {
+      "r": 250,
+      "g": 248,
+      "b": 241,
+      "a": 255
+    },
+    "selectionAccent": {
+      "r": 213,
+      "g": 177,
+      "b": 46,
+      "a": 255
+    },
+    "primaryAction": {
+      "r": 235,
+      "g": 225,
+      "b": 204,
+      "a": 255
+    }
+  },
+  "startActionContrast": {
+    "background": {
+      "r": 139,
+      "g": 170,
+      "b": 36,
+      "pixels": 1444
+    },
+    "foreground": {
+      "r": 12,
+      "g": 8,
+      "b": 4,
+      "pixels": 451
+    },
+    "ratio": 7.483145469060082,
+    "minimum": 4.5,
+    "polarity": "DarkOnLight",
+    "passed": true,
+    "sampleRect": {
+      "xMin": 126,
+      "yMin": 710,
+      "xMax": 277,
+      "yMax": 741
+    }
+  },
+  "checks": {
+    "releaseRuntimeUiIdentity": "pass",
+    "fourDistinctLiveStates": "pass",
+    "navigationStayedInLobby": "pass",
+    "returnHomeWithoutSceneLoad": "pass",
+    "requestedViewportAndCanvas": "pass",
+    "safeAreaGeometry": "pass",
+    "minimum44PointTargets": "pass",
+    "screenshotDimensions": "pass",
+    "noBlackTransparentOrLargeNearBlackRegions": "pass",
+    "startActionContrast": "pass",
+    "paletteTargetsRecorded": "pass",
+    "paletteDeltaE": "manual-score-required",
+    "noSyntheticRewardOrGrowthData": "manual-screenshot-review-required",
+    "fixtureDataAbsent": "pass",
+    "exactHubTelemetryRecorded": "pass"
+  }
+}

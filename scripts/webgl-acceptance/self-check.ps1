@@ -1,6 +1,7 @@
 # Dot-sourced by accept-webgl-portrait.ps1. Keep this module scoped to the acceptance runner.
 
 function Invoke-AcceptanceSelfCheck {
+  $hubMatrix = Assert-OutgameHubPortraitMatrix
   $syntheticHealthyMetrics = [pscustomobject]@{
     invalidFraction = 0.0
     blackFraction = 0.0
@@ -232,6 +233,7 @@ function Invoke-AcceptanceSelfCheck {
       $transition.changedRoles[0] -ne 'data' -or $transition.reusedRoles.Count -ne 3) {
     throw 'Cross-release payload classification self-check failed.'
   }
+  $hubGeometry = Get-HubGeometryEvidence
   [ordered]@{
     levelId = $LevelId
     expectedCompositeIdentity = $expectedLevelIdentity
@@ -241,6 +243,8 @@ function Invoke-AcceptanceSelfCheck {
     mappedDesignBounds = $mappedDesignBounds
     referenceControls = $referenceControls
     mappedControls = $controls
+    hubPortraitMatrix = $hubMatrix
+    hubGeometry = $hubGeometry
     sampledRegions = [ordered]@{ header = $headerSampleRegion }
     thresholds = [ordered]@{
       hudDarkPixels = $hudDarkPixelThreshold

@@ -66,6 +66,13 @@ namespace FruitDefense.Editor
                 {
                     ValidateTransparentPadding(report, assetPath, binding, pixels,
                         texture.width, texture.height);
+                    if (IsHubNavigationIcon(binding.Slot))
+                    {
+                        ValidateTransparentGeneratedAlphaContract(report,
+                            assetPath, pixels, "hub-icon.alpha-contract");
+                        ValidateHubNavigationIconReadability(report, assetPath,
+                            pixels, texture.width, texture.height);
+                    }
                     if (RuntimeUiArtSlots.IsMicroIcon(binding.Slot))
                         ValidateMicroIconOptics(report, assetPath, binding,
                             pixels, texture.width, texture.height);
@@ -142,7 +149,9 @@ namespace FruitDefense.Editor
         {
             return binding.Geometry == RuntimeUiArtGeometry.Icon
                 || binding.Slot == RuntimeUiArtSlot.OrnamentMetricDivider
-                || binding.Slot == RuntimeUiArtSlot.OrnamentResultBanner;
+                || binding.Slot == RuntimeUiArtSlot.OrnamentResultBanner
+                || binding.Slot
+                    == RuntimeUiArtSlot.IllustrationHubActivityReward;
         }
 
         private static void ValidateTransparentOuterEdge(
@@ -288,7 +297,7 @@ namespace FruitDefense.Editor
                     expectedContainer = "A0C73D";
                     break;
                 case RuntimeUiArtSlot.ActionSecondary:
-                    expectedContainer = "A0C73D";
+                    expectedContainer = "88AF35";
                     break;
                 case RuntimeUiArtSlot.ActionDanger:
                     expectedContainer = "C81409";
@@ -297,8 +306,10 @@ namespace FruitDefense.Editor
                     return;
             }
             var expectedContent = slot == RuntimeUiArtSlot.ActionDanger
-                ? "FFF9EE"
-                : "56341F";
+                ? "F9EFDA"
+                : slot == RuntimeUiArtSlot.ActionPrimary
+                    ? "0C0804"
+                    : "4B2A13";
 
             if (!string.Equals(row.container_contract,
                     "semantic-action-container", StringComparison.Ordinal)
@@ -541,19 +552,23 @@ namespace FruitDefense.Editor
         {
             if (binding.Geometry != RuntimeUiArtGeometry.NineSlice) return;
             var semantic = RuntimeUiArtSlots.SemanticId(binding.Slot);
+            if (ValidateFixedPrimaryActionManifest(
+                    report, binding, row, manifestPath)) return;
             if (IsImagegenMaterialSlot(binding.Slot))
             {
-                var usesGeometryMask = binding.Slot == RuntimeUiArtSlot.ActionPrimary
-                    || binding.Slot == RuntimeUiArtSlot.ActionSecondary;
+                var usesGeometryMask =
+                    binding.Slot == RuntimeUiArtSlot.ActionSecondary;
                 var lineFreeCarrier = binding.Slot == RuntimeUiArtSlot.SurfaceMetric
                     || binding.Slot == RuntimeUiArtSlot.SlotNursery;
+                var usesBackgroundCleanup = lineFreeCarrier
+                    || binding.Slot == RuntimeUiArtSlot.SurfaceCardSelectable;
                 var expectedAnatomy = lineFreeCarrier
                     ? LineFreeCarrierMaterialAnatomy
                     : ReferenceMaterialAnatomy;
                 var expectedTransform =
                     "content-crop|transparent-padding|alpha-safe-resize"
                     + (usesGeometryMask ? "|approved-geometry-alpha-mask" : string.Empty)
-                    + (lineFreeCarrier
+                    + (usesBackgroundCleanup
                         ? "|connected-neutral-background-cleanup"
                         : string.Empty);
                 var expectedRenderContract = binding.Slot
@@ -592,8 +607,7 @@ namespace FruitDefense.Editor
                 else
                     ValidateOwnedFile(report, row.generated_asset,
                         row.generated_asset_sha256, string.Empty, "generated-asset");
-                if ((binding.Slot == RuntimeUiArtSlot.ActionPrimary
-                        || binding.Slot == RuntimeUiArtSlot.ActionSecondary)
+                if (binding.Slot == RuntimeUiArtSlot.ActionSecondary
                     && row.content_tone != "primary"
                     || binding.Slot == RuntimeUiArtSlot.ActionDanger
                     && row.content_tone != "inverse")
@@ -665,7 +679,8 @@ namespace FruitDefense.Editor
             int width, int height)
         {
             if (binding.Geometry != RuntimeUiArtGeometry.NineSlice) return;
-            if (IsImagegenMaterialSlot(binding.Slot))
+            if (IsImagegenMaterialSlot(binding.Slot)
+                || binding.Slot == RuntimeUiArtSlot.ActionPrimary)
             {
                 var hiddenRgbPixels = pixels.Count(pixel => pixel.a == 0
                     && (pixel.r != 0 || pixel.g != 0 || pixel.b != 0));
@@ -841,8 +856,7 @@ namespace FruitDefense.Editor
 
         private static bool IsImagegenMaterialSlot(RuntimeUiArtSlot slot)
         {
-            return slot == RuntimeUiArtSlot.ActionPrimary
-                || slot == RuntimeUiArtSlot.ActionSecondary
+            return slot == RuntimeUiArtSlot.ActionSecondary
                 || slot == RuntimeUiArtSlot.ActionQuiet
                 || slot == RuntimeUiArtSlot.ActionDanger
                 || slot == RuntimeUiArtSlot.ActionCompactControl

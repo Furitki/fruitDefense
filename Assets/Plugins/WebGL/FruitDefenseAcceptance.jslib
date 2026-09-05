@@ -78,5 +78,27 @@ mergeInto(LibraryManager.library, {
       window.fruitDefenseCombatFeedbackTelemetryHistory.splice(
         0, window.fruitDefenseCombatFeedbackTelemetryHistory.length - 32);
     }
+  },
+
+  FruitDefensePublishHubTelemetry: function (jsonPointer) {
+    var json = UTF8ToString(jsonPointer);
+    var telemetry = JSON.parse(json);
+    if (!telemetry || telemetry.schemaVersion !== 1 ||
+        typeof telemetry.stateId !== 'string' ||
+        typeof telemetry.profileRevision !== 'number' ||
+        typeof telemetry.fixtureActive !== 'boolean' ||
+        typeof telemetry.fixtureId !== 'string' ||
+        typeof telemetry.resolvedState !== 'string' ||
+        (telemetry.fixtureActive && telemetry.fixtureId.length === 0)) {
+      throw new Error('Invalid hub acceptance telemetry payload.');
+    }
+    window.fruitDefenseHubTelemetry = telemetry;
+    window.fruitDefenseHubTelemetryHistory =
+      window.fruitDefenseHubTelemetryHistory || [];
+    window.fruitDefenseHubTelemetryHistory.push(telemetry);
+    if (window.fruitDefenseHubTelemetryHistory.length > 64) {
+      window.fruitDefenseHubTelemetryHistory.splice(
+        0, window.fruitDefenseHubTelemetryHistory.length - 64);
+    }
   }
 });

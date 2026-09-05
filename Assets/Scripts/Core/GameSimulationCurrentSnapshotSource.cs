@@ -12,7 +12,8 @@ namespace FruitDefense.Core
         {
             resolved = null;
             if (Mode != BattleSimulationMode.Standard || ResolvedSourceIdentity == null
-                || ActiveLevel == null || Identity == null)
+                || ActiveLevel == null || Identity == null
+                || LaunchGrowthSnapshot == null)
                 return CurrentSnapshotFailure(BattleSnapshotRestoreCode.UnsupportedSessionSource,
                     "session.source",
                     "Current battle snapshots require a catalog-resolved Standard session.");
@@ -35,7 +36,8 @@ namespace FruitDefense.Core
                 return CurrentSnapshotFailure(BattleSnapshotRestoreCode.IncompatibleSource,
                     "levelId", "The snapshot level cannot be resolved from the supplied catalog.");
             resolved = resolution.Value;
-            var supplied = ResolvedBattleSourceIdentity.Create(availableCatalog, resolved);
+            var supplied = ResolvedBattleSourceIdentity.Create(availableCatalog,
+                resolved, LaunchGrowthSnapshot);
 
             var result = CompareSnapshotSource(snapshot, supplied, "suppliedCatalog");
             if (!result.Succeeded) return result;
@@ -59,6 +61,24 @@ namespace FruitDefense.Core
                 new SourceField("waveSetId", snapshot.waveSetId, source.WaveSetId),
                 new SourceField("ruleSetId", snapshot.ruleSetId, source.RuleSetId),
                 new SourceField("themeId", snapshot.themeId, source.ThemeId),
+                new SourceField("growthPolicyId", snapshot.growthPolicyId,
+                    source.GrowthPolicyId),
+                new SourceField("growthContentCatalogId",
+                    snapshot.growthContentCatalogId, source.GrowthContentCatalogId),
+                new SourceField("growthContentVersion", snapshot.growthContentVersion,
+                    source.GrowthContentVersion),
+                new SourceField("growthContentFingerprint",
+                    snapshot.growthContentFingerprint,
+                    source.GrowthContentFingerprint),
+                new SourceField("growthProfileId", snapshot.growthProfileId,
+                    source.GrowthProfileId),
+                new SourceField("growthProfileRevision",
+                    snapshot.growthProfileRevision.ToString(
+                        System.Globalization.CultureInfo.InvariantCulture),
+                    source.GrowthProfileRevision.ToString(
+                        System.Globalization.CultureInfo.InvariantCulture)),
+                new SourceField("growthFingerprint", snapshot.growthFingerprint,
+                    source.GrowthFingerprint),
                 new SourceField("resolvedSourceDefinitionFingerprint",
                     snapshot.resolvedSourceDefinitionFingerprint, source.DefinitionFingerprint),
             };
@@ -89,6 +109,24 @@ namespace FruitDefense.Core
                 new SourceField("waveSetId", supplied.WaveSetId, target.WaveSetId),
                 new SourceField("ruleSetId", supplied.RuleSetId, target.RuleSetId),
                 new SourceField("themeId", supplied.ThemeId, target.ThemeId),
+                new SourceField("growthPolicyId", supplied.GrowthPolicyId,
+                    target.GrowthPolicyId),
+                new SourceField("growthContentCatalogId",
+                    supplied.GrowthContentCatalogId, target.GrowthContentCatalogId),
+                new SourceField("growthContentVersion", supplied.GrowthContentVersion,
+                    target.GrowthContentVersion),
+                new SourceField("growthContentFingerprint",
+                    supplied.GrowthContentFingerprint,
+                    target.GrowthContentFingerprint),
+                new SourceField("growthProfileId", supplied.GrowthProfileId,
+                    target.GrowthProfileId),
+                new SourceField("growthProfileRevision",
+                    supplied.GrowthProfileRevision.ToString(
+                        System.Globalization.CultureInfo.InvariantCulture),
+                    target.GrowthProfileRevision.ToString(
+                        System.Globalization.CultureInfo.InvariantCulture)),
+                new SourceField("growthFingerprint", supplied.GrowthFingerprint,
+                    target.GrowthFingerprint),
                 new SourceField("resolvedSourceDefinitionFingerprint", supplied.DefinitionFingerprint,
                     target.DefinitionFingerprint),
             };

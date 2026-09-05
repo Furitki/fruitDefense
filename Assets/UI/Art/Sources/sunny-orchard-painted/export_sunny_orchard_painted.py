@@ -17,11 +17,11 @@ from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops
 
 
 SET_ID = "sunny-orchard-painted"
-REVISION = "9"
+REVISION = "19"
 SOURCE_SCALE = 2.0
 OPTICAL_ALPHA_THRESHOLD = 48
 MICRO_ALPHA_CLEANUP_THRESHOLD = 96
@@ -29,7 +29,6 @@ ART_SET_SCRIPT_GUID = "a93ac270418f41aaac52b72f5c2a5e8c"
 PROMPT_RECORD_PATH = (
     "Assets/UI/Art/Sources/sunny-orchard-painted/prompt-record.json")
 IMAGEGEN_OUTPUTS = {
-    "action.primary": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
     "action.secondary": "exec-ab169a87-8f13-4c41-87e7-8307a82512d1.png",
     "action.quiet": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
     "action.danger": "exec-4f60d853-d710-471a-a549-8c953c5b5a8a.png",
@@ -39,7 +38,7 @@ IMAGEGEN_OUTPUTS = {
     "surface.panel-standard": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
     "surface.panel-raised": "exec-6f239a99-081d-4bff-a41c-6abb17dffeb1.png",
     "surface.metric": "exec-69f7835e-0e63-4461-9bb8-4260eb8f3961.png",
-    "surface.card-selectable": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
+    "surface.card-selectable": "exec-02d2c426-49fd-4b02-97d3-8b88c5970a6d.png",
     "slot.tool": "exec-96e27751-69a6-4b1f-b63e-7faeb5c58472.png",
     "slot.nursery": "exec-e30c0381-7420-4cad-9d29-b51464b8339f.png",
     "surface.gameplay-stage": "exec-26bcbc75-0425-4308-91bb-6296e8465e12.png",
@@ -49,10 +48,89 @@ IMAGEGEN_OUTPUTS = {
     "icon.control-start": "exec-c19e8f10-8869-427e-a72f-206406e73573.png",
     "icon.control-speed": "exec-e448bbe8-e34e-4f41-a954-f179ffe9e5ca.png",
     "icon.control-close": "exec-344e3cd7-8d96-42e7-8065-7eddad406700.png",
+    "icon.hub-home": "exec-568a67c0-0394-40ac-86d1-aadfad4f62e4.png",
+    "icon.hub-activity": "exec-46dbc74e-49ff-4a76-a853-7c0b646225fa.png",
+    "icon.hub-growth": "exec-68d23152-a65e-4b57-9a35-10533143e573.png",
+    "illustration.hub-activity-reward":
+        "exec-908aded2-9728-4448-9e7f-02661dea23cb.png",
+    "surface.hub-navigation-base":
+        "exec-f1577221-c06a-41ab-83e4-5e7201f27f9c.png",
+    "surface.hub-navigation-selected-tab":
+        "exec-669b662f-2ed8-4bf0-955b-d1930a73a662.png",
+}
+PRIMARY_ACTION_FIXED_MASTER = (
+    "openspec/changes/restore-reference-home-activity-pages/evidence/"
+    "fixed-master/action-primary-original-square.png")
+PRIMARY_ACTION_FIXED_MASTER_SHA256 = (
+    "967A2AE0DFECC4196D99CF4DA236774B11C1D716EF6AB48EC18C2E665D6C7801")
+PRIMARY_ACTION_HISTORICAL_COMMIT = (
+    "d423af201917d6a66a1328f55533d2119203db28")
+PRIMARY_ACTION_HISTORICAL_PATH = (
+    "Assets/UI/Art/Sources/sunny-orchard-painted/surfaces/action-primary.png")
+ACTIVITY_REWARD_SEMANTIC_ID = "illustration.hub-activity-reward"
+ACTIVITY_REWARD_GENERATED_ASSET = (
+    "openspec/changes/restore-reference-home-activity-pages/evidence/"
+    "imagegen/activity-reward-hero-raw.png")
+ACTIVITY_REWARD_GENERATED_SHA256 = (
+    "7E5E30FA89F2C74F15D4BA9C8426989BCAF89999111F3F8FF64003953C5A95E5")
+HUB_ICON_ORIGINAL_HASHES = {
+    "icon.hub-home": "8A8A7D7245DD6CD96355EAC96437EC4E08DCE6214AB11E9CEF39AC46361990F6",
+    "icon.hub-activity": "352483D4CAC6ECD5ED3A3D7027B6D890D0F43BE55854E2FCC5F0D3B945671A73",
+    "icon.hub-growth": "D0C8D105469C268A02E29C8ED09DF13B34E35AF43DF8699797DF841D9B5CEE60",
+}
+HUB_ICON_SOURCE_HASHES = {
+    "icon.hub-home": "9A027B05F1A342E43111C93798392DA7A929F61BABF66A34CC0CA2CF8C50CABC",
+    "icon.hub-activity": "1D9478D34118D1367211639D5338CEF14593BC0800D0ABD9F86216C7D8F5BA61",
+    "icon.hub-growth": "4332D7843CC927F0EEC8365123662C320CB364D3E0DB65B10117147E0CCBF7FC",
+}
+HUB_ICON_REVIEW_SIZES = (24, 33)
+HUB_ICON_SILHOUETTE_PERIMETER_RATIO_MAX = 0.76
+HUB_ICON_SILHOUETTE_IOU_MAX = 0.75
+HUB_ICON_SILHOUETTE_CONTRACT = (
+    "single-dominant-subject|calendar-binders-only|bounded-perimeter|"
+    "distinct-family|stable-color")
+HUB_NAVIGATION_SURFACE_IDS = frozenset({
+    "surface.hub-navigation-base",
+    "surface.hub-navigation-selected-tab",
+})
+HUB_NAVIGATION_COMPOSITION_CONTRACT = (
+    "one-continuous-base-silhouette|one-selected-tab-silhouette|"
+    "no-generic-panel-substitution")
+HUB_NAVIGATION_GENERATED_ASSETS = {
+    "surface.hub-navigation-base": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "surface-hub-navigation-base-reference-derived.png",
+        "FC9112C52E5B9B3C27439B89330BCE6E32FB8808D0C2B0F423B219AD561AE9BA"),
+    "surface.hub-navigation-selected-tab": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "surface-hub-navigation-selected-tab-reference-derived.png",
+        "CC24CFCE88CA9C5BCDA5D73C14638A049183378193198A500328987498AFF3D5"),
+}
+HUB_ICON_GENERATED_ASSETS = {
+    "icon.hub-home": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "icon-hub-home-reference-derived.png"),
+    "icon.hub-activity": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "icon-hub-activity-reference-derived-v3.png"),
+    "icon.hub-growth": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "icon-hub-growth-reference-derived-v2.png"),
 }
 IMAGEGEN_DIRECT_ROOT = (
     "openspec/changes/polish-sky-paper-ui-eight-point/evidence/"
     "direct-replacement-v2/imagegen")
+IMAGEGEN_DIRECT_PATH_OVERRIDES = {
+    "surface.card-selectable": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/imagegen/"
+        "surface-card-selectable-reference-derived.png"),
+}
 IMAGEGEN_GEOMETRY_MASKS = {
     "action-green.png": (
         "action-geometry-mask.png",
@@ -61,11 +139,10 @@ IMAGEGEN_GEOMETRY_MASKS = {
 IMAGEGEN_CONNECTED_BACKGROUND_ASSETS = frozenset({
     "metric-capsule.png",
     "slot-nursery.png",
+    "surface-card-selectable-reference-derived.png",
 })
 LINE_FREE_CARRIER_IDS = frozenset({"surface.metric", "slot.nursery"})
 IMAGEGEN_DIRECT_ASSETS = (
-    ("action.primary", "action-primary", "action-green.png",
-     "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA"),
     ("action.secondary", "action-secondary", "action-green.png",
      "99D2B2401474619491065EC405F73FC2BFF145638BA73F866E6132B8D6DFC5DA"),
     ("action.quiet", "action-quiet", "action-quiet-retained.png",
@@ -85,8 +162,9 @@ IMAGEGEN_DIRECT_ASSETS = (
      "475B96F6E034081DC23B68D6D7EB27F5729C5E87421301E43B61703A5D733F0F"),
     ("surface.metric", "surface-metric", "metric-capsule.png",
      "5539902850BA5EA59A20B356B34A7539516108D349B95F3E458AA2EA4590DC51"),
-    ("surface.card-selectable", "surface-card-selectable", "card-lime.png",
-     "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"),
+    ("surface.card-selectable", "surface-card-selectable",
+     "surface-card-selectable-reference-derived.png",
+     "25BD5ADE71CBF98F38B16B48222011C5CE1FC5CE74AD8BA88390CD96D94C3784"),
     ("slot.tool", "slot-tool", "card-lime.png",
      "C7809FFB49687308F74ABD2F0497BD251EE967E1D91EF23B87E1F6729AE35C87"),
     ("slot.nursery", "slot-nursery", "slot-nursery.png",
@@ -95,6 +173,28 @@ IMAGEGEN_DIRECT_ASSETS = (
      "DB106DA52028C9128DD56FD76D6FC7084DFDDC639634AF3C3D359537C0EF9750"),
 )
 IMAGEGEN_MATERIAL_IDS = frozenset(row[0] for row in IMAGEGEN_DIRECT_ASSETS)
+FIXED_RASTER_MASTER_IDS = frozenset({"action.primary"})
+
+HOME_REFERENCE_PATH = "docs/ui/mockups/outgame-hub-concepts/home.png"
+HOME_REFERENCE_SHA256 = (
+    "873F6EFBF1B060A8992DB4D7AFAC7EB0E73FF3C8223BE5CA79988620309C9AEE")
+HOME_REFERENCE_ILLUSTRATION_ASSETS = {
+    "illustration.lobby-orchard-01": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/reference-splits/level-01-window.png",
+        "6615DFF9585E1A5458B15DB15AAD7114210288BF5B1B08FF6664B531B3E488FC",
+        (84, 280, 282, 230)),
+    "illustration.lobby-orchard-02": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/reference-splits/level-02-window.png",
+        "4AD8897F90080D8C96ACF9AE672487A3E8F9F1D0F346556BBB7E95FCBC25911C",
+        (79, 582, 282, 214)),
+    "illustration.lobby-orchard-03": (
+        "openspec/changes/restore-reference-home-activity-pages/evidence/"
+        "home-reference-restoration/reference-splits/level-03-window.png",
+        "D6C594E908FB969F60650039D36FF7D3966FE48F2A18A2BC5F83407608189DA4",
+        (79, 870, 282, 218)),
+}
 
 ACTION_GLYPH_IDS = {
     "icon.control-pause",
@@ -109,13 +209,13 @@ ACTION_GLYPH_IDS = {
 }
 SEMANTIC_CONTAINER_TARGETS = {
     "action.primary": (0xA0, 0xC7, 0x3D),
-    "action.secondary": (0xA0, 0xC7, 0x3D),
+    "action.secondary": (0x88, 0xAF, 0x35),
     "action.danger": (0xC8, 0x14, 0x09),
 }
 CONTENT_REFERENCE_RGB = {
-    "action.primary": (0x56, 0x34, 0x1F),
-    "action.secondary": (0x56, 0x34, 0x1F),
-    "action.danger": (0xFF, 0xF9, 0xEE),
+    "action.primary": (0x0C, 0x08, 0x04),
+    "action.secondary": (0x4B, 0x2A, 0x13),
+    "action.danger": (0xF9, 0xEF, 0xDA),
 }
 MINIMUM_CONTENT_CONTRAST = 4.5
 PLACEMENT_NORMALIZED_ACTION_GLYPH_IDS = {
@@ -239,6 +339,15 @@ SLOTS = (
     Slot(54, "action-compact-control-active", "action.compact-control-active",
          "nine-slice"),
     Slot(55, "surface-gameplay-stage", "surface.gameplay-stage", "nine-slice"),
+    Slot(56, "icon-hub-home", "icon.hub-home", "icon"),
+    Slot(57, "icon-hub-activity", "icon.hub-activity", "icon"),
+    Slot(58, "icon-hub-growth", "icon.hub-growth", "icon"),
+    Slot(59, "illustration-hub-activity-reward",
+         ACTIVITY_REWARD_SEMANTIC_ID, "stretch"),
+    Slot(60, "surface-hub-navigation-base",
+         "surface.hub-navigation-base", "stretch"),
+    Slot(61, "surface-hub-navigation-selected-tab",
+         "surface.hub-navigation-selected-tab", "stretch"),
 )
 
 
@@ -264,53 +373,6 @@ def save_png(image: Image.Image, path: Path) -> None:
             temporary.unlink()
 
 
-def author_reference_material(style: ReferenceMaterialStyle) -> Image.Image:
-    """Build one 2x source master with five independently visible material layers."""
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle((8, 14, 248, 248), radius=40, fill=style.shadow)
-    draw.rounded_rectangle((8, 8, 248, 240), radius=40, fill=style.rim)
-    draw.rounded_rectangle((14, 14, 242, 234), radius=34, fill=style.outline)
-    draw.rounded_rectangle((18, 18, 238, 228), radius=30, fill=style.face)
-    draw.line((34, 23, 222, 23), fill=style.highlight, width=5)
-    draw.arc((20, 20, 236, 226), start=200, end=340,
-             fill=style.highlight, width=3)
-    if style.transparent_center_inset:
-        inset = style.transparent_center_inset
-        radius = 20 if inset <= 40 else 12
-        draw.rounded_rectangle(
-            (inset, inset, 256 - inset, 256 - inset), radius=radius,
-            fill=(0, 0, 0, 0))
-    return canvas
-
-
-def author_gameplay_stage(style: ReferenceMaterialStyle) -> Image.Image:
-    """Build the 20 px protected transparent-center gameplay-stage rail."""
-    canvas = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle((16, 24, 238, 248), radius=30, fill=style.shadow)
-    draw.rounded_rectangle((16, 16, 238, 238), radius=30, fill=style.rim)
-    draw.rounded_rectangle((22, 22, 232, 232), radius=24, fill=style.outline)
-    draw.rounded_rectangle((26, 26, 228, 228), radius=20, fill=style.face)
-    draw.line((40, 29, 222, 29), fill=style.highlight, width=5)
-    draw.rounded_rectangle((32, 32, 222, 222), radius=6, fill=(0, 0, 0, 0))
-    return canvas
-
-
-def author_reference_material_masters(source_root: Path) -> None:
-    """Author only non-action surfaces that still use the deterministic kit."""
-    for slot in SLOTS:
-        style = REFERENCE_MATERIAL_STYLES.get(slot.semantic_id)
-        if style is None:
-            continue
-        master = (author_gameplay_stage(style)
-                  if slot.semantic_id == "surface.gameplay-stage"
-                  else author_reference_material(style))
-        path = source_root / subdirectory(slot) / f"{source_stem(slot)}.png"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        save_png(master, path)
-
-
 def mark_reference_material_import_meta(
         slot: Slot, source_root: Path, runtime_root: Path) -> None:
     if slot.semantic_id not in REFERENCE_MATERIAL_STYLES:
@@ -329,13 +391,18 @@ def mark_reference_material_import_meta(
         path.write_text(text, encoding="utf-8")
 
 
+def imagegen_asset_path(semantic_id: str, filename: str) -> str:
+    return IMAGEGEN_DIRECT_PATH_OVERRIDES.get(
+        semantic_id, f"{IMAGEGEN_DIRECT_ROOT}/{filename}")
+
+
 def imagegen_material_record(
         semantic_id: str) -> tuple[str, str, str, str]:
     for asset_semantic_id, _, filename, asset_sha256 in (
             IMAGEGEN_DIRECT_ASSETS):
         if asset_semantic_id == semantic_id:
             mask = IMAGEGEN_GEOMETRY_MASKS.get(filename)
-            return (f"{IMAGEGEN_DIRECT_ROOT}/{filename}", asset_sha256,
+            return (imagegen_asset_path(semantic_id, filename), asset_sha256,
                     f"{IMAGEGEN_DIRECT_ROOT}/{mask[0]}" if mask else "",
                     "connected-neutral-background-cleanup"
                     if filename in IMAGEGEN_CONNECTED_BACKGROUND_ASSETS else "")
@@ -366,6 +433,42 @@ def mark_imagegen_material_import_meta(
         if not re.search(r"(?m)^\s*userData:.*$", text):
             raise RuntimeError(f"No userData field in ImageGen material meta: {path}")
         text = re.sub(r"(?m)^\s*userData:.*$", "  userData: " + marker, text)
+        if owner == "ui-art-set" and slot.geometry == "nine-slice":
+            border = slice_border(slot)
+            text = re.sub(
+                r"(?m)^\s*spriteBorder:.*$",
+                "  spriteBorder: {x: " + str(border) + ", y: " + str(border)
+                + ", z: " + str(border) + ", w: " + str(border) + "}", text)
+        path.write_text(text, encoding="utf-8")
+
+
+def mark_fixed_raster_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    """Record the user-approved historical raster master without re-authoring it."""
+    if slot.semantic_id not in FIXED_RASTER_MASTER_IDS:
+        return
+    for owner, path in (
+            ("ui-art-source", source_root / subdirectory(slot)
+             / f"{source_stem(slot)}.png.meta"),
+            ("ui-art-set", runtime_root / subdirectory(slot)
+             / f"{slot.stem}.png.meta")):
+        text = path.read_text(encoding="utf-8")
+        marker = (f"{owner}={SET_ID};slot={slot.semantic_id};source-scale=2;"
+                  "authored=user-approved-fixed-raster-master;"
+                  "transform=byte-for-byte-master-copy|alpha-safe-resize|"
+                  "low-alpha-cleanup;asset=" + PRIMARY_ACTION_FIXED_MASTER
+                  + ";asset-sha256=" + PRIMARY_ACTION_FIXED_MASTER_SHA256
+                  + ";historical-commit=" + PRIMARY_ACTION_HISTORICAL_COMMIT
+                  + ";historical-path=" + PRIMARY_ACTION_HISTORICAL_PATH)
+        if not re.search(r"(?m)^\s*userData:.*$", text):
+            raise RuntimeError(f"No userData field in fixed raster meta: {path}")
+        text = re.sub(r"(?m)^\s*userData:.*$", "  userData: " + marker, text)
+        if owner == "ui-art-set" and slot.geometry == "nine-slice":
+            border = slice_border(slot)
+            text = re.sub(
+                r"(?m)^\s*spriteBorder:.*$",
+                "  spriteBorder: {x: " + str(border) + ", y: " + str(border)
+                + ", z: " + str(border) + ", w: " + str(border) + "}", text)
         path.write_text(text, encoding="utf-8")
 
 
@@ -380,22 +483,30 @@ def target_size(slot: Slot) -> tuple[int, int]:
         return (32, 32)
     if slot.index == 45:
         return (256, 144)
+    if slot.semantic_id == ACTIVITY_REWARD_SEMANTIC_ID:
+        return (384, 256)
+    if slot.semantic_id == "surface.hub-navigation-base":
+        return (402, 80)
+    if slot.semantic_id == "surface.hub-navigation-selected-tab":
+        return (134, 90)
     if slot.index == 43:
         return (24, 96)
     if slot.index == 44:
         return (256, 72)
     if 46 <= slot.index <= 48:
-        return (168, 108)
+        return (136, 108)
     size = 128 if slot.geometry == "nine-slice" else 96
     return (size, size)
 
 
 def subdirectory(slot: Slot) -> str:
-    if slot.index <= 16 or slot.index in (41, 42, 53, 54, 55):
+    if slot.index <= 16 or slot.index in (41, 42, 53, 54, 55) \
+            or slot.semantic_id in HUB_NAVIGATION_SURFACE_IDS:
         return "surfaces"
     if slot.index in (40, 43, 44):
         return "ornaments"
-    if 45 <= slot.index <= 48 or slot.index == 52:
+    if 45 <= slot.index <= 48 or slot.index == 52 \
+            or slot.semantic_id == ACTIVITY_REWARD_SEMANTIC_ID:
         return "illustrations"
     return "icons"
 
@@ -686,6 +797,60 @@ def extract_center_connected_material_from_neutral_background(
     return cleaned
 
 
+def preserve_native_alpha_or_extract_connected_background(
+        image: Image.Image) -> Image.Image:
+    """Keep genuine alpha; otherwise remove only the same-output neutral exterior."""
+    rgba = image.convert("RGBA")
+    if rgba.getchannel("A").getextrema()[0] < 255:
+        return rgba
+    return extract_center_connected_material_from_neutral_background(image)
+
+
+def extract_non_neutral_material_and_cutouts(image: Image.Image) -> Image.Image:
+    """Derive exterior and cutout alpha from one RGB ImageGen output.
+
+    The activity icon's final output uses a baked neutral checkerboard both
+    outside the icon and inside its star cutout. Warm-brown material pixels are
+    chromatic. This same-output classification only supplies alpha; it never
+    paints, recolors, outlines, or reconstructs visible icon pixels.
+    """
+    rgba = image.convert("RGBA")
+    if rgba.getchannel("A").getextrema()[0] < 255:
+        return rgba
+    rgb = image.convert("RGB")
+    cleaned = Image.new("RGBA", rgb.size)
+    cleaned.putdata([
+        (red, green, blue, 255)
+        if max(red, green, blue) - min(red, green, blue) > 10
+        else (0, 0, 0, 0)
+        for red, green, blue in rgb.get_flattened_data()
+    ])
+    if cleaned.getchannel("A").getbbox() is None:
+        raise RuntimeError("Same-output neutral alpha extraction found no icon")
+    return cleaned
+
+
+def extract_activity_reward_illustration(
+        project_root: Path, source_root: Path) -> None:
+    """Normalize the one hash-locked Activity reward hero into its owned master."""
+    generated_path = project_root / ACTIVITY_REWARD_GENERATED_ASSET
+    if not generated_path.is_file():
+        raise RuntimeError(
+            f"Missing Activity reward ImageGen output: {generated_path}")
+    if sha256(generated_path) != ACTIVITY_REWARD_GENERATED_SHA256:
+        raise RuntimeError(
+            f"Activity reward ImageGen output hash drift: {generated_path}")
+    with Image.open(generated_path) as generated:
+        cleaned = extract_center_connected_material_from_neutral_background(
+            generated)
+    master = fit_alpha_content(cleaned, (768, 512), 24)
+    master = clear_low_alpha_fringe(master)
+    validate_transparent_imagegen_edge(
+        master, ACTIVITY_REWARD_SEMANTIC_ID)
+    save_png(master, source_root / "illustrations"
+             / "illustration-hub-activity-reward.png")
+
+
 def validate_imagegen_material_ownership() -> None:
     """Forbid master reuse across semantic edge/anatomy contracts."""
     contracts_by_filename: dict[str, set[str]] = {}
@@ -773,7 +938,7 @@ def extract_imagegen_material_masters(
     validate_imagegen_material_ownership()
     for semantic_id, stem, filename, expected_sha256 in (
             IMAGEGEN_DIRECT_ASSETS):
-        asset_path = project_root / IMAGEGEN_DIRECT_ROOT / filename
+        asset_path = project_root / imagegen_asset_path(semantic_id, filename)
         if not asset_path.is_file():
             raise RuntimeError(f"Missing direct ImageGen material: {asset_path}")
         if sha256(asset_path) != expected_sha256:
@@ -815,6 +980,28 @@ def extract_imagegen_material_masters(
         save_png(master, source_root / "surfaces" / f"{stem}.png")
 
 
+def extract_fixed_primary_action_master(
+        project_root: Path, source_root: Path) -> None:
+    """Restore the user-selected historical PNG byte-for-byte as the owned master."""
+    fixed_path = project_root / PRIMARY_ACTION_FIXED_MASTER
+    if not fixed_path.is_file():
+        raise RuntimeError(f"Missing fixed primary-action master: {fixed_path}")
+    if sha256(fixed_path) != PRIMARY_ACTION_FIXED_MASTER_SHA256:
+        raise RuntimeError(f"Fixed primary-action master hash drift: {fixed_path}")
+    with Image.open(fixed_path) as fixed:
+        rgba = fixed.convert("RGBA")
+    if rgba.size != (256, 256):
+        raise RuntimeError(
+            f"Fixed primary-action master must be 256x256: {fixed_path}")
+    if significant_alpha_bbox(rgba) != (8, 8, 248, 248):
+        raise RuntimeError(
+            "Fixed primary-action master must preserve the original square "
+            "[8,8,248,248) silhouette")
+    validate_transparent_imagegen_edge(rgba, "action.primary")
+    target = source_root / "surfaces" / "action-primary.png"
+    target.write_bytes(fixed_path.read_bytes())
+
+
 def fit_alpha_content(
         image: Image.Image,
         size: tuple[int, int],
@@ -845,6 +1032,56 @@ def clear_low_alpha_fringe(image: Image.Image, threshold: int = 48) -> Image.Ima
         cleaned.append((0, 0, 0, 0) if alpha < threshold else (red, green, blue, alpha))
     rgba.putdata(cleaned)
     return rgba
+
+
+def validate_no_visible_pixel_authoring() -> None:
+    """Fail export if visible raster drawing APIs re-enter this pipeline."""
+    source = Path(__file__).read_text(encoding="utf-8")
+    forbidden_tokens = (
+        "Image" + "Draw",
+        "." + "rounded_rectangle(",
+        "." + "polygon(",
+        "." + "line(",
+        "." + "arc(",
+        "." + "ellipse(",
+        "." + "rectangle(",
+    )
+    present = [token for token in forbidden_tokens if token in source]
+    if present or re.search(r"(?m)^def\s+author_", source):
+        raise RuntimeError(
+            "Production UI exporter must not draw visible asset pixels: "
+            + ", ".join(present or ["author_* function"]))
+
+
+def extract_hub_navigation_surface_masters(
+        project_root: Path, source_root: Path) -> None:
+    """Normalize two hash-locked ImageGen navigation rasters into fixed masters."""
+    slots = {slot.semantic_id: slot for slot in SLOTS}
+    for semantic_id, (asset, expected_sha256) in (
+            HUB_NAVIGATION_GENERATED_ASSETS.items()):
+        generated_path = project_root / asset
+        if not generated_path.is_file():
+            raise RuntimeError(
+                f"Missing Hub navigation ImageGen output: {generated_path}")
+        if sha256(generated_path) != expected_sha256:
+            raise RuntimeError(
+                f"Hub navigation ImageGen output hash drift: {generated_path}")
+        with Image.open(generated_path) as generated:
+            cleaned = extract_non_neutral_material_and_cutouts(generated) \
+                if semantic_id == "icon.hub-activity" \
+                else preserve_native_alpha_or_extract_connected_background(
+                    generated)
+        cleaned = clear_low_alpha_fringe(cleaned)
+        slot = slots[semantic_id]
+        runtime_size = target_size(slot)
+        master_size = (runtime_size[0] * 2, runtime_size[1] * 2)
+        master = fit_alpha_content(cleaned, master_size, 2)
+        master = clear_low_alpha_fringe(master)
+        validate_transparent_imagegen_edge(master, semantic_id)
+        if significant_alpha_bbox(master) is None:
+            raise RuntimeError(
+                f"Hub navigation master has no visible content: {semantic_id}")
+        save_png(master, source_root / "surfaces" / f"{slot.stem}.png")
 
 
 def significant_alpha_bbox(
@@ -933,6 +1170,78 @@ def silhouette_iou(first: Image.Image, second: Image.Image) -> float:
     return intersection_count / union_count if union_count else 1.0
 
 
+def bilinear_alpha_mask(image: Image.Image, size: int) -> list[bool]:
+    """Approximate the shipped Bilinear icon raster at one logical size."""
+    preview = image.convert("RGBA").resize(
+        (size, size), Image.Resampling.BILINEAR)
+    return [alpha >= OPTICAL_ALPHA_THRESHOLD
+            for alpha in preview.getchannel("A").get_flattened_data()]
+
+
+def silhouette_metrics(mask: list[bool], size: int) -> tuple[list[int], int, int]:
+    if len(mask) != size * size:
+        raise ValueError("Silhouette mask size does not match its review canvas")
+    seen = [False] * len(mask)
+    components: list[int] = []
+    perimeter = 0
+    for index, visible in enumerate(mask):
+        if visible:
+            x = index % size
+            y = index // size
+            perimeter += int(x == 0 or not mask[index - 1])
+            perimeter += int(x == size - 1 or not mask[index + 1])
+            perimeter += int(y == 0 or not mask[index - size])
+            perimeter += int(y == size - 1 or not mask[index + size])
+        if not visible or seen[index]:
+            continue
+        pending = [index]
+        seen[index] = True
+        component_size = 0
+        while pending:
+            current = pending.pop()
+            component_size += 1
+            x = current % size
+            y = current // size
+            for neighbor_x, neighbor_y in (
+                    (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if not 0 <= neighbor_x < size or not 0 <= neighbor_y < size:
+                    continue
+                neighbor = neighbor_y * size + neighbor_x
+                if mask[neighbor] and not seen[neighbor]:
+                    seen[neighbor] = True
+                    pending.append(neighbor)
+        components.append(component_size)
+    return sorted(components, reverse=True), sum(mask), perimeter
+
+
+def mask_iou(first: list[bool], second: list[bool]) -> float:
+    if len(first) != len(second):
+        raise ValueError("Silhouette masks must share one review canvas")
+    intersection = sum(a and b for a, b in zip(first, second))
+    union = sum(a or b for a, b in zip(first, second))
+    return intersection / union if union else 1.0
+
+
+def validate_hub_navigation_icon_silhouette(
+        image: Image.Image, semantic_id: str) -> None:
+    for review_size in HUB_ICON_REVIEW_SIZES:
+        mask = bilinear_alpha_mask(image, review_size)
+        components, visible, perimeter = silhouette_metrics(mask, review_size)
+        calendar_binders = semantic_id == "icon.hub-activity" \
+            and 1 <= len(components) <= 3 \
+            and components[0] * 4 >= visible * 3
+        if visible == 0 or len(components) != 1 and not calendar_binders:
+            raise RuntimeError(
+                f"{semantic_id} must retain one dominant subject at "
+                f"{review_size}px; components={components}")
+        perimeter_ratio = perimeter / visible
+        if perimeter_ratio > HUB_ICON_SILHOUETTE_PERIMETER_RATIO_MAX:
+            raise RuntimeError(
+                f"{semantic_id} is too complex at {review_size}px: perimeter/area="
+                f"{perimeter_ratio:.3f} maximum="
+                f"{HUB_ICON_SILHOUETTE_PERIMETER_RATIO_MAX:.3f}")
+
+
 def clear_visible_key_magenta(image: Image.Image) -> Image.Image:
     """Remove only leaked background-key pixels; preserve ordinary painted antialiasing."""
     rgba = image.convert("RGBA")
@@ -972,7 +1281,7 @@ def normalize_target_import_meta(
     this exporter focused on sizing and metadata, while preserving each new PNG's
     Unity GUID across repeated exports.
     """
-    if not 49 <= slot.index <= 52:
+    if not (49 <= slot.index <= 52 or 56 <= slot.index <= 58):
         return
     meta_path = runtime_path.with_suffix(".png.meta")
     if not meta_path.exists():
@@ -981,7 +1290,9 @@ def normalize_target_import_meta(
     template_path = runtime_root / "icons" / "icon-resource-sun.png.meta"
     template = template_path.read_text(encoding="utf-8")
     guid = unity_guid(meta_path)
-    maximum_size = 18 if slot.index <= 51 else 1024
+    maximum_size = (18 if 49 <= slot.index <= 51
+                    else 96 if 56 <= slot.index <= 58
+                    else 1024)
     sprite_id = hashlib.sha256(
         f"{SET_ID}:{slot.semantic_id}:sprite".encode("utf-8")).hexdigest()[:32]
     normalized = re.sub(
@@ -1052,6 +1363,217 @@ def ensure_reference_material_import_meta(
             "  userData: ui-art-set=" + SET_ID + ";slot=" + slot.semantic_id
             + ";source-scale=2;authored=deterministic-reference-material-kit", text)
         runtime_meta.write_text(text, encoding="utf-8")
+
+
+def extract_hub_navigation_icons(
+        project_root: Path, source_root: Path) -> None:
+    """Normalize the three hash-locked low-detail Hub icons into owned masters."""
+    for semantic_id, relative_path in HUB_ICON_GENERATED_ASSETS.items():
+        generated_path = project_root / relative_path
+        if not generated_path.is_file():
+            raise RuntimeError(
+                f"Missing Hub navigation ImageGen output: {generated_path}")
+        if sha256(generated_path) != HUB_ICON_ORIGINAL_HASHES[semantic_id]:
+            raise RuntimeError(
+                f"Hub navigation ImageGen output hash drift: {generated_path}")
+        with Image.open(generated_path) as generated:
+            cleaned = preserve_native_alpha_or_extract_connected_background(
+                generated)
+        master = clear_low_alpha_fringe(cleaned)
+        validate_transparent_imagegen_edge(master, semantic_id)
+        save_png(master, source_root / "icons"
+                 / f"{semantic_id.replace('.', '-')}.png")
+
+
+def ensure_hub_icon_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    """Own stable source/runtime importer identities for the three Hub icons."""
+    if slot.semantic_id not in HUB_ICON_SOURCE_HASHES:
+        return
+    source_path = source_root / "icons" / f"{slot.stem}.png"
+    runtime_path = runtime_root / "icons" / f"{slot.stem}.png"
+    if not source_path.is_file():
+        raise RuntimeError(f"Missing Hub navigation icon master: {source_path}")
+
+    current_hash = sha256(source_path)
+    if current_hash != HUB_ICON_SOURCE_HASHES[slot.semantic_id]:
+        raise RuntimeError(f"Hub navigation icon master drift: {source_path}")
+
+    source_meta = source_path.with_suffix(".png.meta")
+    if not source_meta.exists():
+        template = (source_root / "icons/icon-resource-sun.png.meta").read_text(
+            encoding="utf-8")
+        template = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                          "guid: " + stable_guid("source", slot.semantic_id),
+                          template)
+        template = re.sub(
+            r"(?m)^\s*userData:.*$",
+            "  userData: ui-art-source=" + SET_ID + ";slot=" + slot.semantic_id
+            + ";source-scale=2;authored=imagegen-single-icon-master",
+            template)
+        source_meta.write_text(template, encoding="utf-8")
+
+    runtime_meta = runtime_path.with_suffix(".png.meta")
+    if not runtime_meta.exists():
+        template = (runtime_root / "icons/icon-resource-sun.png.meta").read_text(
+            encoding="utf-8")
+        template = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                          "guid: " + stable_guid("runtime", slot.semantic_id),
+                          template)
+        sprite_id = hashlib.sha256(
+            f"{SET_ID}:{slot.semantic_id}:sprite".encode("utf-8")).hexdigest()[:32]
+        template = re.sub(r"(?m)^(\s*spriteID:)\s*[0-9a-f]*\s*$",
+                          r"\g<1> " + sprite_id, template)
+        template = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+                          r"\g<1> 96", template)
+        template = re.sub(
+            r"(?m)^\s*userData:.*$",
+            "  userData: ui-art-set=" + SET_ID + ";slot=" + slot.semantic_id
+            + ";target-size=96x96;authored=imagegen-single-icon-master",
+            template)
+        runtime_meta.parent.mkdir(parents=True, exist_ok=True)
+        runtime_meta.write_text(template, encoding="utf-8")
+
+
+def extract_home_reference_illustrations(
+        project_root: Path, source_root: Path) -> None:
+    """Copy only the three authorized, complete text-free Home image windows."""
+    reference_path = project_root / HOME_REFERENCE_PATH
+    if not reference_path.is_file() \
+            or sha256(reference_path) != HOME_REFERENCE_SHA256:
+        raise RuntimeError(
+            f"Approved Home reference hash drift: {reference_path}")
+    for semantic_id, (relative_path, expected_sha256, _) in (
+            HOME_REFERENCE_ILLUSTRATION_ASSETS.items()):
+        split_path = project_root / relative_path
+        if not split_path.is_file() or sha256(split_path) != expected_sha256:
+            raise RuntimeError(
+                f"Home reference component hash drift: {split_path}")
+        with Image.open(split_path) as split:
+            master = alpha_safe_resize(split.convert("RGBA"), (272, 216))
+        target = source_root / "illustrations" \
+            / f"{semantic_id.replace('.', '-')}.png"
+        save_png(master, target)
+
+
+def mark_home_reference_illustration_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    if slot.semantic_id not in HOME_REFERENCE_ILLUSTRATION_ASSETS:
+        return
+    relative_path, expected_sha256, crop = (
+        HOME_REFERENCE_ILLUSTRATION_ASSETS[slot.semantic_id])
+    crop_text = ",".join(str(value) for value in crop)
+    marker_tail = (
+        f"authored=user-approved-reference-component;"
+        f"reference={HOME_REFERENCE_PATH};reference-sha256={HOME_REFERENCE_SHA256};"
+        f"component={relative_path};component-sha256={expected_sha256};"
+        f"crop={crop_text};transform=complete-component-crop|alpha-safe-resize")
+    for owner, path in (
+            ("ui-art-source", source_root / "illustrations"
+             / f"{slot.stem}.png.meta"),
+            ("ui-art-set", runtime_root / "illustrations"
+             / f"{slot.stem}.png.meta")):
+        text = path.read_text(encoding="utf-8")
+        if not re.search(r"(?m)^\s*userData:.*$", text):
+            raise RuntimeError(f"No userData field in Home illustration meta: {path}")
+        text = re.sub(
+            r"(?m)^\s*userData:.*$",
+            f"  userData: {owner}={SET_ID};slot={slot.semantic_id};"
+            f"source-scale=2;{marker_tail}", text)
+        path.write_text(text, encoding="utf-8")
+
+
+def ensure_activity_reward_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    if slot.semantic_id != ACTIVITY_REWARD_SEMANTIC_ID:
+        return
+    records = (
+        ("ui-art-source",
+         source_root / "illustrations"
+         / "illustration-hub-activity-reward.png.meta",
+         source_root / "illustrations"
+         / "illustration-orchard-vista.png.meta",
+         "source"),
+        ("ui-art-set",
+         runtime_root / "illustrations"
+         / "illustration-hub-activity-reward.png.meta",
+         runtime_root / "illustrations"
+         / "illustration-orchard-vista.png.meta",
+         "runtime"),
+    )
+    for owner, path, template_path, identity in records:
+        if path.exists():
+            continue
+        text = template_path.read_text(encoding="utf-8")
+        text = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                      "guid: " + stable_guid(identity, slot.semantic_id), text)
+        text = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+                      r"\g<1> 768" if identity == "source" else r"\g<1> 384",
+                      text)
+        marker = (f"{owner}={SET_ID};slot={slot.semantic_id};source-scale=2;"
+                  "authored=imagegen-single-illustration-master;"
+                  "transform=connected-neutral-background-cleanup|"
+                  "transparent-padding|alpha-safe-resize|low-alpha-cleanup;"
+                  f"asset={ACTIVITY_REWARD_GENERATED_ASSET};"
+                  f"asset-sha256={ACTIVITY_REWARD_GENERATED_SHA256}")
+        text = re.sub(r"(?m)^\s*userData:.*$", "  userData: " + marker, text)
+        if identity == "runtime":
+            sprite_id = hashlib.sha256(
+                f"{SET_ID}:{slot.semantic_id}:sprite".encode(
+                    "utf-8")).hexdigest()[:32]
+            text = re.sub(r"(?m)^(\s*spriteID:)\s*[0-9a-f]*\s*$",
+                          r"\g<1> " + sprite_id, text)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
+def ensure_hub_navigation_surface_import_meta(
+        slot: Slot, source_root: Path, runtime_root: Path) -> None:
+    """Own stable import identities and ImageGen provenance for Hub chrome."""
+    if slot.semantic_id not in HUB_NAVIGATION_SURFACE_IDS:
+        return
+    asset_path, asset_sha256 = HUB_NAVIGATION_GENERATED_ASSETS[
+        slot.semantic_id]
+    records = (
+        ("ui-art-source",
+         source_root / "surfaces" / f"{slot.stem}.png.meta",
+         source_root / "illustrations" / "illustration-orchard-vista.png.meta",
+         "source"),
+        ("ui-art-set",
+         runtime_root / "surfaces" / f"{slot.stem}.png.meta",
+         runtime_root / "illustrations" / "illustration-orchard-vista.png.meta",
+         "runtime"),
+    )
+    for owner, path, template_path, identity in records:
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+        else:
+            text = template_path.read_text(encoding="utf-8")
+            text = re.sub(r"(?m)^guid:\s*[0-9a-f]{32}\s*$",
+                          "guid: " + stable_guid(
+                              identity, slot.semantic_id), text)
+            maximum = (1024 if identity == "source"
+                       else 512 if max(target_size(slot)) > 256 else 256)
+            text = re.sub(r"(?m)^(\s*maxTextureSize:)\s*\d+\s*$",
+                          r"\g<1> " + str(maximum), text)
+        text = re.sub(
+            r"(?m)^\s*userData:.*$",
+            "  userData: " + owner + "=" + SET_ID + ";slot="
+            + slot.semantic_id
+            + ";source-scale=2;authored=imagegen-direct-master;"
+            + "transform=connected-neutral-background-cleanup|"
+            + "transparent-padding|alpha-safe-resize|low-alpha-cleanup;"
+            + "composition=" + HUB_NAVIGATION_COMPOSITION_CONTRACT + ";"
+            + "asset=" + asset_path + ";asset-sha256=" + asset_sha256,
+            text)
+        if identity == "runtime":
+            sprite_id = hashlib.sha256(
+                f"{SET_ID}:{slot.semantic_id}:sprite".encode(
+                    "utf-8")).hexdigest()[:32]
+            text = re.sub(r"(?m)^(\s*spriteID:)\s*[0-9a-f]*\s*$",
+                          r"\g<1> " + sprite_id, text)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
 
 
 def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
@@ -1146,8 +1668,10 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             exported = (alpha_safe_resize(rgba, size)
                         if slot.index >= 40
                         or slot.semantic_id in IMAGEGEN_MATERIAL_IDS
+                        or slot.semantic_id in FIXED_RASTER_MASTER_IDS
                         else rgba.resize(size, Image.Resampling.LANCZOS))
         if slot.semantic_id in IMAGEGEN_MATERIAL_IDS \
+                or slot.semantic_id in FIXED_RASTER_MASTER_IDS \
                 or slot.index >= 40 and not (49 <= slot.index <= 51):
             exported = clear_low_alpha_fringe(exported)
         if slot.geometry == "icon" and not (49 <= slot.index <= 51):
@@ -1174,12 +1698,14 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
         # whose Lanczos ringing can otherwise recreate an alpha-1 key pixel.
         post_resize_bbox = (alpha_bbox(exported)
                             if slot.geometry == "icon"
-                            and slot.index < 49
+                            and not 49 <= slot.index <= 51
                             else None)
         if (post_resize_bbox is not None
                 and (post_resize_bbox[0] < 12 or post_resize_bbox[1] < 12
                      or post_resize_bbox[2] > 84 or post_resize_bbox[3] > 84)):
             exported = clear_icon_safe_edge(exported)
+        if slot.semantic_id in HUB_ICON_SOURCE_HASHES:
+            exported = clear_low_alpha_fringe(exported)
         exported = clear_visible_key_magenta(exported)
         if slot.semantic_id in ACTION_GLYPH_IDS:
             exported = neutralize_action_glyph(exported)
@@ -1195,7 +1721,7 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             raise RuntimeError("Screen background must be fully opaque")
         if slot.index == 10 and rgba.getpixel((0, 0)) != (255, 255, 255, 255):
             raise RuntimeError("Scrim must remain neutral opaque white")
-        if slot.geometry == "icon" and slot.index < 49:
+        if slot.geometry == "icon" and not 49 <= slot.index <= 51:
             bbox = alpha_bbox(rgba)
             inset = 12
             if (bbox is None or bbox[0] < inset or bbox[1] < inset
@@ -1233,8 +1759,12 @@ def export_unique(slot: Slot, source_root: Path, runtime_root: Path) -> None:
             content_region_min_contrast(rgba, slot.semantic_id)
         if slot.semantic_id in IMAGEGEN_MATERIAL_IDS:
             validate_transparent_imagegen_edge(rgba, slot.semantic_id)
+        if slot.semantic_id in FIXED_RASTER_MASTER_IDS:
+            validate_transparent_imagegen_edge(rgba, slot.semantic_id)
         if slot.semantic_id in LINE_FREE_CARRIER_IDS:
             validate_line_free_carrier_edge(rgba, slot.semantic_id)
+        if slot.semantic_id in HUB_ICON_SOURCE_HASHES:
+            validate_hub_navigation_icon_silhouette(rgba, slot.semantic_id)
 
 
 def main() -> None:
@@ -1242,16 +1772,27 @@ def main() -> None:
     project_root = source_root.parents[4]
     runtime_root = project_root / "Assets/UI/Art/Runtime" / SET_ID
 
-    author_reference_material_masters(source_root)
+    validate_no_visible_pixel_authoring()
+    extract_fixed_primary_action_master(project_root, source_root)
     extract_imagegen_material_masters(project_root, source_root)
+    extract_activity_reward_illustration(project_root, source_root)
+    extract_home_reference_illustrations(project_root, source_root)
+    extract_hub_navigation_icons(project_root, source_root)
+    extract_hub_navigation_surface_masters(project_root, source_root)
 
     unique: dict[str, Slot] = {}
     for slot in SLOTS:
         unique.setdefault(slot.stem, slot)
     for slot in unique.values():
         ensure_reference_material_import_meta(slot, source_root, runtime_root)
+        ensure_hub_icon_import_meta(slot, source_root, runtime_root)
+        ensure_activity_reward_import_meta(slot, source_root, runtime_root)
+        ensure_hub_navigation_surface_import_meta(slot, source_root, runtime_root)
+        mark_home_reference_illustration_import_meta(
+            slot, source_root, runtime_root)
         mark_reference_material_import_meta(slot, source_root, runtime_root)
         mark_imagegen_material_import_meta(slot, source_root, runtime_root)
+        mark_fixed_raster_import_meta(slot, source_root, runtime_root)
         export_unique(slot, source_root, runtime_root)
         runtime_path = runtime_root / subdirectory(slot) / f"{slot.stem}.png"
         normalize_target_import_meta(slot, runtime_path, runtime_root)
@@ -1345,11 +1886,93 @@ def main() -> None:
                 item["content_tone"] = "primary"
             elif slot.semantic_id == "action.danger":
                 item["content_tone"] = "inverse"
+        if slot.semantic_id in FIXED_RASTER_MASTER_IDS:
+            item.update({
+                "authoring_contract": "user-approved-fixed-raster-master",
+                "material_anatomy": (
+                    "outer-cream-rim|rounded-square-lime-face|soil-outline|"
+                    "upper-highlight|short-bottom-shadow"),
+                "fixed_master": PRIMARY_ACTION_FIXED_MASTER,
+                "fixed_master_sha256": PRIMARY_ACTION_FIXED_MASTER_SHA256,
+                "historical_commit": PRIMARY_ACTION_HISTORICAL_COMMIT,
+                "historical_path": PRIMARY_ACTION_HISTORICAL_PATH,
+                "deterministic_transform": (
+                    "byte-for-byte-master-copy|alpha-safe-resize|"
+                    "low-alpha-cleanup"),
+                "content_tone": "primary",
+            })
         if slot.semantic_id in IMAGEGEN_OUTPUTS:
             item.update({
                 "imagegen_provider": "built-in-imagegen",
                 "imagegen_output": IMAGEGEN_OUTPUTS[slot.semantic_id],
                 "prompt_record": PROMPT_RECORD_PATH,
+            })
+        if slot.semantic_id in HUB_ICON_SOURCE_HASHES:
+            item.update({
+                "authoring_contract": "imagegen-single-icon-master",
+                "generated_asset": HUB_ICON_GENERATED_ASSETS[slot.semantic_id],
+                "generated_asset_sha256": HUB_ICON_ORIGINAL_HASHES[slot.semantic_id],
+                "deterministic_transform": (
+                    ("same-output-neutral-alpha|transparent-padding|"
+                     "alpha-safe-resize|low-alpha-cleanup")
+                    if slot.semantic_id == "icon.hub-activity"
+                    else ("connected-neutral-background-cleanup|"
+                          "transparent-padding|alpha-safe-resize|"
+                          "low-alpha-cleanup")),
+                "visible_safe_inset": 12,
+                "review_logical_size_min": HUB_ICON_REVIEW_SIZES[0],
+                "review_logical_size_max": HUB_ICON_REVIEW_SIZES[-1],
+                "silhouette_contract": HUB_ICON_SILHOUETTE_CONTRACT,
+                "silhouette_perimeter_ratio_max":
+                    HUB_ICON_SILHOUETTE_PERIMETER_RATIO_MAX,
+                "silhouette_iou_max": HUB_ICON_SILHOUETTE_IOU_MAX,
+            })
+        if slot.semantic_id == ACTIVITY_REWARD_SEMANTIC_ID:
+            item.update({
+                "authoring_contract":
+                    "imagegen-single-illustration-master",
+                "generated_asset": ACTIVITY_REWARD_GENERATED_ASSET,
+                "generated_asset_sha256":
+                    ACTIVITY_REWARD_GENERATED_SHA256,
+                "deterministic_transform": (
+                    "connected-neutral-background-cleanup|"
+                    "transparent-padding|alpha-safe-resize|"
+                    "low-alpha-cleanup"),
+                "imagegen_provider": "built-in-imagegen",
+                "imagegen_output": IMAGEGEN_OUTPUTS[slot.semantic_id],
+                "prompt_record": PROMPT_RECORD_PATH,
+            })
+        if slot.semantic_id in HOME_REFERENCE_ILLUSTRATION_ASSETS:
+            relative_path, expected_sha256, crop = (
+                HOME_REFERENCE_ILLUSTRATION_ASSETS[slot.semantic_id])
+            item.update({
+                "authoring_contract": "user-approved-reference-component",
+                "reference": HOME_REFERENCE_PATH,
+                "reference_sha256": HOME_REFERENCE_SHA256,
+                "component_asset": relative_path,
+                "component_asset_sha256": expected_sha256,
+                "component_crop": list(crop),
+                "deterministic_transform": (
+                    "complete-component-crop|alpha-safe-resize"),
+            })
+        if slot.semantic_id in HUB_NAVIGATION_SURFACE_IDS:
+            asset_path, asset_sha256 = HUB_NAVIGATION_GENERATED_ASSETS[
+                slot.semantic_id]
+            item.update({
+                "authoring_contract":
+                    "imagegen-direct-master",
+                "generated_asset": asset_path,
+                "generated_asset_sha256": asset_sha256,
+                "composition_contract":
+                    HUB_NAVIGATION_COMPOSITION_CONTRACT,
+                "silhouette_role": (
+                    "continuous-base"
+                    if slot.semantic_id == "surface.hub-navigation-base"
+                    else "selected-tab"),
+                "deterministic_transform":
+                    "connected-neutral-background-cleanup|"
+                    "transparent-padding|alpha-safe-resize|"
+                    "low-alpha-cleanup",
             })
         bindings.append(item)
 
@@ -1365,6 +1988,23 @@ def main() -> None:
             if overlap >= 0.80:
                 raise RuntimeError(
                     f"Micro silhouettes are confusable: {first_id} vs {second_id} IoU={overlap:.3f}")
+
+    hub_images = []
+    for slot in SLOTS[56:59]:
+        with Image.open(runtime_root / "icons" / f"{slot.stem}.png") as image:
+            hub_images.append((slot.semantic_id, image.convert("RGBA")))
+    for review_size in HUB_ICON_REVIEW_SIZES:
+        hub_masks = [(semantic_id, bilinear_alpha_mask(image, review_size))
+                     for semantic_id, image in hub_images]
+        for first_index in range(len(hub_masks)):
+            for second_index in range(first_index + 1, len(hub_masks)):
+                first_id, first = hub_masks[first_index]
+                second_id, second = hub_masks[second_index]
+                overlap = mask_iou(first, second)
+                if overlap >= HUB_ICON_SILHOUETTE_IOU_MAX:
+                    raise RuntimeError(
+                        f"Hub silhouettes are confusable at {review_size}px: "
+                        f"{first_id} vs {second_id} IoU={overlap:.3f}")
 
     manifest = {
         "schema": "fruit-defense.runtime-ui-art-manifest.v2",

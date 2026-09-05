@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SunnyOrchardPaintedRuntimeUiArtSet
   m_EditorClassIdentifier: Assembly-CSharp::FruitDefense.UI.RuntimeUiArtSet
   setId: sunny-orchard-painted
-  revision: '9'
+  revision: '19'
   bindings:
   - slot: 0
     texture: {fileID: 2800000, guid: 5fb878b839d12d1f37a65b2679a46488, type: 3}
@@ -108,7 +108,7 @@ MonoBehaviour:
       left: 4
       top: 4
       right: 4
-      bottom: 5
+      bottom: 4
     pixelsPerLogicalUnit: 2
   - slot: 5
     texture: {fileID: 2800000, guid: 115def71075d5a3d3e3ab7727835dae6, type: 3}
@@ -1078,4 +1078,118 @@ MonoBehaviour:
       top: 8
       right: 8
       bottom: 3
+    pixelsPerLogicalUnit: 2
+  - slot: 56
+    texture: {fileID: 2800000, guid: fe26bf3d6f53f3e079315c3c232f96b8, type: 3}
+    sprite: {fileID: 21300000, guid: fe26bf3d6f53f3e079315c3c232f96b8, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 12
+      top: 12
+      right: 12
+      bottom: 12
+    opticalInset:
+      left: 18
+      top: 18
+      right: 18
+      bottom: 25
+    pixelsPerLogicalUnit: 2
+  - slot: 57
+    texture: {fileID: 2800000, guid: 93f20c561c69290a3594ca3ac01be842, type: 3}
+    sprite: {fileID: 21300000, guid: 93f20c561c69290a3594ca3ac01be842, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 12
+      top: 12
+      right: 12
+      bottom: 12
+    opticalInset:
+      left: 13
+      top: 14
+      right: 16
+      bottom: 12
+    pixelsPerLogicalUnit: 2
+  - slot: 58
+    texture: {fileID: 2800000, guid: 9f6f32d4cd2c27bad049a81a2a1e5ec8, type: 3}
+    sprite: {fileID: 21300000, guid: 9f6f32d4cd2c27bad049a81a2a1e5ec8, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 12
+      top: 12
+      right: 12
+      bottom: 12
+    opticalInset:
+      left: 14
+      top: 19
+      right: 14
+      bottom: 19
+    pixelsPerLogicalUnit: 2
+  - slot: 59
+    texture: {fileID: 2800000, guid: 862fb71d0675951c6f1a142beb030ace, type: 3}
+    sprite: {fileID: 21300000, guid: 862fb71d0675951c6f1a142beb030ace, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    opticalInset:
+      left: 12
+      top: 33
+      right: 12
+      bottom: 33
+    pixelsPerLogicalUnit: 2
+  - slot: 60
+    texture: {fileID: 2800000, guid: c292ea0ac66eb2ee6c2f90f8d39e8f3f, type: 3}
+    sprite: {fileID: 21300000, guid: c292ea0ac66eb2ee6c2f90f8d39e8f3f, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    opticalInset:
+      left: 1
+      top: 5
+      right: 1
+      bottom: 5
+    pixelsPerLogicalUnit: 2
+  - slot: 61
+    texture: {fileID: 2800000, guid: a50a6005bd7d61c91eae2c0d1f624308, type: 3}
+    sprite: {fileID: 21300000, guid: a50a6005bd7d61c91eae2c0d1f624308, type: 3}
+    sliceBorder:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    safeInset:
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0
+    opticalInset:
+      left: 1
+      top: 2
+      right: 1
+      bottom: 2
     pixelsPerLogicalUnit: 2

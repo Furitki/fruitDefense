@@ -7,7 +7,7 @@ status: active
 
 # Local build and online release pipelines
 
-The repository exposes two operator pipelines. They are local PowerShell entry points today and are intentionally shaped so a later GitHub Actions runner can call the same commands without duplicating build logic.
+The repository exposes three operator pipelines. They are local PowerShell entry points today and are intentionally shaped so a later GitHub Actions runner can call the same commands without duplicating build logic.
 
 ## 1. Local build pipeline
 
@@ -46,23 +46,79 @@ Success marker:
 FRUIT_DEFENSE_LOCAL_BUILD_PIPELINE_OK
 ```
 
-## 2. Online WebGL publication pipeline
+## 2. Promote `main` to `oper`
+
+Entry point: `scripts/promote-oper.ps1`
+
+The promotion script advances the dedicated release branch to the current
+committed `main` revision. It discovers the `oper` worktree from Git metadata;
+the worktree path is not hard-coded. Running without `-Execute` only reads the
+local repository state, prints the selected revision and gates, and performs no
+fetch, merge, or push:
+
+```powershell
+# Safe local plan; no Git refs are changed and no network call is made
+powershell -ExecutionPolicy Bypass -File .\scripts\promote-oper.ps1
+```
+
+Plan success marker:
+
+```text
+FRUIT_DEFENSE_OPER_PROMOTION_PLAN_OK
+```
+
+Actual promotion requires explicit authorization. Execution fetches
+`origin/oper`, re-evaluates the gates, fast-forwards the clean `oper` worktree,
+performs a normal non-force push, and verifies the exact remote revision:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\promote-oper.ps1 -Execute
+```
+
+The fixed gates are:
+
+- the script checkout is on `main`;
+- exactly one Git worktree is checked out on `oper`, and that worktree is clean;
+- local `oper` and fetched `origin/oper` are both ancestors of the captured
+  committed `main` revision, so promotion is fast-forward-only;
+- the final local and remote `oper` revisions exactly equal the captured source
+  revision.
+
+A dirty `main` checkout is allowed, but modified and untracked files are never
+included. Both plan and execution identify this explicitly; commit every desired
+release file before promotion. The script does not commit, stash, reset, build,
+tag, run acceptance, publish WebGL, or perform a mini-game conversion.
+
+Promotion success marker:
+
+```text
+FRUIT_DEFENSE_OPER_PROMOTION_OK
+```
+
+The isolated integration validation is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-promote-oper.ps1
+```
+
+## 3. Online WebGL publication pipeline
 
 Entry point: `scripts/publish-online.ps1`
 
 ### Release source of truth
 
 Server publication is performed only from the `oper` branch and its dedicated
-worktree, `E:\project\unity\furitDefense-oper`. `main` remains the development
-line. The publisher hard-codes this release branch and accepts no branch
-override for `-Execute`.
+worktree (currently `E:\project\unity\furitDefense-oper`). `main` remains the
+development line. The promotion script discovers that worktree from Git
+metadata, while the publisher hard-codes the release branch and accepts no
+branch override for `-Execute`.
 
-To prepare a release, commit the approved source on `main`, deliberately
-promote the selected commit(s) to `oper`, and build, accept, and publish only
-from the clean `oper` worktree. Tag the resulting `oper` commit after a
-successful publication. Do not copy selected project folders between the two
-worktrees: Git checkout supplies the complete versioned Unity project,
-including `.meta`, `Packages`, and `ProjectSettings`.
+To prepare a release, commit the approved source on `main`, promote it with
+`scripts/promote-oper.ps1 -Execute`, and build, accept, and publish only from the
+clean `oper` worktree. Tag the resulting `oper` commit after a successful
+publication. Do not copy selected project folders between the two worktrees:
+Git checkout supplies the complete versioned Unity project, including `.meta`,
+`Packages`, and `ProjectSettings`.
 
 Running the entry without `-Execute` is a non-publishing plan. It prints the resolved target and gates but does not require the SSH key, connect to the server, upload files, or change the remote service.
 

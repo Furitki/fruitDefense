@@ -87,15 +87,25 @@ namespace FruitDefense.Editor
 
         private static void ValidateInteractionStatePriority()
         {
-            Assert(ResolvePresenterState(typeof(LobbyPresenter), "ResolveCardState",
+            Assert(ResolvePresenterState(typeof(LobbyHubPresenter), "ResolveCardState",
                     true, false, true, true, true) == RuntimeUiInteractionState.Loading
-                && ResolvePresenterState(typeof(LobbyPresenter), "ResolveCardState",
+                && ResolvePresenterState(typeof(LobbyHubPresenter), "ResolveCardState",
                     false, false, true, true, true) == RuntimeUiInteractionState.Disabled
-                && ResolvePresenterState(typeof(LobbyPresenter), "ResolveCardState",
+                && ResolvePresenterState(typeof(LobbyHubPresenter), "ResolveCardState",
                     false, true, true, true, true) == RuntimeUiInteractionState.Pressed
-                && ResolvePresenterState(typeof(LobbyPresenter), "ResolveCardState",
+                && ResolvePresenterState(typeof(LobbyHubPresenter), "ResolveCardState",
                     false, true, true, false, false) == RuntimeUiInteractionState.Selected,
                 "Lobby keeps loading/disabled above transient press and persistent selection");
+            Assert(ResolvePresenterState(typeof(LobbyHubPresenter),
+                        "ResolveNavigationState", true, true, true, true)
+                    == RuntimeUiInteractionState.Loading
+                && ResolvePresenterState(typeof(LobbyHubPresenter),
+                        "ResolveNavigationState", false, true, true, true)
+                    == RuntimeUiInteractionState.Pressed
+                && ResolvePresenterState(typeof(LobbyHubPresenter),
+                        "ResolveNavigationState", false, true, false, false)
+                    == RuntimeUiInteractionState.Selected,
+                "Hub navigation keeps transition and press above persistent selection");
             Assert(ResolvePresenterState(typeof(SettlementPresenter), "ResolveActionState",
                     true, false, true, true) == RuntimeUiInteractionState.Loading
                 && ResolvePresenterState(typeof(SettlementPresenter), "ResolveActionState",
@@ -143,13 +153,18 @@ namespace FruitDefense.Editor
         private static void ValidateHitGeometry()
         {
             var safeArea = new Rect(0f, 0f, 402f, 874f);
-            var lobby = PortraitShellLayout.CreateLobby(402f, 874f, safeArea);
+            var lobby = PortraitHubLayout.Create(402f, 874f, safeArea);
             var settlement = PortraitShellLayout.CreateSettlement(402f, 874f, safeArea);
-            Assert(PortraitShellLayout.HitTest(lobby, lobby.StartButton.center, false)
-                    == ShellHitTarget.Start
-                && PortraitShellLayout.HitTest(lobby, lobby.StartButton.center, true)
-                    == ShellHitTarget.None,
-                "Lobby timing does not create a second hit rectangle");
+            Assert(PortraitHubLayout.HitTest(lobby,
+                        lobby.HomePage.StartButton.center, HubPageId.Home, false)
+                    == HubHitTarget.Start
+                && PortraitHubLayout.HitTest(lobby,
+                        lobby.PrimaryNavigation.Activity.center,
+                        HubPageId.Home, false) == HubHitTarget.Activity
+                && PortraitHubLayout.HitTest(lobby,
+                        lobby.HomePage.StartButton.center, HubPageId.Home, true)
+                    == HubHitTarget.None,
+                "Hub timing does not create a second Home or navigation hit rectangle");
             Assert(PortraitShellLayout.HitTest(
                     settlement, settlement.RetryButton.center, false) == ShellHitTarget.Retry
                 && PortraitShellLayout.HitTest(
@@ -201,16 +216,21 @@ namespace FruitDefense.Editor
                 && !bootstrapGui.Contains("yield return"),
                 "Bootstrap retry command remains in the click frame");
 
-            var lobby = ReadSource("Scripts/Shell/LobbyPresenter.cs");
+            var lobby = ReadSource("Scripts/Shell/LobbyHubPresenter.cs");
             AssertConsumes(lobby, "Lobby", "UnscaledFocusSeconds", "UnscaledPressSeconds",
-                "UnscaledSelectionSeconds", "UnscaledTransitionSeconds",
-                "UnscaledStatusSeconds");
+                "UnscaledSelectionSeconds", "UnscaledTransitionSeconds");
             var lobbyGui = Slice(lobby, "private void OnGUI()", "private void DrawLevelCard(");
             Assert(lobbyGui.IndexOf("BeginPress(StartFeedbackTarget",
                     StringComparison.Ordinal)
                     < lobbyGui.IndexOf("if (TryStart())", StringComparison.Ordinal)
                 && !lobbyGui.Contains("yield return"),
                 "Lobby Start command remains in the click frame");
+            Assert(!lobby.Contains("_statusPulse")
+                && !lobby.Contains("UnscaledStatusSeconds")
+                && !lobbyGui.Contains("LastError =")
+                && lobby.Contains(
+                    "LastError = error.IsEmpty ? new ShellFlowError(\"shell-command-rejected\") : error"),
+                "Hub keeps its recoverable LastError visible until an explicit successful command clears it, without a timed status pulse");
 
             var settlement = ReadSource("Scripts/Shell/SettlementPresenter.cs");
             AssertConsumes(settlement, "Settlement", "UnscaledFocusSeconds",

@@ -119,7 +119,7 @@ namespace FruitDefense.Editor
         private static void ValidateProfileSelectionBoundary(string gmLevelId)
         {
             var catalog = BundledLevelCatalogFactory.CreateCompiled();
-            var profile = PlayerProfileEnvelopeV1.CreateDefault();
+            var profile = PlayerProfile.CreateDefault();
             Assert(!string.Equals(profile.lastSelectedLevelId, gmLevelId,
                     StringComparison.Ordinal)
                 && catalog.Resolve(profile.lastSelectedLevelId).Succeeded,

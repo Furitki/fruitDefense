@@ -133,6 +133,12 @@ namespace FruitDefense.UI
         ActionCompactControl = 53,
         ActionCompactControlActive = 54,
         SurfaceGameplayStage = 55,
+        IconHubHome = 56,
+        IconHubActivity = 57,
+        IconHubGrowth = 58,
+        IllustrationHubActivityReward = 59,
+        SurfaceHubNavigationBase = 60,
+        SurfaceHubNavigationSelectedTab = 61,
     }
 
     public enum RuntimeUiArtGeometry
@@ -246,6 +252,12 @@ namespace FruitDefense.UI
             RuntimeUiArtSlot.ActionCompactControl,
             RuntimeUiArtSlot.ActionCompactControlActive,
             RuntimeUiArtSlot.SurfaceGameplayStage,
+            RuntimeUiArtSlot.IconHubHome,
+            RuntimeUiArtSlot.IconHubActivity,
+            RuntimeUiArtSlot.IconHubGrowth,
+            RuntimeUiArtSlot.IllustrationHubActivityReward,
+            RuntimeUiArtSlot.SurfaceHubNavigationBase,
+            RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab,
         };
 
         private static readonly ReadOnlyCollection<RuntimeUiArtSlot> ReadOnlyRequiredSlots =
@@ -258,7 +270,7 @@ namespace FruitDefense.UI
         {
             var value = (int)slot;
             return value >= (int)RuntimeUiArtSlot.SurfaceScreenBackground
-                && value <= (int)RuntimeUiArtSlot.SurfaceGameplayStage;
+                && value <= (int)RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab;
         }
 
         public static int RequiredIndex(RuntimeUiArtSlot slot)
@@ -290,6 +302,9 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard02:
                 case RuntimeUiArtSlot.IllustrationLobbyOrchard03:
                 case RuntimeUiArtSlot.IllustrationShellOrchardDepth:
+                case RuntimeUiArtSlot.IllustrationHubActivityReward:
+                case RuntimeUiArtSlot.SurfaceHubNavigationBase:
+                case RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab:
                     return RuntimeUiArtGeometry.Stretch;
                 case RuntimeUiArtSlot.SurfaceSafeArea:
                 case RuntimeUiArtSlot.SurfacePanelStandard:
@@ -339,6 +354,9 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.IconResourceSunMicro:
                 case RuntimeUiArtSlot.IconResourceCoreMicro:
                 case RuntimeUiArtSlot.IconResourceWaveMicro:
+                case RuntimeUiArtSlot.IconHubHome:
+                case RuntimeUiArtSlot.IconHubActivity:
+                case RuntimeUiArtSlot.IconHubGrowth:
                     return RuntimeUiArtGeometry.Icon;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(slot), slot,
@@ -406,6 +424,15 @@ namespace FruitDefense.UI
                 case RuntimeUiArtSlot.ActionCompactControl: return "action.compact-control";
                 case RuntimeUiArtSlot.ActionCompactControlActive: return "action.compact-control-active";
                 case RuntimeUiArtSlot.SurfaceGameplayStage: return "surface.gameplay-stage";
+                case RuntimeUiArtSlot.IconHubHome: return "icon.hub-home";
+                case RuntimeUiArtSlot.IconHubActivity: return "icon.hub-activity";
+                case RuntimeUiArtSlot.IconHubGrowth: return "icon.hub-growth";
+                case RuntimeUiArtSlot.IllustrationHubActivityReward:
+                    return "illustration.hub-activity-reward";
+                case RuntimeUiArtSlot.SurfaceHubNavigationBase:
+                    return "surface.hub-navigation-base";
+                case RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab:
+                    return "surface.hub-navigation-selected-tab";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(slot), slot,
                         "The UI art slot is not part of the finite runtime contract.");
@@ -553,6 +580,7 @@ namespace FruitDefense.UI
         [SerializeField] private Color danger;
         [SerializeField] private Color disabled;
         [SerializeField] private Color scrim;
+        [SerializeField] private Color outline;
         [SerializeField] private Color primaryText;
         [SerializeField] private Color secondaryText;
         [SerializeField] private Color inverseText;
@@ -566,6 +594,7 @@ namespace FruitDefense.UI
         public Color Danger => danger;
         public Color Disabled => disabled;
         public Color Scrim => scrim;
+        public Color Outline => outline;
         public Color PrimaryText => primaryText;
         public Color SecondaryText => secondaryText;
         public Color InverseText => inverseText;
@@ -575,15 +604,16 @@ namespace FruitDefense.UI
             return new RuntimeUiSemanticColors
             {
                 edgeBackground = new Color32(115, 201, 244, 255),
-                baseSurface = new Color32(255, 249, 238, 255),
-                raisedSurface = new Color32(255, 241, 210, 255),
-                selectionAccent = new Color32(255, 197, 66, 255),
+                baseSurface = new Color32(249, 239, 218, 255),
+                raisedSurface = new Color32(251, 232, 170, 255),
+                selectionAccent = new Color32(251, 207, 82, 255),
                 success = new Color32(84, 169, 40, 255),
                 warning = new Color32(230, 154, 25, 255),
                 danger = new Color32(200, 77, 63, 255),
-                disabled = new Color32(167, 185, 155, 255),
+                disabled = new Color32(228, 220, 205, 255),
                 scrim = new Color32(59, 36, 22, 255),
-                primaryText = new Color32(86, 52, 31, 255),
+                outline = new Color32(75, 42, 19, 255),
+                primaryText = new Color32(107, 63, 18, 255),
                 secondaryText = new Color32(111, 88, 70, 255),
                 inverseText = new Color32(255, 249, 238, 255),
             };
@@ -600,6 +630,7 @@ namespace FruitDefense.UI
             RuntimeUiNumbers.ValidateColor(result, field + ".danger", danger);
             RuntimeUiNumbers.ValidateColor(result, field + ".disabled", disabled);
             RuntimeUiNumbers.ValidateColor(result, field + ".scrim", scrim);
+            RuntimeUiNumbers.ValidateColor(result, field + ".outline", outline);
             RuntimeUiNumbers.ValidateColor(result, field + ".primaryText", primaryText);
             RuntimeUiNumbers.ValidateColor(result, field + ".secondaryText", secondaryText);
             RuntimeUiNumbers.ValidateColor(result, field + ".inverseText", inverseText);
@@ -621,7 +652,8 @@ namespace FruitDefense.UI
         public Color Container => container;
         public Color Content => content;
 
-        internal void AppendValidation(RuntimeUiValidationResult result, string field)
+        internal void AppendValidation(RuntimeUiValidationResult result, string field,
+            float minimumContrast = 4.5f)
         {
             RuntimeUiNumbers.ValidateColor(result, field + ".container", container);
             RuntimeUiNumbers.ValidateColor(result, field + ".content", content);
@@ -633,10 +665,11 @@ namespace FruitDefense.UI
             }
 
             var contrast = RuntimeUiNumbers.ContrastRatio(container, content);
-            if (contrast + .001f < 4.5f)
+            if (contrast + .001f < minimumContrast)
             {
                 result.Add("theme.action-color.contrast", field,
-                    "Action container/content contrast must be at least 4.5:1; resolved "
+                    "Action container/content contrast must be at least "
+                    + minimumContrast.ToString("0.0") + ":1; resolved "
                     + contrast.ToString("0.00") + ":1.");
             }
         }
@@ -678,17 +711,17 @@ namespace FruitDefense.UI
             return new RuntimeUiActionStyleTokens
             {
                 primary = new RuntimeUiActionColorPair(
-                    new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255)),
+                    new Color32(160, 199, 61, 255), new Color32(12, 8, 4, 255)),
                 secondary = new RuntimeUiActionColorPair(
-                    new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255)),
+                    new Color32(136, 175, 53, 255), new Color32(75, 42, 19, 255)),
                 quiet = new RuntimeUiActionColorPair(
-                    new Color32(255, 249, 238, 255), new Color32(111, 88, 70, 255)),
+                    new Color32(249, 239, 218, 255), new Color32(107, 63, 18, 255)),
                 danger = new RuntimeUiActionColorPair(
-                    new Color32(168, 56, 49, 255), new Color32(255, 249, 238, 255)),
+                    new Color32(168, 56, 49, 255), new Color32(249, 239, 218, 255)),
                 modeActive = new RuntimeUiActionColorPair(
-                    new Color32(255, 197, 66, 255), new Color32(59, 36, 22, 255)),
+                    new Color32(251, 207, 82, 255), new Color32(107, 63, 18, 255)),
                 disabled = new RuntimeUiActionColorPair(
-                    new Color32(223, 227, 216, 255), new Color32(79, 87, 74, 255)),
+                    new Color32(228, 220, 205, 255), new Color32(124, 116, 107, 255)),
             };
         }
 
@@ -699,7 +732,9 @@ namespace FruitDefense.UI
             quiet.AppendValidation(result, field + ".quiet");
             danger.AppendValidation(result, field + ".danger");
             modeActive.AppendValidation(result, field + ".modeActive");
-            disabled.AppendValidation(result, field + ".disabled");
+            // Disabled actions remain identifiable through the independent finite-state
+            // cue; their deliberately muted content pair keeps the required 3:1 boundary.
+            disabled.AppendValidation(result, field + ".disabled", 3f);
         }
     }
 

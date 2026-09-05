@@ -47,7 +47,7 @@ function Get-ReleaseRuntimeUiIdentity {
 
   $themeId = Get-YamlScalar -Text $themeText -Name 'themeId'
   $themeRevision = Get-YamlScalar -Text $themeText -Name 'revision'
-  if ($themeId -cne 'ui.sunny-orchard' -or $themeRevision -cne '9') {
+  if ($themeId -cne 'ui.sunny-orchard' -or $themeRevision -cne '12') {
     throw "Unexpected release runtime UI Theme identity: $themeId@$themeRevision"
   }
 
@@ -60,7 +60,7 @@ function Get-ReleaseRuntimeUiIdentity {
   }
   $artSetId = Get-YamlScalar -Text $artSetText -Name 'setId'
   $artSetRevision = Get-YamlScalar -Text $artSetText -Name 'revision'
-  if ($artSetId -cne 'sunny-orchard-painted' -or $artSetRevision -cne '9') {
+  if ($artSetId -cne 'sunny-orchard-painted' -or $artSetRevision -cne '19') {
     throw "Unexpected release RuntimeUiArtSet identity: $artSetId@$artSetRevision"
   }
 

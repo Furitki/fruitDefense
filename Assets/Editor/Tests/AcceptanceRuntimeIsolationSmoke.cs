@@ -11,6 +11,7 @@ namespace FruitDefense.Editor
     {
         public static void Run()
         {
+            OutgameHubAcceptanceCatalogSmoke.Run();
             ValidateAcceptanceQuerySemantics();
 #if FRUIT_DEFENSE_ACCEPTANCE
             ValidateAcceptanceSurfacePresent();
@@ -57,6 +58,8 @@ namespace FruitDefense.Editor
         {
             Assert(typeof(IAcceptanceBattlePort).IsInterface,
                 "acceptance build exposes its dedicated battle port");
+            Assert(typeof(IAcceptanceHubPort).IsInterface,
+                "acceptance build exposes its dedicated hub port");
             Assert(typeof(IAcceptanceBattlePort).GetMethod(
                     nameof(IAcceptanceBattlePort.TryConfigureNamedState)) != null
                 && typeof(IAcceptanceBattlePort).GetMethod(
@@ -66,6 +69,10 @@ namespace FruitDefense.Editor
                     "ConfigureAcceptanceFlow",
                     BindingFlags.Instance | BindingFlags.Public) != null,
                 "acceptance build retains the ConfigureAcceptanceFlow message entry");
+            Assert(typeof(OutgameHubAcceptanceBridge).GetMethod(
+                    "ConfigureAcceptanceHubState",
+                    BindingFlags.Instance | BindingFlags.Public) != null,
+                "acceptance build retains the finite hub state message entry");
             Assert(typeof(SettlementPresenter).GetMethod(
                     "FruitDefensePublishSettlementOutcomeReveal",
                     BindingFlags.Static | BindingFlags.NonPublic) != null,
@@ -88,6 +95,11 @@ namespace FruitDefense.Editor
                 "default runtime omits the acceptance port type");
             Assert(runtimeAssembly.GetType("FruitDefense.AcceptanceCommandResult") == null,
                 "default runtime omits acceptance command results");
+            Assert(runtimeAssembly.GetType("FruitDefense.IAcceptanceHubPort") == null,
+                "default runtime omits the acceptance hub port type");
+            Assert(runtimeAssembly.GetType(
+                    "FruitDefense.OutgameHubAcceptanceBridge") == null,
+                "default runtime omits the acceptance hub bridge");
             Assert(runtimeAssembly.GetType("FruitDefense.AcceptanceSafeAreaDecorator") == null,
                 "default runtime omits the synthetic safe-area decorator");
             Assert(typeof(FruitDefenseGame).GetMethod(
@@ -121,6 +133,8 @@ namespace FruitDefense.Editor
                 "Assets/Scripts/RuntimeSafeAreaResolver.cs"));
             var bridgeSource = File.ReadAllText(Path.GetFullPath(
                 "Assets/Plugins/WebGL/FruitDefenseAcceptance.jslib"));
+            var hubBridgeSource = File.ReadAllText(Path.GetFullPath(
+                "Assets/Scripts/AcceptanceHubBridge.cs"));
 
             Require(gameSource, "#if FRUIT_DEFENSE_ACCEPTANCE");
             Require(gameSource, "ConfigureAcceptanceState");
@@ -135,6 +149,14 @@ namespace FruitDefense.Editor
             Require(safeAreaSource, "return Screen.safeArea;");
             Require(bridgeSource, "FruitDefenseAcceptanceReady");
             Require(bridgeSource, "FruitDefensePublishCombatFeedbackTelemetry");
+            Require(bridgeSource, "FruitDefensePublishHubTelemetry");
+            Require(bridgeSource, "fruitDefenseHubTelemetryHistory");
+            Require(hubBridgeSource, "#if FRUIT_DEFENSE_ACCEPTANCE");
+            Require(hubBridgeSource, "OutgameHubAcceptanceBridge");
+            Require(hubBridgeSource, "AcceptanceLaunchQuery.IsEnabled");
+            Require(hubBridgeSource, "FruitDefensePublishHubTelemetry");
+            Require(hubBridgeSource, "AcceptanceHubFixtureContext");
+            Require(hubBridgeSource, "RealInteractionSequence");
             Require(bridgeSource, "FruitDefensePublishSettlementOutcomeReveal");
             Require(bridgeSource, "fruitDefenseSettlementOutcomeRevealHistory");
             Require(bridgeSource, "window.fruitDefenseAppRoute !== 2");

@@ -101,6 +101,12 @@ namespace FruitDefense.Editor
         public const int CommonIconOpticalShortEdgeMinimum = 16;
         public const int CommonIconOpticalMajorEdgeMinimum = 18;
         public const int CommonIconStrokeMinimum = 2;
+        public const int HubNavigationIconReviewSizeMinimum = 24;
+        public const int HubNavigationIconReviewSizeMaximum = 33;
+        public const int HubNavigationChromeSilhouetteCount = 2;
+        public const int HubNavigationIconSubjectCount = 1;
+        public const float HubNavigationIconSilhouettePerimeterRatioMaximum = .76f;
+        public const float HubNavigationIconSilhouetteIouMaximum = .75f;
         public const int MicroIconCanvasSize = 18;
         public const int MicroIconSafeInset = 1;
         public const int MicroIconAlphaDimensionMinimum = 15;
@@ -111,6 +117,7 @@ namespace FruitDefense.Editor
         public const float MicroIconSilhouetteIouMaximum = .8f;
         public const int NineSliceCanvasSize = 128;
         public const int NineSliceBorder = 32;
+        public const int PrimaryActionNineSliceBorder = 32;
         public const int GameplayStageNineSliceBorder = 20;
         public const int NineSliceSafeInset = 20;
         public const int NineSliceMinimumDestination = 32;
@@ -118,7 +125,7 @@ namespace FruitDefense.Editor
         public const int NineSliceSeamToleranceDevicePixels = 0;
         public const int ProductionPixelsPerLogicalUnit = 2;
         public const int ProductionImporterPixelsPerUnit = 100;
-        public const int PaintedUniqueExportCount = 54;
+        public const int PaintedUniqueExportCount = 60;
 
         public static int MinimumFontSize(RuntimeUiTypographyRole role)
         {

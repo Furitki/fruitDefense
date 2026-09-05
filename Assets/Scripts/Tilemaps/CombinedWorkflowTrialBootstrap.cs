@@ -1,7 +1,9 @@
 using System;
 using FruitDefense.App;
+using FruitDefense.App.Services;
 using FruitDefense.Battle;
 using FruitDefense.Content;
+using FruitDefense.Core;
 using FruitDefense.UI;
 using UnityEngine;
 
@@ -50,13 +52,28 @@ namespace FruitDefense.Trials
                     + navigationError);
 
             var level = resolution.Value;
+            if (!BundledGameContentLoader.TryLoadBundle(out var bundle,
+                    out var contentValidation))
+                throw new InvalidOperationException(
+                    "Combined workflow trial could not load outgame content: "
+                    + (contentValidation.Issues.Count == 0
+                        ? "unknown"
+                        : contentValidation.Issues[0].ToString()));
+            var growth = BattleGrowthResolver.Resolve(bundle.Outgame, level,
+                PlayerProgressionProjection.Create(PlayerProfile.CreateDefault(),
+                    bundle.Outgame));
+            if (!growth.Succeeded)
+                throw new InvalidOperationException(
+                    "Combined workflow trial could not resolve launch growth: "
+                    + growth.Code + " at " + growth.Path);
             var request = new BattleLaunchRequest(
                 "combined-workflow-trial-" + Guid.NewGuid().ToString("N"),
                 level.Identity.LevelId,
                 0,
                 level.BattleContent.Header.contentVersion,
-                BattleSessionMode.Standard);
-            var result = game.Initialize(request, navigator, this, runtimeUiTheme, catalog);
+                BattleSessionMode.Standard, growth.Snapshot);
+            var result = game.Initialize(request, navigator, this, runtimeUiTheme,
+                catalog, bundle.Outgame);
             if (!result.Success)
                 throw new InvalidOperationException(
                     "Combined workflow trial Battle initialization failed: "

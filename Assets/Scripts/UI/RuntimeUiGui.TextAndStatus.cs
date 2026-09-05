@@ -161,6 +161,29 @@ namespace FruitDefense.UI
             if (layout.MaximumLineCount != 2 || message.Length < 2)
                 return new RuntimeUiStatusTextLines(message);
 
+            var normalized = message.Replace("\r\n", "\n").Replace('\r', '\n');
+            var explicitBreak = normalized.IndexOf('\n');
+            if (explicitBreak >= 0)
+            {
+                var nextBreak = normalized.IndexOf('\n', explicitBreak + 1);
+                var firstLine = normalized.Substring(0, explicitBreak);
+                var secondLine = normalized.Substring(explicitBreak + 1);
+                if (nextBreak < 0
+                    && FitsStatusLine(layout.Style, firstLine,
+                        layout.FirstLineRect)
+                    && FitsStatusLine(layout.Style, secondLine,
+                        layout.SecondLineRect))
+                {
+                    return new RuntimeUiStatusTextLines(firstLine, secondLine);
+                }
+
+                // Explicit separators are authoring hints, not drawable glyphs. If an
+                // authored split does not fit, let the finite resolver find another
+                // complete two-line split without leaking a newline into a single-line
+                // GUIStyle owner.
+                message = normalized.Replace('\n', ' ');
+            }
+
             var bestSplit = -1;
             var bestBalance = float.PositiveInfinity;
             for (var split = 1; split < message.Length; split++)
@@ -346,7 +369,7 @@ namespace FruitDefense.UI
             var fillColor = context.TextColor(tone, state);
             fillColor.a *= context.TextOpacity(state);
             var outlineColor = tone == RuntimeUiTextTone.Inverse
-                ? context.Theme.Colors.PrimaryText
+                ? context.Theme.Colors.Outline
                 : context.Theme.Colors.InverseText;
             outlineColor.a *= context.TextOpacity(state);
             return new RuntimeUiEmphasisTextLayout(textRect, outlinedRect, style,

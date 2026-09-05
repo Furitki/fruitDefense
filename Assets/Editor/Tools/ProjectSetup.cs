@@ -40,7 +40,7 @@ namespace FruitDefense.Editor
             if (!AssetDatabase.IsValidFolder("Assets/Scenes")) AssetDatabase.CreateFolder("Assets", "Scenes");
             var runtimeUiTheme = EnsureReleaseRuntimeUiTheme();
             CreateBootstrapScene(runtimeUiTheme);
-            CreateComponentScene<LobbyPresenter>("Lobby", "LobbyPresenter");
+            CreateComponentScene<LobbyHubPresenter>("Lobby", "LobbyHubPresenter");
             CreateBattleScene();
             CreateComponentScene<SettlementPresenter>("Settlement", "SettlementPresenter");
             EditorBuildSettings.scenes = new[]
@@ -124,9 +124,9 @@ namespace FruitDefense.Editor
             if (!validation.IsValid)
                 throw new System.InvalidOperationException(
                     "Release runtime UI theme is invalid: " + validation.Issues[0]);
-            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "9")
+            if (runtimeUiTheme.ThemeId != "ui.sunny-orchard" || runtimeUiTheme.Revision != "12")
                 throw new System.InvalidOperationException(
-                    "Release runtime UI theme identity must be ui.sunny-orchard@9.");
+                    "Release runtime UI theme identity must be ui.sunny-orchard@11.");
             foreach (RuntimeUiTypographyRole role in System.Enum.GetValues(
                          typeof(RuntimeUiTypographyRole)))
             {
@@ -143,11 +143,11 @@ namespace FruitDefense.Editor
             }
             if (runtimeUiTheme.ActiveArtSet == null
                 || runtimeUiTheme.ActiveArtSet.SetId != "sunny-orchard-painted"
-                || runtimeUiTheme.ActiveArtSet.Revision != "9"
+                || runtimeUiTheme.ActiveArtSet.Revision != "19"
                 || AssetDatabase.GetAssetPath(runtimeUiTheme.ActiveArtSet)
                     != ReleaseRuntimeUiArtSetPath)
                 throw new System.InvalidOperationException(
-                    "Release runtime UI theme must activate sunny-orchard-painted@9.");
+                    "Release runtime UI theme must activate sunny-orchard-painted@19.");
             return runtimeUiTheme;
         }
 
@@ -180,7 +180,7 @@ namespace FruitDefense.Editor
 
             var serializedTheme = new SerializedObject(runtimeUiTheme);
             serializedTheme.FindProperty("themeId").stringValue = "ui.sunny-orchard";
-            serializedTheme.FindProperty("revision").stringValue = "9";
+            serializedTheme.FindProperty("revision").stringValue = "12";
             serializedTheme.FindProperty("activeArtSet").objectReferenceValue = artSet;
             var typography = serializedTheme.FindProperty("typography");
             SetTypographyFont(typography, "display", displayFont);
@@ -193,31 +193,32 @@ namespace FruitDefense.Editor
 
             var colors = serializedTheme.FindProperty("colors");
             SetThemeColor(colors, "edgeBackground", new Color32(115, 201, 244, 255));
-            SetThemeColor(colors, "baseSurface", new Color32(255, 249, 238, 255));
-            SetThemeColor(colors, "raisedSurface", new Color32(255, 241, 210, 255));
-            SetThemeColor(colors, "selectionAccent", new Color32(255, 197, 66, 255));
+            SetThemeColor(colors, "baseSurface", new Color32(249, 239, 218, 255));
+            SetThemeColor(colors, "raisedSurface", new Color32(251, 232, 170, 255));
+            SetThemeColor(colors, "selectionAccent", new Color32(251, 207, 82, 255));
             SetThemeColor(colors, "success", new Color32(84, 169, 40, 255));
             SetThemeColor(colors, "warning", new Color32(230, 154, 25, 255));
             SetThemeColor(colors, "danger", new Color32(200, 77, 63, 255));
-            SetThemeColor(colors, "disabled", new Color32(167, 185, 155, 255));
+            SetThemeColor(colors, "disabled", new Color32(228, 220, 205, 255));
             SetThemeColor(colors, "scrim", new Color32(59, 36, 22, 255));
-            SetThemeColor(colors, "primaryText", new Color32(86, 52, 31, 255));
+            SetThemeColor(colors, "outline", new Color32(75, 42, 19, 255));
+            SetThemeColor(colors, "primaryText", new Color32(107, 63, 18, 255));
             SetThemeColor(colors, "secondaryText", new Color32(111, 88, 70, 255));
             SetThemeColor(colors, "inverseText", new Color32(255, 249, 238, 255));
 
             var actionStyles = serializedTheme.FindProperty("actionStyles");
             SetActionColors(actionStyles, "primary",
-                new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255));
+                new Color32(160, 199, 61, 255), new Color32(12, 8, 4, 255));
             SetActionColors(actionStyles, "secondary",
-                new Color32(160, 199, 61, 255), new Color32(86, 52, 31, 255));
+                new Color32(136, 175, 53, 255), new Color32(75, 42, 19, 255));
             SetActionColors(actionStyles, "quiet",
-                new Color32(255, 249, 238, 255), new Color32(86, 52, 31, 255));
+                new Color32(249, 239, 218, 255), new Color32(107, 63, 18, 255));
             SetActionColors(actionStyles, "danger",
-                new Color32(168, 56, 49, 255), new Color32(255, 249, 238, 255));
+                new Color32(168, 56, 49, 255), new Color32(249, 239, 218, 255));
             SetActionColors(actionStyles, "modeActive",
-                new Color32(255, 197, 66, 255), new Color32(59, 36, 22, 255));
+                new Color32(251, 207, 82, 255), new Color32(107, 63, 18, 255));
             SetActionColors(actionStyles, "disabled",
-                new Color32(223, 227, 216, 255), new Color32(86, 52, 31, 255));
+                new Color32(228, 220, 205, 255), new Color32(124, 116, 107, 255));
             serializedTheme.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(runtimeUiTheme);
             AssetDatabase.SaveAssetIfDirty(runtimeUiTheme);
@@ -568,7 +569,7 @@ namespace FruitDefense.Editor
                 AppFlowCoordinator.SceneUnavailable,
                 AppFlowCoordinator.SceneLoadFailed,
                 AppFlowCoordinator.BattleHostMissing,
-                AppFlowCoordinator.LobbyPresenterMissing,
+                AppFlowCoordinator.LobbyHubPresenterMissing,
                 AppFlowCoordinator.SettlementPresenterMissing);
             AssertBlockingErrorCopy(RuntimeUiCopyCatalog.Get(
                     RuntimeUiCopyId.BootstrapUnknownFailure).Text,
@@ -614,11 +615,13 @@ namespace FruitDefense.Editor
                     && RectApproximately(noActionLayout.Title,
                         new Rect(41f, 278f, 320f, 34f), .01f)
                     && RectApproximately(noActionLayout.Status,
-                        new Rect(41f, 318f, 320f, 45f), .01f)
+                        new Rect(41f, 318f, 320f, 60f), .01f)
                     && RectApproximately(layout.Modal,
                         new Rect(21f, 262f, 360f, 190f), .01f)
+                    && RectApproximately(layout.Status,
+                        new Rect(41f, 318f, 320f, 60f), .01f)
                     && RectApproximately(layout.RetryAction,
-                        new Rect(41f, 367f, 320f, 52f), .01f),
+                        new Rect(41f, 386f, 320f, 52f), .01f),
                     "Bootstrap 402 full geometry matches the approved quality audit");
             }
 

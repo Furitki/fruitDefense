@@ -1,0 +1,60 @@
+fileFormatVersion: 2
+guid: 63dc7df0caa9a8c338f8e643679f2a88
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+  isReadable: 0
+  streamingMipmaps: 0
+  textureFormat: 1
+  maxTextureSize: 1024
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  spriteMode: 0
+  spriteMeshType: 1
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  textureType: 0
+  textureShape: 1
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    overridden: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID:
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable: {}
+  pSDRemoveMatte: 0
+  userData: ui-art-source=sunny-orchard-painted;slot=surface.hub-navigation-base;source-scale=2;authored=imagegen-direct-master;transform=connected-neutral-background-cleanup|transparent-padding|alpha-safe-resize|low-alpha-cleanup;composition=one-continuous-base-silhouette|one-selected-tab-silhouette|no-generic-panel-substitution;asset=openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/imagegen/surface-hub-navigation-base-reference-derived.png;asset-sha256=FC9112C52E5B9B3C27439B89330BCE6E32FB8808D0C2B0F423B219AD561AE9BA
+  assetBundleName:
+  assetBundleVariant:

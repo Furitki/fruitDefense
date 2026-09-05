@@ -28,6 +28,19 @@ function Invoke-CheckedPython([string[]]$arguments, [string]$failureMessage) {
   if ($LASTEXITCODE -ne 0) { throw $failureMessage }
 }
 
+function Invoke-PinnedDownload([string]$url, [string]$outputPath) {
+  foreach ($attempt in 1..4) {
+    try {
+      Invoke-WebRequest -Uri $url -OutFile $outputPath
+      return
+    }
+    catch {
+      if ($attempt -eq 4) { throw }
+      Start-Sleep -Seconds 1
+    }
+  }
+}
+
 $resolvedReadingOutput = Resolve-FontOutput $ReadingOutputPath
 $resolvedDisplayOutput = Resolve-FontOutput $DisplayOutputPath
 if ([string]::Equals($resolvedReadingOutput, $resolvedDisplayOutput,
@@ -42,7 +55,7 @@ $glyphAuthorityPath = Join-Path $projectRoot `
   'Assets/Editor/Tools/RuntimeUiChineseGlyphCoverage.cs'
 $glyphAuthority = Get-Content -LiteralPath $glyphAuthorityPath -Raw -Encoding UTF8
 $initializer = [regex]::Match($glyphAuthority,
-  '(?s)public const string RequiredGlyphs\s*=\s*(?<expression>.*?);')
+  '(?s)private const string FixedRequiredGlyphs\s*=\s*(?<expression>.*?);')
 if (-not $initializer.Success) {
   throw 'Runtime UI glyph authority could not be parsed.'
 }
@@ -54,6 +67,45 @@ if ($literalMatches.Count -eq 0) {
 foreach ($literal in $literalMatches) {
   foreach ($character in $literal.Groups['value'].Value.ToCharArray()) {
     $null = $characters.Add([int]$character)
+  }
+}
+
+# The canonical bundled outgame JSON owns all player-visible catalog names and
+# descriptions. Keep this traversal aligned with
+# RuntimeUiChineseGlyphCoverage.ReadBundledOutgameVisibleCopy so font generation
+# and Unity validation close over the same content instead of a copied glyph list.
+$outgameContentPath = Join-Path $projectRoot `
+  'Assets/Resources/Content/outgame-content-bundled.v1.json'
+if (-not (Test-Path -LiteralPath $outgameContentPath)) {
+  throw "Bundled outgame content is missing: $outgameContentPath"
+}
+$outgameContent = Get-Content -LiteralPath $outgameContentPath -Raw -Encoding UTF8 |
+  ConvertFrom-Json
+$visibleCopy = @()
+foreach ($definition in $outgameContent.items) {
+  $visibleCopy += [string]$definition.displayName
+  $visibleCopy += [string]$definition.description
+}
+foreach ($definition in $outgameContent.activities) {
+  $visibleCopy += [string]$definition.displayName
+  $visibleCopy += [string]$definition.description
+}
+foreach ($definition in $outgameContent.growthEquipment) {
+  $visibleCopy += [string]$definition.displayName
+  $visibleCopy += [string]$definition.description
+}
+foreach ($definition in $outgameContent.cultivationNodes) {
+  $visibleCopy += [string]$definition.displayName
+  $visibleCopy += [string]$definition.description
+}
+foreach ($definition in $outgameContent.growthPolicies) {
+  $visibleCopy += [string]$definition.displayName
+}
+foreach ($copy in $visibleCopy) {
+  foreach ($character in $copy.ToCharArray()) {
+    if (-not [char]::IsControl($character)) {
+      $null = $characters.Add([int]$character)
+    }
   }
 }
 
@@ -75,8 +127,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'fontTools installation failed.' }
   }
 
-  Invoke-WebRequest -Uri $ReadingSourceUrl -OutFile $readingSourceFont `
-    -MaximumRetryCount 4 -RetryIntervalSec 1
+  Invoke-PinnedDownload $ReadingSourceUrl $readingSourceFont
   if ((Get-Item -LiteralPath $readingSourceFont).Length -ne 17772300) {
     throw 'Downloaded Noto Sans SC source font has an unexpected byte length.'
   }
@@ -86,8 +137,7 @@ try {
     throw "Downloaded Noto Sans SC source hash mismatch: $actualReadingSourceHash"
   }
 
-  Invoke-WebRequest -Uri $DisplayArchiveUrl -OutFile $displayArchive `
-    -MaximumRetryCount 4 -RetryIntervalSec 1
+  Invoke-PinnedDownload $DisplayArchiveUrl $displayArchive
   if ((Get-Item -LiteralPath $displayArchive).Length -ne 5781344) {
     throw 'Downloaded Smiley Sans release archive has an unexpected byte length.'
   }

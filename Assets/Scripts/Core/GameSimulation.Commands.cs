@@ -21,7 +21,19 @@ namespace FruitDefense.Core
 
         public float GetEffectiveAttribute(CombatEntityState entity, CombatAttributeKind attribute, float baseValue)
         {
-            return CombatAttributeResolver.Resolve(baseValue, entity, attribute, _content);
+            return GetEffectiveAttribute(entity, attribute, baseValue, 1f);
+        }
+
+        private float GetEffectiveAttribute(CombatEntityState entity,
+            CombatAttributeKind attribute, float authoredBase,
+            float permanentMultiplier)
+        {
+            var baseline = entity != null && entity.Faction == CombatFaction.Player
+                ? BattleGrowthRuntime.ApplyBaseline(LaunchGrowthSnapshot, attribute,
+                    authoredBase)
+                : authoredBase;
+            var permanent = baseline * permanentMultiplier;
+            return CombatAttributeResolver.Resolve(permanent, entity, attribute, _content);
         }
 
         public int RemoveStatuses(int entityId, string definitionId = "",

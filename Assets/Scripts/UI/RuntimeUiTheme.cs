@@ -114,6 +114,12 @@ namespace FruitDefense.UI
         private static RuntimeUiArtSlot ResolveContainerSlot(RuntimeUiActionSpec spec,
             bool modeActive, bool disabled)
         {
+            // Disabled is a complete low-emphasis pairing, not a faded role surface.
+            // ActionQuiet is the finite light container owned by every production ArtSet,
+            // including compact controls while they are unavailable.
+            if (disabled)
+                return RuntimeUiArtSlot.ActionQuiet;
+
             if (spec.ContentForm == RuntimeUiActionContentForm.CompactMultiplier
                 || (spec.Role == RuntimeUiActionKind.Quiet
                     && spec.ContentForm == RuntimeUiActionContentForm.IconOnly))
@@ -122,11 +128,6 @@ namespace FruitDefense.UI
                     ? RuntimeUiArtSlot.ActionCompactControlActive
                     : RuntimeUiArtSlot.ActionCompactControl;
             }
-
-            // Disabled is a complete low-emphasis pairing, not a faded role surface.
-            // ActionQuiet is the finite light container owned by every production ArtSet.
-            if (disabled)
-                return RuntimeUiArtSlot.ActionQuiet;
 
             switch (spec.Role)
             {

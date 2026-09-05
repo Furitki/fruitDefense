@@ -63,7 +63,8 @@ namespace FruitDefense.Editor
             var read = BattleSnapshotJson.Deserialize(json, out var deserialized);
             Assert(read.Succeeded, levelId + " current JSON presence gate succeeds: " + read);
 
-            var target = new GameSimulation(catalog, levelId, 9999);
+            var target = new GameSimulation(catalog, levelId, 9999,
+                source.LaunchGrowthSnapshot);
             var result = target.RestoreSnapshot(deserialized, catalog);
             Assert(result.Succeeded, levelId + " restore succeeds: " + result);
             Assert(target.PendingPresentationEventCount == 0
@@ -83,7 +84,9 @@ namespace FruitDefense.Editor
             var root = Path.Combine(Application.dataPath,
                 "Editor", "Tests", "Fixtures", "BattleSnapshot");
             var target = new GameSimulation(catalog,
-                BundledLevelCatalogIds.Levels.Orchard01, 7201);
+                BundledLevelCatalogIds.Levels.Orchard01, 7201,
+                BattleGrowthTestFixture.ResolveBundled(catalog,
+                    BundledLevelCatalogIds.Levels.Orchard01));
             target.DiscardPendingPresentationEvents();
             var stream = BattleSnapshotBehaviorSmoke.PresentationStream(target);
             var initialIssued = stream.LastIssuedSequence;
@@ -130,9 +133,11 @@ namespace FruitDefense.Editor
 
         internal static GameSimulation CreateScenario(CompiledLevelCatalog catalog,
             string levelId, int seed, string plantId = BattleContentIds.Plants.Durian,
-            string equipmentId = "")
+            string equipmentId = "", BattleGrowthSnapshot growthSnapshot = null)
         {
-            var simulation = new GameSimulation(catalog, levelId, seed);
+            var simulation = new GameSimulation(catalog, levelId, seed,
+                growthSnapshot ?? BattleGrowthTestFixture.ResolveBundled(catalog,
+                    levelId));
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();
             simulation.State.Projectiles.Clear();

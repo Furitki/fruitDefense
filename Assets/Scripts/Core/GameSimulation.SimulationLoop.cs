@@ -237,16 +237,17 @@ namespace FruitDefense.Core
 
         private float PlantDamage(Plant plant)
         {
-            var baseValue = _content.Plants[plant.DefinitionId].damage
-                * UpgradeTier(plant).damageMultiplier;
-            return GetEffectiveAttribute(plant, CombatAttributeKind.Damage, baseValue);
+            var authoredBase = _content.Plants[plant.DefinitionId].damage;
+            return GetEffectiveAttribute(plant, CombatAttributeKind.Damage,
+                authoredBase, UpgradeTier(plant).damageMultiplier);
         }
 
         private float PlantRange(Plant plant)
         {
-            var baseValue = Map.FromLegacyDistance(_content.Plants[plant.DefinitionId].rangeLegacyUnits)
-                * UpgradeTier(plant).rangeMultiplier;
-            return GetEffectiveAttribute(plant, CombatAttributeKind.Range, baseValue);
+            var authoredBase = Map.FromLegacyDistance(
+                _content.Plants[plant.DefinitionId].rangeLegacyUnits);
+            return GetEffectiveAttribute(plant, CombatAttributeKind.Range,
+                authoredBase, UpgradeTier(plant).rangeMultiplier);
         }
 
         private Vector2 PlantPoint(Plant plant)

@@ -67,6 +67,52 @@ namespace FruitDefense.UI
         SettlementRecoveredError = 53,
         BattleVictoryOutcome = 54,
         BattleDefeatOutcome = 55,
+        HubHomeTitle = 56,
+        HubActivityTitle = 57,
+        HubGrowthTitle = 58,
+        HubNavHome = 59,
+        HubNavActivity = 60,
+        HubNavGrowth = 61,
+        HubGrowthEquipmentTab = 62,
+        HubGrowthCultivationTab = 63,
+        HubUnavailableTitle = 64,
+        HubActivityUnavailableBody = 65,
+        HubEquipmentUnavailableBody = 66,
+        HubCultivationUnavailableBody = 67,
+        HubHomeGrowthPreviewTitle = 68,
+        HubHomeGrowthPreviewUnavailableBody = 69,
+        BootstrapProfileUnsupported = 70,
+        BootstrapProfileReset = 71,
+        BootstrapProfileResetting = 72,
+        HubResourceMorningDew = 73,
+        HubActivityRewardTitle = 74,
+        HubActivityClaim = 75,
+        HubActivityClaiming = 76,
+        HubActivityClaimed = 77,
+        HubActivityLocked = 78,
+        HubActivityClaimable = 79,
+        HubActivityError = 80,
+        HubGrowthOwned = 81,
+        HubGrowthLocked = 82,
+        HubGrowthEquipped = 83,
+        HubGrowthEquip = 84,
+        HubGrowthUpgrade = 85,
+        HubGrowthMaximum = 86,
+        HubGrowthInsufficient = 87,
+        HubGrowthLoading = 88,
+        HubGrowthError = 89,
+        HubGrowthRank = 90,
+        HubGrowthEffect = 91,
+        HubGrowthCost = 92,
+        HubCultivationReady = 93,
+        HubCultivationLocked = 94,
+        HubCultivationUpgrade = 95,
+        HubCultivationMaximum = 96,
+        HubGrowthPreviewApplied = 97,
+        HubGrowthPreviewSuppressed = 98,
+        HubGrowthPreviewEmpty = 99,
+        HubGrowthPreviewError = 100,
+        HubCultivationLockedAction = 101,
     }
 
     public readonly struct RuntimeUiCopyDefinition
@@ -104,7 +150,7 @@ namespace FruitDefense.UI
     /// </summary>
     public static class RuntimeUiCopyCatalog
     {
-        public const int Count = 56;
+        public const int Count = 102;
 
         public static RuntimeUiCopyDefinition Get(RuntimeUiCopyId id)
         {
@@ -155,7 +201,7 @@ namespace FruitDefense.UI
                     "短线压迫｜首领冲击", RuntimeUiTypographyRole.Supplemental,
                     TextAnchor.MiddleLeft, RuntimeUiTextTone.Secondary);
                 case RuntimeUiCopyId.LobbyStart: return Single(id,
-                    FormatLobbyStart("orchard-03"), RuntimeUiTypographyRole.ControlLabel,
+                    "开始战斗", RuntimeUiTypographyRole.ControlLabel,
                     TextAnchor.MiddleCenter, RuntimeUiTextTone.Inverse);
                 case RuntimeUiCopyId.LobbyTransitioning: return Single(id, "正在进入…",
                     RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
@@ -265,6 +311,130 @@ namespace FruitDefense.UI
                 case RuntimeUiCopyId.BattleDefeatOutcome: return Single(id, "失败",
                     RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleCenter,
                     RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubHomeTitle: return Single(id, "果园守卫",
+                    RuntimeUiTypographyRole.ScreenTitle, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubActivityTitle: return Single(id, "活动",
+                    RuntimeUiTypographyRole.ScreenTitle, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubGrowthTitle: return Single(id, "成长",
+                    RuntimeUiTypographyRole.ScreenTitle, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubNavHome: return Single(id, "主页",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubNavActivity: return Single(id, "活动",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubNavGrowth: return Single(id, "成长",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubGrowthEquipmentTab: return Single(id, "装备",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubGrowthCultivationTab: return Single(id, "养成",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.HubUnavailableTitle: return Single(id, "暂未开放",
+                    RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubActivityUnavailableBody: return TwoLines(id,
+                    "当前版本没有可领取的活动内容", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.Secondary);
+                case RuntimeUiCopyId.HubEquipmentUnavailableBody: return TwoLines(id,
+                    "当前版本尚无可用的账号装备内容", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.Secondary);
+                case RuntimeUiCopyId.HubCultivationUnavailableBody: return TwoLines(id,
+                    "当前版本尚无可用的养成节点", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.Secondary);
+                case RuntimeUiCopyId.HubHomeGrowthPreviewTitle: return Single(id,
+                    "战前成长", RuntimeUiTypographyRole.SectionTitle,
+                    TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubHomeGrowthPreviewUnavailableBody: return TwoLines(id,
+                    "当前玩法尚未载入可用的成长强化", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.Secondary);
+                case RuntimeUiCopyId.BootstrapProfileUnsupported: return TwoLines(id,
+                    "存档版本不兼容，请重置本地存档", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.BootstrapProfileReset: return Single(id, "重置本地存档",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter);
+                case RuntimeUiCopyId.BootstrapProfileResetting: return Single(id,
+                    "正在重置存档…", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubResourceMorningDew: return Single(id, "晨露",
+                    RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubActivityRewardTitle: return Single(id, "奖励预览",
+                    RuntimeUiTypographyRole.SectionTitle, TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubActivityClaim: return Single(id, "领取奖励",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.Inverse);
+                case RuntimeUiCopyId.HubActivityClaiming: return Single(id, "领取中…",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubActivityClaimed: return Single(id, "[完成] 已领取",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubActivityLocked: return Single(id, "[锁定] 活动未开放",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubActivityClaimable: return Single(id, "可领取",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubActivityError: return Single(id, "[错误] 保存失败，可重试",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthOwned: return Single(id, "已拥有",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthLocked: return Single(id, "[锁定] 尚未获得",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthEquipped: return Single(id, "[完成] 已装备",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthEquip: return Single(id, "装备",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.Inverse);
+                case RuntimeUiCopyId.HubGrowthUpgrade: return Single(id, "强化",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.Inverse);
+                case RuntimeUiCopyId.HubGrowthMaximum: return Single(id, "[完成] 已满级",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthInsufficient: return Single(id,
+                    "材料不足", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthLoading: return Single(id, "保存中…",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthError: return Single(id,
+                    "[错误] 保存失败，可重试", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthRank: return Single(id, "等级",
+                    RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubGrowthEffect: return Single(id, "效果",
+                    RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubGrowthCost: return Single(id, "消耗",
+                    RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft);
+                case RuntimeUiCopyId.HubCultivationReady: return Single(id, "可培育",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft,
+                    RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubCultivationLocked: return Single(id,
+                    "[锁定] 前置条件未满足", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubCultivationLockedAction: return Single(id,
+                    "前置未满足", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubCultivationUpgrade: return Single(id, "培育",
+                    RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleCenter,
+                    RuntimeUiTextTone.Inverse);
+                case RuntimeUiCopyId.HubCultivationMaximum: return Single(id,
+                    "[完成] 培育完成", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleCenter, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthPreviewApplied: return Single(id,
+                    "[生效] 已生效", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthPreviewSuppressed: return Single(id,
+                    "[受限] 本关受限", RuntimeUiTypographyRole.ControlLabel,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
+                case RuntimeUiCopyId.HubGrowthPreviewEmpty: return TwoLines(id,
+                    "当前没有已装备或已培育的成长效果", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.Secondary);
+                case RuntimeUiCopyId.HubGrowthPreviewError: return TwoLines(id,
+                    "成长载入失败，暂时不能开始战斗", RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, RuntimeUiTextTone.State);
                 default: throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
@@ -272,11 +442,6 @@ namespace FruitDefense.UI
         public static string FormatBootstrapRecoverableError(string errorCode)
         {
             return "可恢复错误：" + (errorCode ?? string.Empty);
-        }
-
-        public static string FormatLobbyStart(string selectedLevelId)
-        {
-            return "开始战斗 · " + LevelDisplayName(selectedLevelId);
         }
 
         public static string LevelDisplayName(string levelId)
@@ -293,6 +458,29 @@ namespace FruitDefense.UI
         public static string FormatLobbyError(string errorCode)
         {
             return "暂时无法继续：" + (errorCode ?? string.Empty);
+        }
+
+        public static string FormatHubBalance(long quantity)
+        {
+            return "晨露 " + quantity;
+        }
+
+        public static string FormatHubRank(int rank, int maximumRank)
+        {
+            return "等级 " + rank + "/" + maximumRank;
+        }
+
+        public static string FormatHubCost(string itemName, long required,
+            long available)
+        {
+            return "消耗 " + required + " " + (itemName ?? string.Empty)
+                + " · 持有 " + available;
+        }
+
+        public static string FormatHubPercentEffect(string label, float value)
+        {
+            return (label ?? string.Empty) + " +"
+                + Mathf.RoundToInt(value * 100f) + "%";
         }
 
         public static string FormatActiveWaveStatus(int waveIndex, int zombieCount)

@@ -21,6 +21,5 @@
 
 - [x] 4.1 Add Editor tests for manifest mismatches, invalid profile references, deterministic nursery replay, configured cooldown/tier limits, and a shared-visual fruit variant.
 - [x] 4.2 Update existing content/snapshot/interaction tests and fixtures for the schema replacement and removal of exact-roster assumptions.
-- [ ] 4.3 Run OpenSpec validation, content validation, aggregate Unity Editor smoke, deterministic tests, and the ordinary WebGL build gate.
-  - OpenSpec strict validation, modular config/content/determinism gate, and ordinary WebGL release build pass.
-  - Aggregate P0 smoke currently stops at the unrelated `CombatFeedbackSdfRenderSmoke` role-route label-admission assertion.
+- [x] 4.3 Run OpenSpec validation, content validation, aggregate Unity Editor smoke, deterministic tests, and the ordinary WebGL build gate.
+  - OpenSpec strict validation, modular config/content/determinism gate, aggregate P0 smoke, and ordinary WebGL release build pass.

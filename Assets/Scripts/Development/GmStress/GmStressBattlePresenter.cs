@@ -201,7 +201,8 @@ namespace FruitDefense.Development.GmStress
         BattleSessionInitializationResult IBattleSessionHost.Initialize(
             BattleLaunchRequest request,
             IAppNavigator navigator, IBattleResultSink resultSink,
-            RuntimeUiTheme runtimeUiTheme, CompiledLevelCatalog levelCatalog)
+            RuntimeUiTheme runtimeUiTheme, CompiledLevelCatalog levelCatalog,
+            CompiledOutgameContentCatalog outgameCatalog)
         {
             return BattleSessionInitializationResult.Failed(
                 BattleSessionInitializationResult.SessionModeMismatch);

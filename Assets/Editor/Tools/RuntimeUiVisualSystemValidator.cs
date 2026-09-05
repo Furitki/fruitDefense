@@ -144,6 +144,7 @@ namespace FruitDefense.Editor
             ValidateRegistryDuplicates(report,
                 RuntimeUiArtSetRegistry.DiscoverProductionSets());
             ValidateRegistryIdentity(report, candidate);
+            ValidateProductionRasterTooling(report, candidate);
             ValidateManifestAndBindings(report, candidate);
             ValidateBattleStructuralHierarchy(report, candidate);
             ValidateForbiddenDependencies(report, candidatePath);
@@ -176,6 +177,7 @@ namespace FruitDefense.Editor
                 AppendRuntimeValidation(report, set.Validate(), AssetDatabase.GetAssetPath(set),
                     "art-set");
                 ValidateRegistryIdentity(report, set);
+                ValidateProductionRasterTooling(report, set);
                 ValidateManifestAndBindings(report, set);
                 ValidateBattleStructuralHierarchy(report, set);
                 ValidateForbiddenDependencies(report, AssetDatabase.GetAssetPath(set));

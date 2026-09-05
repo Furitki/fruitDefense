@@ -1,6 +1,10 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using FruitDefense.App;
+using FruitDefense.App.Services;
 using FruitDefense.Content;
+using FruitDefense.Core;
 
 namespace FruitDefense.Shell
 {
@@ -31,6 +35,44 @@ namespace FruitDefense.Shell
         IReadOnlyList<LevelDefinition> PlayableLevels { get; }
         string SelectedLevelId { get; }
         bool TrySelectLevel(string levelId, out ShellFlowError error);
+    }
+
+    /// <summary>
+    /// Read-only Lobby projection boundary. Presenters may inspect compiled
+    /// definitions and immutable player/growth projections, but never a mutable
+    /// player profile aggregate.
+    /// </summary>
+    public interface IHubProgressionReadContext
+    {
+        CompiledOutgameContentCatalog OutgameContent { get; }
+        PlayerProgressionProjection Progression { get; }
+        BattleGrowthResolution CurrentGrowthPreview { get; }
+        bool TryRefreshSelectedGrowthPreview(out BattleGrowthResolution preview);
+    }
+
+    /// <summary>
+    /// Finite persistence-changing commands available to Lobby. Implementations
+    /// serialize these operations and publish projection changes only after save.
+    /// </summary>
+    public interface IHubProgressionCommandContext
+    {
+        bool ProgressionCommandInProgress { get; }
+
+        IEnumerator TryClaimActivity(string activityId,
+            Action<PlayerProgressionCommandResult> completed);
+        IEnumerator TryEquipGrowthEquipment(string growthEquipmentId,
+            string slotId, Action<PlayerProgressionCommandResult> completed);
+        IEnumerator TryUpgradeGrowthEquipment(string growthEquipmentId,
+            Action<PlayerProgressionCommandResult> completed);
+        IEnumerator TryUpgradeCultivation(string cultivationNodeId,
+            Action<PlayerProgressionCommandResult> completed);
+    }
+
+    public interface IProfileRecoveryCommandContext
+    {
+        bool ProfileRecoveryRequired { get; }
+        bool ProfileRecoveryInProgress { get; }
+        bool TryResetUnsupportedProfile(out ShellFlowError error);
     }
 
     public readonly struct ShellFlowError

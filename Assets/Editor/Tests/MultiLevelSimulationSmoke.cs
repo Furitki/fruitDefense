@@ -177,7 +177,8 @@ namespace FruitDefense.Editor
                 "#334455", "#445566", "#556677", "#667788", "#778899", "#8899AA",
                 teaching.Theme.TerrainPaletteId);
             var alternateLevel = new LevelDefinition("orchard-theme-smoke", teaching.Identity.MapId,
-                teaching.Identity.WaveSetId, teaching.Identity.RuleSetId, alternateTheme.ThemeId);
+                teaching.Identity.WaveSetId, teaching.Identity.RuleSetId, alternateTheme.ThemeId,
+                teaching.Identity.GrowthPolicyId);
             var themeSource = new LevelCatalogSource("catalog.levels.theme-smoke",
                 source.ContentCatalogId, source.ContentVersion, teaching.Identity.LevelId,
                 new[] { teaching.Level, alternateLevel }, source.Maps, source.WaveSets,

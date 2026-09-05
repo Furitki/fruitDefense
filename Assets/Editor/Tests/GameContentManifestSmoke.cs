@@ -7,28 +7,47 @@ namespace FruitDefense.Editor
     internal static class GameContentManifestSmoke
     {
         public static void Run(GameContentManifestDto authored, string committedJson,
-            BattleContentCatalogDto battleCatalog)
+            BattleContentCatalogDto battleCatalog,
+            OutgameContentCatalogDto outgameCatalog)
         {
             Expect(authored != null, "Authored game-content manifest is missing.");
             ExpectValid(GameContentManifestValidator.Validate(authored, battleCatalog,
-                BundledLevelCatalogIds.Catalog), "Authored game-content manifest");
+                outgameCatalog, BundledLevelCatalogIds.Catalog),
+                "Authored game-content manifest");
 
             var canonical = GameContentManifestJson.SerializeCanonical(authored);
             Expect(canonical == Normalize(committedJson),
                 "Committed manifest JSON differs from canonical authored content.");
             var roundTrip = GameContentManifestJson.Deserialize(committedJson);
             ExpectValid(GameContentManifestValidator.Validate(roundTrip, battleCatalog,
-                BundledLevelCatalogIds.Catalog), "Round-tripped game-content manifest");
+                outgameCatalog, BundledLevelCatalogIds.Catalog),
+                "Round-tripped game-content manifest");
             Expect(GameContentManifestJson.SerializeCanonical(roundTrip) == canonical,
                 "Manifest JSON round trip changed canonical content.");
 
             var invalid = GameContentManifestJson.DeepCopy(authored);
             invalid.battleContentVersion = "missing-version";
             var invalidResult = GameContentManifestValidator.Validate(invalid, battleCatalog,
-                BundledLevelCatalogIds.Catalog);
+                outgameCatalog, BundledLevelCatalogIds.Catalog);
             Expect(!invalidResult.IsValid && invalidResult.Issues.Any(value =>
                     value.code == "manifest.battle-content.mismatch"),
                 "Manifest/catalog identity mismatch diagnostic is missing.");
+
+            invalid = GameContentManifestJson.DeepCopy(authored);
+            invalid.outgameContentFingerprint = new string('0', 64);
+            invalidResult = GameContentManifestValidator.Validate(invalid, battleCatalog,
+                outgameCatalog, BundledLevelCatalogIds.Catalog);
+            Expect(!invalidResult.IsValid && invalidResult.Issues.Any(value =>
+                    value.code == "manifest.outgame-fingerprint.mismatch"),
+                "Manifest/outgame fingerprint mismatch diagnostic is missing.");
+
+            invalid = GameContentManifestJson.DeepCopy(authored);
+            invalid.outgameCatalogId = "catalog.outgame.missing";
+            invalidResult = GameContentManifestValidator.Validate(invalid, battleCatalog,
+                outgameCatalog, BundledLevelCatalogIds.Catalog);
+            Expect(!invalidResult.IsValid && invalidResult.Issues.Any(value =>
+                    value.code == "manifest.outgame-content.mismatch"),
+                "Manifest/outgame identity mismatch diagnostic is missing.");
         }
 
         private static string Normalize(string value)

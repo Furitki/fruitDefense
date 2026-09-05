@@ -143,11 +143,18 @@ namespace FruitDefense.Editor
                         semantic + "/inactive/" + interaction);
                     ValidateResolvedPair(active, spec, interaction, true,
                         semantic + "/active/" + interaction);
-                    Assert(inactive.ContainerSlot
-                            == RuntimeUiArtSlot.ActionCompactControl
-                        && active.ContainerSlot
-                            == RuntimeUiArtSlot.ActionCompactControlActive,
-                        semantic + " resolves one mutually-exclusive compact surface per mode state");
+                    var expectedInactiveSlot = interaction
+                            == RuntimeUiInteractionState.Disabled
+                        ? RuntimeUiArtSlot.ActionQuiet
+                        : RuntimeUiArtSlot.ActionCompactControl;
+                    var expectedActiveSlot = interaction
+                            == RuntimeUiInteractionState.Disabled
+                        ? RuntimeUiArtSlot.ActionQuiet
+                        : RuntimeUiArtSlot.ActionCompactControlActive;
+                    Assert(inactive.ContainerSlot == expectedInactiveSlot
+                        && active.ContainerSlot == expectedActiveSlot,
+                        semantic
+                        + " resolves one mutually-exclusive compact or universal disabled surface per mode state");
                 }
             }
 
@@ -178,6 +185,9 @@ namespace FruitDefense.Editor
             RuntimeUiActionSpec spec, RuntimeUiInteractionState interaction,
             bool modeActive, string label)
         {
+            var requiredContrast = interaction == RuntimeUiInteractionState.Disabled
+                ? RuntimeUiQualityProfile.LargeOrBoldTextContrast
+                : RuntimeUiQualityProfile.NormalTextContrast;
             Assert(style.Spec.Role == spec.Role
                 && style.Spec.ContentForm == spec.ContentForm
                 && style.Spec.Behavior == spec.Behavior
@@ -189,8 +199,13 @@ namespace FruitDefense.Editor
             Assert(style.ContainerColor.a >= .999f
                 && style.ContentColor.a >= .999f
                 && Contrast(style.ContentColor, style.ContainerColor) + .001f
-                    >= RuntimeUiQualityProfile.NormalTextContrast,
-                label + " resolves a complete opaque contrast-safe container/content pairing");
+                    >= requiredContrast,
+                label + " resolves a complete opaque contrast-safe container/content pairing at "
+                + requiredContrast.ToString("0.0") + ":1");
+            Assert(interaction != RuntimeUiInteractionState.Disabled
+                    || style.Disabled,
+                label
+                + " preserves the independent Disabled semantic consumed by the shared state-indicator cue");
         }
 
         private static void ValidateContourMetricContract()
@@ -250,9 +265,9 @@ namespace FruitDefense.Editor
 
         private static void ValidateFiniteSlotContract()
         {
-            Assert(RuntimeUiArtSlots.RequiredCount == 56
-                && RuntimeUiArtSlots.Required.Count == 56,
-                "finite art contract contains exactly 56 slots");
+            Assert(RuntimeUiArtSlots.RequiredCount == 62
+                && RuntimeUiArtSlots.Required.Count == 62,
+                "finite art contract contains exactly 62 slots");
             for (var index = 0; index < RuntimeUiArtSlots.Required.Count; index++)
             {
                 Assert((int)RuntimeUiArtSlots.Required[index] == index,
@@ -550,8 +565,8 @@ namespace FruitDefense.Editor
             var sets = RuntimeUiArtSetRegistry.DiscoverProductionSets().ToArray();
             Assert(sets.Length == 1
                 && sets[0].SetId == "sunny-orchard-painted"
-                && sets[0].Revision == "9",
-                "acceptance covers the sole production ArtSet sunny-orchard-painted@9");
+                && sets[0].Revision == "19",
+                "acceptance covers the sole production ArtSet sunny-orchard-painted@19");
             var validationReports =
                 new List<KeyValuePair<string, RuntimeUiVisualValidationReport>>();
             var artSetResults =
@@ -573,7 +588,7 @@ namespace FruitDefense.Editor
                 Assert(manifest != null && manifest.bindings != null
                     && manifest.slotCount == RuntimeUiArtSlots.RequiredCount
                     && manifest.bindings.Length == RuntimeUiArtSlots.RequiredCount,
-                    artSet.SetId + " manifest records the complete 56-slot contract");
+                    artSet.SetId + " manifest records the complete 62-slot contract");
 
                 foreach (var slot in new[]
                          {
@@ -735,6 +750,10 @@ namespace FruitDefense.Editor
             RuntimeUiResolvedActionStyle style, int width, int height,
             string label)
         {
+            var requiredContrast = style.InteractionState
+                    == RuntimeUiInteractionState.Disabled
+                ? RuntimeUiQualityProfile.LargeOrBoldTextContrast
+                : RuntimeUiQualityProfile.NormalTextContrast;
             if (!loaded.TryGetValue(style.ContainerSlot, out var texture))
             {
                 var binding = artSet.GetRequiredBinding(style.ContainerSlot);
@@ -763,9 +782,10 @@ namespace FruitDefense.Editor
             }
 
             Assert(measured > 0 && minimum + .001f
-                    >= RuntimeUiQualityProfile.NormalTextContrast,
+                    >= requiredContrast,
                 artSet.SetId + "/" + label
-                + " final significant interior pixels keep text/action-glyph contrast >=4.5:1; min="
+                + " final significant interior pixels keep text/action-glyph contrast >="
+                + requiredContrast.ToString("0.0") + ":1; min="
                 + minimum.ToString("0.00") + ":1, slot="
                 + RuntimeUiArtSlots.SemanticId(style.ContainerSlot));
             Debug.Log("ACTION_FINAL_PIXEL_CONTRAST set=" + artSet.SetId
@@ -1110,6 +1130,7 @@ namespace FruitDefense.Editor
             Assert(standardAction.Contains("ResolveActionStyle(spec, state, false)")
                 && standardAction.Contains("style.ContainerSlot")
                 && standardAction.Contains("style.ContentColor")
+                && standardAction.Contains("context.Theme.Colors.Outline")
                 && standardAction.Contains("RuntimeUiMotion.InteractionState(")
                 && !standardAction.Contains("DrawActionInteractionCue")
                 && !standardAction.Contains("RuntimeUiArtSlot.MarkerSelected")
@@ -1122,7 +1143,7 @@ namespace FruitDefense.Editor
                 && !standardAction.Contains("ResolveActionTextTone")
                 && !standardAction.Contains("context.Tint(")
                 && !standardAction.Contains("context.Opacity("),
-                "standard action renderer uses one resolved container and the same content color for label and glyph");
+                "standard action renderer uses one resolved container, shared content color, and the warm outline token for approved inverse primary labels");
             var compact = Slice(gui,
                 "public static void DrawCompactControlVisual(",
                 "public static RuntimeUiActionContentLayout ResolveActionContentLayout(");
@@ -1136,6 +1157,8 @@ namespace FruitDefense.Editor
                 && compact.Contains("RequireCompactInteractionState(interactionState)")
                 && compact.Contains("RequireCompactActionSpec(spec)")
                 && compact.Contains("ResolveCompactControlLayout(")
+                && CountOccurrences(compact,
+                    "DrawStateIndicator(context, layout.SurfaceRect, interactionState)") == 1
                 && CountOccurrences(compact, "DrawSlotArt(context, layout.SurfaceRect") == 1
                 && !compact.Contains("lifecycleSample.ShowsActiveSurface")
                 && !compact.Contains("lifecycleSample.ActiveSurfaceOpacity")
@@ -1150,7 +1173,7 @@ namespace FruitDefense.Editor
                 && !compact.Contains("TryGetBinding")
                 && !compact.Contains("Texture2D.whiteTexture")
                 && !compact.Contains("GUI.skin"),
-                "compact renderer resolves and draws exactly one complete surface with one shared content color");
+                "compact renderer resolves and draws exactly one complete surface with one shared content color and one independent state cue");
 
             var slotRenderer = Slice(gui,
                 "public static Rect DrawSlot(",

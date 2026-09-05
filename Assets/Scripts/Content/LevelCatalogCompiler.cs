@@ -345,6 +345,8 @@ namespace FruitDefense.Content
                 var hasWaves = waveSets.TryGetValue(level.WaveSetId, out waveSet);
                 var hasRules = ruleSets.TryGetValue(level.RuleSetId, out ruleSet);
                 var hasTheme = themes.TryGetValue(level.ThemeId, out theme);
+                RequireStableId(level.GrowthPolicyId, "levels", level.LevelId,
+                    "growthPolicyId", result);
                 if (!hasMap) MissingLevelReference(level, "mapId", level.MapId, result);
                 if (!hasWaves) MissingLevelReference(level, "waveSetId", level.WaveSetId, result);
                 if (!hasRules) MissingLevelReference(level, "ruleSetId", level.RuleSetId, result);

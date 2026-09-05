@@ -21,6 +21,9 @@ param(
   [ValidateSet('victory', 'defeat')]
   [string]$BattleTerminalOutcome = 'victory',
   [switch]$ShellVisual,
+  [switch]$HubVisual,
+  [switch]$HubStates,
+  [switch]$HubLoop,
   [switch]$InteractionPolishEvidence,
   [switch]$CompactControlEvidence,
   [switch]$CombatFeedbackEvidence,
@@ -32,6 +35,7 @@ param(
   [string]$ProfilePath,
   [switch]$CacheSeedOnly,
   [string]$CacheSeedManifestPath,
+  [switch]$ReleaseDelivery,
   [string]$OutputDirectory,
   [switch]$SelfCheck
 )
@@ -96,20 +100,34 @@ if (-not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath) -and $ownsProfile)
 if ($CacheSeedOnly -and -not [string]::IsNullOrWhiteSpace($CacheSeedManifestPath)) {
   throw 'Cache seed mode cannot consume another cache seed manifest.'
 }
+$releaseDeliveryConflicts = @(
+  @($Flow, $ShellVisual, $HubVisual, $HubStates, $HubLoop, $ShellError,
+    $CombatFeedbackEvidence, $DragFeedbackEvidence, $InteractionPolishEvidence,
+    $CompactControlEvidence) |
+    Where-Object { $_ }
+)
+if ($ReleaseDelivery -and $releaseDeliveryConflicts.Count -gt 0) {
+  throw '-ReleaseDelivery is a release startup/cache check and cannot use acceptance interaction modes.'
+}
 $selectedAcceptanceModes = @(
-  @($Flow, $ShellVisual, $ShellError, $CombatFeedbackEvidence, $DragFeedbackEvidence) |
+  @($Flow, $ShellVisual, $HubVisual, $HubStates, $HubLoop,
+    $ShellError, $CombatFeedbackEvidence, $DragFeedbackEvidence) |
     Where-Object { $_ }
 )
 if ($selectedAcceptanceModes.Count -gt 1) {
-  throw '-Flow, -ShellVisual, -ShellError, and -CombatFeedbackEvidence are distinct acceptance modes and cannot be combined.'
+  throw '-Flow, -ShellVisual, -HubVisual, -HubStates, -HubLoop, -ShellError, -CombatFeedbackEvidence, and -DragFeedbackEvidence are distinct acceptance modes and cannot be combined.'
 }
 if ($ShellVisual -and $LevelId -eq 'orchard-01') {
   throw '-ShellVisual requires -LevelId orchard-02 or orchard-03 for alternate-selection evidence.'
 }
+if ($HubLoop -and $LevelId -cne 'orchard-02') {
+  throw '-HubLoop requires -LevelId orchard-02 for the applied/suppressed policy proof.'
+}
 if ($InteractionPolishEvidence -and $ShellError) {
   throw '-InteractionPolishEvidence is not available with -ShellError.'
 }
-if ($CompactControlEvidence -and ($Flow -or $ShellVisual -or $ShellError)) {
+if ($CompactControlEvidence -and
+    ($Flow -or $ShellVisual -or $HubVisual -or $HubStates -or $HubLoop -or $ShellError)) {
   throw '-CompactControlEvidence is available only with the direct Battle acceptance mode.'
 }
 if ($CombatFeedbackEvidence -and ($InteractionPolishEvidence -or $CompactControlEvidence)) {
@@ -127,6 +145,7 @@ $acceptanceRunnerCommandPath = $PSCommandPath
 $acceptanceModuleRoot = Join-Path $PSScriptRoot 'webgl-acceptance'
 $acceptanceModules = @(
   'geometry.ps1',
+  'hub-matrix.ps1',
   'transport.ps1',
   'evidence-helpers.ps1',
   'image-analysis.ps1',
@@ -134,6 +153,8 @@ $acceptanceModules = @(
   'settlement-ink-analysis.ps1',
   'settlement-optical-analysis.ps1',
   'self-check.ps1',
+  'run-hub.ps1',
+  'run-hub-loop.ps1',
   'run-shell.ps1',
   'run-flow.ps1',
   'run-combat.ps1',
@@ -144,10 +165,20 @@ foreach ($acceptanceModule in $acceptanceModules) {
 }
 
 $referenceControls = [ordered]@{
-  lobbyLevelOrchard01 = [ordered]@{ x = 201; y = 206 }
-  lobbyLevelOrchard02 = [ordered]@{ x = 201; y = 392 }
-  lobbyLevelOrchard03 = [ordered]@{ x = 201; y = 578 }
-  lobbyStart = [ordered]@{ x = 201; y = 746 }
+  lobbyLevelOrchard01 = [ordered]@{ x = 203; y = 188 }
+  lobbyLevelOrchard02 = [ordered]@{ x = 202.5; y = 329 }
+  lobbyLevelOrchard03 = [ordered]@{ x = 202.5; y = 466 }
+  lobbyStart = [ordered]@{ x = 201.5; y = 728 }
+  hubNavHome = [ordered]@{ x = 75; y = 834 }
+  hubNavActivity = [ordered]@{ x = 201; y = 834 }
+  hubNavGrowth = [ordered]@{ x = 327; y = 834 }
+  hubGrowthEquipment = [ordered]@{ x = 110.5; y = 132 }
+  hubGrowthCultivation = [ordered]@{ x = 291.5; y = 132 }
+  hubGrowthEntry = [ordered]@{ x = 202.5; y = 232 }
+  hubEquipmentPrimary = [ordered]@{ x = 201; y = 734.5 }
+  hubCultivationPrimary = [ordered]@{ x = 200.5; y = 748.5 }
+  hubActivityClaim = [ordered]@{ x = 201; y = 669.5 }
+  hubStart = [ordered]@{ x = 201.5; y = 728 }
   settlementRetry = [ordered]@{ x = 201; y = 674 }
   settlementReturn = [ordered]@{ x = 201; y = 754 }
   headerPause = [ordered]@{ x = 288; y = 74 }
@@ -164,7 +195,7 @@ $referenceControls = [ordered]@{
 }
 $controls = [ordered]@{}
 foreach ($name in $referenceControls.Keys) {
-  $isShellControl = $name.StartsWith('lobby') -or $name.StartsWith('settlement')
+  $isShellControl = $name.StartsWith('settlement')
   $controls[$name] = if ($isShellControl) {
     Convert-ShellReferencePoint -X $referenceControls[$name].x -Y $referenceControls[$name].y
   }
@@ -176,27 +207,12 @@ $levelCardControlName = 'lobbyLevel' + ($LevelId -replace '-', '').Replace('orch
 if (-not $controls.Contains($levelCardControlName)) {
   throw "No Lobby control is defined for level '$LevelId'."
 }
-$lobbyStartRect = [ordered]@{
-  xMin = [Math]::Floor($shellContentX)
-  yMin = [Math]::Floor($shellContentY + 690.0 * $referenceScale)
-  xMax = [Math]::Ceiling($shellContentX + $shellContentWidth)
-  yMax = [Math]::Ceiling($shellContentY + (690.0 + 76.0) * $referenceScale)
-}
-$lobbyLevelCardOffset = switch ($LevelId) {
-  'orchard-01' { 100.0 }
-  'orchard-02' { 286.0 }
-  'orchard-03' { 472.0 }
+$lobbyStartRect = Convert-ReferenceRect -X 57 -Y 700 -Width 289 -Height 56
+$lobbyAlternateCardRect = switch ($LevelId) {
+  'orchard-01' { Convert-ReferenceRect -X 28 -Y 122 -Width 350 -Height 132 }
+  'orchard-02' { Convert-ReferenceRect -X 27 -Y 267 -Width 351 -Height 124 }
+  'orchard-03' { Convert-ReferenceRect -X 27 -Y 404 -Width 351 -Height 124 }
   default { throw "No Lobby card rect is defined for level '$LevelId'." }
-}
-$lobbyAlternateCardRect = [ordered]@{
-  # The approved selectable-card Sprite preserves transparent optical padding:
-  # visible left/right outline ink begins 6/4 logical points inside the layout rect.
-  xMin = [Math]::Floor($shellContentX + 6.0 * $referenceScale)
-  yMin = [Math]::Floor($shellContentY + $lobbyLevelCardOffset * $referenceScale)
-  xMax = [Math]::Ceiling(
-    $shellContentX + $shellContentWidth - 4.0 * $referenceScale)
-  yMax = [Math]::Ceiling(
-    $shellContentY + ($lobbyLevelCardOffset + 176.0) * $referenceScale)
 }
 $headerSampleRegion = Convert-ReferenceRect -X 20 -Y 42 -Width 354 -Height 105
 $headerPanelRect = Convert-ReferenceRect -X 14 -Y 36 -Width 374 -Height 114
@@ -309,6 +325,7 @@ if ($mappedDesignBounds.xMin -lt -0.001 -or $mappedDesignBounds.yMin -lt ($SafeT
 }
 
 $runtimeUiIdentity = Get-ReleaseRuntimeUiIdentity
+$expectedBuildProfile = if ($ReleaseDelivery) { 'release' } else { 'acceptance' }
 
 
 if ($SelfCheck) {
@@ -324,7 +341,7 @@ try {
       throw '-ServeLocal cannot be combined with -Url; choose one exact acceptance source.'
     }
     $verifiedBuildProfile = Assert-WebGlBuildProfile `
-      -ExpectedProfile acceptance `
+      -ExpectedProfile $expectedBuildProfile `
       -BuildRoot $BuildRoot `
       -TimeoutSeconds $TimeoutSeconds
     $serverPort = Get-FreeTcpPort
@@ -353,10 +370,12 @@ try {
   elseif ([string]::IsNullOrWhiteSpace($Url)) {
     throw 'Provide -Url or use -ServeLocal.'
   }
-  $Url = Set-AcceptanceQuery -TargetUrl $Url
+  if (-not $ReleaseDelivery) {
+    $Url = Set-AcceptanceQuery -TargetUrl $Url
+  }
   if (-not $ServeLocal) {
     $verifiedBuildProfile = Assert-WebGlBuildProfile `
-      -ExpectedProfile acceptance `
+      -ExpectedProfile $expectedBuildProfile `
       -Url $Url `
       -TimeoutSeconds $TimeoutSeconds
   }
@@ -365,9 +384,19 @@ try {
   $pageResponse = Wait-Http -TargetUrl $Url -Seconds $TimeoutSeconds
   $delivery = Get-UnityDeliveryMetadata -PageUrl $Url -PageResponse $pageResponse
 
-  Assert-AcceptanceBuildProfileVerified
+  if ($ReleaseDelivery) {
+    if ([string]$verifiedBuildProfile.verifiedProfile -cne 'release') {
+      throw 'Release delivery mode requires a verified release build profile.'
+    }
+  } else {
+    Assert-AcceptanceBuildProfileVerified
+  }
   $debugPort = Get-FreeTcpPort
-  $initialChromeUrl = if ($ShellVisual -or $ShellError) { 'about:blank' } else { $Url }
+  $initialChromeUrl = if ($ShellVisual -or $ShellError -or $ReleaseDelivery) {
+    'about:blank'
+  } else {
+    $Url
+  }
   $chromeArgs = @(
     '--headless=new', '--no-first-run', '--disable-background-networking', '--disable-extensions',
     '--hide-scrollbars', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist',
@@ -411,6 +440,11 @@ try {
   finally { $connectCts.Dispose() }
   Invoke-Cdp -Method 'Page.enable' | Out-Null
   Invoke-Cdp -Method 'Runtime.enable' | Out-Null
+  if ($ReleaseDelivery) {
+    Invoke-Cdp -Method 'Page.addScriptToEvaluateOnNewDocument' -Params @{
+      source = 'performance.setResourceTimingBufferSize(1000);'
+    } | Out-Null
+  }
   $browserVersion = Invoke-Cdp -Method 'Browser.getVersion'
   $browserEvidence = [ordered]@{
     product = $browserVersion.product
@@ -517,7 +551,7 @@ try {
       Remove-Item -LiteralPath $bootstrapProbePath -Force
     }
   }
-  elseif ($ShellError) {
+  elseif ($ShellError -or $ReleaseDelivery) {
     $coldStartedAt = [DateTimeOffset]::UtcNow
     Invoke-Cdp -Method 'Page.navigate' -Params @{ url = $Url } | Out-Null
   }
@@ -535,11 +569,13 @@ try {
     $canvasReady = $readiness.width -eq $Width -and $readiness.height -eq $Height -and
       [Math]::Abs([double]$readiness.cssWidth - $Width) -lt 0.51 -and
       [Math]::Abs([double]$readiness.cssHeight - $Height) -lt 0.51
-    if ($readiness.canvas -and $readiness.loading -eq 'none' -and $readiness.acceptanceReady -and
+    $runtimeReady = $ReleaseDelivery -or $readiness.acceptanceReady
+    if ($readiness.canvas -and $readiness.loading -eq 'none' -and $runtimeReady -and
         $viewportReady -and $canvasReady) { break }
     Start-Sleep -Milliseconds 400
   } while ((Get-Date) -lt $deadline)
-  if (-not $readiness.canvas -or $readiness.loading -ne 'none' -or -not $readiness.acceptanceReady) {
+  if (-not $readiness.canvas -or $readiness.loading -ne 'none' -or
+      (-not $ReleaseDelivery -and -not $readiness.acceptanceReady)) {
     throw "Unity player did not finish loading. state=$($readiness | ConvertTo-Json -Compress)"
   }
   if ($readiness.warning) { throw "Unity player warning: $($readiness.warning)" }
@@ -563,8 +599,25 @@ try {
   $releaseTransition = $cacheContext.releaseTransition
   $screenshots = [ordered]@{}
 
+  if ($ReleaseDelivery) {
+    Invoke-ReleaseDeliveryMode
+    return
+  }
+
   if ($ShellVisual) {
     Invoke-ShellVisualMode
+    return
+  }
+  if ($HubVisual) {
+    Invoke-HubVisualMode
+    return
+  }
+  if ($HubStates) {
+    Invoke-HubStatesMode
+    return
+  }
+  if ($HubLoop) {
+    Invoke-HubLoopMode
     return
   }
   if ($Flow) {

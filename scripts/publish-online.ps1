@@ -20,6 +20,7 @@ $localManifestPath = Join-Path $projectRoot 'Builds\Pipeline\local-build-manifes
 $publishManifestPath = Join-Path $projectRoot 'Builds\Pipeline\online-publish-manifest.json'
 $deploymentTransitionPath = Join-Path $projectRoot 'Builds\Pipeline\deployment-transition.json'
 $webEntryPath = Join-Path $projectRoot 'Builds\WebGL\index.html'
+$acceptanceEntryPath = Join-Path $projectRoot 'Builds\WebGL-Acceptance\index.html'
 
 if (-not (Test-Path -LiteralPath $commonScript -PathType Leaf)) {
   throw "Pipeline helper not found: $commonScript"
@@ -30,7 +31,8 @@ function Get-ValidatedWebEvidence {
   param(
     [Parameter(Mandatory = $true)][string]$ManifestPath,
     [Parameter(Mandatory = $true)][string]$ExpectedRevision,
-    [Parameter(Mandatory = $true)][string]$WebEntryPath
+    [Parameter(Mandatory = $true)][string]$WebEntryPath,
+    [Parameter(Mandatory = $true)][string]$AcceptanceEntryPath
   )
 
   if (-not (Test-Path -LiteralPath $ManifestPath -PathType Leaf)) {
@@ -76,6 +78,34 @@ function Get-ValidatedWebEvidence {
     }
   }
 
+  $acceptanceEvidence = $webEvidence[0].PSObject.Properties['acceptance']
+  if ($null -eq $acceptanceEvidence -or
+      [string]$acceptanceEvidence.Value.profile -cne 'acceptance') {
+    throw 'Local Web build manifest does not contain the paired acceptance profile.'
+  }
+  if (-not (Test-Path -LiteralPath $AcceptanceEntryPath -PathType Leaf)) {
+    throw "Acceptance Web build entry not found: $AcceptanceEntryPath"
+  }
+  if ((Get-FruitDefenseFileHash -Path $AcceptanceEntryPath) -ne
+      [string]$acceptanceEvidence.Value.primarySha256) {
+    throw 'Current acceptance WebGL index hash does not match the local build manifest.'
+  }
+  $currentAcceptancePayloads = Get-FruitDefenseWebPayloadEvidence `
+    -EntryPath $AcceptanceEntryPath
+  foreach ($role in $currentAcceptancePayloads.Keys) {
+    $evidenceProperty = $acceptanceEvidence.Value.payloads.PSObject.Properties[$role]
+    if ($null -eq $evidenceProperty) {
+      throw "Local Web build manifest is missing the acceptance $role payload."
+    }
+    $evidencePayload = $evidenceProperty.Value
+    foreach ($field in @('fileName', 'version', 'sha256', 'sizeBytes')) {
+      if ([string]$evidencePayload.$field -cne
+          [string]$currentAcceptancePayloads[$role][$field]) {
+        throw "Current acceptance WebGL $role $field does not match the local build manifest."
+      }
+    }
+  }
+
   return $webEvidence[0]
 }
 
@@ -95,6 +125,7 @@ $plan = [ordered]@{
   dirty = $gitState.dirty
   skipBuild = [bool]$SkipBuild
   webOutput = (Join-Path $projectRoot 'Builds\WebGL')
+  acceptanceOutput = (Join-Path $projectRoot 'Builds\WebGL-Acceptance')
   localManifest = $localManifestPath
   delegatedWorkflow = $deployScript
   gates = @(
@@ -102,6 +133,7 @@ $plan = [ordered]@{
     "required Git branch '$releaseBranch' and clean working tree",
     'SSH key path exists',
     'P0-validated Web build manifest matches current revision and index hash',
+    'local build leaves the release branch, revision, and working tree unchanged',
     'local portrait acceptance',
     'remote upload, service health, cache/header checks, and deployed acceptance'
   )
@@ -134,10 +166,24 @@ if (-not $SkipBuild) {
   & $localBuildScript -Target Web -UnityPath $UnityPath
 }
 
+$postBuildGitState = Get-FruitDefenseGitState -ProjectRoot $projectRoot
+if ($postBuildGitState.branch -ne $releaseBranch) {
+  throw "Local build changed the release branch from '$releaseBranch' to '$($postBuildGitState.branch)'."
+}
+if ($postBuildGitState.revision -ne $gitState.revision) {
+  throw (
+    "Local build changed the release revision from $($gitState.revision) " +
+    "to $($postBuildGitState.revision).")
+}
+if ($postBuildGitState.dirty) {
+  throw 'Local build left a dirty working tree; refusing to deploy uncommitted build inputs.'
+}
+
 $webEvidence = Get-ValidatedWebEvidence `
   -ManifestPath $localManifestPath `
   -ExpectedRevision $gitState.revision `
-  -WebEntryPath $webEntryPath
+  -WebEntryPath $webEntryPath `
+  -AcceptanceEntryPath $acceptanceEntryPath
 
 $publishStartedAt = [DateTimeOffset]::UtcNow
 & $deployScript `

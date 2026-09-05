@@ -33,6 +33,13 @@ namespace FruitDefense.Editor
                 { "waveSetId", value => value.waveSetId += ".other" },
                 { "ruleSetId", value => value.ruleSetId += ".other" },
                 { "themeId", value => value.themeId += ".other" },
+                { "growthPolicyId", value => value.growthPolicyId += ".other" },
+                { "growthContentCatalogId", value => value.growthContentCatalogId += ".other" },
+                { "growthContentVersion", value => value.growthContentVersion += ".other" },
+                { "growthContentFingerprint", value => value.growthContentFingerprint += "0" },
+                { "growthProfileId", value => value.growthProfileId += ".other" },
+                { "growthProfileRevision", value => value.growthProfileRevision++ },
+                { "growthFingerprint", value => value.growthFingerprint += "0" },
                 { "resolvedSourceDefinitionFingerprint",
                     value => value.resolvedSourceDefinitionFingerprint += "0" },
             };
@@ -157,9 +164,10 @@ namespace FruitDefense.Editor
         private static void AssertMapMutation(CompiledLevelCatalog targetCatalog,
             string levelId, BattleSnapshot snapshot, CompiledLevelCatalog supplied)
         {
-            var targetIdentity = new GameSimulation(targetCatalog, levelId, 9251)
+            var growth = BattleGrowthTestFixture.ResolveBundled(targetCatalog, levelId);
+            var targetIdentity = new GameSimulation(targetCatalog, levelId, 9251, growth)
                 .ResolvedSourceIdentity;
-            var suppliedIdentity = new GameSimulation(supplied, levelId, 9252)
+            var suppliedIdentity = new GameSimulation(supplied, levelId, 9252, growth)
                 .ResolvedSourceIdentity;
             BattleSnapshotSmoke.Assert(targetIdentity.MapId == suppliedIdentity.MapId
                     && targetIdentity.GameplayMapFingerprint
@@ -175,9 +183,10 @@ namespace FruitDefense.Editor
             string levelId, BattleSnapshot snapshot, CompiledLevelCatalog supplied,
             string label)
         {
-            var targetIdentity = new GameSimulation(targetCatalog, levelId, 9201)
+            var growth = BattleGrowthTestFixture.ResolveBundled(targetCatalog, levelId);
+            var targetIdentity = new GameSimulation(targetCatalog, levelId, 9201, growth)
                 .ResolvedSourceIdentity;
-            var suppliedIdentity = new GameSimulation(supplied, levelId, 9202)
+            var suppliedIdentity = new GameSimulation(supplied, levelId, 9202, growth)
                 .ResolvedSourceIdentity;
             BattleSnapshotSmoke.Assert(targetIdentity.LevelCatalogId
                     == suppliedIdentity.LevelCatalogId

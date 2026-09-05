@@ -255,6 +255,7 @@ function Get-HostState {
     acceptanceRouteReady: window.fruitDefenseAcceptanceRouteReady === true,
     route: window.fruitDefenseAppRoute ?? -1,
     identity: window.fruitDefenseAcceptanceIdentity ?? null,
+    hubTelemetry: window.fruitDefenseHubTelemetry ?? null,
     acceptanceTelemetry: window.fruitDefenseCombatFeedbackTelemetry ?? null,
     settlementOutcomeRevealState:
       window.fruitDefenseSettlementOutcomeRevealState ?? null,
@@ -279,7 +280,8 @@ function Assert-ReleaseAcceptanceQueryIgnored {
   }
   Assert-Condition (-not $State.acceptanceReady -and -not $State.acceptancePending -and
       -not $State.acceptanceRouteReady -and [int]$State.route -eq -1 -and
-      $null -eq $State.identity -and $null -eq $State.acceptanceTelemetry -and
+      $null -eq $State.identity -and $null -eq $State.hubTelemetry -and
+      $null -eq $State.acceptanceTelemetry -and
       $null -eq $State.settlementOutcomeRevealState) `
     "Release browser activated acceptance state from its query: $($State | ConvertTo-Json -Compress -Depth 8)"
   Assert-Condition ([double]$State.host.canvas.backingWidth -eq $logicalWidth -and
@@ -320,7 +322,9 @@ function Wait-HostState {
       $runtimeReady = switch ($RuntimeMode) {
         'acceptance' {
           $state.acceptanceReady -and [int]$state.route -eq 0 -and
-            $state.loading -eq 'none' -and $null -ne $state.identity
+            $state.loading -eq 'none' -and $null -ne $state.identity -and
+            $null -ne $state.hubTelemetry -and
+            -not [bool]$state.hubTelemetry.fixtureActive
         }
         'release' {
           -not $state.acceptanceReady -and [int]$state.route -eq -1 -and
@@ -466,6 +470,31 @@ function Wait-SelectedLevel {
     Start-Sleep -Milliseconds 150
   } while ((Get-Date) -lt $deadline)
   throw "Canvas-relative Lobby click did not select ${LevelId}: $($state.identity | ConvertTo-Json -Compress)"
+}
+
+function Wait-HostHubPage {
+  param([string]$Page, [string]$GrowthPage = '')
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $state = $null
+  do {
+    $state = Get-HostState
+    $hub = $state.hubTelemetry
+    if ($state.acceptanceReady -and [int]$state.route -eq 0 -and
+        $null -ne $hub -and -not [bool]$hub.fixtureActive -and
+        [string]$hub.page -ceq $Page -and
+        ([string]::IsNullOrWhiteSpace($GrowthPage) -or
+          [string]$hub.growthPage -ceq $GrowthPage)) {
+      foreach ($field in @(
+          'manifestFingerprint', 'outgameContentFingerprint',
+          'battleContentFingerprint', 'growthFingerprint')) {
+        Assert-Condition ([string]$hub.$field -match '^[0-9a-f]{64}$') `
+          "Desktop Hub telemetry fingerprint '$field' is invalid: $($hub.$field)"
+      }
+      return $state
+    }
+    Start-Sleep -Milliseconds 100
+  } while ((Get-Date) -lt $deadline)
+  throw "Desktop Hub page did not become '$Page/$GrowthPage': $($state | ConvertTo-Json -Compress -Depth 10)"
 }
 
 function Save-Screenshot {
@@ -639,16 +668,39 @@ try {
       if ($Mode -eq 'acceptance') {
         Assert-Condition ([string]$state.identity.levelId -eq 'orchard-01') `
           "Host acceptance did not start on orchard-01: $($state.identity | ConvertTo-Json -Compress)"
+        Assert-Condition (-not [bool]$state.hubTelemetry.fixtureActive -and
+            [string]$state.hubTelemetry.page -ceq 'home') `
+          "Desktop host did not start on the real Home page: $($state.hubTelemetry | ConvertTo-Json -Compress -Depth 8)"
       } else {
         $releaseQueryInitial = Assert-ReleaseAcceptanceQueryIgnored `
           -State $state `
           -TargetUrl $targetUrl
       }
 
+      $hubNavigation = $null
+      if ($Mode -eq 'acceptance') {
+        $hubNavigation = [ordered]@{}
+        $hubNavigation.activityInput = Invoke-CanvasRelativeClick `
+          -Canvas $state.host.canvas -LogicalX 201 -LogicalY 834
+        $activityState = Wait-HostHubPage -Page 'activity'
+        $hubNavigation.activityTelemetry = $activityState.hubTelemetry
+        $hubNavigation.growthInput = Invoke-CanvasRelativeClick `
+          -Canvas $activityState.host.canvas -LogicalX 327 -LogicalY 834
+        $equipmentState = Wait-HostHubPage -Page 'growth' -GrowthPage 'equipment'
+        $hubNavigation.equipmentTelemetry = $equipmentState.hubTelemetry
+        $hubNavigation.cultivationInput = Invoke-CanvasRelativeClick `
+          -Canvas $equipmentState.host.canvas -LogicalX 291.5 -LogicalY 132
+        $cultivationState = Wait-HostHubPage -Page 'growth' -GrowthPage 'cultivation'
+        $hubNavigation.cultivationTelemetry = $cultivationState.hubTelemetry
+        $hubNavigation.homeInput = Invoke-CanvasRelativeClick `
+          -Canvas $cultivationState.host.canvas -LogicalX 75 -LogicalY 834
+        $state = Wait-HostHubPage -Page 'home'
+        $hubNavigation.homeTelemetry = $state.hubTelemetry
+      }
       $input = Invoke-CanvasRelativeClick `
         -Canvas $state.host.canvas `
-        -LogicalX 201 `
-        -LogicalY 406
+        -LogicalX 202.5 `
+        -LogicalY 329
       $selectedState = if ($Mode -eq 'acceptance') {
         $result = Wait-SelectedLevel -LevelId 'orchard-02'
         Assert-Condition ([int]$result.route -eq 0) `
@@ -689,6 +741,11 @@ try {
       if ($Mode -eq 'acceptance') {
         $matrix.selectedLevelId = [string]$selectedState.identity.levelId
         $matrix.route = [int]$selectedState.route
+        $matrix.hubNavigation = $hubNavigation
+        $matrix.hubTelemetry = $selectedState.hubTelemetry
+        $matrix.checks.realHubTelemetry = 'pass'
+        $matrix.checks.homeActivityGrowthNavigation = 'pass'
+        $matrix.checks.fixtureDataAbsent = 'pass'
       } else {
         $matrix.acceptanceBridge = 'absent'
         $matrix.route = -1

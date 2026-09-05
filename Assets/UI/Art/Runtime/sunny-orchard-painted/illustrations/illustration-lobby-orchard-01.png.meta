@@ -119,6 +119,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
-  userData: ui-art-set=sunny-orchard-painted;group=illustrations;slot=illustration.lobby-orchard-01;source-scale=2
+  userData: ui-art-set=sunny-orchard-painted;slot=illustration.lobby-orchard-01;source-scale=2;authored=user-approved-reference-component;reference=docs/ui/mockups/outgame-hub-concepts/home.png;reference-sha256=873F6EFBF1B060A8992DB4D7AFAC7EB0E73FF3C8223BE5CA79988620309C9AEE;component=openspec/changes/restore-reference-home-activity-pages/evidence/home-reference-restoration/reference-splits/level-01-window.png;component-sha256=6615DFF9585E1A5458B15DB15AAD7114210288BF5B1B08FF6664B531B3E488FC;crop=84,280,282,230;transform=complete-component-crop|alpha-safe-resize
   assetBundleName:
   assetBundleVariant:

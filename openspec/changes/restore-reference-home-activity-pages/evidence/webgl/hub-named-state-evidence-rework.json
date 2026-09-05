@@ -1,0 +1,2441 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "outgame-hub-named-state-webgl",
+  "accepted": true,
+  "completion": "all-static-and-persistence-failure-states-captured",
+  "capturedAtUtc": "2026-09-01T06:52:17.6917979+00:00",
+  "url": "http://127.0.0.1:50620/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+  "verifiedBuildProfile": {
+    "marker": "fruit-defense-build-profile",
+    "expectedProfile": "acceptance",
+    "verifiedProfile": "acceptance",
+    "sourceKind": "build-root",
+    "source": "E:\\project\\unity\\furitDefense\\Builds\\WebGL-Acceptance\\index.html",
+    "verifiedAtUtc": "2026-09-01T06:51:58.4546505+00:00"
+  },
+  "viewport": {
+    "width": 402,
+    "height": 874,
+    "coordinateSpace": "css-pixel/top-left"
+  },
+  "safeArea": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0,
+    "coordinateSpace": "css-pixel/top-left",
+    "contentRect": {
+      "x": 0,
+      "y": 0,
+      "width": 402,
+      "height": 874
+    },
+    "designReference": {
+      "width": 402,
+      "height": 874
+    },
+    "designScale": 1.0,
+    "designOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "shellContentRect": {
+      "x": 16.0,
+      "y": 18.0,
+      "width": 370.0,
+      "height": 838
+    }
+  },
+  "runtimeUi": {
+    "themeId": "ui.sunny-orchard",
+    "themeRevision": "11",
+    "artSetId": "sunny-orchard-painted",
+    "artSetRevision": "13",
+    "display": "ui.sunny-orchard@11 / sunny-orchard-painted@13",
+    "themeAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Theme\\ReleaseRuntimeUiTheme.asset",
+    "artSetAsset": "E:\\project\\unity\\furitDefense\\Assets\\UI\\Art\\Sets\\SunnyOrchardPaintedRuntimeUiArtSet.asset",
+    "activeArtSetGuid": "91aa538ae02449cba8c971ffe4d427eb"
+  },
+  "browser": {
+    "product": "Chrome/151.0.7922.175",
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1",
+    "protocolVersion": "1.3",
+    "jsVersion": "15.1.206.23",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "launchMode": "external-headless-chrome-cdp"
+  },
+  "canvas": {
+    "href": "http://127.0.0.1:50620/?acceptance=1&levelId=orchard-01&safeTop=0&safeBottom=0",
+    "title": "水果塔防",
+    "canvas": true,
+    "width": 402,
+    "height": 874,
+    "cssWidth": 402,
+    "cssHeight": 874,
+    "innerWidth": 402,
+    "innerHeight": 874,
+    "devicePixelRatio": 1,
+    "timeOrigin": 1788245523478.5,
+    "loading": "none",
+    "warning": "",
+    "acceptanceReady": true,
+    "appRoute": 0,
+    "body": ""
+  },
+  "stateDefinitions": [
+    {
+      "id": "home-fresh",
+      "page": "home",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "fresh"
+    },
+    {
+      "id": "home-policy-preview",
+      "page": "home",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "applied-suppressed"
+    },
+    {
+      "id": "activity-claimable",
+      "page": "activity",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "claimable"
+    },
+    {
+      "id": "activity-claiming",
+      "page": "activity",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "claiming",
+      "busy": true
+    },
+    {
+      "id": "activity-claimed",
+      "page": "activity",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "claimed"
+    },
+    {
+      "id": "activity-error",
+      "page": "activity",
+      "growthPage": "",
+      "kind": "StaticState",
+      "resolved": "error",
+      "status": "InvalidProfile"
+    },
+    {
+      "id": "activity-save-failure",
+      "page": "activity",
+      "growthPage": "",
+      "kind": "PersistenceFailure",
+      "resolved": "error",
+      "status": "PersistenceFailed"
+    },
+    {
+      "id": "equipment-owned",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "owned"
+    },
+    {
+      "id": "equipment-selected",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "upgradeable"
+    },
+    {
+      "id": "equipment-locked",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "locked"
+    },
+    {
+      "id": "equipment-insufficient",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "insufficient"
+    },
+    {
+      "id": "equipment-maximum",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "maximum"
+    },
+    {
+      "id": "equipment-loading",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "loading",
+      "busy": true
+    },
+    {
+      "id": "equipment-error",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "StaticState",
+      "resolved": "error",
+      "status": "InvalidProfile"
+    },
+    {
+      "id": "equipment-save-failure",
+      "page": "growth",
+      "growthPage": "equipment",
+      "kind": "PersistenceFailure",
+      "resolved": "error",
+      "status": "PersistenceFailed"
+    },
+    {
+      "id": "cultivation-selected",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "upgradeable"
+    },
+    {
+      "id": "cultivation-locked",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "locked"
+    },
+    {
+      "id": "cultivation-insufficient",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "insufficient"
+    },
+    {
+      "id": "cultivation-maximum",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "maximum"
+    },
+    {
+      "id": "cultivation-loading",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "loading",
+      "busy": true
+    },
+    {
+      "id": "cultivation-error",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "StaticState",
+      "resolved": "error",
+      "status": "InvalidProfile"
+    },
+    {
+      "id": "cultivation-save-failure",
+      "page": "growth",
+      "growthPage": "cultivation",
+      "kind": "PersistenceFailure",
+      "resolved": "error",
+      "status": "PersistenceFailed"
+    }
+  ],
+  "telemetry": {
+    "home-fresh": {
+      "schemaVersion": 1,
+      "stateId": "home-fresh",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/home-fresh/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "home",
+      "growthPage": "equipment",
+      "resolvedState": "fresh",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "home-policy-preview": {
+      "schemaVersion": 1,
+      "stateId": "home-policy-preview",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/home-policy-preview/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "home",
+      "growthPage": "equipment",
+      "resolvedState": "applied-suppressed",
+      "selectedLevelId": "orchard-02",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 3,
+      "growthPolicyId": "growth-policy.orchard-02",
+      "growthFingerprint": "de5af55bee0a79c6c06ed56e08b06110af295bcaf6c3db27e56424e6dbf54bc0",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 1,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 0
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 1
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": [
+        {
+          "cultivationNodeId": "cultivation.vital-roots",
+          "rank": 1
+        }
+      ]
+    },
+    "activity-claimable": {
+      "schemaVersion": 1,
+      "stateId": "activity-claimable",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/activity-claimable/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "claimable",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "activity-claiming": {
+      "schemaVersion": 1,
+      "stateId": "activity-claiming",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/activity-claiming/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "claiming",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": true,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "activity-claimed": {
+      "schemaVersion": 1,
+      "stateId": "activity-claimed",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/activity-claimed/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "claimed",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "activity-error": {
+      "schemaVersion": 1,
+      "stateId": "activity-error",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/activity-error/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "ClaimActivity",
+      "lastCommandStatus": "InvalidProfile",
+      "lastCommandError": "Acceptance fixture returned a recoverable command error.",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "activity-save-failure": {
+      "schemaVersion": 1,
+      "stateId": "activity-save-failure",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/activity-save-failure/v1",
+      "evidenceKind": "PersistenceFailure",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "activity",
+      "growthPage": "equipment",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "ClaimActivity",
+      "lastCommandStatus": "PersistenceFailed",
+      "lastCommandError": "Acceptance fixture rejected persistence.",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "equipment-owned": {
+      "schemaVersion": 1,
+      "stateId": "equipment-owned",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-owned/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "owned",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "equipment-selected": {
+      "schemaVersion": 1,
+      "stateId": "equipment-selected",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-selected/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "upgradeable",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "3eef722484f8dbbd8f43c65dc4a69b2ae7f0154cba3720288fc156cca5c33dee",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "equipment-locked": {
+      "schemaVersion": 1,
+      "stateId": "equipment-locked",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-locked/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "locked",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "0c7f5adbdbe60db4fb4d73b00527847a763d7e297c5817f8d21b22a72ac2bdd1",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "equipment-insufficient": {
+      "schemaVersion": 1,
+      "stateId": "equipment-insufficient",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-insufficient/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "insufficient",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "5c07e0f24547d8948e471cf63eee39f11078092afe60523a32eebf6dccd03804",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 2
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 1
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "equipment-maximum": {
+      "schemaVersion": 1,
+      "stateId": "equipment-maximum",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-maximum/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "maximum",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "ba06428ec314cd1bdbc3e715f8ea669e6ac9c13e4bebb14c51b6744889cf257f",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 0
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 2
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "equipment-loading": {
+      "schemaVersion": 1,
+      "stateId": "equipment-loading",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-loading/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "loading",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "3eef722484f8dbbd8f43c65dc4a69b2ae7f0154cba3720288fc156cca5c33dee",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": true,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "equipment-error": {
+      "schemaVersion": 1,
+      "stateId": "equipment-error",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-error/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "3eef722484f8dbbd8f43c65dc4a69b2ae7f0154cba3720288fc156cca5c33dee",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "UpgradeGrowthEquipment",
+      "lastCommandStatus": "InvalidProfile",
+      "lastCommandError": "Acceptance fixture returned a recoverable command error.",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "equipment-save-failure": {
+      "schemaVersion": 1,
+      "stateId": "equipment-save-failure",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/equipment-save-failure/v1",
+      "evidenceKind": "PersistenceFailure",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "equipment",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "3eef722484f8dbbd8f43c65dc4a69b2ae7f0154cba3720288fc156cca5c33dee",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "UpgradeGrowthEquipment",
+      "lastCommandStatus": "PersistenceFailed",
+      "lastCommandError": "Acceptance fixture rejected persistence.",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [
+        {
+          "slotId": "growth-slot.offense",
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem"
+        }
+      ],
+      "cultivation": []
+    },
+    "cultivation-selected": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-selected",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-selected/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "upgradeable",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation-locked": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-locked",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-locked/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "locked",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.acceptance",
+      "outgameContentVersion": "acceptance.1",
+      "outgameContentFingerprint": "2768797607dc41ddf88ffa22abe09bd7b72df59db9ff01fc12b41c5edf04a134",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 0,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "caea69038617d62eb6c31b99131f6037f9d7be5be60c8fa1f2a2586cda5c1f48",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 0,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [],
+      "growthEquipment": [],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation-insufficient": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-insufficient",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-insufficient/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "insufficient",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 2
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation-maximum": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-maximum",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-maximum/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "maximum",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "f84c968805185fb82b7bbfb2dfa1f291e160922902a6bbe0f5f79d57f29d29a8",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 1,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 0
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": [
+        {
+          "cultivationNodeId": "cultivation.vital-roots",
+          "rank": 2
+        }
+      ]
+    },
+    "cultivation-loading": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-loading",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-loading/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "loading",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": true,
+      "lastCommand": "",
+      "lastCommandStatus": "",
+      "lastCommandError": "",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation-error": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-error",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-error/v1",
+      "evidenceKind": "StaticState",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "UpgradeCultivation",
+      "lastCommandStatus": "InvalidProfile",
+      "lastCommandError": "Acceptance fixture returned a recoverable command error.",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    },
+    "cultivation-save-failure": {
+      "schemaVersion": 1,
+      "stateId": "cultivation-save-failure",
+      "fixtureActive": true,
+      "fixtureId": "acceptance-hub/cultivation-save-failure/v1",
+      "evidenceKind": "PersistenceFailure",
+      "route": 0,
+      "routeName": "lobby",
+      "sessionId": "",
+      "seed": 0,
+      "page": "growth",
+      "growthPage": "cultivation",
+      "resolvedState": "error",
+      "selectedLevelId": "orchard-01",
+      "manifestId": "manifest.fruit-defense.bundled",
+      "manifestVersion": "2",
+      "manifestFingerprint": "9be38ac1c6e103dc1160c385d470051ead0f31edb3d6a6b419fa13ae06663113",
+      "outgameContentId": "catalog.outgame.orchard",
+      "outgameContentVersion": "1.0.0",
+      "outgameContentFingerprint": "27d753f737dbf9c16f5ec3d322feb4fc3475473d1430601988569a8b65eb91f7",
+      "battleContentId": "catalog.bundled.orchard",
+      "battleContentVersion": "3.0.0",
+      "battleContentFingerprint": "2ff58e0008915375fb4a88c614dbab7399e4e58a77b6f7dc5bcfc46374265584",
+      "profileId": "00000000000000000000000000000001",
+      "profileRevision": 1,
+      "growthPolicyId": "growth-policy.orchard-01",
+      "growthFingerprint": "83b704459a0a8d798035712aa8c07a1c5c254069ba881591668dcd7e7cb82c3c",
+      "launchGrowthProfileRevision": 0,
+      "launchGrowthPolicyId": "",
+      "launchGrowthFingerprint": "",
+      "appliedSourceCount": 0,
+      "suppressedSourceCount": 0,
+      "receiptCount": 1,
+      "committedRewardRevisionCount": 0,
+      "committedGrowthRevisionCount": 0,
+      "commandInProgress": false,
+      "lastCommand": "UpgradeCultivation",
+      "lastCommandStatus": "PersistenceFailed",
+      "lastCommandError": "Acceptance fixture rejected persistence.",
+      "itemBalances": [
+        {
+          "itemId": "item.growth.morning-dew",
+          "quantity": 6
+        }
+      ],
+      "growthEquipment": [
+        {
+          "growthEquipmentId": "growth-equipment.sunleaf-emblem",
+          "rank": 0
+        }
+      ],
+      "loadout": [],
+      "cultivation": []
+    }
+  },
+  "captures": {
+    "home-fresh": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\01-home-fresh.png",
+      "screenshotSha256": "3BFB7FC0FF5B9A518C357859F1E866B6CC55AD1C3A989A763B38D06AE5C948EC",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 993,
+        "headerLightPixels": 30607,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 4.52100004521E-05,
+        "maxNearBlackHorizontalRunFraction": 0.009950248756218905,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.826347839396376,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "home-policy-preview": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\02-home-policy-preview.png",
+      "screenshotSha256": "CE8401FCFF0BDE64C2A088BC9AC1CA520C3BB8EE6C9951FB8E6C839EF97079F6",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 982,
+        "headerLightPixels": 31377,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8423682954854235,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "activity-claimable": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\03-activity-claimable.png",
+      "screenshotSha256": "072EDB2ABB82E712B27990C51A83C8FF83923FE7B51E8B18B85A9AFF7EEB7AD5",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 782,
+        "headerLightPixels": 31659,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8789306755526618,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "activity-claiming": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\04-activity-claiming.png",
+      "screenshotSha256": "06F3506E1C8A748306012F262BF1D437DA397549F5A83C07298BFF009B408A7B",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 782,
+        "headerLightPixels": 31659,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8793814273417732,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "activity-claimed": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\05-activity-claimed.png",
+      "screenshotSha256": "A6BF86E803FD1778667592624B69CC8E9E7093215111C3A1659C07B28F16EC45",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 779,
+        "headerLightPixels": 31660,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8771698035138061,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "activity-error": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\06-activity-error.png",
+      "screenshotSha256": "A38572C43E00E9C0CADB16AA31C76384391E366E16650541DE38C40C6F46549E",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 782,
+        "headerLightPixels": 31659,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8758127718074131,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "activity-save-failure": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\07-activity-save-failure.png",
+      "screenshotSha256": "A38572C43E00E9C0CADB16AA31C76384391E366E16650541DE38C40C6F46549E",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 782,
+        "headerLightPixels": 31659,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8758127718074131,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-owned": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\08-equipment-owned.png",
+      "screenshotSha256": "7579F8E24E19CA3046B9468B7E8A322192869CDBBA011B3FBF5CCF628F9B5792",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 924,
+        "headerLightPixels": 30990,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8782867345880243,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-selected": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\09-equipment-selected.png",
+      "screenshotSha256": "4202B1159C796C8C4E6EEDD924AFA73F872583FAA4789376A23504B2CDD8776C",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 924,
+        "headerLightPixels": 30990,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8774509571666076,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-locked": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\10-equipment-locked.png",
+      "screenshotSha256": "E3B5C6CB433042E8A0AFAE1766BB80EE2E6E8C6414D77F02DAB65077D6781F04",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 927,
+        "headerLightPixels": 30989,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.858959819124674,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-insufficient": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\11-equipment-insufficient.png",
+      "screenshotSha256": "644A24C60961644732150F585FE9F799549F49B3EA658F6C6A6B51520A4A9877",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 920,
+        "headerLightPixels": 31004,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8986226623371226,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-maximum": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\12-equipment-maximum.png",
+      "screenshotSha256": "A3C7EADB309BD85D45D11F73E83A6B7C82189E00E1E43780AF61B55E8118FD65",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 927,
+        "headerLightPixels": 30989,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8930934505247268,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-loading": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\13-equipment-loading.png",
+      "screenshotSha256": "9A88EE216962A0F2357CA422C343841002F837DFBA7A9F138745F275A1362AB8",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 924,
+        "headerLightPixels": 30990,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8953556001274258,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-error": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\14-equipment-error.png",
+      "screenshotSha256": "8DA10648BA11FC024841508379BCDB0005644444F84775348D92BE8C2AE95951",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 924,
+        "headerLightPixels": 30990,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8917980768197485,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "equipment-save-failure": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\15-equipment-save-failure.png",
+      "screenshotSha256": "8DA10648BA11FC024841508379BCDB0005644444F84775348D92BE8C2AE95951",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 924,
+        "headerLightPixels": 30990,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8917980768197485,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-selected": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\16-cultivation-selected.png",
+      "screenshotSha256": "E2BB1348A06F3A23293C5368CDF6FA21CD143A3AD1C52A0F01C201FB0909BC52",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 915,
+        "headerLightPixels": 30955,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8810837269705822,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-locked": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\17-cultivation-locked.png",
+      "screenshotSha256": "5C5130D8098EF69320F471AE9D80B7B22ABBBE0DB77D562910C9DFB82E44CF47",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 918,
+        "headerLightPixels": 30954,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8612618245516541,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-insufficient": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\18-cultivation-insufficient.png",
+      "screenshotSha256": "B417D59917756530A1FD82CEB3EFFB9A4FFC8E01176780F4A3A81E6F14BCB6EE",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 911,
+        "headerLightPixels": 30969,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.9000435086506009,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-maximum": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\19-cultivation-maximum.png",
+      "screenshotSha256": "ED438EED1B0C3E43BF73051CACF13C29CA69A894FB2FF82085DF69297D733EAD",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 918,
+        "headerLightPixels": 30954,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8950136390592948,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-loading": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\20-cultivation-loading.png",
+      "screenshotSha256": "664F6AA473A1A24C71F2B99E5E4B253F87D201CCE4FAC44914CEADAAA86EC38B",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 915,
+        "headerLightPixels": 30955,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.898211525004358,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-error": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\21-cultivation-error.png",
+      "screenshotSha256": "CD85641252947CE420C384527DEAF849886F62209224AA1427EEE83157D74477",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 915,
+        "headerLightPixels": 30955,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8944271752170977,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    },
+    "cultivation-save-failure": {
+      "screenshot": "E:\\project\\unity\\furitDefense\\Logs\\home-activity-restore\\rework-states-full-402x874\\22-cultivation-save-failure.png",
+      "screenshotSha256": "CD85641252947CE420C384527DEAF849886F62209224AA1427EEE83157D74477",
+      "imageMetrics": {
+        "width": 402,
+        "height": 874,
+        "headerDarkPixels": 915,
+        "headerLightPixels": 30955,
+        "blackFraction": 0.0,
+        "nearBlackFraction": 0.0,
+        "maxNearBlackHorizontalRunFraction": 0.0,
+        "invalidFraction": 0.0,
+        "averageLuma": 0.8944271752170977,
+        "sampledRegions": {
+          "header": {
+            "xMin": 20,
+            "yMin": 42,
+            "xMax": 374,
+            "yMax": 147
+          },
+          "frameContent": {
+            "xMin": 0,
+            "yMin": 0,
+            "xMax": 402,
+            "yMax": 874
+          }
+        }
+      },
+      "routeIdentity": {
+        "route": 0,
+        "routeName": "lobby",
+        "sessionId": "",
+        "seed": 0,
+        "levelId": "orchard-01",
+        "mapId": "orchard-01",
+        "waveSetId": "waves.orchard-01.teaching",
+        "ruleSetId": "rules.orchard-01.baseline",
+        "themeId": "theme.orchard-01.day"
+      },
+      "bottomNavigationSample": {
+        "r": 250,
+        "g": 246,
+        "b": 233,
+        "a": 255
+      }
+    }
+  },
+  "checks": {
+    "completeFiniteCatalog": "pass",
+    "exactStateTelemetry": "pass",
+    "fixtureIdentityExplicit": "pass",
+    "fixtureActiveForEveryState": "pass",
+    "realSequenceExcluded": "pass",
+    "persistenceFailuresObserved": "pass",
+    "screenshotDimensions": "pass",
+    "noBlackTransparentOrLargeNearBlackRegions": "pass",
+    "sharedBottomNavigationComplete": "pass",
+    "manualFiniteCopyAndNonColorReview": "manual-score-required"
+  }
+}

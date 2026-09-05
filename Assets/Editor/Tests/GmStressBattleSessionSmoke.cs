@@ -45,9 +45,12 @@ namespace FruitDefense.Editor
         {
             WithHost(host =>
             {
+                var standardCatalog = BundledLevelCatalogFactory.CreateCompiled();
                 var standard = new BattleLaunchRequest("gm-standard-rejected",
                     GmStressBattleIds.LevelId, 21001, contentVersion,
-                    BattleSessionMode.Standard);
+                    BattleSessionMode.Standard,
+                    BattleGrowthTestFixture.ResolveBundled(standardCatalog,
+                        BundledLevelCatalogIds.Levels.Orchard01));
                 var result = host.InitializeGm(standard, new AppNavigator(),
                     new RecordingResultSink(), theme, terrainPalette);
                 Assert(!result.Success
@@ -61,7 +64,7 @@ namespace FruitDefense.Editor
             {
                 var wrongLevel = new BattleLaunchRequest("gm-level-rejected",
                     "development.gm-stress.missing", 21002, contentVersion,
-                    BattleSessionMode.GmStress);
+                    BattleSessionMode.GmStress, null);
                 var result = host.InitializeGm(wrongLevel, new AppNavigator(),
                     new RecordingResultSink(), theme, terrainPalette);
                 Assert(!result.Success
@@ -74,7 +77,7 @@ namespace FruitDefense.Editor
             {
                 var wrongVersion = new BattleLaunchRequest("gm-content-rejected",
                     GmStressBattleIds.LevelId, 21003, "content.missing",
-                    BattleSessionMode.GmStress);
+                    BattleSessionMode.GmStress, null);
                 var result = host.InitializeGm(wrongVersion, new AppNavigator(),
                     new RecordingResultSink(), theme, terrainPalette);
                 Assert(!result.Success
@@ -93,7 +96,7 @@ namespace FruitDefense.Editor
             {
                 var request = new BattleLaunchRequest("gm-terrain-required",
                     GmStressBattleIds.LevelId, 21005, contentVersion,
-                    BattleSessionMode.GmStress);
+                    BattleSessionMode.GmStress, null);
                 var result = host.InitializeGm(request, new AppNavigator(),
                     new RecordingResultSink(), theme, null);
                 Assert(!result.Success
@@ -117,7 +120,7 @@ namespace FruitDefense.Editor
                 var navigator = new AppNavigator();
                 var request = new BattleLaunchRequest("gm-valid-session",
                     GmStressBattleIds.LevelId, 21004, contentVersion,
-                    BattleSessionMode.GmStress);
+                    BattleSessionMode.GmStress, null);
                 var initialization = host.InitializeGm(request, navigator, sink,
                     theme, terrainPalette);
                 Assert(initialization.Success

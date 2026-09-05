@@ -5,7 +5,7 @@ namespace FruitDefense.Core
     public static class BattleSnapshotSchema
     {
         public const string Id = "fruit-defense.battle-snapshot";
-        public const int Version = 4;
+        public const int Version = 5;
     }
 
     [Serializable]
@@ -22,6 +22,13 @@ namespace FruitDefense.Core
         public string waveSetId;
         public string ruleSetId;
         public string themeId;
+        public string growthPolicyId;
+        public string growthContentCatalogId;
+        public string growthContentVersion;
+        public string growthContentFingerprint;
+        public string growthProfileId;
+        public long growthProfileRevision;
+        public string growthFingerprint;
         public string resolvedSourceDefinitionFingerprint;
         public int logicStep;
         public uint randomState;

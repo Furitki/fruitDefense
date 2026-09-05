@@ -1,7 +1,7 @@
 # runtime-ui-quality-standard Specification
 
 ## Purpose
-TBD - created by archiving change polish-runtime-ui-quality-standard. Update Purpose after archive.
+Define the durable runtime UI quality, asset ownership, actual-size readability, and release-validation contract shared by every route.
 ## Requirements
 ### Requirement: Normative runtime UI quality standard
 The project SHALL maintain one normative runtime UI standard covering typography roles, baseline and optical alignment, line policy, component containment, spacing, color semantics, contrast, state cues, icon canvases, nine-slice safety, illustration placement, and route hierarchy.
@@ -41,6 +41,14 @@ Each common icon, marker, and indicator SHALL keep a stable import canvas and sa
 #### Scenario: Resource set is validated
 - **WHEN** a production ArtSet is imported or previewed
 - **THEN** validation reports missing/duplicate slots, importer violations, alpha-edge contamination, optical outliers, unbound production files, review dependencies, and mixed-set ownership as failures
+
+#### Scenario: Hub navigation icons are inspected at actual size
+- **WHEN** `icon.hub-home`, `icon.hub-activity`, or `icon.hub-growth` is exported or validated
+- **THEN** its 24- and 33-logical-point alpha silhouette contains exactly one dominant subject and only necessary semantic negative space, stays within the supporting finite perimeter-complexity threshold, remains distinct from the other two silhouettes, and retains the fixed house-doorway, calendar-star, or two-leaf-sprout semantic respectively without decorative props, scenery, soil clusters, or micro-texture
+
+#### Scenario: A Hub destination becomes selected
+- **WHEN** Home, Activity, or Growth owns the visible Hub page
+- **THEN** selection is expressed by the raised paper tab, underline, and label without multiplying a selection tint into the domain-icon raster
 
 ### Requirement: Reference-driven route hierarchy
 Bootstrap, Lobby, Battle, and Settlement SHALL apply the approved Sunny Orchard hierarchy through shared component anatomy, route-appropriate density, illustrations, and ornament restraint while keeping player copy and controls primary.
@@ -85,9 +93,25 @@ Generated full-page UI concepts SHALL remain review evidence and SHALL NOT be us
 - **WHEN** the approved concept direction is implemented
 - **THEN** a standalone text-free nine-slice gameplay-stage master is exported through the production pipeline and the full-page generated concept has no release dependency
 
+#### Scenario: Activity reward art enters production
+- **WHEN** the approved Activity concept direction is implemented
+- **THEN** one standalone text-free `illustration.hub-activity-reward` master is exported through the production pipeline and the full-page generated concept has no release dependency
+
+#### Scenario: Reference-led primary action art enters production
+- **WHEN** Home and Activity require the approved primary-action treatment
+- **THEN** the text-free `action.primary` master is restored in place from the user-selected hash-locked original rounded-square PNG, its stable semantic path and GUID are preserved, and neither the rejected capsule output nor any script-drawn substitute remains an export dependency
+
+#### Scenario: Reference-led bottom navigation art enters production
+- **WHEN** the approved Hub bottom navigation is implemented
+- **THEN** separately hash-locked ImageGen, text-free `surface.hub-navigation-base` and `surface.hub-navigation-selected-tab` masters own exactly the refined continuous base and selected-tab chrome silhouettes, are exported through the production pipeline, and neither a generic raised-panel surface nor script-drawn primitive approximation is used as their visual substitute
+
+#### Scenario: Production raster tooling is inspected
+- **WHEN** a production UI-art exporter or validator is admitted to the release path
+- **THEN** it contains no visible-pixel drawing or procedural authoring API and is restricted to fixed-master validation plus non-creative crop, selected-output alpha extraction, padding, alpha-safe resize, fringe cleanup, measurement, hashing, encoding, and metadata operations
+
 #### Scenario: Production ArtSets are validated
-- **WHEN** either production ArtSet is imported
-- **THEN** all 56 required slots are present exactly once and `surface.gameplay-stage` has the approved geometry, slice border, safe inset, optical bounds, source/runtime ownership, hashes, and stable binding
+- **WHEN** the production ArtSet is imported
+- **THEN** all 62 required slots are present exactly once and every slot, including `surface.gameplay-stage`, the three Hub navigation icons, `illustration.hub-activity-reward`, `surface.hub-navigation-base`, and `surface.hub-navigation-selected-tab`, has approved geometry, source/runtime ownership, hashes, stable binding, and importer metadata
 
 ### Requirement: Shared plant drag connector and target frame
 The runtime UI SHALL render the plant drag connector and target frame through one shared, allocation-free presentation helper using semantic theme colors, an approved production nine-slice frame resource, existing drag-state icons, and finite contained geometry. The target frame SHALL NOT be synthesized from primitive edge rectangles.

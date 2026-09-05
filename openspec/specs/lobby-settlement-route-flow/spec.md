@@ -3,16 +3,16 @@
 ## Purpose
 TBD - created by archiving change add-lobby-and-settlement-route-flow. Update Purpose after archive.
 ## Requirements
-### Requirement: Minimal Lobby start surface
-Lobby SHALL display the game title, a primary Start action, and visible non-interactive reserved areas for level selection, growth, and settings.
+### Requirement: Lobby Hub route surface
+Lobby SHALL display one `TopBar → PageHost → BottomNavigation` Hub with Home, Activity, and Growth destinations while keeping route navigation owned by the existing Lobby, Battle, and Settlement flow.
 
-#### Scenario: Start default level
-- **WHEN** the player activates Start while the navigator is Idle
-- **THEN** Lobby requests level `orchard-01` using a new session ID, nonzero seed, and current bundled content version
+#### Scenario: Start selected level
+- **WHEN** the player activates Home Start while the navigator is Idle
+- **THEN** Lobby requests the visibly selected real level using a new session ID, nonzero seed, and current bundled content version; a cold profile defaults that selection to `orchard-01`
 
-#### Scenario: Reserved area input
-- **WHEN** the player activates a reserved area
-- **THEN** no route or gameplay state changes and the area remains visibly unavailable
+#### Scenario: Switch Hub destination
+- **WHEN** the player activates Home, Activity, or Growth in the bottom navigation
+- **THEN** only the Lobby PageHost content changes and no scene route or gameplay session is created
 
 ### Requirement: Settlement result display
 Settlement SHALL display outcome, reached wave, and remaining lives from the completed Battle result.

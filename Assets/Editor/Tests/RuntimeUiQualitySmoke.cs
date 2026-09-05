@@ -59,7 +59,7 @@ namespace FruitDefense.Editor
                 SafeArea = safeArea;
                 Bootstrap = AppFlowCoordinator.CreateBootstrapPresentationLayout(
                     viewport.Width, viewport.Height, safeArea, true);
-                Lobby = PortraitShellLayout.CreateLobby(
+                Hub = PortraitHubLayout.Create(
                     viewport.Width, viewport.Height, safeArea);
                 Settlement = PortraitShellLayout.CreateSettlement(
                     viewport.Width, viewport.Height, safeArea);
@@ -68,7 +68,7 @@ namespace FruitDefense.Editor
                     viewport.Width, viewport.Height, safeArea,
                     BattleUiLayout.DesignWidth, BattleUiLayout.DesignHeight);
                 BootstrapContext = RuntimeUiDrawContext.Create(theme, Bootstrap.Scale);
-                LobbyContext = RuntimeUiDrawContext.Create(theme, Lobby.Frame.Scale);
+                HubContext = RuntimeUiDrawContext.Create(theme, Hub.Frame.Scale);
                 SettlementContext = RuntimeUiDrawContext.Create(
                     theme, Settlement.Frame.Scale);
                 BattleContext = RuntimeUiDrawContext.Create(theme, 1f);
@@ -79,12 +79,12 @@ namespace FruitDefense.Editor
             public RuntimeUiQualityViewportCase Viewport { get; }
             public Rect SafeArea { get; }
             public AppFlowCoordinator.BootstrapPresentationLayout Bootstrap { get; }
-            public LobbyShellLayout Lobby { get; }
+            public PortraitHubResolvedLayout Hub { get; }
             public SettlementShellLayout Settlement { get; }
             public BattleUiLayout Battle { get; }
             public BattlefieldViewportLayout BattleViewport { get; }
             public RuntimeUiDrawContext BootstrapContext { get; }
-            public RuntimeUiDrawContext LobbyContext { get; }
+            public RuntimeUiDrawContext HubContext { get; }
             public RuntimeUiDrawContext SettlementContext { get; }
             public RuntimeUiDrawContext BattleContext { get; }
             public RuntimeUiDrawContext ProjectedBattleContext { get; }
@@ -109,7 +109,7 @@ namespace FruitDefense.Editor
         {
             Assert(theme != null && theme.Validate().IsValid,
                 "release theme is valid before quality inspection");
-            Assert(theme.ThemeId == "ui.sunny-orchard" && theme.Revision == "9",
+            Assert(theme.ThemeId == "ui.sunny-orchard" && theme.Revision == "12",
                 "quality inspection uses the sky-paper release theme revision");
             Assert(RuntimeUiQualityProfile.Viewports.Count
                     == BattlefieldProjection.RequiredPortraitViewports.Count,
@@ -197,10 +197,34 @@ namespace FruitDefense.Editor
                 Assert(inspected.Contains(copyId),
                     "every rendered stable product copy has an inspection case: " + copyId);
             }
-            var localizedStart = RuntimeUiCopyCatalog.FormatLobbyStart("orchard-03");
-            Assert(localizedStart.IndexOf("第三关", StringComparison.Ordinal) >= 0
-                && localizedStart.IndexOf("orchard-", StringComparison.Ordinal) < 0,
-                "Lobby CTA presents the selected level name instead of an internal ID");
+            var requiredHubActionCases = new[]
+            {
+                "hub.activity.claim",
+                "hub.activity.claiming",
+                "hub.activity.claimed",
+                "hub.activity.locked",
+                "hub.growth.equip",
+                "hub.growth.upgrade",
+                "hub.growth.maximum",
+                "hub.growth.insufficient",
+                "hub.growth.loading",
+                "hub.growth.locked-action",
+                "hub.cultivation.upgrade",
+                "hub.cultivation.maximum",
+                "hub.cultivation.locked-action",
+                "hub.cultivation.insufficient-action",
+                "hub.cultivation.loading-action",
+            };
+            for (var index = 0; index < requiredHubActionCases.Length; index++)
+            {
+                Assert(caseIds.Contains(requiredHubActionCases[index]),
+                    "every finite Hub action state owns a CalcSize fit case: "
+                    + requiredHubActionCases[index]);
+            }
+            var localizedStart = RuntimeUiCopyCatalog.Get(
+                RuntimeUiCopyId.LobbyStart).Text;
+            Assert(localizedStart == "开始战斗",
+                "Lobby CTA preserves the concise authoritative reference copy");
             Assert(RuntimeUiCopyCatalog.LevelDisplayName("orchard-01") == "第一关"
                 && RuntimeUiCopyCatalog.LevelDisplayName("orchard-02") == "第二关"
                 && RuntimeUiCopyCatalog.LevelDisplayName("orchard-03") == "第三关",
@@ -368,10 +392,15 @@ namespace FruitDefense.Editor
             {
                 var borderGap = RuntimeUiQualityProfile.MinimumTextToBorderGap
                     * geometry.Context.Scale;
-                Assert(geometry.IconRect.xMin >= geometry.ComponentRect.xMin + borderGap
-                    && geometry.IconRect.yMin >= geometry.ComponentRect.yMin + borderGap
-                    && geometry.IconRect.xMax <= geometry.ComponentRect.xMax - borderGap
-                    && geometry.IconRect.yMax <= geometry.ComponentRect.yMax - borderGap
+                Assert((!geometry.HasIcon
+                        || geometry.IconRect.xMin
+                            >= geometry.ComponentRect.xMin + borderGap
+                        && geometry.IconRect.yMin
+                            >= geometry.ComponentRect.yMin + borderGap
+                        && geometry.IconRect.xMax
+                            <= geometry.ComponentRect.xMax - borderGap
+                        && geometry.IconRect.yMax
+                            <= geometry.ComponentRect.yMax - borderGap)
                     && geometry.FirstLineRect.xMin
                         >= geometry.ComponentRect.xMin + borderGap
                     && geometry.FirstLineRect.xMax
@@ -396,6 +425,93 @@ namespace FruitDefense.Editor
                     default, inline.IconVisualRect, inline.GroupRect,
                     context.Styles.SingleLineText(copy.Role, TextAnchor.MiddleCenter),
                     1, true, inline.Fits);
+            }
+
+            if (inspection.Target == RuntimeUiTextInspectionTarget.HubResourceBalance)
+            {
+                var balance = RuntimeUiGui.ResolveHubBalanceLayout(
+                    context, component, copy.Text,
+                    string.IsNullOrEmpty(inspection.MetricValue)
+                        ? "999" : inspection.MetricValue,
+                    inspection.State);
+                var balanceText = RuntimeUiGui.ResolveSingleLineTextRect(
+                    context, balance.Label, copy.Role, copy.Alignment,
+                    inspection.State);
+                return new TextGeometry(context, balance.Label, balanceText,
+                    default, default, default,
+                    context.Styles.SingleLineText(copy.Role, copy.Alignment),
+                    1, false);
+            }
+
+            if (IsHubNavigationTarget(inspection.Target))
+            {
+                var navigation = RuntimeUiGui.ResolveHubNavigationItemLayout(
+                    context, component,
+                    inspection.Target
+                        == RuntimeUiTextInspectionTarget.HubPrimaryHome,
+                    inspection.State);
+                var hubNavigationTextRect = RuntimeUiGui.ResolveSingleLineTextRect(
+                    context, navigation.Label, copy.Role, copy.Alignment,
+                    inspection.State);
+                return new TextGeometry(context, navigation.Label,
+                    hubNavigationTextRect, default,
+                    default, default,
+                    context.Styles.SingleLineText(copy.Role, copy.Alignment),
+                    1, false);
+            }
+
+            if (IsHubGrowthTabTarget(inspection.Target))
+            {
+                var tab = RuntimeUiGui.ResolveHubGrowthTabLayout(
+                    context, component, inspection.State);
+                var tabTextRect = RuntimeUiGui.ResolveSingleLineTextRect(
+                    context, tab.Label, copy.Role, copy.Alignment,
+                    inspection.State);
+                return new TextGeometry(context, tab.Label, tabTextRect,
+                    default, default, default,
+                    context.Styles.SingleLineText(copy.Role, copy.Alignment),
+                    1, false);
+            }
+
+            if (inspection.Target
+                    == RuntimeUiTextInspectionTarget.HubHomeGrowthPreviewTitle
+                || inspection.Target
+                    == RuntimeUiTextInspectionTarget.HubHomeGrowthPreviewBody)
+            {
+                var preview = RuntimeUiGui.ResolveHubHomeGrowthPreviewLayout(
+                    context, component, inspection.State);
+                if (inspection.Target
+                    == RuntimeUiTextInspectionTarget.HubHomeGrowthPreviewTitle)
+                {
+                    var previewTitle = RuntimeUiGui.ResolveSingleLineTextRect(
+                        context, preview.Title, copy.Role, copy.Alignment,
+                        inspection.State);
+                    return new TextGeometry(context, preview.Title, previewTitle,
+                        default, default, default,
+                        context.Styles.SingleLineText(copy.Role, copy.Alignment),
+                        1, false);
+                }
+
+                if (copy.LinePolicy
+                    == RuntimeUiCopyLinePolicy.ControlledTwoLines)
+                {
+                    var previewBody =
+                        RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                            context, preview.Body, copy.Role, copy.Alignment,
+                            inspection.State);
+                    return new TextGeometry(context, preview.Body,
+                        previewBody.FirstLineRect, previewBody.SecondLineRect,
+                        default, default, previewBody.Style, 2, false,
+                        statusLayout: previewBody, hasStatusLayout: true);
+                }
+
+                var previewBodyRect = RuntimeUiGui.ResolveSingleLineTextRect(
+                    context, preview.Body, copy.Role, copy.Alignment,
+                    inspection.State);
+                return new TextGeometry(context, preview.Body, previewBodyRect,
+                    default, default, default,
+                    context.Styles.SingleLineText(copy.Role, copy.Alignment),
+                    1, false);
             }
 
             if (IsControlledNurseryStored(inspection)
@@ -471,7 +587,9 @@ namespace FruitDefense.Editor
             if (target <= RuntimeUiTextInspectionTarget.BootstrapRecoverableStatus)
                 return bundle.BootstrapContext;
             if (target <= RuntimeUiTextInspectionTarget.LobbyStatus)
-                return bundle.LobbyContext;
+                return bundle.HubContext;
+            if (target <= RuntimeUiTextInspectionTarget.HubGrowthAction)
+                return bundle.HubContext;
             if (target <= RuntimeUiTextInspectionTarget.BattleModalTerminalAction)
                 return bundle.ProjectedBattleContext;
             return bundle.SettlementContext;
@@ -492,29 +610,80 @@ namespace FruitDefense.Editor
                 case RuntimeUiTextInspectionTarget.BootstrapRecoverableStatus:
                     return bundle.Bootstrap.RecoverableStatus;
                 case RuntimeUiTextInspectionTarget.LobbyTitle:
-                    return bundle.Lobby.Title;
+                    return bundle.Hub.TopBar;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard01Title:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard01Card, bundle.Lobby.Frame.Scale).Title;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard01Card,
+                        bundle.HubContext.Scale).Title;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard01Body:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard01Card, bundle.Lobby.Frame.Scale).Body;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard01Card,
+                        bundle.HubContext.Scale).Body;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard02Title:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard02Card, bundle.Lobby.Frame.Scale).Title;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard02Card,
+                        bundle.HubContext.Scale).Title;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard02Body:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard02Card, bundle.Lobby.Frame.Scale).Body;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard02Card,
+                        bundle.HubContext.Scale).Body;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard03Title:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard03Card, bundle.Lobby.Frame.Scale).Title;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard03Card,
+                        bundle.HubContext.Scale).Title;
                 case RuntimeUiTextInspectionTarget.LobbyOrchard03Body:
-                    return PortraitShellLayout.CreateLobbyLevelCard(
-                        bundle.Lobby.Orchard03Card, bundle.Lobby.Frame.Scale).Body;
+                    return PortraitHubLayout.CreateHomeLevelCard(
+                        bundle.Hub.HomePage.Orchard03Card,
+                        bundle.HubContext.Scale).Body;
                 case RuntimeUiTextInspectionTarget.LobbyStart:
-                    return bundle.Lobby.StartButton;
+                    return bundle.Hub.HomePage.StartButton;
                 case RuntimeUiTextInspectionTarget.LobbyStatus:
-                    return bundle.Lobby.Status;
+                    return bundle.Hub.HomePage.GrowthPreview;
+                case RuntimeUiTextInspectionTarget.HubTopBarTitle:
+                    return bundle.Hub.TopBarContent.Title;
+                case RuntimeUiTextInspectionTarget.HubPrimaryHome:
+                    return bundle.Hub.PrimaryNavigation.Home;
+                case RuntimeUiTextInspectionTarget.HubPrimaryActivity:
+                    return bundle.Hub.PrimaryNavigation.Activity;
+                case RuntimeUiTextInspectionTarget.HubPrimaryGrowth:
+                    return bundle.Hub.PrimaryNavigation.Growth;
+                case RuntimeUiTextInspectionTarget.HubGrowthEquipmentTab:
+                    return bundle.Hub.GrowthPage.Navigation.Equipment;
+                case RuntimeUiTextInspectionTarget.HubGrowthCultivationTab:
+                    return bundle.Hub.GrowthPage.Navigation.Cultivation;
+                case RuntimeUiTextInspectionTarget.HubHomeGrowthPreviewTitle:
+                case RuntimeUiTextInspectionTarget.HubHomeGrowthPreviewBody:
+                    return bundle.Hub.HomePage.GrowthPreview;
+                case RuntimeUiTextInspectionTarget.HubUnavailableTitle:
+                    return bundle.Hub.ActivityPage.Title;
+                case RuntimeUiTextInspectionTarget.HubUnavailableBody:
+                    return inspection.CopyId
+                        == RuntimeUiCopyId.HubActivityUnavailableBody
+                            ? bundle.Hub.ActivityPage.Description
+                            : bundle.Hub.GrowthPage.Description;
+                case RuntimeUiTextInspectionTarget.HubResourceBalance:
+                    return bundle.Hub.TopBarContent.ResourceBalance;
+                case RuntimeUiTextInspectionTarget.HubActivityRewardTitle:
+                    return bundle.Hub.ActivityPage.RewardTitle;
+                case RuntimeUiTextInspectionTarget.HubActivityStatus:
+                    return bundle.Hub.ActivityPage.Status;
+                case RuntimeUiTextInspectionTarget.HubActivityAction:
+                    return bundle.Hub.ActivityPage.PrimaryAction;
+                case RuntimeUiTextInspectionTarget.HubGrowthEntryStatus:
+                    return bundle.Hub.GrowthPage.EntryStatus;
+                case RuntimeUiTextInspectionTarget.HubGrowthRank:
+                    return bundle.Hub.GrowthPage.Rank;
+                case RuntimeUiTextInspectionTarget.HubGrowthEffect:
+                    return bundle.Hub.GrowthPage.Effect;
+                case RuntimeUiTextInspectionTarget.HubGrowthCost:
+                    return bundle.Hub.GrowthPage.Cost;
+                case RuntimeUiTextInspectionTarget.HubGrowthStatus:
+                    return bundle.Hub.GrowthPage.Status;
+                case RuntimeUiTextInspectionTarget.HubGrowthAction:
+                    return inspection.Id.StartsWith("hub.cultivation.",
+                               StringComparison.Ordinal)
+                        ? bundle.Hub.GrowthPage.CultivationPrimaryAction
+                        : bundle.Hub.GrowthPage.EquipmentPrimaryAction;
                 case RuntimeUiTextInspectionTarget.BattleHeaderTitle:
                     return ProjectBattleRect(bundle, bundle.Battle.HeaderTitle);
                 case RuntimeUiTextInspectionTarget.BattleSunMetric:
@@ -652,6 +821,22 @@ namespace FruitDefense.Editor
                 new string('宽', 40));
             Assert(!split.HasSecondLine,
                 "controlled two-line resolver exposes an unsplittable boundary sample");
+
+            var previewLayout = RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                context, new Rect(0f, 0f, 320f, 60f),
+                RuntimeUiTypographyRole.Body, TextAnchor.MiddleLeft);
+            const string previewFirst = "教学果园成长规则";
+            const string previewSecond = "生效 0 项 · 受限 0 项";
+            var previewLines = RuntimeUiGui.ResolveStatusTextLines(previewLayout,
+                previewFirst + "\n" + previewSecond);
+            Assert(previewLines.HasSecondLine
+                && string.Equals(previewLines.FirstLine, previewFirst,
+                    StringComparison.Ordinal)
+                && string.Equals(previewLines.SecondLine, previewSecond,
+                    StringComparison.Ordinal)
+                && previewLines.FirstLine.IndexOf('\n') < 0
+                && previewLines.SecondLine.IndexOf('\n') < 0,
+                "controlled two-line resolver consumes one explicit authoring break without leaking it into a single-line owner");
         }
 
         private static Rect ProjectBattleRect(LayoutBundle bundle, Rect rect)
@@ -666,6 +851,8 @@ namespace FruitDefense.Editor
         {
             return target == RuntimeUiTextInspectionTarget.BootstrapRetry
                 || target == RuntimeUiTextInspectionTarget.LobbyStart
+                || target == RuntimeUiTextInspectionTarget.HubActivityAction
+                || target == RuntimeUiTextInspectionTarget.HubGrowthAction
                 || target == RuntimeUiTextInspectionTarget.BattleWaveAction
                 || target == RuntimeUiTextInspectionTarget.BattleRefreshAction
                 || target == RuntimeUiTextInspectionTarget.BattleModalPrimaryAction
@@ -696,6 +883,22 @@ namespace FruitDefense.Editor
                 || target == RuntimeUiTextInspectionTarget.BattlePhaseStatus
                 || target == RuntimeUiTextInspectionTarget.BattlePhaseStatusFull
                 || target == RuntimeUiTextInspectionTarget.SettlementStatus;
+        }
+
+        private static bool IsHubNavigationTarget(
+            RuntimeUiTextInspectionTarget target)
+        {
+            return target == RuntimeUiTextInspectionTarget.HubPrimaryHome
+                || target == RuntimeUiTextInspectionTarget.HubPrimaryActivity
+                || target == RuntimeUiTextInspectionTarget.HubPrimaryGrowth;
+        }
+
+        private static bool IsHubGrowthTabTarget(
+            RuntimeUiTextInspectionTarget target)
+        {
+            return target == RuntimeUiTextInspectionTarget.HubGrowthEquipmentTab
+                || target
+                    == RuntimeUiTextInspectionTarget.HubGrowthCultivationTab;
         }
 
         private static bool IsAdaptiveBattleStatusTarget(
@@ -788,17 +991,75 @@ namespace FruitDefense.Editor
                 bundle.Viewport.Width, bundle.Viewport.Height);
             Assert(Contains(viewportRect, bundle.Bootstrap.SafeArea)
                 && Contains(bundle.Bootstrap.SafeArea, bundle.Bootstrap.Modal)
-                && Contains(bundle.Lobby.Frame.SafeArea, bundle.Lobby.Frame.Content)
+                && Contains(bundle.Hub.Frame.SafeArea, bundle.Hub.Frame.Content)
+                && Contains(bundle.Hub.Frame.SafeArea, bundle.Hub.TopBar)
+                && Contains(bundle.Hub.TopBar, bundle.Hub.TopBarContent.Title)
+                && Contains(bundle.Hub.TopBar,
+                    bundle.Hub.TopBarContent.ResourceBalance)
+                && Contains(bundle.Hub.Frame.SafeArea, bundle.Hub.PageSurface)
+                && Contains(bundle.Hub.Frame.SafeArea, bundle.Hub.NavigationTray)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.HomePage.Orchard01Card)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.HomePage.Orchard02Card)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.HomePage.Orchard03Card)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.HomePage.GrowthPreview)
+                && Contains(bundle.Hub.HomePage.GrowthPreview,
+                    bundle.Hub.HomePage.StartButton)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.ActivityPage.Card)
+                && Contains(bundle.Hub.ActivityPage.Card,
+                    bundle.Hub.ActivityPage.RewardPanel)
+                && Contains(bundle.Hub.ActivityPage.Card,
+                    bundle.Hub.ActivityPage.Status)
+                && Contains(bundle.Hub.ActivityPage.Card,
+                    bundle.Hub.ActivityPage.PrimaryAction)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.GrowthPage.EntryCard)
+                && Contains(bundle.Hub.PageSurface,
+                    bundle.Hub.GrowthPage.DetailPanel)
+                && Contains(bundle.Hub.GrowthPage.DetailPanel,
+                    bundle.Hub.GrowthPage.Status)
+                && Contains(bundle.Hub.GrowthPage.DetailPanel,
+                    bundle.Hub.GrowthPage.EquipmentPrimaryAction)
+                && Contains(bundle.Hub.GrowthPage.DetailPanel,
+                    bundle.Hub.GrowthPage.CultivationPrimaryAction)
                 && Contains(bundle.Settlement.Frame.SafeArea,
                     bundle.Settlement.Frame.Content),
                 suffix + " route chrome remains inside the resolved safe area");
+
+            ValidateHubAuthoritativeReferenceHitGeometry(bundle, suffix);
+            ValidateHubVisualChildContainment(bundle, suffix);
+            ValidateHubNavigationAnatomy(bundle, suffix);
 
             ValidateProjectedBattleGeometry(bundle, suffix);
 
             ValidateTouch(bundle.Bootstrap.RetryAction,
                 bundle.BootstrapContext.Scale, suffix + "/bootstrap.retry");
-            ValidateTouch(bundle.Lobby.StartButton,
-                bundle.LobbyContext.Scale, suffix + "/lobby.start");
+            ValidateTouch(bundle.Hub.PrimaryNavigation.Home,
+                bundle.HubContext.Scale, suffix + "/hub.nav.home");
+            ValidateTouch(bundle.Hub.PrimaryNavigation.Activity,
+                bundle.HubContext.Scale, suffix + "/hub.nav.activity");
+            ValidateTouch(bundle.Hub.PrimaryNavigation.Growth,
+                bundle.HubContext.Scale, suffix + "/hub.nav.growth");
+            ValidateTouch(bundle.Hub.GrowthPage.Navigation.Equipment,
+                bundle.HubContext.Scale, suffix + "/hub.growth.equipment");
+            ValidateTouch(bundle.Hub.GrowthPage.Navigation.Cultivation,
+                bundle.HubContext.Scale, suffix + "/hub.growth.cultivation");
+            ValidateTouch(bundle.Hub.HomePage.StartButton,
+                bundle.HubContext.Scale, suffix + "/hub.home.start");
+            ValidateTouch(bundle.Hub.ActivityPage.PrimaryAction,
+                bundle.HubContext.Scale, suffix + "/hub.activity.claim");
+            ValidateTouch(bundle.Hub.GrowthPage.EntryCard,
+                bundle.HubContext.Scale, suffix + "/hub.growth.entry");
+            ValidateTouch(bundle.Hub.GrowthPage.EquipmentPrimaryAction,
+                bundle.HubContext.Scale,
+                suffix + "/hub.growth.equipment.primary-action");
+            ValidateTouch(bundle.Hub.GrowthPage.CultivationPrimaryAction,
+                bundle.HubContext.Scale,
+                suffix + "/hub.growth.cultivation.primary-action");
             ValidateTouch(bundle.Settlement.RetryButton,
                 bundle.SettlementContext.Scale, suffix + "/settlement.retry");
             ValidateTouch(bundle.Settlement.ReturnButton,
@@ -810,9 +1071,9 @@ namespace FruitDefense.Editor
 
             var lobbyCards = new[]
             {
-                bundle.Lobby.Orchard01Card,
-                bundle.Lobby.Orchard02Card,
-                bundle.Lobby.Orchard03Card,
+                bundle.Hub.HomePage.Orchard01Card,
+                bundle.Hub.HomePage.Orchard02Card,
+                bundle.Hub.HomePage.Orchard03Card,
             };
             var lobbyThumbnails = new[]
             {
@@ -822,8 +1083,8 @@ namespace FruitDefense.Editor
             };
             for (var index = 0; index < lobbyCards.Length; index++)
             {
-                var card = PortraitShellLayout.CreateLobbyLevelCard(
-                    lobbyCards[index], bundle.Lobby.Frame.Scale);
+                var card = PortraitHubLayout.CreateHomeLevelCard(
+                    lobbyCards[index], bundle.HubContext.Scale);
                 Assert(Contains(lobbyCards[index], card.Frame)
                     && Contains(lobbyCards[index], card.Title)
                     && Contains(lobbyCards[index], card.Body)
@@ -833,38 +1094,120 @@ namespace FruitDefense.Editor
                 Assert(card.Title.xMin - card.Frame.xMax
                         + RuntimeUiQualityProfile.GeometryTolerance
                         >= RuntimeUiQualityProfile.MinimumContentGap
-                        * bundle.LobbyContext.Scale,
+                        * bundle.HubContext.Scale,
                     suffix + "/lobby.card-" + index + " illustration/copy gap");
                 var visualGroupCenter = (card.Frame.xMin
                     + Mathf.Max(card.Title.xMax, card.Body.xMax)) * .5f;
                 Assert(Mathf.Abs(visualGroupCenter - lobbyCards[index].center.x)
                         <= RuntimeUiQualityProfile.OpticalCenterToleranceLogical
-                            * bundle.LobbyContext.Scale
+                            * bundle.HubContext.Scale
                             + RuntimeUiQualityProfile.GeometryTolerance,
                     suffix + "/lobby.card-" + index
                     + " illustration/copy group is optically centered");
+                var thumbnailCenterDelta = card.Thumbnail.center
+                    - card.Frame.center;
+                Assert(Mathf.Abs(card.Thumbnail.width
+                            - card.Frame.width)
+                        <= RuntimeUiQualityProfile.GeometryTolerance
+                    && Mathf.Abs(card.Thumbnail.height
+                            - card.Frame.height)
+                        <= RuntimeUiQualityProfile.GeometryTolerance
+                    && Mathf.Abs(thumbnailCenterDelta.x)
+                        <= RuntimeUiQualityProfile.GeometryTolerance
+                    && Mathf.Abs(thumbnailCenterDelta.y)
+                        <= RuntimeUiQualityProfile.GeometryTolerance,
+                    suffix + "/lobby.card-" + index
+                    + " fills the complete illustration frame; thumbnail="
+                    + card.Thumbnail + " frame=" + card.Frame
+                    + " frameScale=" + bundle.Hub.Frame.Scale
+                    + " contextScale=" + bundle.HubContext.Scale
+                    + " centerDelta=" + thumbnailCenterDelta);
                 Assert(!Overlaps(card.Title, card.SelectedMarker)
                     && !Overlaps(card.Body, card.TransientIndicator),
                     suffix + "/lobby.card-" + index + " cues do not cover copy");
-                ValidateTouch(lobbyCards[index], bundle.LobbyContext.Scale,
+                ValidateTouch(lobbyCards[index], bundle.HubContext.Scale,
                     suffix + "/lobby.card-" + index);
-                ValidateIllustrationOccupancy(card.Thumbnail, bundle.LobbyContext,
+                ValidateIllustrationOccupancy(card.Thumbnail, bundle.HubContext,
                     lobbyThumbnails[index], suffix + "/lobby.card-" + index
                     + ".thumbnail", true);
             }
 
-            Assert(PortraitShellLayout.HitTest(bundle.Lobby,
-                    bundle.Lobby.Orchard01Card.center, false)
-                    == ShellHitTarget.LevelOrchard01
-                && PortraitShellLayout.HitTest(bundle.Lobby,
-                    bundle.Lobby.Orchard02Card.center, false)
-                    == ShellHitTarget.LevelOrchard02
-                && PortraitShellLayout.HitTest(bundle.Lobby,
-                    bundle.Lobby.Orchard03Card.center, false)
-                    == ShellHitTarget.LevelOrchard03
-                && PortraitShellLayout.HitTest(bundle.Lobby,
-                    bundle.Lobby.StartButton.center, false) == ShellHitTarget.Start,
-                suffix + " Lobby draw and hit rects share one layout authority");
+            var equipmentOnlyActionPoint = new Vector2(
+                bundle.Hub.GrowthPage.EquipmentPrimaryAction.xMin
+                    + bundle.Hub.Frame.Scale,
+                bundle.Hub.GrowthPage.EquipmentPrimaryAction.yMin
+                    + bundle.Hub.Frame.Scale);
+            var cultivationOnlyActionPoint = new Vector2(
+                bundle.Hub.GrowthPage.CultivationPrimaryAction.center.x,
+                bundle.Hub.GrowthPage.CultivationPrimaryAction.yMax
+                    - bundle.Hub.Frame.Scale);
+            Assert(PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.PrimaryNavigation.Home.center,
+                        HubPageId.Activity, false) == HubHitTarget.Home
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.PrimaryNavigation.Activity.center,
+                        HubPageId.Home, false) == HubHitTarget.Activity
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.PrimaryNavigation.Growth.center,
+                        HubPageId.Home, false) == HubHitTarget.Growth
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.HomePage.Orchard01Card.center,
+                        HubPageId.Home, false) == HubHitTarget.LevelOrchard01
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.HomePage.Orchard02Card.center,
+                        HubPageId.Home, false) == HubHitTarget.LevelOrchard02
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.HomePage.Orchard03Card.center,
+                        HubPageId.Home, false) == HubHitTarget.LevelOrchard03
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.HomePage.StartButton.center,
+                        HubPageId.Home, false) == HubHitTarget.Start
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.Navigation.Equipment.center,
+                        HubPageId.Growth, false) == HubHitTarget.Equipment
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.Navigation.Cultivation.center,
+                        HubPageId.Growth, false) == HubHitTarget.Cultivation
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.ActivityPage.Card.center,
+                        HubPageId.Activity, false) == HubHitTarget.None
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.ActivityPage.PrimaryAction.center,
+                        HubPageId.Activity, false) == HubHitTarget.ActivityClaim
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.EntryCard.center,
+                        HubPageId.Growth, false, GrowthPageId.Equipment)
+                    == HubHitTarget.EquipmentEntry
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.EntryCard.center,
+                        HubPageId.Growth, false, GrowthPageId.Cultivation)
+                    == HubHitTarget.CultivationEntry
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.EquipmentPrimaryAction.center,
+                        HubPageId.Growth, false, GrowthPageId.Equipment)
+                    == HubHitTarget.GrowthPrimaryAction
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.GrowthPage.CultivationPrimaryAction.center,
+                        HubPageId.Growth, false, GrowthPageId.Cultivation)
+                    == HubHitTarget.GrowthPrimaryAction
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        equipmentOnlyActionPoint, HubPageId.Growth, false,
+                        GrowthPageId.Equipment)
+                    == HubHitTarget.GrowthPrimaryAction
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        equipmentOnlyActionPoint, HubPageId.Growth, false,
+                        GrowthPageId.Cultivation) == HubHitTarget.None
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        cultivationOnlyActionPoint, HubPageId.Growth, false,
+                        GrowthPageId.Cultivation)
+                    == HubHitTarget.GrowthPrimaryAction
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        cultivationOnlyActionPoint, HubPageId.Growth, false,
+                        GrowthPageId.Equipment) == HubHitTarget.None
+                && PortraitHubLayout.HitTest(bundle.Hub,
+                        bundle.Hub.HomePage.StartButton.center,
+                        HubPageId.Home, true) == HubHitTarget.None,
+                suffix + " Hub draw/hit parity covers navigation, Home, Activity, Growth and transition states");
             Assert(PortraitShellLayout.HitTest(bundle.Settlement,
                     bundle.Settlement.RetryButton.center, false) == ShellHitTarget.Retry
                 && PortraitShellLayout.HitTest(bundle.Settlement,
@@ -874,10 +1217,22 @@ namespace FruitDefense.Editor
             var minimumNineSliceDestinations = new[]
             {
                 bundle.Bootstrap.Modal,
-                bundle.Lobby.Orchard01Card,
-                bundle.Lobby.Orchard02Card,
-                bundle.Lobby.Orchard03Card,
-                bundle.Lobby.StartButton,
+                bundle.Hub.TopBar,
+                bundle.Hub.TopBarContent.ResourceBalance,
+                bundle.Hub.PrimaryNavigation.Home,
+                bundle.Hub.PrimaryNavigation.Activity,
+                bundle.Hub.PrimaryNavigation.Growth,
+                bundle.Hub.ActivityPage.Card,
+                bundle.Hub.ActivityPage.RewardPanel,
+                bundle.Hub.ActivityPage.PrimaryAction,
+                bundle.Hub.GrowthPage.EntryCard,
+                bundle.Hub.GrowthPage.DetailPanel,
+                bundle.Hub.GrowthPage.EquipmentPrimaryAction,
+                bundle.Hub.GrowthPage.CultivationPrimaryAction,
+                bundle.Hub.HomePage.Orchard01Card,
+                bundle.Hub.HomePage.Orchard02Card,
+                bundle.Hub.HomePage.Orchard03Card,
+                bundle.Hub.HomePage.StartButton,
                 bundle.Settlement.ResultCard,
                 bundle.Settlement.RetryButton,
                 bundle.Settlement.ReturnButton,
@@ -892,10 +1247,22 @@ namespace FruitDefense.Editor
             var minimumNineSliceScales = new[]
             {
                 bundle.BootstrapContext.Scale,
-                bundle.LobbyContext.Scale,
-                bundle.LobbyContext.Scale,
-                bundle.LobbyContext.Scale,
-                bundle.LobbyContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
+                bundle.HubContext.Scale,
                 bundle.SettlementContext.Scale,
                 bundle.SettlementContext.Scale,
                 bundle.SettlementContext.Scale,
@@ -911,19 +1278,19 @@ namespace FruitDefense.Editor
                     suffix + "/nine-slice-destination-" + index
                     + " meets the finite 32-point destination floor");
             }
-            var lobbyOccupiedCenter = (bundle.Lobby.Title.yMin
-                + bundle.Lobby.StartButton.yMax) * .5f;
+            var lobbyOccupiedCenter = (bundle.Hub.TopBar.yMin
+                + bundle.Hub.NavigationTray.yMax) * .5f;
             var settlementOccupiedCenter = (bundle.Settlement.Title.yMin
                 + bundle.Settlement.ReturnButton.yMax) * .5f;
             Assert(Mathf.Abs(lobbyOccupiedCenter
-                        - bundle.Lobby.Frame.SafeArea.center.y)
+                        - bundle.Hub.Frame.SafeArea.center.y)
                     <= RuntimeUiQualityProfile.OccupiedContentCenterTolerance
-                        * Mathf.Max(1f, bundle.Lobby.Frame.Scale)
+                        * Mathf.Max(1f, bundle.Hub.Frame.Scale)
                         + RuntimeUiQualityProfile.GeometryTolerance
-                && bundle.Lobby.Frame.SafeArea.yMax
-                    - bundle.Lobby.StartButton.yMax
+                && bundle.Hub.PageSurface.yMax
+                    - bundle.Hub.HomePage.GrowthPreview.yMax
                     <= RuntimeUiQualityProfile.OccupiedContentBottomGapMaximum
-                        * Mathf.Max(1f, bundle.Lobby.Frame.Scale)
+                        * Mathf.Max(1f, bundle.Hub.Frame.Scale)
                         + RuntimeUiQualityProfile.GeometryTolerance,
                 suffix + " Lobby occupied content is vertically balanced with <=100 lower gap");
             Assert(Mathf.Abs(settlementOccupiedCenter
@@ -1039,6 +1406,312 @@ namespace FruitDefense.Editor
                 RuntimeUiArtSlot.IllustrationOrchardVista,
                 suffix + "/settlement.vista", false);
             ValidateBattleHeaderMetrics(bundle, suffix);
+        }
+
+        private static void ValidateHubNavigationAnatomy(
+            LayoutBundle bundle, string suffix)
+        {
+            Assert(RuntimeUiQualityProfile.HubNavigationChromeSilhouetteCount == 2
+                && RuntimeUiQualityProfile.HubNavigationIconSubjectCount == 1
+                && bundle.HubContext.ArtSet.TryGetBinding(
+                    RuntimeUiArtSlot.SurfaceHubNavigationBase, out var baseBinding)
+                && baseBinding.Geometry == RuntimeUiArtGeometry.Stretch
+                && baseBinding.Sprite != null
+                && bundle.HubContext.ArtSet.TryGetBinding(
+                    RuntimeUiArtSlot.SurfaceHubNavigationSelectedTab,
+                    out var selectedTabBinding)
+                && selectedTabBinding.Geometry == RuntimeUiArtGeometry.Stretch
+                && selectedTabBinding.Sprite != null
+                && !ReferenceEquals(baseBinding.Sprite, selectedTabBinding.Sprite),
+                suffix + "/hub.nav-chrome owns exactly one base and one selected-tab silhouette");
+            var rects = new[]
+            {
+                bundle.Hub.PrimaryNavigation.Home,
+                bundle.Hub.PrimaryNavigation.Activity,
+                bundle.Hub.PrimaryNavigation.Growth,
+            };
+            var slots = new[]
+            {
+                RuntimeUiArtSlot.IconHubHome,
+                RuntimeUiArtSlot.IconHubActivity,
+                RuntimeUiArtSlot.IconHubGrowth,
+            };
+            var sprites = new HashSet<Sprite>();
+            for (var index = 0; index < rects.Length; index++)
+            {
+                var anatomy = RuntimeUiGui.ResolveHubNavigationItemLayout(
+                    bundle.HubContext, rects[index], index == 0,
+                    RuntimeUiInteractionState.Normal);
+                Assert(Approximately(anatomy.HitRect, rects[index])
+                    && Contains(rects[index], anatomy.Icon)
+                    && Contains(rects[index], anatomy.Label)
+                    && Contains(rects[index], anatomy.Underline)
+                    && Contains(bundle.Hub.Frame.SafeArea, anatomy.Surface)
+                    && anatomy.Icon.width >= RuntimeUiQualityProfile
+                        .HubNavigationIconReviewSizeMinimum
+                        * bundle.HubContext.Scale
+                    && anatomy.Icon.width <= RuntimeUiQualityProfile
+                        .HubNavigationIconReviewSizeMaximum
+                        * bundle.HubContext.Scale + .01f
+                    && anatomy.Label.height
+                        >= bundle.HubContext.ScaledLineHeight(
+                            RuntimeUiTypographyRole.ControlLabel)
+                    && anatomy.Underline.height >= 4f * bundle.HubContext.Scale,
+                    suffix + "/hub.nav-" + index
+                    + " keeps one unchanged hit rect with icon, label, lifted surface and underline anatomy");
+                Assert(bundle.HubContext.ArtSet.TryGetBinding(slots[index],
+                        out var binding)
+                    && binding.Geometry == RuntimeUiArtGeometry.Icon
+                    && binding.Sprite != null && sprites.Add(binding.Sprite),
+                    suffix + "/hub.nav-" + index
+                    + " binds one distinct formal semantic icon");
+
+                foreach (RuntimeUiInteractionState state in Enum.GetValues(
+                             typeof(RuntimeUiInteractionState)))
+                {
+                    var stateAnatomy = RuntimeUiGui.ResolveHubNavigationItemLayout(
+                        bundle.HubContext, rects[index], index == 0, state);
+                    var labelText = RuntimeUiGui.ResolveSingleLineTextRect(
+                        bundle.HubContext, stateAnatomy.Label,
+                        RuntimeUiTypographyRole.ControlLabel,
+                        TextAnchor.MiddleCenter, state);
+                    Assert(Approximately(stateAnatomy.HitRect, rects[index])
+                        && Contains(rects[index], stateAnatomy.Icon)
+                        && Contains(rects[index], stateAnatomy.Label)
+                        && Contains(rects[index], stateAnatomy.Underline)
+                        && ContainsTextPixelRounded(stateAnatomy.Label, labelText),
+                        suffix + "/hub.nav-" + index + "/" + state
+                        + " keeps draw anatomy inside the unchanged hit owner");
+                }
+            }
+
+            var growthTabs = new[]
+            {
+                bundle.Hub.GrowthPage.Navigation.Equipment,
+                bundle.Hub.GrowthPage.Navigation.Cultivation,
+            };
+            for (var index = 0; index < growthTabs.Length; index++)
+            {
+                foreach (RuntimeUiInteractionState state in Enum.GetValues(
+                             typeof(RuntimeUiInteractionState)))
+                {
+                    var tab = RuntimeUiGui.ResolveHubGrowthTabLayout(
+                        bundle.HubContext, growthTabs[index], state);
+                    var tabText = RuntimeUiGui.ResolveSingleLineTextRect(
+                        bundle.HubContext, tab.Label,
+                        RuntimeUiTypographyRole.ControlLabel,
+                        TextAnchor.MiddleCenter, state);
+                    Assert(Approximately(tab.HitRect, growthTabs[index])
+                        && Contains(growthTabs[index], tab.Surface)
+                        && Contains(growthTabs[index], tab.Label)
+                        && Contains(growthTabs[index], tab.Underline)
+                        && ContainsTextPixelRounded(tab.Label, tabText)
+                        && tab.Underline.height >= 4f * bundle.HubContext.Scale,
+                        suffix + "/hub.growth-tab-" + index + "/" + state
+                        + " keeps label and selection anatomy inside the unchanged 44-point hit owner");
+                }
+            }
+
+            foreach (var state in new[]
+                     {
+                         RuntimeUiInteractionState.Disabled,
+                         RuntimeUiInteractionState.Loading,
+                         RuntimeUiInteractionState.Error,
+                     })
+            {
+                var preview = RuntimeUiGui.ResolveHubHomeGrowthPreviewLayout(
+                    bundle.HubContext, bundle.Hub.HomePage.GrowthPreview, state);
+                var activityTitle = RuntimeUiGui.ResolveSingleLineTextRect(
+                    bundle.HubContext, bundle.Hub.ActivityPage.Title,
+                    RuntimeUiTypographyRole.SectionTitle,
+                    TextAnchor.MiddleLeft, state);
+                var activityBody = RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                    bundle.HubContext, bundle.Hub.ActivityPage.Description,
+                    RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, state);
+                var growthTitle = RuntimeUiGui.ResolveSingleLineTextRect(
+                    bundle.HubContext, bundle.Hub.GrowthPage.DetailTitle,
+                    RuntimeUiTypographyRole.SectionTitle,
+                    TextAnchor.MiddleLeft, state);
+                var growthBody = RuntimeUiGui.ResolveControlledTwoLineTextLayout(
+                    bundle.HubContext, bundle.Hub.GrowthPage.Description,
+                    RuntimeUiTypographyRole.Body,
+                    TextAnchor.MiddleLeft, state);
+                Assert(Contains(bundle.Hub.HomePage.GrowthPreview, preview.Title)
+                    && Contains(bundle.Hub.HomePage.GrowthPreview, preview.Body)
+                    && ContainsTextPixelRounded(bundle.Hub.ActivityPage.Title,
+                        activityTitle)
+                    && ContainsTextPixelRounded(bundle.Hub.ActivityPage.Description,
+                        activityBody.FirstLineRect)
+                    && ContainsTextPixelRounded(bundle.Hub.ActivityPage.Description,
+                        activityBody.SecondLineRect)
+                    && ContainsTextPixelRounded(bundle.Hub.GrowthPage.DetailTitle,
+                        growthTitle)
+                    && ContainsTextPixelRounded(bundle.Hub.GrowthPage.Description,
+                        growthBody.FirstLineRect)
+                    && ContainsTextPixelRounded(bundle.Hub.GrowthPage.Description,
+                        growthBody.SecondLineRect),
+                    suffix + "/hub.finite-panels/" + state
+                    + " contains title/body anatomy for every runtime-used state");
+            }
+
+            if (Mathf.Approximately(bundle.Viewport.Width, 402f)
+                && Mathf.Approximately(bundle.Viewport.Height, 874f)
+                && Mathf.Approximately(bundle.Hub.Frame.Scale, 1f))
+            {
+                var reference = RuntimeUiGui.ResolveHubNavigationItemLayout(
+                    bundle.HubContext, bundle.Hub.PrimaryNavigation.Home,
+                    true, RuntimeUiInteractionState.Normal);
+                Assert(Mathf.Abs(reference.Icon.center.y - 816f) <= 3f
+                    && Mathf.Abs(reference.Label.center.y - 849f) <= 3f
+                    && Mathf.Abs(reference.Underline.y - 863f) <= 3f
+                    && reference.Underline.height >= 4f
+                    && reference.Underline.height <= 6f,
+                    suffix
+                    + " 402x874 bottom navigation matches icon/Chinese-label/selection anchor tolerances");
+            }
+        }
+
+        private static void ValidateHubAuthoritativeReferenceHitGeometry(
+            LayoutBundle bundle, string suffix)
+        {
+            var referenceViewport = new Rect(0f, 0f, 402f, 874f);
+            if (!Mathf.Approximately(bundle.Viewport.Width,
+                    referenceViewport.width)
+                || !Mathf.Approximately(bundle.Viewport.Height,
+                    referenceViewport.height)
+                || !ReferenceRectEquals(bundle.SafeArea, referenceViewport))
+                return;
+
+            var actual = new[]
+            {
+                bundle.Hub.PrimaryNavigation.Home,
+                bundle.Hub.PrimaryNavigation.Activity,
+                bundle.Hub.PrimaryNavigation.Growth,
+                bundle.Hub.HomePage.Orchard01Card,
+                bundle.Hub.HomePage.Orchard02Card,
+                bundle.Hub.HomePage.Orchard03Card,
+                bundle.Hub.HomePage.StartButton,
+                bundle.Hub.ActivityPage.PrimaryAction,
+            };
+            var expected = new[]
+            {
+                new Rect(16f, 794f, 118f, 80f),
+                new Rect(142f, 794f, 118f, 80f),
+                new Rect(268f, 794f, 118f, 80f),
+                new Rect(28f, 122f, 350f, 132f),
+                new Rect(27f, 267f, 351f, 124f),
+                new Rect(27f, 404f, 351f, 124f),
+                new Rect(57f, 700f, 289f, 56f),
+                new Rect(66f, 641f, 270f, 57f),
+            };
+            var names = new[]
+            {
+                "nav.home",
+                "nav.activity",
+                "nav.growth",
+                "home.orchard-01",
+                "home.orchard-02",
+                "home.orchard-03",
+                "home.start",
+                "activity.claim",
+            };
+            for (var index = 0; index < actual.Length; index++)
+            {
+                Assert(ReferenceRectEquals(actual[index], expected[index]),
+                    suffix + "/hub.reference-hit/" + names[index]
+                    + " remains frozen at " + expected[index]
+                    + "; actual=" + actual[index]);
+            }
+
+            var navigationTargets = new[]
+            {
+                HubHitTarget.Home,
+                HubHitTarget.Activity,
+                HubHitTarget.Growth,
+            };
+            for (var index = 0; index < navigationTargets.Length; index++)
+            {
+                var anatomy = RuntimeUiGui.ResolveHubNavigationItemLayout(
+                    bundle.HubContext, actual[index], index == 0,
+                    RuntimeUiInteractionState.Normal);
+                Assert(ReferenceRectEquals(anatomy.HitRect, expected[index])
+                    && PortraitHubLayout.HitTest(bundle.Hub,
+                        actual[index].center, HubPageId.Home, false)
+                        == navigationTargets[index],
+                    suffix + "/hub.reference-hit/" + names[index]
+                    + " keeps draw/hit ownership on the frozen rectangle");
+            }
+
+            var homeTargets = new[]
+            {
+                HubHitTarget.LevelOrchard01,
+                HubHitTarget.LevelOrchard02,
+                HubHitTarget.LevelOrchard03,
+                HubHitTarget.Start,
+            };
+            for (var index = 0; index < homeTargets.Length; index++)
+            {
+                var actualIndex = index + 3;
+                Assert(PortraitHubLayout.HitTest(bundle.Hub,
+                           actual[actualIndex].center, HubPageId.Home, false)
+                       == homeTargets[index],
+                    suffix + "/hub.reference-hit/" + names[actualIndex]
+                    + " resolves from the frozen Home owner");
+            }
+
+            Assert(PortraitHubLayout.HitTest(bundle.Hub,
+                       bundle.Hub.ActivityPage.PrimaryAction.center,
+                       HubPageId.Activity, false)
+                   == HubHitTarget.ActivityClaim,
+                suffix
+                + "/hub.reference-hit/activity.claim resolves from the frozen Activity owner");
+        }
+
+        private static void ValidateHubVisualChildContainment(
+            LayoutBundle bundle, string suffix)
+        {
+            // Add richer Home/Activity visual-only anatomy to these lists as it
+            // lands. Children are intentionally containment-checked, not frozen;
+            // only the interactive owners above carry reference coordinates.
+            var preview = RuntimeUiGui.ResolveHubHomeGrowthPreviewLayout(
+                bundle.HubContext, bundle.Hub.HomePage.GrowthPreview,
+                RuntimeUiInteractionState.Normal);
+            AssertVisualChildrenContained(bundle.Hub.HomePage.GrowthPreview,
+                suffix + "/hub.home.preview-visuals",
+                preview.Surface, preview.Ribbon, preview.Icon, preview.Title,
+                preview.Body, preview.Divider, preview.StateIndicator);
+
+            AssertVisualChildrenContained(bundle.Hub.ActivityPage.Card,
+                suffix + "/hub.activity.visuals",
+                bundle.Hub.ActivityPage.Title,
+                bundle.Hub.ActivityPage.Description,
+                bundle.Hub.ActivityPage.RewardPanel,
+                bundle.Hub.ActivityPage.Status,
+                bundle.Hub.ActivityPage.Illustration,
+                bundle.Hub.ActivityPage.StateIndicator);
+            AssertVisualChildrenContained(bundle.Hub.ActivityPage.RewardPanel,
+                suffix + "/hub.activity.reward-visuals",
+                bundle.Hub.ActivityPage.RewardTitle,
+                bundle.Hub.ActivityPage.RewardEquipment,
+                bundle.Hub.ActivityPage.RewardItem);
+        }
+
+        private static void AssertVisualChildrenContained(Rect owner,
+            string caseName, params Rect[] children)
+        {
+            Assert(owner.width > 0f && owner.height > 0f && children != null
+                && children.Length > 0,
+                caseName + " has one finite visual owner and child list");
+            for (var index = 0; index < children.Length; index++)
+            {
+                var child = children[index];
+                Assert(child.width > 0f && child.height > 0f
+                    && Contains(owner, child),
+                    caseName + "/child-" + index
+                    + " remains contained without becoming hit geometry; owner="
+                    + owner + " child=" + child);
+            }
         }
 
         private static bool IsBattleTarget(RuntimeUiTextInspectionTarget target)
@@ -1222,33 +1895,37 @@ namespace FruitDefense.Editor
         {
             var cards = new[]
             {
-                PortraitShellLayout.CreateLobbyLevelCard(
-                    bundle.Lobby.Orchard01Card, bundle.Lobby.Frame.Scale),
-                PortraitShellLayout.CreateLobbyLevelCard(
-                    bundle.Lobby.Orchard02Card, bundle.Lobby.Frame.Scale),
-                PortraitShellLayout.CreateLobbyLevelCard(
-                    bundle.Lobby.Orchard03Card, bundle.Lobby.Frame.Scale),
+                PortraitHubLayout.CreateHomeLevelCard(
+                    bundle.Hub.HomePage.Orchard01Card,
+                    bundle.HubContext.Scale),
+                PortraitHubLayout.CreateHomeLevelCard(
+                    bundle.Hub.HomePage.Orchard02Card,
+                    bundle.HubContext.Scale),
+                PortraitHubLayout.CreateHomeLevelCard(
+                    bundle.Hub.HomePage.Orchard03Card,
+                    bundle.HubContext.Scale),
             };
             var titleBaseline = LocalLineBoxBaseline(
-                cards[0].Title, bundle.Lobby.Orchard01Card,
-                bundle.LobbyContext.Styles.SingleLineText(
+                cards[0].Title, bundle.Hub.HomePage.Orchard01Card,
+                bundle.HubContext.Styles.SingleLineText(
                     RuntimeUiTypographyRole.ControlLabel, TextAnchor.MiddleLeft));
             var bodyBaseline = LocalLineBoxBaseline(
-                cards[0].Body, bundle.Lobby.Orchard01Card,
-                bundle.LobbyContext.Styles.SingleLineText(
+                cards[0].Body, bundle.Hub.HomePage.Orchard01Card,
+                bundle.HubContext.Styles.SingleLineText(
                     RuntimeUiTypographyRole.Supplemental, TextAnchor.MiddleLeft));
             for (var index = 1; index < cards.Length; index++)
             {
                 var owner = index == 1
-                    ? bundle.Lobby.Orchard02Card : bundle.Lobby.Orchard03Card;
+                    ? bundle.Hub.HomePage.Orchard02Card
+                    : bundle.Hub.HomePage.Orchard03Card;
                 Assert(Mathf.Abs(LocalLineBoxBaseline(cards[index].Title, owner,
-                            bundle.LobbyContext.Styles.SingleLineText(
+                            bundle.HubContext.Styles.SingleLineText(
                                 RuntimeUiTypographyRole.ControlLabel,
                                 TextAnchor.MiddleLeft)) - titleBaseline)
                         <= RuntimeUiQualityProfile.BaselineTolerance,
                     suffix + " Lobby title baselines repeat within tolerance");
                 Assert(Mathf.Abs(LocalLineBoxBaseline(cards[index].Body, owner,
-                            bundle.LobbyContext.Styles.SingleLineText(
+                            bundle.HubContext.Styles.SingleLineText(
                                 RuntimeUiTypographyRole.Supplemental,
                                 TextAnchor.MiddleLeft)) - bodyBaseline)
                         <= RuntimeUiQualityProfile.BaselineTolerance,
@@ -1393,6 +2070,12 @@ namespace FruitDefense.Editor
                 theme.Colors.BaseSurface);
             Assert(secondary + .001f >= RuntimeUiQualityProfile.NormalTextContrast,
                 "secondary card copy remains subordinate without falling below 4.5:1");
+            Assert(theme.Colors.Outline.r > theme.Colors.Outline.g
+                    && theme.Colors.Outline.g > theme.Colors.Outline.b
+                    && theme.Colors.Outline.r >= 70f / 255f
+                    && Contrast(theme.Colors.Outline, theme.Colors.InverseText) + .001f
+                        >= RuntimeUiQualityProfile.NormalTextContrast,
+                "the shared outline token is visibly warm soil-brown rather than pure or near black");
             var primary = theme.ResolveActionStyle(RuntimeUiActionKind.Primary,
                 RuntimeUiActionContentForm.IconLabel,
                 RuntimeUiActionBehavior.Instantaneous,
@@ -1429,8 +2112,8 @@ namespace FruitDefense.Editor
                 RuntimeUiInteractionState.Disabled, false);
             Assert(disabled.Disabled
                 && Contrast(disabled.ContentColor, disabled.ContainerColor) + .001f
-                    >= RuntimeUiQualityProfile.NormalTextContrast,
-                "disabled action owns a complete contrast-safe pairing without global alpha attenuation");
+                    >= RuntimeUiQualityProfile.LargeOrBoldTextContrast,
+                "disabled action owns the approved muted 3:1 pairing and an independent non-color cue");
 
             var requiredCueSlots = new[]
             {
@@ -1488,18 +2171,31 @@ namespace FruitDefense.Editor
                 "shared draw code exposes the same component anatomy used by quality tests");
 
             var lobby = File.ReadAllText(Path.Combine(
-                Application.dataPath, "Scripts/Shell/LobbyPresenter.cs"));
+                Application.dataPath, "Scripts/Shell/LobbyHubPresenter.cs"));
             var settlement = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/Shell/SettlementPresenter.cs"));
             var bootstrap = File.ReadAllText(Path.Combine(
                 Application.dataPath, "Scripts/App/AppFlowCoordinator.cs"));
             var battle = RuntimeUiSourceAuthority.ReadFruitDefenseGame();
             var acceptance = RuntimeUiSourceAuthority.ReadAcceptanceRunner();
+            var hubPageDispatch = lobby.IndexOf(
+                "switch (_hubRouter.CurrentPage)",
+                StringComparison.Ordinal);
+            var growthPageDraw = hubPageDispatch < 0 ? -1 : lobby.IndexOf(
+                "DrawGrowthPage(layout.GrowthPage", hubPageDispatch,
+                StringComparison.Ordinal);
+            var bottomNavigationDraw = growthPageDraw < 0 ? -1
+                : lobby.IndexOf("RuntimeUiGui.DrawHubNavigationTray",
+                    growthPageDraw, StringComparison.Ordinal);
             Assert(lobby.Contains("RuntimeUiCopyCatalog")
                 && settlement.Contains("RuntimeUiCopyCatalog")
                 && bootstrap.Contains("RuntimeUiCopyCatalog")
                 && battle.Contains("RuntimeUiCopyCatalog"),
                 "all four routes consume the finite product-copy authority");
+            Assert(hubPageDispatch >= 0
+                && growthPageDraw > hubPageDispatch
+                && bottomNavigationDraw > growthPageDraw,
+                "Lobby draws the shared bottom navigation after every finite Hub page, including cultivation locked");
             Assert(runtimeGui.Contains("public static void DrawBlockingModal(")
                 && runtimeGui.Contains("public static void DrawResultCard(")
                 && !MethodBodyContains(runtimeGui,
@@ -1543,6 +2239,20 @@ namespace FruitDefense.Editor
                 && acceptance.Contains("connectedOutlinePixelsCovered")
                 && !acceptance.Contains("outlineNeighborRadius"),
                 "WebGL acceptance measures complete connected outline rings at the runtime-rounded exact thickness");
+            Assert(acceptance.Contains("[switch]$HubVisual")
+                && acceptance.Contains("function Invoke-HubVisualMode")
+                && acceptance.Contains("01-hub-home")
+                && acceptance.Contains("02-hub-activity")
+                && acceptance.Contains("03-hub-growth-equipment")
+                && acceptance.Contains("04-hub-growth-cultivation")
+                && acceptance.Contains(
+                    "Invoke-CanvasClick -X $controls.hubNavActivity.x")
+                && acceptance.Contains(
+                    "Invoke-CanvasClick -X $controls.hubNavGrowth.x")
+                && acceptance.Contains(
+                    "Invoke-CanvasClick -X $controls.hubGrowthCultivation.x")
+                && acceptance.Contains("FRUIT_DEFENSE_HUB_VISUAL_OK"),
+                "WebGL HubVisual acceptance uses live clicks to capture the four finite Hub views");
             Assert(CountOccurrences(settlement,
                        "RuntimeUiGui.DrawIndicator(_drawContext, indicatorRect") == 1
                 && CountOccurrences(settlement,
@@ -1577,17 +2287,26 @@ namespace FruitDefense.Editor
                 && !battle.Contains("layout.SpeedActionIcon")
                 && !battle.Contains("layout.SpeedActionValue"),
                 "Battle consumes compact metrics, centered speed multiplier, and controlled terminal-copy anatomy");
-            Assert(lobby.Contains("RuntimeUiGui.DrawShellOrchardDepth")
+            Assert(lobby.Contains("RuntimeUiGui.DrawHubScreenBackground")
+                && !lobby.Contains("RuntimeUiGui.DrawSafeArea")
+                && !lobby.Contains("RuntimeUiGui.DrawShellOrchardDepth")
+                && MethodBodyContains(runtimeGui,
+                    "public static void DrawHubScreenBackground(",
+                    "context.Theme.Colors.EdgeBackground")
+                && MethodBodyContains(runtimeGui,
+                    "public static void DrawHubScreenBackground(",
+                    "RuntimeUiArtSlot.SurfaceScreenBackground")
                 && settlement.Contains("RuntimeUiGui.DrawShellOrchardDepth")
                 && !battle.Contains("RuntimeUiGui.DrawShellOrchardDepth"),
-                "Shell routes own the orchard depth layer while Battle preserves board clarity");
+                "Hub owns a semantic blue paper edge while Settlement retains orchard depth and Battle preserves board clarity");
             Assert(!settlement.Contains("DrawMetricDivider")
                 && !settlement.Contains("FirstMetricDivider")
                 && !settlement.Contains("SecondMetricDivider"),
                 "Settlement full-width metric rows replace obsolete empty dividers");
-            Assert(lobby.Contains("FormatLobbyStart(_visibleSelectedLevelId)")
+            Assert(lobby.Contains("startCopy.Text")
+                && !lobby.Contains("FormatLobbyStart(")
                 && settlement.Contains("LevelDisplayName(ViewData.LevelId)")
-                && lobby.Contains("drawStateIndicator: false")
+                && lobby.Contains("RuntimeUiGui.DrawHubLevelCardSurface")
                 && lobby.Contains("RuntimeUiIndicatorKind.Selected")
                 && !lobby.Contains("\"开始战斗 · \" + _visibleSelectedLevelId")
                 && !settlement.Contains("\"完成关卡 \" + ViewData.LevelId"),
@@ -1770,6 +2489,15 @@ namespace FruitDefense.Editor
                 && Mathf.Abs(left.yMin - right.yMin) <= tolerance
                 && Mathf.Abs(left.xMax - right.xMax) <= tolerance
                 && Mathf.Abs(left.yMax - right.yMax) <= tolerance;
+        }
+
+        private static bool ReferenceRectEquals(Rect left, Rect right)
+        {
+            const float referenceTolerance = .001f;
+            return Mathf.Abs(left.xMin - right.xMin) <= referenceTolerance
+                && Mathf.Abs(left.yMin - right.yMin) <= referenceTolerance
+                && Mathf.Abs(left.xMax - right.xMax) <= referenceTolerance
+                && Mathf.Abs(left.yMax - right.yMax) <= referenceTolerance;
         }
 
         private static bool Overlaps(Rect first, Rect second)

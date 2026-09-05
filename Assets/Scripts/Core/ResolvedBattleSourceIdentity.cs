@@ -18,11 +18,20 @@ namespace FruitDefense.Core
         public string RuleSetId { get; }
         public string ThemeId { get; }
         public string GameplayMapFingerprint { get; }
+        public string GrowthPolicyId { get; }
+        public string GrowthContentCatalogId { get; }
+        public string GrowthContentVersion { get; }
+        public string GrowthContentFingerprint { get; }
+        public string GrowthProfileId { get; }
+        public long GrowthProfileRevision { get; }
+        public string GrowthFingerprint { get; }
         public string DefinitionFingerprint { get; }
 
         private ResolvedBattleSourceIdentity(CompiledLevelCatalog catalog,
-            ResolvedLevelDefinition resolved)
+            ResolvedLevelDefinition resolved, BattleGrowthSnapshot growthSnapshot)
         {
+            if (growthSnapshot == null)
+                throw new ArgumentNullException(nameof(growthSnapshot));
             LevelCatalogId = catalog.CatalogId;
             ContentCatalogId = catalog.ContentCatalogId;
             ContentVersion = catalog.ContentVersion;
@@ -32,27 +41,43 @@ namespace FruitDefense.Core
             RuleSetId = resolved.Identity.RuleSetId;
             ThemeId = resolved.Identity.ThemeId;
             GameplayMapFingerprint = resolved.Map.GameplayFingerprint;
-            DefinitionFingerprint = ResolvedBattleSourceFingerprint.Compute(catalog, resolved);
+            GrowthPolicyId = resolved.Identity.GrowthPolicyId;
+            GrowthContentCatalogId = growthSnapshot.OutgameCatalogId;
+            GrowthContentVersion = growthSnapshot.OutgameContentVersion;
+            GrowthContentFingerprint = growthSnapshot.OutgameContentFingerprint;
+            GrowthProfileId = growthSnapshot.ProfileId;
+            GrowthProfileRevision = growthSnapshot.ProfileRevision;
+            GrowthFingerprint = growthSnapshot.Fingerprint;
+            DefinitionFingerprint = ResolvedBattleSourceFingerprint.Compute(catalog,
+                resolved, growthSnapshot);
         }
 
         internal static CatalogResolvedBattleSource Resolve(CompiledLevelCatalog catalog,
-            string levelId)
+            string levelId, BattleGrowthSnapshot growthSnapshot)
         {
+            if (growthSnapshot == null) throw new ArgumentNullException(nameof(growthSnapshot));
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
             var resolution = catalog.Resolve(levelId);
             if (!resolution.Succeeded)
                 throw new ArgumentException("Level cannot be resolved from the supplied catalog: "
                     + resolution.Error, nameof(levelId));
+            var validation = BattleGrowthSnapshotValidator.ValidateForResolvedLevel(growthSnapshot,
+                resolution.Value);
+            if (!validation.Succeeded)
+                throw new ArgumentException("Battle growth does not match the resolved level: "
+                    + validation.Code + " at " + validation.Path, nameof(growthSnapshot));
             return new CatalogResolvedBattleSource(resolution.Value,
-                new ResolvedBattleSourceIdentity(catalog, resolution.Value));
+                new ResolvedBattleSourceIdentity(catalog, resolution.Value,
+                    growthSnapshot));
         }
 
         internal static ResolvedBattleSourceIdentity Create(CompiledLevelCatalog catalog,
-            ResolvedLevelDefinition resolved)
+            ResolvedLevelDefinition resolved, BattleGrowthSnapshot growthSnapshot)
         {
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
             if (resolved == null) throw new ArgumentNullException(nameof(resolved));
-            return new ResolvedBattleSourceIdentity(catalog, resolved);
+            if (growthSnapshot == null) throw new ArgumentNullException(nameof(growthSnapshot));
+            return new ResolvedBattleSourceIdentity(catalog, resolved, growthSnapshot);
         }
 
         public bool Equals(ResolvedBattleSourceIdentity other)
@@ -67,6 +92,13 @@ namespace FruitDefense.Core
                 && Same(RuleSetId, other.RuleSetId)
                 && Same(ThemeId, other.ThemeId)
                 && Same(GameplayMapFingerprint, other.GameplayMapFingerprint)
+                && Same(GrowthPolicyId, other.GrowthPolicyId)
+                && Same(GrowthContentCatalogId, other.GrowthContentCatalogId)
+                && Same(GrowthContentVersion, other.GrowthContentVersion)
+                && Same(GrowthContentFingerprint, other.GrowthContentFingerprint)
+                && Same(GrowthProfileId, other.GrowthProfileId)
+                && GrowthProfileRevision == other.GrowthProfileRevision
+                && Same(GrowthFingerprint, other.GrowthFingerprint)
                 && Same(DefinitionFingerprint, other.DefinitionFingerprint);
         }
 
@@ -89,6 +121,13 @@ namespace FruitDefense.Core
                 hash = hash * 31 + OrdinalHash(RuleSetId);
                 hash = hash * 31 + OrdinalHash(ThemeId);
                 hash = hash * 31 + OrdinalHash(GameplayMapFingerprint);
+                hash = hash * 31 + OrdinalHash(GrowthPolicyId);
+                hash = hash * 31 + OrdinalHash(GrowthContentCatalogId);
+                hash = hash * 31 + OrdinalHash(GrowthContentVersion);
+                hash = hash * 31 + OrdinalHash(GrowthContentFingerprint);
+                hash = hash * 31 + OrdinalHash(GrowthProfileId);
+                hash = hash * 31 + GrowthProfileRevision.GetHashCode();
+                hash = hash * 31 + OrdinalHash(GrowthFingerprint);
                 hash = hash * 31 + OrdinalHash(DefinitionFingerprint);
                 return hash;
             }
@@ -121,10 +160,13 @@ namespace FruitDefense.Core
     internal static class ResolvedBattleSourceFingerprint
     {
         public static string Compute(CompiledLevelCatalog catalog,
-            ResolvedLevelDefinition resolved)
+            ResolvedLevelDefinition resolved,
+            BattleGrowthSnapshot growthSnapshot)
         {
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
             if (resolved == null) throw new ArgumentNullException(nameof(resolved));
+            if (growthSnapshot == null)
+                throw new ArgumentNullException(nameof(growthSnapshot));
 
             var projection = new FingerprintProjection();
             projection.Add("levelCatalogId", catalog.CatalogId);
@@ -135,7 +177,15 @@ namespace FruitDefense.Core
             projection.Add("waveSetId", resolved.Identity.WaveSetId);
             projection.Add("ruleSetId", resolved.Identity.RuleSetId);
             projection.Add("themeId", resolved.Identity.ThemeId);
+            projection.Add("growthPolicyId", resolved.Identity.GrowthPolicyId);
             projection.Add("gameplayMapFingerprint", resolved.Map.GameplayFingerprint);
+            projection.Add("growthContentCatalogId", growthSnapshot.OutgameCatalogId);
+            projection.Add("growthContentVersion", growthSnapshot.OutgameContentVersion);
+            projection.Add("growthContentFingerprint",
+                growthSnapshot.OutgameContentFingerprint);
+            projection.Add("growthProfileId", growthSnapshot.ProfileId);
+            projection.Add("growthProfileRevision", growthSnapshot.ProfileRevision);
+            projection.Add("growthFingerprint", growthSnapshot.Fingerprint);
             projection.Add("compiledContent", BattleContentJson.SerializeCanonical(
                 CreateCatalogProjection(catalog.BattleContent), false));
 
@@ -239,6 +289,11 @@ namespace FruitDefense.Core
             }
 
             public void Add(string key, int value)
+            {
+                Add(key, value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            public void Add(string key, long value)
             {
                 Add(key, value.ToString(CultureInfo.InvariantCulture));
             }

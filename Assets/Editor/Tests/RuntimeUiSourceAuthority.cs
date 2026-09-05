@@ -16,6 +16,7 @@ namespace FruitDefense.Editor
             "RuntimeUiGui.cs",
             "RuntimeUiGui.ActionsAndMetrics.cs",
             "RuntimeUiGui.Art.cs",
+            "RuntimeUiGui.Hub.cs",
             "RuntimeUiGui.TextAndStatus.cs",
         };
 
@@ -34,9 +35,11 @@ namespace FruitDefense.Editor
         private static readonly string[] VisualValidatorFileNames =
         {
             "RuntimeUiVisualSystemValidator.cs",
+            "RuntimeUiVisualSystemValidator.FixedPrimaryAction.cs",
             "RuntimeUiVisualSystemValidator.Manifest.cs",
             "RuntimeUiVisualSystemValidator.PixelGeometry.cs",
             "RuntimeUiVisualSystemValidator.PixelQuality.cs",
+            "RuntimeUiVisualSystemValidator.RasterTooling.cs",
             "RuntimeUiVisualSystemValidator.ReleaseBoundary.cs",
             "RuntimeUiVisualSystemValidator.Theme.cs",
         };
@@ -44,6 +47,7 @@ namespace FruitDefense.Editor
         private static readonly string[] AcceptanceModuleLoadOrder =
         {
             "geometry.ps1",
+            "hub-matrix.ps1",
             "transport.ps1",
             "evidence-helpers.ps1",
             "image-analysis.ps1",
@@ -51,6 +55,8 @@ namespace FruitDefense.Editor
             "settlement-ink-analysis.ps1",
             "settlement-optical-analysis.ps1",
             "self-check.ps1",
+            "run-hub.ps1",
+            "run-hub-loop.ps1",
             "run-shell.ps1",
             "run-flow.ps1",
             "run-combat.ps1",
@@ -120,6 +126,12 @@ namespace FruitDefense.Editor
                 AcceptanceModuleLoadOrder, null);
             var combined = string.Join(Environment.NewLine,
                 entrySource, probeSource, modulesSource);
+            Require(Count(entrySource, "[switch]$HubVisual") == 1
+                && Count(entrySource, "if ($HubVisual) {") == 1
+                && Count(entrySource, "Invoke-HubVisualMode") == 1
+                && Count(modulesSource,
+                    "function Invoke-HubVisualMode") == 1,
+                "acceptance runner owns one fixed HubVisual switch and one run-hub implementation");
             var functionNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var functionMatches = Regex.Matches(combined,
                 @"(?m)^\s*function\s+([A-Za-z0-9_-]+)\s*\{",

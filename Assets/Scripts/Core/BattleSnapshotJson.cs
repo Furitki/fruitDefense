@@ -44,7 +44,8 @@ namespace FruitDefense.Core
                     CultureInfo.InvariantCulture, out version)
                 || version != BattleSnapshotSchema.Version)
                 return Failure(BattleSnapshotRestoreCode.UnsupportedSchema,
-                    "schemaVersion", "Only schema version 4 is supported.");
+                    "schemaVersion", "Only schema version "
+                        + BattleSnapshotSchema.Version + " is supported.");
 
             ShapeNode idNode;
             if (!rootObject.Members.TryGetValue("schemaId", out idNode))
@@ -181,6 +182,10 @@ namespace FruitDefense.Core
             String("contentCatalogId"), String("contentVersion"), String("levelId"),
             String("mapId"), String("gameplayMapFingerprint"), String("waveSetId"),
             String("ruleSetId"), String("themeId"),
+            String("growthPolicyId"), String("growthContentCatalogId"),
+            String("growthContentVersion"), String("growthContentFingerprint"),
+            String("growthProfileId"), Number("growthProfileRevision"),
+            String("growthFingerprint"),
             String("resolvedSourceDefinitionFingerprint"), Number("logicStep"),
             Number("randomState"), Number("randomSeed"), Number("phase"), Boolean("paused"),
             Number("speed"), Number("elapsed"), Number("sun"), Number("lives"),

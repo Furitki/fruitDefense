@@ -19,7 +19,9 @@ namespace FruitDefense.Editor
         {
             ValidatePresetSemantics();
             ValidateRepresentationCompatibility();
-            CellAlignedSquareTerrainTrial.GenerateArtifacts();
+            // The trial artifacts are approved, tracked evidence. Generation is an
+            // explicit authoring workflow and recreates the scene asset, so a P0
+            // validation must only inspect the committed artifacts.
             Assert(CellAlignedSquareTerrainTrial.Validate(out var trialReason),
                 "trial art and isolation: " + trialReason);
             ValidateComparisonBoard();

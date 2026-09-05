@@ -261,21 +261,21 @@ namespace FruitDefense.Editor
 
             var first = valid.Levels[0];
             var unstableLevel = new LevelDefinition("Orchard Invalid", first.MapId,
-                first.WaveSetId, first.RuleSetId, first.ThemeId);
+                first.WaveSetId, first.RuleSetId, first.ThemeId, first.GrowthPolicyId);
             ExpectInvalid(Copy(valid, levels: valid.Levels.Select(value =>
                     value.LevelId == first.LevelId ? unstableLevel : value)),
                 CreateBattleContent(), "identity.invalid", "unstable level identity");
             ExpectInvalid(ReplaceLevel(valid, new LevelDefinition(first.LevelId, "map.missing",
-                    first.WaveSetId, first.RuleSetId, first.ThemeId)),
+                    first.WaveSetId, first.RuleSetId, first.ThemeId, first.GrowthPolicyId)),
                 CreateBattleContent(), "reference.missing", "missing map reference", "mapId");
             ExpectInvalid(ReplaceLevel(valid, new LevelDefinition(first.LevelId, first.MapId,
-                    "waves.missing", first.RuleSetId, first.ThemeId)),
+                    "waves.missing", first.RuleSetId, first.ThemeId, first.GrowthPolicyId)),
                 CreateBattleContent(), "reference.missing", "missing wave-set reference", "waveSetId");
             ExpectInvalid(ReplaceLevel(valid, new LevelDefinition(first.LevelId, first.MapId,
-                    first.WaveSetId, "rules.missing", first.ThemeId)),
+                    first.WaveSetId, "rules.missing", first.ThemeId, first.GrowthPolicyId)),
                 CreateBattleContent(), "reference.missing", "missing rule-set reference", "ruleSetId");
             ExpectInvalid(ReplaceLevel(valid, new LevelDefinition(first.LevelId, first.MapId,
-                    first.WaveSetId, first.RuleSetId, "theme.missing")),
+                    first.WaveSetId, first.RuleSetId, "theme.missing", first.GrowthPolicyId)),
                 CreateBattleContent(), "reference.missing", "missing theme reference", "themeId");
 
             var invalidMap = CreateInvalidLegacyMap();

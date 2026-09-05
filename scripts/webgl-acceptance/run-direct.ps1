@@ -93,7 +93,7 @@ function Invoke-DirectBattleMode {
   $waveActionContrast = Get-ActionContentContrast `
     -Path $readyCapture.Path -Rect $waveActionRect `
     -ContentLeft 0.12 -ContentRight 0.92 -ContentTop 0.18 -ContentBottom 0.82 `
-    -Polarity LightOnDark
+    -Polarity DarkOnLight
   if (-not $waveActionContrast.passed) {
     throw (
       'Battle start-wave icon/label contrast is below 4.5: ' +

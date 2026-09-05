@@ -9,7 +9,8 @@ namespace FruitDefense.Core
         public BattleSnapshotExportResult ExportSnapshot()
         {
             if (Mode != BattleSimulationMode.Standard || ResolvedSourceIdentity == null
-                || ActiveLevel == null || Identity == null)
+                || ActiveLevel == null || Identity == null
+                || LaunchGrowthSnapshot == null)
                 return BattleSnapshotExportResult.Unsupported(
                     "Current battle snapshots require a catalog-resolved Standard session.");
 
@@ -31,6 +32,13 @@ namespace FruitDefense.Core
                 waveSetId = source.WaveSetId,
                 ruleSetId = source.RuleSetId,
                 themeId = source.ThemeId,
+                growthPolicyId = source.GrowthPolicyId,
+                growthContentCatalogId = source.GrowthContentCatalogId,
+                growthContentVersion = source.GrowthContentVersion,
+                growthContentFingerprint = source.GrowthContentFingerprint,
+                growthProfileId = source.GrowthProfileId,
+                growthProfileRevision = source.GrowthProfileRevision,
+                growthFingerprint = source.GrowthFingerprint,
                 resolvedSourceDefinitionFingerprint = source.DefinitionFingerprint,
                 logicStep = State.LogicTick,
                 randomState = _random.State,

@@ -106,7 +106,9 @@ namespace FruitDefense.Editor
             var json = BattleSnapshotJson.Serialize(export.Snapshot);
             Assert(json.IndexOf("presentation", StringComparison.OrdinalIgnoreCase) < 0
                 && json.IndexOf("feedback", StringComparison.OrdinalIgnoreCase) < 0
-                && json.IndexOf("profile", StringComparison.OrdinalIgnoreCase) < 0,
+                && json.IndexOf("reaction", StringComparison.OrdinalIgnoreCase) < 0
+                && json.IndexOf("\"profileId\":",
+                    StringComparison.OrdinalIgnoreCase) < 0,
                 "snapshot JSON excludes presentation event, profile, and reaction state");
 
             simulation.DiscardPendingPresentationEvents();
@@ -174,7 +176,9 @@ namespace FruitDefense.Editor
             var simulation = levelCatalog == null
                 ? new GameSimulation(catalog, seed)
                 : new GameSimulation(levelCatalog,
-                    BundledLevelCatalogIds.Levels.Orchard01, seed);
+                    BundledLevelCatalogIds.Levels.Orchard01, seed,
+                    BattleGrowthTestFixture.ResolveBundled(levelCatalog,
+                        BundledLevelCatalogIds.Levels.Orchard01));
             simulation.DiscardPendingPresentationEvents();
             simulation.State.Plants.Clear();
             simulation.State.Zombies.Clear();

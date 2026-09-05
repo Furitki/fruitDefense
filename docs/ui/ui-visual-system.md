@@ -104,7 +104,7 @@ Action 颜色必须以 `container/content` 语义对定义，而不是让文字�
 ### 3.4 圆角、描边与浅阴影
 
 - 形状只使用小、中、大三类语义圆角；紧凑图标控制使用小，按钮/槽位使用中，主卡片/模态使用大。
-- 泥土棕系描边保持清楚但克制；同一层级的等价组件必须使用同一 outline role。
+- 泥土棕系描边保持清楚但克制；同一层级的等价组件必须使用同一 outline role。运行时文字与组件描边只能使用主题拥有的暖泥土棕 outline token 或明确的状态色，禁止纯黑以及视觉上接近黑色的中性色描边。
 - 深度关系固定为 `screen background → standard panel → gameplay stage / raised / card / action → modal/result`；gameplay stage 只作为页面内唯一高密度玩法锚点，不作为包裹下方控制区的外层容器。
 - 阴影只表达相邻层级：短距离、低对比、单一光向。禁止厚重倒角、强高光、玻璃拟态、金属科技光、纯黑框和与战场内容争夺注意力的装饰。
 - pressed 通过收短阴影和轻微内容位移表达，但外接框、布局矩形和点击区域不变。
@@ -134,6 +134,16 @@ Action 颜色必须以 `container/content` 语义对定义，而不是让文字�
 - 所有共享组件必须在 360×800、375×812、402×874、430×932 的支持竖屏尺寸，以及完整和代表性顶部/底部 inset safe area 中保持受保护边角、文字和操作目标。
 - 缩放必须使用共享 UI scale context；不得为某个 Sprite 新建独立指针区域或第二套布局。
 
+### 4.3 Lobby Hub 页面框架
+
+- Lobby 是一个有限的 Hub，而不是继续增长的单页菜单。共享层级固定为 `TopBar → PageHost → BottomNavigation`；`Home / Activity / Growth` 只切换 PageHost 内容，不触发场景导航。`AppNavigator` 仍只拥有 Lobby、Battle、Settlement 路线。
+- `PortraitHubLayout` 是 Hub 绘制、pointer tracking、hit test、telemetry 和验证的唯一几何来源。BottomNavigation、Growth 二级 tab、页面条目和主要动作不得各自维护第二套坐标。
+- TopBar 同时承载当前页标题和共享资源余额。余额只显示已提交 profile revision 的投影；领取或强化命令处于 loading、失败或回滚时，不得先行显示未提交的数值。
+- Home 的阅读顺序为关卡选择、战前成长预览、Start。成长预览必须来自所选关卡和当前已提交 profile 的同一个 battle-growth resolver；失败时明确阻断 Start，不绘制伪造的空强化结果。
+- Activity 的阅读顺序为有限标题/说明、一个主导 reward hero、两个 icon+label reward tile、显式领取状态、唯一领取动作。Growth 的阅读顺序为 Equipment/Cultivation 二级导航、条目、详情/等级/效果/成本/状态、唯一上下文动作。
+- Growth 二级导航和条目选择属于页面内状态；返回 Home、Settlement 返回和冷启动的默认页规则由 Hub router 统一控制。不得把 Growth tab 或 Activity 领取实现为隐藏的场景跳转。
+- BottomNavigation 的参考级简约度按整组构图验收，不以单个图标的像素指标代替。导航 chrome 恰好只有两层大剪影：一张连续的暖纸底图和一张与其融合的阳光黄选中凸起；三个导航项不得再各画承载卡。底图的外轮廓、顶部弧线、纸张厚度和浅阴影由专用 Sprite 持有，禁止用通用 raised panel、compact action 或矩形 primitive 近似。
+
 ## 5. 组件 anatomy
 
 所有组件接收 `theme + art set + explicit state + content`。Presenter 不得直接引用纹理路径，也不得复制共享绘制助手后再局部改色。
@@ -146,7 +156,7 @@ Action 颜色必须以 `container/content` 语义对定义，而不是让文字�
 | Phase / Wave row | sunlight phase block、phase/status copy、可选 leaf-green Wave action | 位于 gameplay stage 外；阶段区和动作区各有唯一 draw/hit owner，terminal 保持轨道但移除 Wave 命令 |
 | Raised panel | surface、outline、shallow shadow、content inset | 需要从 standard surface 抬起的卡片或浮层；与 modal 保持层级差，不用来给同级结构条制造不同框重 |
 | Selectable card | surface、标题/正文区、辅助信息区、selection marker | normal 与 selected 的文本排版尺寸不变；选择使用强调边与明确标记 |
-| Primary action | surface、outline、label、可选语义 icon、state cue | 每个操作组只能有清楚的主要动作；跨页面 anatomy 相同 |
+| Primary action | 浅绿色圆角方形母版九宫格 surface、outline、label、可选语义 icon、state cue | 每个操作组只能有清楚的主要动作；跨页面 anatomy 相同；当前批准母版保留方形来源的圆角转折，不得替换为半圆端胶囊 |
 | Secondary action | surface、outline、label、state cue | 可用但优先级低于 primary，不靠减小触控区域降级 |
 | Quiet action | 低层级 surface 或图标承载面、label/icon、focus cue | 返回、关闭、暂停、倍速等；仍需完整状态和触控目标 |
 | Danger action | danger surface、label/icon、state cue | 只用于破坏性/终止性操作；不与普通主操作争夺默认焦点 |
@@ -170,6 +180,21 @@ Action 的角色、内容形态和行为类型彼此正交，页面不得通过�
 典型映射为：开始波次=`Primary + 图标文字 + 瞬时命令`；刷新苗圃=`Secondary + 图标文字 + 瞬时命令`；暂停/继续=`Quiet + 纯图标 + 持续模式`；`1×/2×`=`Quiet + 紧凑数值 + 持续模式`；关闭=`Quiet + 纯图标 + 瞬时命令`。同一操作组只能有一个 Primary；准备阶段的流程推进动作不得与辅助经济操作使用相同的 Primary 外观。
 
 组件每一帧只解析一套完整视觉样式：`ButtonStyle(role, interactionState, modeState) -> container + outline + content + focus/state cue`。禁止把 active 当作第二张按钮覆盖在 inactive 按钮上；过渡只能在同一几何的语义 token 间插值或切换，不得同时暴露两套边框、两层按钮面或未经配对验证的前景色。
+
+### 5.2 Hub 专用组件 anatomy
+
+| Hub 组件 | 必需 anatomy | 稳定约束 |
+| --- | --- | --- |
+| Hub top bar | raised surface、screen title、资源名/数值 | 标题随页切换，余额跨页保持同一 owner 与 committed revision |
+| Bottom navigation item | text-free domain icon、label、selected paper tab/underline | Home/Activity/Growth 三项等宽；语义固定为 doorway-house / calendar-star / two-leaf-sprout；selected 只由上抬阳光纸签、下划线和标签表达，不给 icon raster 乘色 |
+| Activity card | title、有限说明、dominant reward hero、两个 icon+label reward tile、claim state、primary action | reward 数量与状态来自真实内容/命令；hero 先于 reward tile；claiming 禁止重复输入，claimed 不保留可领取外观 |
+| Reward panel | section title、资源名、数量 | 只复用共享 resource/metric 与 paper surface，不为一次活动创建私有主题 |
+| Growth tab | label、surface、selected underline | Equipment/Cultivation 共用一个 anatomy 和 hit owner；切换不移动详情面板 |
+| Growth entry | title、rank/ownership/status、selection cue | locked、owned、selected 均保持相同外接框；选择不改变文字 owner |
+| Growth detail | title、两行说明、rank、effect、cost、status、primary action | Equipment 与 Cultivation 共用详情骨架；差异只来自内容和命令语义 |
+| Home growth preview | raised surface、section title、受控两行 resolver summary、state indicator | 只呈现 applied/suppressed 的真实解析结果；显式换行必须被两行 owner 消费，不得进入单行 style 造成裁切 |
+
+Hub 的主要动作层级固定：Home Start、Activity Claim、Growth 当前 equip/upgrade 各自是一页唯一 Primary。四类 Hub 主动作均使用 live-text label；Home Start 与 Activity Claim 不插入无关的 Start/play 图标，其他 Hub 动作也不得借用它。普通成功/已完成状态使用状态 indicator，不能再叠一枚重复状态图标。
 
 ## 6. 完整状态矩阵
 
@@ -222,9 +247,20 @@ Action 的角色、内容形态和行为类型彼此正交，页面不得通过�
 
 缩写：N=`normal`、F=`hovered/focused`、P=`pressed`、S=`selected`、D=`disabled`、L=`loading/transitioning`、OK=`success`、W=`warning`、E=`error`。“可用”表示只有业务语义需要时才出现，但一旦出现必须遵守全局状态定义。
 
-## 7. 语义资源槽（finite 56）
+### 6.4 Hub 有限业务状态
 
-下列 56 个名称是最终有限美术槽合同；序列化枚举可以使用符合代码规范的拼写，但不得合并、增删或改变语义。Presenter 只请求语义，不知道具体文件名、set ID 或路径。
+| 页面域 | 有限状态 | 必需表现与行为 |
+| --- | --- | --- |
+| Activity | available/claimable、claiming、claimed、locked、recoverable-error | claimable 暴露唯一 Primary；claiming 保留动作语义并阻止重复命令；claimed 使用完成文案与非颜色 indicator；locked/error 解释原因，error 保留可恢复路径 |
+| Equipment | owned、selected/upgradeable、locked、insufficient、maximum、loading、error | owned 可装备，selected 可强化；成本不足、未获得、满级各有不同 copy/indicator；loading 串行命令；失败后余额、rank 与 loadout 保持上次提交状态 |
+| Cultivation | selected/upgradeable、locked、insufficient、maximum、loading、error | prerequisite、rank、cost 都来自内容权威；locked 与 insufficient 不混用；失败或 persistence rollback 不提前发布等级/余额 |
+| Home preview | fresh/empty、applied、applied-with-suppressed、loading、error | applied/suppressed 同时显示数量和 warning/success 线索；loading 不允许 Start；error 不生成零值 fallback |
+
+页面状态必须由 immutable projection、当前 serialized command 和最后一次命令结果共同推导。Presenter 只调度输入和页面切换，不复制成本、前置条件或 battle growth 规则；同一命令的视觉反馈和 TopBar 余额必须在一次提交 revision 上同步出现。
+
+## 7. 语义资源槽（finite 62）
+
+下列 62 个名称是最终有限美术槽合同；序列化枚举可以使用符合代码规范的拼写，但不得合并、增删或改变语义。Presenter 只请求语义，不知道具体文件名、set ID 或路径。
 
 ### 7.1 Surface / container
 
@@ -240,8 +276,12 @@ Action 的角色、内容形态和行为类型彼此正交，页面不得通过�
 - `surface.result`
 - `surface.scrim`
 - `surface.gameplay-stage`
+- `surface.hub-navigation-base`
+- `surface.hub-navigation-selected-tab`
 
 `surface.gameplay-stage` 是 128×128、20px slice/safe inset、透明中心的独立九宫格，只服务唯一高密度玩法锚点。它不得借用 standard/raised/illustration frame，也不得包含棋盘、文字、按钮、植物或角落大装饰。
+
+`surface.hub-navigation-base` 与 `surface.hub-navigation-selected-tab` 是固定宽高比、无文字的 Stretch chrome，分别且只分别拥有连续底图和选中凸起两层大剪影。它们不得复用 `surface.panel-raised`，不得拆成三个 item surface，也不得由页面 primitive 重建。
 
 ### 7.2 Action family
 
@@ -252,7 +292,7 @@ Action 的角色、内容形态和行为类型彼此正交，页面不得通过�
 - `action.compact-control`
 - `action.compact-control-active`
 
-四类 action role 使用同一 anatomy 和状态名称。compact 两槽是 Quiet 紧凑形态的互斥完整状态资源，不是第五种动作角色，也不得同时绘制。若状态需要独立 Sprite，它仍属于对应 action role；页面不能自行决定是否回退到 normal 纹理。
+四类 action role 使用同一状态名称和各自批准的稳定 surface anatomy。当前 `action.primary` 固定为用户选择的浅绿色圆角方形来源九宫格，保护原始圆角、描边和浅阴影，不得由导出器拼成半圆端胶囊。compact 两槽是 Quiet 紧凑形态的互斥完整状态资源，不是第五种动作角色，也不得同时绘制。若状态需要独立 Sprite，它仍属于对应 action role；页面不能自行决定是否回退到 normal 纹理。
 
 ### 7.3 Slot / marker / indicator
 
@@ -276,6 +316,9 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - `icon.resource-sun`
 - `icon.resource-core`
 - `icon.resource-wave`
+- `icon.hub-home`
+- `icon.hub-activity`
+- `icon.hub-growth`
 - `icon.control-pause`
 - `icon.control-continue`
 - `icon.control-speed`
@@ -287,7 +330,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - `icon.control-close`
 - `icon.tool-pot`
 
-`start`、`start-wave` 与 `continue` 是三个独立语义绑定；首版 ArtSet 可以让它们指向同一 Sprite，但 Presenter 不能互相借槽或借路径。`refresh` 同样保持独立绑定。新增真正的新语义组件必须修改合同、补齐所有 intentional ArtSet 和验证；不能用文件命名约定在运行时动态发现缺失资源。
+`hub-home`、`hub-activity`、`hub-growth` 分别固定为带门洞负形的单房屋、带星形的单日历、带极简平底的双叶芽。每枚图标恰好一个主体剪影，只保留识别所需负形；禁止水果/叶片装饰、土堆、第二景物、分离小道具、插画簇、微纹理和多余轮廓折点。三者不能互借路径，也不能替换为场景插画或多物件组合。`start`、`start-wave` 与 `continue` 是三个独立语义绑定；首版 ArtSet 可以让它们指向同一 Sprite，但 Presenter 不能互相借槽或借路径。`refresh` 同样保持独立绑定。新增真正的新语义组件必须修改合同、补齐所有 intentional ArtSet 和验证；不能用文件命名约定在运行时动态发现缺失资源。
 
 ### 7.5 Ornament / illustration composition
 
@@ -301,6 +344,7 @@ Selectable card 是共享组件语义，其唯一美术槽为 `surface.card-sele
 - `illustration.lobby-orchard-02`
 - `illustration.lobby-orchard-03`
 - `illustration.shell-orchard-depth`
+- `illustration.hub-activity-reward`
 
 这些槽只增强既有组件内部构图，不改变页面外接矩形、触控目标或流程。角饰、分隔符、横幅和插画使用显式 Icon、NineSlice 或固定宽高比 Stretch 几何；Presenter 不得按文件名猜测资源，也不得把运行时中文烘进 Sprite。
 
@@ -316,7 +360,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 
 ### 8.1 Source/master 所有权
 
-- 每个 production UI 纹理或 Sprite 必须有一个归项目所有、可继续编辑的无损 master，并能追溯到 semantic role、ArtSet 和导出设置。
+- 每个 production UI 纹理或 Sprite 必须有一个归项目所有、可继续编辑的无损 master，并能追溯到 semantic role、ArtSet 和导出设置。任何可见素材像素都只能来自用户批准的固定 raster master，包括人工、ImageGen 或明确选择并哈希锁定的历史 PNG；任何时候都禁止脚本、Canvas、Shader、矢量 primitive、程序几何或 fallback renderer 绘制、重建、调色、描边、加阴影、装饰或合成素材像素。
 - master 放入项目专用 editable-source hierarchy；使用团队可读取、无损且工具中立的可编辑格式，不能只保留某个生成器或私有工具中的不可复现状态。它必须在 runtime `Resources` 之外，也不得被 release theme/scene 直接引用。
 - 外部参考、风格板、临时试色、评审截图和测试 fixture 都不是 production master。项目自有 ImageGen 输出只有在记录 prompt/output/hash、通过文字与图标空白检查、固定为一个可直接替换的完整组件或从已评审生成预览中一次裁出的完整组件，并完成 alpha、九宫格和导出验证后，才可作为明确声明的 production 像素源；未经评审的生成输出仍是 review-only 证据。
 - 手工维护的 master 应分离 surface、outline、shadow、decoration 和切片/安全区 guide，避免每次调色重画几何。以 ImageGen 像素为合同的 action surface 则保留已评审的一体化 rim、face、outline、highlight 与 shadow，不得由脚本重新绘制或拆成另一套近似 anatomy。任何路径都不得把运行时 copy、动态数值、状态文字或操作图标烘焙进公共 UI Sprite。
@@ -330,7 +374,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 - export 不自动裁掉透明 padding，不旋转图集单元，也不改变相同组件各状态的外接框。
 - 独立 Sprite 与受控 atlas 均可由后续生产实现选择，但 semantic role、Sprite 名、rect、padding 和 slicing 必须稳定并可验证。atlas 不能成为运行时按名字回退查找的机制。
 - 更新已 slotted 资源时保留稳定路径和 `.meta` GUID，并提高 ArtSet content revision；不在文件名后添加日期或版本号。
-- ImageGen surface 的确定性边界从一份已选定且有哈希的单组件生成输出开始，而不是从 prompt 再生成开始。导出器只可执行完整组件裁切、已有 alpha 读取或同语义且轮廓测量已锁定的批准 geometry-alpha mask、从返图自身提取外部背景、透明 padding、alpha-safe resize、光学测量、哈希和导出；严禁把旧资源或其他语义资源的 alpha/mask 套到新返图。不得生成、重建或替换 rim、face、outline、highlight、shadow、texture 或 decoration，也不得在源缺失时回退到程序绘制。
+- ImageGen surface 的确定性边界从一份已选定且有哈希的单组件生成输出开始，而不是从 prompt 再生成开始。导出器只可执行哈希校验、完整组件裁切、已有 alpha 读取、从同一返图自身提取外部背景、透明 padding、alpha-safe resize、低 alpha 清理、光学测量、编码和元数据更新；严禁把旧资源或其他语义资源的 alpha/mask 套到新返图。不得生成、绘制、重建或替换 rim、face、outline、highlight、shadow、texture 或 decoration，也不得在源缺失时回退到程序绘制。
 - 所有透明 ImageGen 九宫格在 source master 和 runtime export 两级都必须满足：`alpha == 0` 时 `RGB == 0`，不存在 `0 < alpha < 48` 的缩放振铃；每次 resize 后重新执行清理和验证。声明为无描边的小承载面还必须拒绝中性/深色半透明 fringe 与连续四边 rail。任一门禁失败即终止导出和 Unity release validation，WebGL 看不见不能视为通过。
 - release theme、scene 和 runtime ArtSet 只绑定归一化后的 owned master/runtime PNG，不直接引用原始生成输出、评审预览、素材分解图或外部参考图。
 
@@ -358,6 +402,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 - 操作型控制图标使用单色中性母版或纯 alpha mask；轮廓语言、线重和光学尺寸属于 ArtSet，最终颜色属于当前 action 的 `content` token。禁止在操作图标中烘焙泥土棕、金色、渐变、高光、阴影或状态色。单色可着色约束只规定颜色所有权，不要求图标几何雷同；后续可以在稳定画布和家族线重内，通过剪影、负形、比例和节奏增强各动作的识别度与个性。资源/内容图标可保留可识别的果园固有色，但不得替代 action content，也不得成为唯一状态线索。
 - 图标不得包含 baked label；pause、continue、retry、return、close、warning/error 等必须仅凭形状和相邻可访问名称识别。
 - outline weight、圆角语言和阴影方向在同一 ArtSet 内一致；不得混入科技线框、照片、emoji 或系统字体符号充当 production icon。
+- Hub domain icon 不是可着色 action glyph：它可保留经批准的固定果园色，但 Home/Activity/Growth 必须分别保持单房屋、单日历星、双叶芽的一个主导连通主体，只保留识别必需的负形，不得包含 detached prop、第二主体、装饰叶果、土堆、插画簇或 painterly micro-texture。24 与 33 logical-point 两个实际尺寸都必须通过单连通、有限轮廓复杂度和 family silhouette separation 门禁；这些数值只作辅助诊断，不能替代“一个主体剪影”的实图审查。选中态只改变专用纸签、下划线与标签，绘制层不得给 icon raster 乘 selection tint。
 
 ### 8.6 稳定命名
 
@@ -369,7 +414,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 
 规则：
 
-- 全部使用小写 ASCII `kebab-case`；family 只使用实际有限槽中的 `surface`、`action`、`slot`、`marker`、`indicator`、`icon`。Selectable card 的唯一文件 family 是 `surface`，`card.selectable` 只是组件别名。
+- 全部使用小写 ASCII `kebab-case`；family 只使用实际有限槽中的 `surface`、`action`、`slot`、`marker`、`indicator`、`icon`、`ornament`、`illustration`。Selectable card 的唯一文件 family 是 `surface`，`card.selectable` 只是组件别名。
 - 示例：`surface-panel-standard.png`、`action-primary.png`、`marker-selected.png`、`indicator-warning.png`、`icon-resource-sun.png`。
 - 禁止加入 `lobby`、`battle`、`settlement` 等 screen 名，除非资源语义确实只属于一个新组件且合同已批准。
 - 只有确实存在独立状态资源时才加 state 后缀；是否复用 normal 不能由页面猜测，必须由有限 ArtSet contract 决定。
@@ -391,7 +436,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 1. 固定三项输入：任务明确指定或用户批准的参考图视觉参数是 P0；当前 slotted master 只负责参考未定义的技术画布、透明边界和稳定导出身份；现有 runtime 页面负责 copy、命令、hit geometry 与真实使用尺寸。无参考图或参考未覆盖的参数才由本文通用合同补齐。不得先生成页面分解图、组件总表或纯色底校正版。
 2. 按不同材质家族直接生成无文字、无图标、可替换的单组件 master。确实共享同一 anatomy 与材质的多个 semantic slot 可以复用同一生成输出；不同材质不得为了省调用强行塞进一张 sheet。
 3. 优先要求生成输出自带真实透明背景。若生成器返回 baked checkerboard 或不透明背景，只允许一次确定性的背景连通域清理或使用已哈希、与当前 slotted master 对应的 geometry-alpha mask；不得再发起“改成纯色底”的第二次生成，也不得由脚本修边框或阴影。
-4. 集成脚本只允许 `hash validation → complete-component crop/alpha extraction → transparent padding → alpha-safe resize → measurement → export`。任何颜色、渐变、rim、outline、highlight、shadow、texture、dash 或 decoration 像素都必须来自已选定的生成输出。
+4. 集成脚本只允许 `hash validation → complete-component crop/same-output alpha extraction → transparent padding → alpha-safe resize → low-alpha cleanup → measurement → encode/metadata`。任何颜色、渐变、rim、outline、highlight、shadow、texture、dash 或 decoration 像素都必须来自已选定的固定 master；脚本源中不得存在用于素材 authoring 的绘图 API、primitive、程序几何、调色或 fallback 路径。
 5. 对比度失败先修改独立的文字/操作图标 `content` token，不得把 surface 像素作为对比度调节项；若参考同时锁定前景与背景且产生硬冲突，停止并请求用户裁决。
 6. 资源原位写入既有 source/runtime 路径，保留 `.meta` GUID、Sprite border、safe inset、semantic slot、layout、字体和 draw/hit geometry；删除旧 sheet、程序绘制和 fallback 入口，不保留兼容层。
 7. 自动化只负责尺寸、alpha、透明中心、九宫格、对比度、manifest、导入和真实 WebGL 构建等技术门禁。助手不得以自己的主观视觉判断代替用户验收，也不得因自评相似度继续隐藏迭代。
@@ -405,7 +450,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 | Importer 项 | 稳定规则 |
 | --- | --- |
 | Texture Type | `Sprite (2D and UI)` |
-| Sprite Mode | `Single`；当前 56 槽合同使用 standalone FullRect Sprite，不预留 atlas/Multiple 兼容路径 |
+| Sprite Mode | `Single`；当前 62 槽合同使用 standalone FullRect Sprite，不预留 atlas/Multiple 兼容路径 |
 | Mesh Type | `Full Rect`，保留透明 padding 和九宫格边界 |
 | Color Space | 彩色 UI 使用 sRGB；数据 mask 只有在新增明确合同后才可例外 |
 | Alpha | 使用源 alpha，并启用透明边缘处理；不得烘焙不透明底色 |
@@ -481,6 +526,8 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 - [ ] 九宫格圆角、描边、edge 和浅阴影在最窄/最宽组件上连续；没有整图拉伸痕迹。
 - [ ] 当前 Battle Header panel 与 NurseryTray section perimeter 按审定母版各出现一次；三个 metric 与五个 nursery cell 各保留一个无实线/虚线轨的圆角浅纸承载面。metric 不与带描边 panel 共用母版；两类承载面的 source/runtime PNG 没有旧/异语义 mask 错位、隐藏 RGB、低 alpha 振铃、中性深色半透明 fringe 或连续四边 rail；最终画面没有黑色/透明内缝、重复 surface、选取角标或矩形 primitive，contained 微动、单一状态 indicator、layout/hit geometry 均保持。
 - [ ] icon 使用统一方形 canvas、安全 inset、outline 与 optical alignment，在最小使用尺寸仍可辨。
+- [ ] Hub 三枚 domain icon 在 24/33 logical-point 实际尺寸均只有一个主导连通主体、轮廓复杂度受控且互不混淆；Home=门洞房屋、Activity=日历星、Growth=双叶芽，selected 不改变 icon raster 颜色。
+- [ ] Hub 底栏实图恰好只有“连续暖纸底图 + 阳光黄选中凸起”两层大剪影；底图轮廓、顶部弧线、纸张厚度和浅阴影来自专用资源，没有通用 raised panel、compact action、三个 item 卡片或 primitive 近似。
 - [ ] transparent padding、抗锯齿和 atlas 边缘没有黑边、浅边、bleed、trim 或状态跳动。
 
 ### 11.6 资产、导入与互换
@@ -506,7 +553,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 - 不通过透明像素、Sprite 尺寸或装饰偏移改变 layout/hit geometry。
 - 不把植物、武器、敌人、地形或战斗特效迁入 UI ArtSet。
 - 不把外部参考图、未经评审的生成输出、原始生成 sheet、review-only/fixture/editable-source 资源加入 release dependency graph 或生产 `Resources`；运行时只绑定经归一化的 production export。
-- 不用“组件分解图 → 纯色背景修复图 → 再裁切”的多轮生成链路生产已具备正确框架的 UI；不把脚本绘色、重画边框或合成阴影伪装成 ImageGen 素材。
+- 不用“组件分解图 → 纯色背景修复图 → 再裁切”的多轮生成链路生产已具备正确框架的 UI；任何时候都不用脚本、Canvas、Shader、矢量 primitive、程序几何或 fallback renderer 绘制任何素材可见像素，也不把脚本绘色、重画边框或合成阴影伪装成 ImageGen 素材。
 - 不用通用视觉合同或对比度门禁压暗、改色、重新生成、叠色或替换 P0 参考权威图片；先调整独立文字/图标 content token，硬冲突交给用户裁决。
 - 不用运行时 skin switcher、remote loading、partial override 或多 set 混合实现快速迭代。
 - 不在本文记录精确 release token 值、revision、active ArtSet identity、构建状态、截图结果、平台就绪或瞬态哈希。
@@ -554,7 +601,7 @@ micro 槽只解决 Battle 顶栏最小尺寸的彩色资源识别，不属于可
 - Lobby 与 Settlement 必须声明 intentional occupied-content bounds、重复节奏和必要留白；“全部 Rect 均 contained”不能替代页面视觉重心与下半屏完成度检查。
 - 结果 banner 若保留，必须承载有限、可测的 outcome 语义；空装饰不能占据主要信息层级。胜/负文字使用 Noto Sans SC 静态 700 的 `display` 角色、有限 copy catalog 和角色级光学校正绘制，不能烘焙进美术或由 Settlement 私有偏移补偿。
 - Noto 中文覆盖、显式行策略、实际组合对比度、非颜色状态线索、九宫格完整 partition/UV、透明边与插画宽高比都属于失败即阻断的 release gate，不能通过缩字、fallback 或放宽阈值绕过。
-- active ArtSet 与每个 production candidate 都必须恰好满足 finite 56 槽及同一资源质量标准。原位更新保留路径和 `.meta` GUID；候选先隔离 preview，再单组原子激活并验证 Undo/Redo，失败保持 theme、scene、代码与布局不变。
+- active ArtSet 与每个 production candidate 都必须恰好满足 finite 62 槽及同一资源质量标准。原位更新保留路径和 `.meta` GUID；候选先隔离 preview，再单组原子激活并验证 Undo/Redo，失败保持 theme、scene、代码与布局不变。
 - 以上真实画布结论只覆盖普通 WebGL；抖音、微信或其他小游戏平台仍需各自转换、模拟器、真机与包体门禁。
 
 任何 Blocker/High、缺失有限 copy、默认 skin、回退资源、输入漂移或 release dependency 越界都必须失败关闭；不能在审查清单中作为“已知问题”保留。

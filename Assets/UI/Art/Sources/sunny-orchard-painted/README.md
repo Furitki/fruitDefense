@@ -1,13 +1,13 @@
 # Sunny Orchard Painted sources
 
-`sunny-orchard-painted@8` is the active reference-faithful production set. Its finite nine-slice kit follows the approved sky-paper reference and text-free Battle chrome styleboard.
+`sunny-orchard-painted@19` is the active reference-faithful production set. Its finite nine-slice kit follows the approved sky-paper reference and text-free Battle chrome styleboard.
 
 Production source ownership is split into:
 
 - `surfaces/`: owned surface/action/slot masters, including fourteen high-exposure action, shell, panel, card, slot, and stage masters integrated from hash-locked individual ImageGen outputs, the remaining deterministic low-exposure material kit, and the retained reviewed sky screen background;
 - `icons/`: 22 image-generated, reviewed state/common-icon masters plus three deterministic 18 px resource derivatives;
 - `ornaments/` and `illustrations/`: reviewed composition layers for the reference-derived orange-and-leaf page corner, dividers, result treatment, route thumbnails, orchard vista, and the portrait shell depth master;
-- `art_manifest.json`: exact 56-slot source/runtime ownership, hashes, target tiers, and measured optical insets;
+- `art_manifest.json`: exact 62-slot source/runtime ownership for 60 unique runtime exports, hashes, target tiers, and measured optical insets;
 - `prompt-record.json`: provenance for the retained ImageGen-authored icons, ornaments, background, and illustrations;
 - `export_sunny_orchard_painted.py`: direct ImageGen master integration, deterministic low-exposure material authoring, neutral-mask normalization, downsample, alpha/safe-inset validation, optical measurement, and manifest emission.
 
@@ -19,7 +19,7 @@ Runtime optical bounds use the final exported PNG and the shared significant-alp
 
 Slots 30-36 and 38-39 are tintable action glyphs. Their seven unique masters are `pause`, shared `continue/start-wave/start`, `speed`, `retry`, `return`, `close`, and `refresh`. Source and runtime PNGs use strict white RGB wherever alpha is nonzero, contain no baked hue, gradient, highlight, or shadow, and retain their existing canvas, significant-alpha silhouette, optical bounds, GUID, and Sprite Single geometry. `icon-tool-pot` and every `icon-resource-*` asset remain outside this mask contract.
 
-`action.primary` and `action.secondary` share the approved light-green direct master and pair with soil-brown `#56341F` content; `action.danger` pairs with inverse warm-white `#FFF9EE`. The manifest records measured final central-region contrast for each actual semantic pair without programmatic recoloring.
+`action.primary` uses the user-selected original rounded-square fixed raster master from historical commit `d423af201917d6a66a1328f55533d2119203db28`; it is not an ImageGen or procedural export. `action.secondary` retains its approved light-green direct master, and `action.danger` pairs with inverse warm-white `#FFF9EE`. The manifest records measured final central-region contrast for each actual semantic pair without programmatic recoloring.
 
 Compact-control slots 53-54 are mutually exclusive ImageGen-authored cream-rimmed yellow controls with deep golden/soil outlines, yellow-orange faces, top highlights, and short shadows. They contain no glyph or text. The active surface deepens the orange face without changing its canvas.
 

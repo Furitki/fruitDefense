@@ -13,20 +13,23 @@ namespace FruitDefense.Content
         public string WaveSetId { get; private set; }
         public string RuleSetId { get; private set; }
         public string ThemeId { get; private set; }
+        public string GrowthPolicyId { get; private set; }
 
         public LevelCompositeIdentity(string levelId, string mapId, string waveSetId,
-            string ruleSetId, string themeId)
+            string ruleSetId, string themeId, string growthPolicyId)
         {
             LevelId = levelId ?? string.Empty;
             MapId = mapId ?? string.Empty;
             WaveSetId = waveSetId ?? string.Empty;
             RuleSetId = ruleSetId ?? string.Empty;
             ThemeId = themeId ?? string.Empty;
+            GrowthPolicyId = growthPolicyId ?? string.Empty;
         }
 
         public override string ToString()
         {
-            return LevelId + "|" + MapId + "|" + WaveSetId + "|" + RuleSetId + "|" + ThemeId;
+            return LevelId + "|" + MapId + "|" + WaveSetId + "|" + RuleSetId
+                + "|" + ThemeId + "|" + GrowthPolicyId;
         }
     }
 
@@ -37,17 +40,20 @@ namespace FruitDefense.Content
         public string WaveSetId { get; private set; }
         public string RuleSetId { get; private set; }
         public string ThemeId { get; private set; }
+        public string GrowthPolicyId { get; private set; }
         public LevelCompositeIdentity Identity { get; private set; }
 
         public LevelDefinition(string levelId, string mapId, string waveSetId,
-            string ruleSetId, string themeId)
+            string ruleSetId, string themeId, string growthPolicyId)
         {
             LevelId = levelId ?? string.Empty;
             MapId = mapId ?? string.Empty;
             WaveSetId = waveSetId ?? string.Empty;
             RuleSetId = ruleSetId ?? string.Empty;
             ThemeId = themeId ?? string.Empty;
-            Identity = new LevelCompositeIdentity(LevelId, MapId, WaveSetId, RuleSetId, ThemeId);
+            GrowthPolicyId = growthPolicyId ?? string.Empty;
+            Identity = new LevelCompositeIdentity(LevelId, MapId, WaveSetId,
+                RuleSetId, ThemeId, GrowthPolicyId);
         }
     }
 
