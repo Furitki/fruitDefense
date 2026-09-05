@@ -102,7 +102,7 @@ function Invoke-DirectBattleMode {
   $refreshActionContrast = Get-ActionContentContrast `
     -Path $readyCapture.Path -Rect $refreshActionRect `
     -ContentLeft 0.08 -ContentRight 0.92 -ContentTop 0.18 -ContentBottom 0.82 `
-    -Polarity LightOnDark
+    -Polarity DarkOnLight
   if (-not $refreshActionContrast.passed) {
     throw (
       'Battle Secondary refresh icon/label contrast is below 4.5: ' +
